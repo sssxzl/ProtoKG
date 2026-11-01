@@ -46,6 +46,15 @@ concurrency:
 permissions:
   contents: read
 
+# ★ 全局强制 UTF-8 模式（Windows runner 的控制台默认是 OEM 代码页）：
+#   2026-11-02 真机运行（run 41357183519）实测：Windows 上护栏脚本第一行打印中文
+#   就抛 `UnicodeEncodeError: 'charmap' codec can't encode characters` ⇒ 脚本崩溃、
+#   **产物一个都没落盘**、日志里看不到任何闸门结论。
+#   ⇒ 脚本内已用 `sys.stdout.reconfigure(encoding="utf-8", errors="replace")` 兜底；
+#   这里再加环境变量 `PYTHONUTF8=1` 作第二道保险（同时让 pytest 自身输出也是 UTF-8）。
+env:
+  PYTHONUTF8: '1'
+
 jobs:
   # ==========================================================================
   # Job 1 —— 静态检查（Ubuntu）

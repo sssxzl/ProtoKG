@@ -64,6 +64,28 @@ HERE = Path(__file__).resolve().parent
 #: ★ **不硬编码绝对路径** —— 否则换机器/换 CI runner 就找不到仓库。
 DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[2]
 
+
+def _force_utf8_stdio() -> None:
+    """把 stdout/stderr 强制成 UTF-8（**errors="replace"**）。
+
+    ★ 真实事故（2026-11-02 真机 CI，run 41357183519，Windows runner）：
+      Windows 控制台默认是 **OEM 代码页**（charmap/cp936 等）⇒ 本脚本打印中文
+      （第一行就是「== 仓库根：…」）时抛
+      `UnicodeEncodeError: 'charmap' codec can't encode characters in position 3-6`
+      ⇒ **脚本在第一行输出就崩了** ⇒ 护栏产物一个都没落盘
+      ⇒ job 红，而日志里看不到任何闸门结论（只有一条编码错误）。
+      ⇒ 修法：stdout/stderr 一律 reconfigure 成 UTF-8，且 `errors="replace"`
+        —— 即便遇到不可编码字符也**只丢字符、不崩**（闸门必须永远能出结论）。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):  # pragma: no cover —— 旧解释器/被替换的流
+            pass
+
+
+_force_utf8_stdio()
+
 #: 期望集（基线锚点）—— 随仓库入库
 DEFAULT_EXPECT_FAILED = HERE / "baseline" / "expected_b_class_failed_ids.txt"
 DEFAULT_EXPECT_ERRORS = HERE / "baseline" / "baseline_errors_pre_cleanup.txt"
