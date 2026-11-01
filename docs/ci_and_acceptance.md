@@ -48,18 +48,36 @@
 
 ### 2.1 为什么 Windows 与 Ubuntu 都要跑
 
-本仓 `core.autocrlf=true`（Windows 默认）会把 LF blob **物化成 CRLF**，
-而 `.gitattributes` 只对 `*.dict` / `*.raw` / `*.sip` 做了 `-text` 字节保护。
-实测（2026-11-02）：
+**行尾归一化已在仓库层解决（2026-11-02，`beadb38`）**：
+`.gitattributes` 现在有 `* text=auto eol=lf` ⇒ **代码 / 文档 / 测试在所有平台检出都是 LF**
+⇒ 同一份提交在 Windows 与 Linux 上工作区字节一致 ⇒ 两个平台的失败集合可比。
 
-- 干净 checkout（LF）：**68 failed / 1179 passed / 4 skipped / 20 errors**
-- 同一份代码被物化成 CRLF：**78 failed**（多出 10 条，全是行尾断言：
-  `test_scripts_syntax.py::test_shell_scripts_use_lf_line_endings`、
-  `test_rq4_collect_cov_fix.py::*`、`test_rq4_scripts_parity.py::*`）
+实测（干净 clone，`git clone` 后 `git ls-files --eol` 统计）：
 
-⇒ Windows job 必须显式关掉 autocrlf 并按 blob 重新物化工作区，
-否则失败集合与 Ubuntu 不可比，闸门会误报「漂移」。
+| 范围 | CRLF | LF | 说明 |
+|---|---|---|---|
+| 非 kb/ | **0** | 386 | ⇒ 跨平台一致 ✅ |
+| kb/（研究素材） | 6440 | 58 | 保持**平台默认**，抽取输入字节不变（见下） |
+
+> ★ **为什么 kb/ 必须排除**：`kb/*/历史漏洞/*.json` 与 `kb/*/expert_note/*.json`
+> 是**五源之一（历史漏洞 / expert_note）的抽取输入** ⇒ 它们的字节进入 fact 的 `value`
+> 与 `evidence_id`/`claim_id` 的摘要输入 ⇒ **改行尾 ⇒ 改 fact_id ⇒ 整座知识中枢指纹全变**
+> ⇒ kb/ 显式 `text=auto -eol`（回落到平台默认，保持现状行为）。
+
+**Windows job 仍保留显式归一化步骤**（`core.autocrlf=false` + `core.eol=lf` +
+`git checkout-index --all --force`），作为**双保险**：
+`.gitattributes` 只管 checkout，而 `checkout-index` 对已存在文件的 stat 缓存会跳过重写，
+显式归一化可确保 runner 上无论何种来源的工作区都归一。
+
 同时 job 2 单独验证「即使有人重新开启 autocrlf，受保护文件的字节也不变」。
+
+> 📌 **一处已更正的早期断言**：本节原先写「CRLF 物化 ⇒ 多出 10 条行尾断言失败
+> （`test_scripts_syntax::test_shell_scripts_use_lf_line_endings` 等）」。
+> **该断言未能复现** —— 2026-11-02 实测：CRLF 工作区（本机，208 个 CRLF 文件）与
+> LF 干净 clone 两边**都没有** `test_scripts_syntax` / `test_rq4_*` 类失败
+> （前者的 37 条失败里无一条是行尾断言；后者的 68 条里同样为 0）。
+> ⇒ 那条「多 10 条」的说法缺乏证据，**已删除**；Windows job 的归一化步骤
+> 保留为预防性措施，其注释也已同步更正。
 
 ### 2.2 `corpus-gate-smoke` 的两个断言
 

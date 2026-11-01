@@ -22,12 +22,14 @@
 #       都会报出大量漂移 —— 那是**环境不匹配**，不是回归。
 #
 # ★ 为什么 Windows 与 Ubuntu 各一个 job
-#   本仓 `core.autocrlf=true`（Windows 默认）会把 LF blob **物化成 CRLF**，
-#   而 `.gitattributes` 只对 `*.dict` / `*.raw` / `*.sip` 做了 `-text` 字节保护。
-#   实测：Windows checkout 上 `.sh`/`.py` 变 CRLF ⇒ 多出 10 条失败
-#   （test_scripts_syntax / test_rq4_*_parity 等行尾断言）。
-#   ⇒ Windows job 必须显式 `core.autocrlf=false` 才能得到与 Ubuntu 一致的集合，
-#     同时它也是「字节契约在 Windows 上仍然成立」的必要验证。
+#   本仓 `core.autocrlf=true`（Windows 默认）会把 LF blob **物化成 CRLF**。
+#   ⇒ 已在仓库层根治（提交 beadb38）：.gitattributes 加 `* text=auto eol=lf`
+#     ⇒ 代码 / 文档 / 测试在所有平台检出都是 LF ⇒ 两平台失败集合可比。
+#     ⚠ `kb/** text=auto -eol`：kb/ 是**五源的抽取输入**，改行尾会改 fact_id
+#       ⇒ 必须保持平台默认行尾（Windows CRLF / Linux LF），不动。
+#   实测（干净 clone）：非 kb/ 范围 CRLF=0 / LF=386；kb/ 内 CRLF=6440（保持现状）。
+#   ⇒ 本 workflow 的 Windows job 仍保留**显式归一化**步骤作为双保险
+#     （checkout-index 对 stat 缓存命中的文件会跳过重写，显式归一化更可靠）。
 
 name: CI
 
@@ -207,9 +209,8 @@ jobs:
   # Job 4 —— 护栏全量 pytest（Windows，与 Ubuntu 对照）
   # 验证什么：同一套护栏在 **Windows** 上也得到与 Ubuntu 一致的失败集合。
   #   这是本仓的**特有必要验证**：Windows 的 `core.autocrlf=true` 默认会把
-  #   LF 物化成 CRLF。实测：不做处理时 Windows 比 Ubuntu **多 10 条失败**
-  #   （全是行尾断言）。
-      # ★ 因此这里显式关掉 autocrlf。
+  #   LF 物化成 CRLF。★ 仓库层已根治（提交 beadb38，.gitattributes 的
+  #   `* text=auto eol=lf`），本 job 的显式归一化是**双保险**。
   #   注意：`actions/checkout` 没有 autocrlf 开关，且 checkout 发生在 `run` 步骤之前
   #   ⇒ 只能在 checkout **之后**改配置并按 blob 重新物化工作区（见下一步）。
   # 闸门语义：与 Ubuntu 完全相同 —— 相对 CI 基线不许漂移。
@@ -377,14 +378,16 @@ jobs:
 # 实测记录（2026-11-02，Windows 11 + Git Bash / Anaconda Python 3.13.9）
 # ---------------------------------------------------------------------------
 # 本机工作区（有 derived/ 产物）：
-#   37 failed / 1252 passed / 1 skipped / 20 errors   → 与本机基线逐行一致，漂移 0/0
-# 干净 LF checkout（等价本 workflow 的 Ubuntu job，缺 derived/ 产物）：
-#   68 failed / 1179 passed / 4 skipped / 20 errors   → 与 CI 基线逐行一致，漂移 0/0
+#   37 failed / 1294 passed / 1 skipped / 20 errors   → 与本机基线逐行一致，漂移 0/0
+# 干净 checkout（等价本 workflow 的 Ubuntu job，缺 derived/ 产物）：
+#   68 failed / 1260 passed / 4 skipped / 20 errors   → 与 CI 基线逐行一致，漂移 0/0
 #   · ERROR 集合在两种环境下**完全相同**（20 条，漂移 0）—— ERROR 侧环境无关。
 #   · FAILED 集合差 31 条，**全部**源于 gitignored 的 derived/ 中间产物缺失。
 # 依赖最小集：`pytest==8.4.2` + `numpy` 足够（实测最小 venv 与 Anaconda 结果一致）。
 #   numpy 是 tests/fused/test_analyze_compare_index.py 的硬依赖；
 #   matplotlib / python-docx / sentence-transformers 不在测试路径上。
 # ⚠ 本地无法启动 Docker Desktop（需 WSL2，被环境安全策略拦截），
-#   故「Ubuntu 等价」以「干净 LF checkout + 最小 venv」实测，而非真机 Ubuntu 容器。
+#   故「Ubuntu 等价」以「干净 checkout + 最小 venv」实测，而非真机 Ubuntu 容器。
+# ⚠ 「干净 checkout」的 eol 分布实测：非 kb/ 范围 CRLF=0 / LF=386（跨平台一致）；
+#   kb/ 内 CRLF=6440（平台默认，抽取输入字节不变 —— 详见 .gitattributes）。
 # ============================================================================
