@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from core import paths
+from core.fused.llm_ensemble import semantic_rules_enabled
 
 # ===========================================================================
 # 1. 加载五源 facts（view dict）
@@ -645,11 +646,42 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
       由 `semantic_rules` **投影**填充（追加 + 去重 ⇒ 幂等）；既有 facts 来源
       **保留可用** ⇒ `boundary_probe` / `strategy` 零改动仍工作。
 
+    ★★ D-6（可关闭的开关位，默认关闭 —— 见 `core/fused/llm_ensemble.py`）：
+
+      「开关关闭」的准确语义是 **「不自动引入语义规则」** —— 关闭时本函数
+      **不主动去读规则库**，消费路径（`load_semantic_rules` +
+      `project_semantic_rules`）**0 次调用**，产物**不含** `semantic_rules` /
+      `bundle_schema_version` 两个新键 ⇒ **与 B-8 之前的 bundle 逐字节一致**
+      （默认路径不得被 B-8 悄悄改变）。
+
+      而**显式传入** `semantic_rules=` 是**调用方的显式授权**（程序化 API
+      层面的直接输入），**优先于开关**，照常投影 —— **不得**静默丢弃显式
+      传入的规则（否则 B-8 已落库的契约会被破坏）。
+
+      行为矩阵（开关 × 是否显式传参）：
+
+      | 开关 | 显式传参 | `semantic_rules` 键 | `bundle_schema_version` 键 |
+          | 调 `load_semantic_rules` | 投影两桶 |
+      |------|----------|----------------------|--------------------------|
+      | OFF  | 否       | **不存在**            | **不存在**               |
+      |      |          | **不调用**            | **不投影**               |
+      | OFF  | 是       | 存在（用传入值）      | 存在                     |
+      |      |          | 不调用                | 投影                     |
+      | ON   | 否       | 存在（自动装载）      | 存在                     |
+      |      |          | 调用                  | 投影                     |
+      | ON   | 是       | 存在（用传入值）      | 存在                     |
+      |      |          | 不调用                | 投影                     |
+
+      ★ 开关状态**每次调用时**判定（环境变量 + 进程内覆盖，见
+        `llm_ensemble.semantic_rules_enabled()`），不在 import 时缓存。
+
     Args:
         views: fact view 列表（`load_fact_views()` 的产物）。
         protocol: 协议名；facts 里带 protocol 时以 facts 为准。
         semantic_rules: 显式给定语义规则（bundle 形态 dict 或 `SemanticRule`）；
-            缺省则从 **authoritative 规则库**读（`rule_store.load_rules`）。
+            **缺省（None）= 未显式传参** ⇒ 听开关（OFF ⇒ 完全不引入；ON ⇒ 从
+            **authoritative 规则库**读，`rule_store.load_rules`）；显式给定
+            （含空列表）⇒ 调用方显式授权 ⇒ 照常装载 + 投影，不读规则库。
 
     五源分工传导（P0）：分桶时保留 provenance——
       - methods[*].declared_by：哪些源「声明」了该方法（definition/state_changing 等）
@@ -924,13 +956,26 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         "message_instances": message_instances,
         "available_sources": sorted(available_sources),  # P0
         "method_order": _derive_method_order(method_sequences),  # P2b 拓扑序
-        # ── B-8：bundle 契约扩展 ──────────────────────────────────────
-        "semantic_rules": _resolve_semantic_rules(semantic_rules, _protocol_name),
-        "bundle_schema_version": BUNDLE_SCHEMA_VERSION,
     }
-    # ★ B-8（§3.6 选项 c）：两桶由 `semantic_rules` **投影**填充 ——
-    #   追加 + 去重 ⇒ 幂等；既有 facts 条目**保留** ⇒ 下游零改动仍工作。
-    project_semantic_rules(bundle)
+    # ★★ D-6：语义规则参与生成的可关闭开关位（**默认关闭**）
+    #   ① 显式传参 ⇒ 调用方**显式授权** ⇒ 优先于开关：照常装载 + 投影；
+    #   ② 开关 ON + 未显式传参 ⇒ 自动读权威规则库 + 投影；
+    #   ③ 开关 OFF + 未显式传参 ⇒ **完全不引入**：不写两个新键、**不读规则库**
+    #      （`load_semantic_rules` 0 次调用）、**不投影** ⇒ 与 B-8 之前的 bundle
+    #      **逐字节一致**（默认路径不得被 B-8 悄悄改变）。
+    if semantic_rules is not None:
+        # 显式传参（含空列表）⇒ 显式授权 ⇒ 照常投影（不读规则库）。
+        bundle["semantic_rules"] = _resolve_semantic_rules(
+            semantic_rules, _protocol_name)
+        bundle["bundle_schema_version"] = BUNDLE_SCHEMA_VERSION
+        project_semantic_rules(bundle)
+    elif semantic_rules_enabled():
+        # 开关 ON + 未显式传参 ⇒ 自动装载权威库 + 投影。
+        bundle["semantic_rules"] = _resolve_semantic_rules(
+            None, _protocol_name)
+        bundle["bundle_schema_version"] = BUNDLE_SCHEMA_VERSION
+        project_semantic_rules(bundle)
+    # ③ 开关 OFF + 未显式传参 ⇒ 上面两个分支都不走 ⇒ bundle 保持 B-8 之前形态。
     return bundle
 
 

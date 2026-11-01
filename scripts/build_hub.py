@@ -50,6 +50,11 @@ from core.fused.vuln import vuln_to_facts                       # noqa: E402
 from core.fused.registry import load_registry                  # noqa: E402
 from core.fused.validation import validate_fact                # noqa: E402
 from core.fused.export import get_fact_view                    # noqa: E402
+from core.fused.llm_ensemble import (                          # noqa: E402
+    ENV_KEY as SEMANTIC_RULES_ENV_KEY,
+    semantic_rules_enabled,
+    set_semantic_rules_enabled,
+)
 from core import paths                                          # noqa: E402
 
 #: v1 norms 产物路径（协议 × 源二维解耦：derived/spec/<protocol>/norms/norms.jsonl）
@@ -398,8 +403,19 @@ def main(argv=None) -> int:
                              "LLM 结构化；需 DEEPSEEK_API_KEY，失败自动降级跳过）")
     parser.add_argument("--vuln-llm", action="store_true",
                         help="vuln 源额外 LLM 补全漏洞模式（Phase 2：trigger_sequence/mutation_hint）；"
-                             "需 DEEPSEEK_API_KEY，失败自动降级为 rule 锚点）")
+                             "需 DEEPSEEK_API_KEY，失败自动降级为 rule 锚点)")
+    # ★ D-6：语义规则参与生成的可关闭开关位（**默认关闭**）。
+    #   本脚本是 Layer-2 构建脚本（不产 bundle）⇒ 这里只把开关位暴露到 CLI
+    #   并让状态可见，不做别的语义规则处理。
+    parser.add_argument("--enable-semantic-rules", action="store_true",
+                        help="开启「语义规则参与生成」（D-6 开关位；**默认关闭**——"
+                             "关闭时 bundle 的 semantic_rules 不参与任何生成）")
     args = parser.parse_args(argv)
+
+    # ★ D-6：开关置位（进程内 + 环境变量双保险）——默认**不置位**（保持关闭）。
+    if args.enable_semantic_rules:
+        os.environ[SEMANTIC_RULES_ENV_KEY] = "1"
+        set_semantic_rules_enabled(True)
 
     source = args.sources
     protocol = args.protocol
@@ -425,6 +441,8 @@ def main(argv=None) -> int:
 
     print(f"仓库根: {REPO_ROOT}")
     print(f"本次处理: 协议={protocol}  知识源={source}  （单协议 x 单源）")
+    # ★ D-6：把开关状态打进构建摘要 ⇒ 运行者一眼可见当前语义规则是否参与生成。
+    print(f"语义规则参与生成: {'开启' if semantic_rules_enabled() else '关闭'}")
     print()
 
     # ★★ 顺序契约（2026-11-01 修复 P2-1）：

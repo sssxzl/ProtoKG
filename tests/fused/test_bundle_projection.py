@@ -22,6 +22,7 @@ from dataclasses import asdict
 import pytest
 
 from core.fused.downstream.boundary_probe import derive_constraint_candidates
+from core.fused.llm_ensemble import ENV_KEY as SEMANTIC_RULES_ENV_KEY
 from core.fused.downstream.rag_seedgen import (
     BUNDLE_SCHEMA_VERSION,
     assemble_bundle,
@@ -113,8 +114,16 @@ def _dump(obj) -> str:
 # ① bundle 契约扩展：semantic_rules + bundle_schema_version="2.0"
 # ===========================================================================
 
-def test_bundle_contract_has_semantic_rules_and_version():
-    """assemble_bundle 的产物必须带 `semantic_rules` 与 `bundle_schema_version`。"""
+def test_bundle_contract_has_semantic_rules_and_version(monkeypatch):
+    """assemble_bundle 的产物必须带 `semantic_rules` 与 `bundle_schema_version`。
+
+    ★ D-6 起，语义规则参与生成是**默认关闭**的开关位
+      （`core/fused/llm_ensemble.py`）。本用例测的是**开关开启**时的契约 ——
+      ⇒ 显式打开开关，避免它随默认值变化而失去意义。
+      「开关关闭 ⇒ 产物与 B-8 之前逐字节一致」由
+      `tests/fused/test_semantic_rules_switch.py` 覆盖。
+    """
+    monkeypatch.setenv(SEMANTIC_RULES_ENV_KEY, "1")
     bundle = assemble_bundle([], protocol="rtsp")
     assert "semantic_rules" in bundle
     assert isinstance(bundle["semantic_rules"], list)
@@ -504,9 +513,13 @@ def test_load_semantic_rules_reads_authoritative_library(tmp_path, monkeypatch):
 
 
 def test_assemble_bundle_auto_loads_and_projects(tmp_path, monkeypatch):
-    """端到端：assemble_bundle 自动读权威库 ⇒ `semantic_rules` 有内容且**已投影**。"""
+    """端到端：assemble_bundle 自动读权威库 ⇒ `semantic_rules` 有内容且**已投影**。
+
+    ★ 自动装载属于「开关开启」路径（D-6：语义规则参与生成默认关闭）⇒ 显式打开。
+    """
     from core.fused.downstream import rule_store
     _isolate_per_source(tmp_path, monkeypatch)
+    monkeypatch.setenv(SEMANTIC_RULES_ENV_KEY, "1")
 
     rule_store.save_rules("rtsp", [_rule("r-auth")])
     bundle = assemble_bundle([], protocol="rtsp")
