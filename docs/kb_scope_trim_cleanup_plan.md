@@ -680,6 +680,40 @@ diff "$TEMP/tests_before.txt" "$TEMP/tests_after.txt" \
 ```
 （Windows 上若无 `-printf`，用 `Get-ChildItem -Recurse tests\ -Filter *.py | Select-Object FullName, LastWriteTimeUtc`。）
 
+> **2026-11-01 15:20 实测修正：根因比「半成品文件」更精确 —— 是「共享固定路径 fixture + 并发 pytest」的竞争。**
+>
+> 我复现了这个漂移（单跑该文件 81 passed ✅，并发跑两个进程 → 各 1 failed + 1 error ❌）：
+>
+> ```python
+> # tests/fused/test_annotation_tools.py:651-662
+> @pytest.fixture(scope="class")
+> def repo_crlf_probe(self, tmp_path_factory):
+>     probe = ROOT / "_crlf_probe_tmp"     # ← 仓根下的【固定路径】，不是 tmp_path！
+>     probe.mkdir(exist_ok=True)
+>     ...
+>     yield probe
+>     for f in probe.iterdir(): f.unlink()
+>     probe.rmdir()                        # ← A 进程的 teardown 删掉了 B 进程正在用的目录
+> ```
+>
+> **两个并发 pytest 进程共用同一个 `_crlf_probe_tmp/`** → A 的 teardown 把 B 正在用的
+> 文件删了 → B 的子进程调用失败 → B 报失败。
+> **同理** `derived/exp_semantic/candidates_frozen.jsonl`（**不在 `.gitignore` 里**）
+> 被两进程同时读写 → `test_frozen_jsonl_is_lf_on_disk` 偶发报 CRLF。
+>
+> **⇒ 修正后的闸（在 mtime 快照之外再加两条）**：
+> ```bash
+> # ① 绝对不要并发跑两个 pytest（同一仓库）
+> # ② 跑前确认没有别的 pytest 在跑
+> tasklist 2>/dev/null | grep -i python || ps aux | grep -c "[p]ytest"
+> # ③ 跑前清掉残留的共享临时目录
+> rm -rf "_crlf_probe_tmp"
+> # ④ 保留 mtime 快照闸（挡「别人正在写测试文件」）
+> ```
+> **根因修复建议（给该文件作者）**：把 `ROOT / "_crlf_probe_tmp"` 改成
+> 带 `uuid`/pid 隔离的目录名，或用 `tmp_path_factory` 造仓内路径（需 `import core` 才放仓内），
+> 让并发进程互不干扰。
+
 ### 增强③ 我的「坑③」结论已过期 —— 撤回
 
 我 10-31 报告「`test_vuln.py` 的 `if facts:` 软断言是永绿空壳」——
