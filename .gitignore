@@ -65,3 +65,6 @@ local/*.tar.gz
 .github_token
 .env.*
 !.env.example
+
+# QA 本地工作区（备份 / 探针副本 / 临时脚本），非项目资产
+qa/
