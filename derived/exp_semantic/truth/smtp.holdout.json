@@ -1,0 +1,72 @@
+[
+  {
+    "candidate_id": "smtp-98ec1d7295ee",
+    "protocol": "smtp",
+    "text": "<mailbox>, it MUST transmit AUTH=<> when relaying this message.",
+    "has_normative_requirement": true,
+    "modality": "MUST",
+    "operator": "present",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": true,
+    "uncertain_reason": "operator-boundary: AUTH=<> 是「必须带 AUTH 参数且值为空」(present) 还是 eq(空值)"
+  },
+  {
+    "candidate_id": "smtp-e236195bbfc4",
+    "protocol": "smtp",
+    "text": "string form SHOULD NOT be used.",
+    "has_normative_requirement": true,
+    "modality": "SHOULD",
+    "operator": "absent",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": false
+  },
+  {
+    "candidate_id": "smtp-ef6155d5cfb1",
+    "protocol": "smtp",
+    "text": "An AUTH command issued during a mail transaction MUST be",
+    "has_normative_requirement": true,
+    "modality": "MUST",
+    "operator": "不可",
+    "expected_response_class": "protocol_error",
+    "annotator": "A",
+    "uncertain": true,
+    "uncertain_reason": "truncated-constraint: 谓语(be rejected with a 503 reply)被截断，operator 与响应类别均依赖 text 外内容"
+  },
+  {
+    "candidate_id": "smtp-a40ad31c4a77",
+    "protocol": "smtp",
+    "text": "conforming server MUST NOT offer non-\"X\"-prefixed keyword values that",
+    "has_normative_requirement": true,
+    "modality": "MUST",
+    "operator": "absent",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": true,
+    "uncertain_reason": "operator-boundary: 「MUST NOT offer ... keyword values」否定的是「提供该取值」还是「字段存在」"
+  },
+  {
+    "candidate_id": "smtp-ec27db39eee6",
+    "protocol": "smtp",
+    "text": "The SMTP client and server should note carefully the result of the",
+    "has_normative_requirement": true,
+    "modality": "SHOULD",
+    "operator": "不可",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": true,
+    "uncertain_reason": "descriptive-vs-normative: 小写 should note carefully 是规范性建议还是实现提示"
+  },
+  {
+    "candidate_id": "smtp-f038d08db618",
+    "protocol": "smtp",
+    "text": "right justified, in an octet with the high-order bit cleared to zero.",
+    "has_normative_requirement": false,
+    "modality": "无",
+    "operator": "不可",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": false
+  }
+]

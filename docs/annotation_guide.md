@@ -1,0 +1,316 @@
+# ProtoRAG B 阶段 · 人工标注指南
+
+> **适用对象**：对 `derived/exp_semantic/candidates_frozen.jsonl` 中的候选句做**规范性判定**的标注者。
+> **产出物**：每条候选 4 个字段（`has_normative_requirement` / `modality` / `operator` / `expected_response_class`）。
+> **依据文档**：`docs/rfc_source_bcd_roadmap.md` §4.6（人工标注集怎么建）、§3.4（证据层→可执行层）、§3.5（operator/operand 怎么来）。
+
+---
+
+## 0. 一句话说明这份标注集要回答什么
+
+B 阶段要验证的问题是：**「把自由文本约束升级成结构化的两层语义模型（证据层 + 可执行层），到底带来多少知识质量收益」**。
+
+为了能算出一个可信的 P/R/F1（指标 M2），必须有一份**独立的、人写的**标注集，作为「标准答案」。
+你标注的每一行，就是告诉评测脚本：**这一句话里，到底有没有规范要求？如果有，是多强？能变成什么可执行的判定？违反之后接收方应该怎么响应？**
+
+---
+
+## 1. 标注对象：什么算「一条候选」
+
+候选句是**从 RFC 原文中抽取的一句话**（或半句，见 §6 边界情况）。每条候选带这些字段：
+
+| 字段 | 含义 | 标注时怎么用 |
+|---|---|---|
+| `candidate_id` | 候选的唯一标识 | 你的产出必须原样带回 |
+| `protocol` | `rtsp` / `sip` / `smtp` | 只作分组用，**不参与判定** |
+| `text` | **候选原文**（逐字） | ★ **你唯一要读的东西** |
+| `source` | `file:<文件名>#@<行号>` | 便于你手工翻 RFC 核对上下文 |
+| `span_start` / `span_end` | 在源文件中的字符区间 | 需要看上下文时用它定位 |
+| `section_path` | 章节路径 | 辅助理解，**不参与判定** |
+| `subject_type` | 抽样时用的分层标签（`method`/`field`/`status`/`message_type`） | **不参与判定** |
+
+> ⚠ **`text` 可能是一句话的一部分。** 抽取器按句号/换行切句，某些候选是**半句**（例如以 `,` 结尾或从句首开始）。判定时**只依据 `text` 里实际出现的内容**，不要靠脑补补全句子。边界规则见 §6。
+
+---
+
+## 2. 字段一：`has_normative_requirement`（是 / 否）
+
+### 2.1 判定问题
+
+**这句话里，有没有对「实现者 / 收发双方」提出的规范性要求？**
+
+### 2.2 判定标准
+
+**判「是」的条件（满足任一）：**
+
+- 句中出现 **RFC 2119 规范性关键词**（全大写）：
+  `MUST` / `MUST NOT` / `SHALL` / `SHALL NOT` / `REQUIRED` / `SHOULD` / `SHOULD NOT` / `RECOMMENDED` / `MAY` / `MAY NOT` / `OPTIONAL`
+- 出现**同义的强制措辞**，例如 `is required to`、`must be`、`has to`、`shall not`、`is prohibited`。
+- 出现**祈使式的规范性动词**（`implementations must ...`、`a client must ...`、`servers should ...`）——注意这里是**小写**的 `must`/`should`/`shall`。
+
+**判「否」的条件（满足任一）：**
+
+- 纯**描述性**句子：陈述「是什么」而非「应该怎样」。
+  典型：术语定义、背景介绍、章节导语、动机说明、参考文献、历史沿革。
+- 纯**事实陈述**：描述协议已经发生的行为、举例、给出一个具体报文的实例。
+- **ABNF 语法行**（形如 `smpte-range = smpte-type "=" smpte-time "-" [ smpte-time ]`）——它定义文法，不是规范性要求。
+- **表格行 / 状态码表项**（形如 `|     "411"      ; Length Required`）——那是「取值表」，不是要求。
+- **元叙述**（meta-statement）：句子在**谈论 RFC 2119 关键词本身**，而不是提出要求。
+  典型：定义 `MUST`/`SHOULD` 这些词含义的引言段。
+- **小写 `must`/`should` 出现在非祈使、非约束语境的散文里**（例如 `this must be understood as ...`、`the client must decide ...` 中描述的是**判断动作**而非对实现的强制要求）。
+
+### 2.3 ⚠️ 最容易判错的三种情况
+
+下表例句**逐字取自候选池中的真实候选句**（但**不在本次 120 条冻结集内**，
+以免示例本身泄漏了待标注条目的答案）。
+
+| 情况 | 原文示例 | 判定 | 理由 |
+|---|---|---|---|
+| RFC 2119 **元叙述** | 形如「本文件中的 `MUST` / `MUST NOT` / `REQUIRED` / `SHALL` / `SHOULD` / `MAY` 等关键词按 RFC 2119 解释」的那一段 | **否** | 这是在**解释这些词的意思**，不是对实现提要求。★ 该段在三份 RFC 里**措辞几乎相同**，属协议无关样板，务必看清主语 |
+| **ABNF 文法行** | `smpte-range  =   smpte-type "=" smpte-time "-" [ smpte-time ]` | **否** | 文法定义，不是规范性要求 |
+| **状态码表格行** | `457            Invalid Range                    PLAY` | **否** | 「取值表」条目，不是要求 |
+| **纯描述性散文** | `characters with the most-significant bit set are represented as` | **否** | 描述「是什么」，无「应该怎样」 |
+
+### 2.4 边界规则
+
+- **半句只出现半截关键词** → 按**实际出现的内容**判。出现 `MUST` 就判「是」；只有 `must`（小写）且语境是祈使约束 → 也判「是」；两者都没有 → 「否」。
+- **一句话里同时有规范要求和描述性内容** → 只要**包含**规范要求，整体判「是」。
+- **拿不准** → 标 `uncertain: true` 并写明 `uncertain_reason`。**不要**因为拿不准就默认判「否」。
+
+### 2.5 正例速查
+
+以下是候选池中的真实句子（**不在冻结集内**），请体会「判「是」的句子长什么样」：
+
+| 原文示例 | 为什么判「是」 |
+|---|---|
+| `A server SHOULD implement all header fields described in Section 12.` | 出现大写 `SHOULD`，且主语是 `A server`（实现者） |
+| `The DESCRIBE response MUST contain all media initialization` | 大写 `MUST` + 明确的实现者义务 |
+| `white space must be URL-escaped.` | 小写 `must`，但句式是「X must be Y」⇒ 对实现提要求 ⇒ 判「是」 |
+| `they MUST NOT be combined into a single header field row.` | 大写 `MUST NOT`（否定方向，强度仍是 `MUST`） |
+| `The From field MUST contain a new "tag" parameter, chosen by the UAC.` | 大写 `MUST`，明确约束对象与取值 |
+| `A client MUST NOT attempt to start a TLS session if a TLS` | 大写 `MUST NOT`，约束接收方行为 |
+
+---
+
+## 3. 字段二：`modality`（MUST / SHOULD / MAY / 无）
+
+### 3.1 判定问题
+
+**如果这条候选有规范性要求，它的强度是哪个档次？**
+
+### 3.2 取值与判定标准
+
+| 取值 | 判定依据（原文里出现的措辞） |
+|---|---|
+| `MUST` | `MUST` / `MUST NOT` / `SHALL` / `SHALL NOT` / `REQUIRED` / `is required to` / `is prohibited` / 强制的 `must` |
+| `SHOULD` | `SHOULD` / `SHOULD NOT` / `RECOMMENDED` / `NOT RECOMMENDED` / 建议性的 `should` |
+| `MAY` | `MAY` / `MAY NOT` / `OPTIONAL` / 选择性的 `may` |
+| `无` | `has_normative_requirement` 为「否」时，一律填 `无` |
+
+### 3.3 ⚠️ 关键边界规则
+
+- **`MUST NOT` / `SHALL NOT` 归入 `MUST`**，不是 `MAY`。
+  理由：`MUST NOT` 与 `MUST` 的**约束力**同级（都是强制），区别在**方向**（禁止 vs 要求），方向由字段三 `operator` 的 `absent` 表达，不由 `modality` 表达。
+- **`SHOULD NOT` / `NOT RECOMMENDED` 归入 `SHOULD`**。同上，方向归 `operator`。
+- **一句话里有多个强度词** → 取**最强**的那个。
+  例（真实候选句，非冻结集）：`header fields MUST NOT be reordered, and SHOULD be kept in blocks` → 填 `MUST`。
+- **`has_normative_requirement` = 否 ⇒ `modality` 必填 `无`**。这条是硬约束，校验器会拒绝不一致的标注。
+
+### 3.4 边界规则
+
+- `MAY` 的**语义是「可选」**，不是「弱化的 MUST」。
+  它与 `MUST` 的差别是**性质上的**：MAY 的条款不能用来判定「违规」——MAY 允许不做，所以不存在违反 MAY 的情形。
+  这条对下游的「MAY 误升率」（指标 M5，目标 0%）非常关键，标注时不要把 MAY 误当成 MUST。
+- 拿不准 → `uncertain: true`。
+
+---
+
+## 4. 字段三：`operator`（`eq`/`ne`/`lt`/`gt`/`le`/`ge`/`in`/`present`/`absent`/`range` / 不可）
+
+### 4.1 判定问题
+
+**这句话能否被翻译成一个确定性的、可机械执行的判定？如果能，是哪个算子？**
+
+### 4.2 判定步骤
+
+**第 1 步：先确认字段一。**
+`has_normative_requirement` = 否 ⇒ `operator` **必填「不可」**（没有规范要求，就无从产生「违反」）。
+
+**第 2 步：确认句子里有没有「可比较的量 + 比较关系」。**
+
+判定「可执行」需要**同时**满足：
+1. 有一个**明确的约束对象**（某个字段/头/参数/取值）；
+2. 有一个**明确的比较关系或取值集合**；
+3. 有一个**明确的操作数**（数值、集合、或「必须存在/必须不存在」）。
+
+三者缺一 ⇒ **不可**。
+
+**第 3 步：按下表选算子。**
+
+| 算子 | 什么时候用 | 原文典型措辞 |
+|---|---|---|
+| `eq` | 等于某个确定值 | `must be equal to`、`the value MUST be 70`、`MUST be 2.0` |
+| `ne` | 不等于某个确定值 | `MUST NOT be`、`must not equal` |
+| `lt` | 严格小于某值 | `less than`、`fewer than`、"小于某值"的表述 |
+| `gt` | 严格大于某值 | `more than`、`exceed`、"大于某值"的表述 |
+| `le` | 小于等于某值 | `at most`、`not exceed`、"不超过某值"的表述 |
+| `ge` | 大于等于某值 | `at least`、`minimum of`、`no less than`、"大于或等于某值"的表述 |
+| `in` | 属于某个枚举集合 | `one of {...}`、`MUST be one of` |
+| `present` | 该对象必须存在 | `MUST contain ...`、`MUST be present`、`MUST include` |
+| `absent` | 该对象必须不存在 | `MUST NOT contain ...`、`MUST NOT include ...`、`MUST be omitted`、`MUST NOT be present` |
+| `range` | 落在某个闭区间内 | `between X and Y`、`from X to Y` |
+
+**真实候选句示例**（均**不在冻结集内**，避免泄漏待标注条目的答案）：
+
+| 原文示例 | 算子 | 说明 |
+|---|---|---|
+| `integer and MUST be less than 2**31.` | `lt` | 有明确对象（CSeq 序号）、有比较关系、有操作数（2\*\*31） |
+| `implementation MUST support at least one configuration where these` | `ge` | `at least` ⇒ 下界；注意句尾被截断，但比较关系与操作数都在 |
+| `Each line of characters MUST be no more than` | `le` | `no more than` ⇒ 上界；**操作数落在 `text` 之外 ⇒ 按 §6 规则处理** |
+| `998 characters, and SHOULD be no more than 78 characters, excluding` | `le` | 上界 78 明确给出 |
+| `The From field MUST contain a new "tag" parameter, chosen by the UAC.` | `present` | 「必须含有某对象」⇒ 存在性约束，无操作数 |
+| `A field body MUST NOT include CR and LF except` | `absent` | 「不得含有 CR/LF」⇒ 存在性禁止 |
+| `This challenge MUST NOT contain any text other` | `absent` | 同上，否定的是「存在」而非「取值」 |
+
+### 4.3 ⚠️ 什么时候填「不可」
+
+以下情况**一律填「不可」**：
+
+1. **无规范性要求**（字段一为否）。
+2. **只说「必须有/应该有」，但没说「必须是什么」** —— 没有操作数。
+   例：`MUST be present` 说的是「存在」，这算 `present`；但 `The server SHOULD list the` 连「列表是什么」都没说 ⇒ **不可**。
+3. **约束对象不明确** —— 不知道约束的是哪个字段。
+4. **操作数依赖未给出的上下文** —— 句子被截断，关键数字/集合落在 `text` 之外。
+5. **单位无法归一、或量纲不属于可字节级违反的量** —— 例如「时间不超过 N 秒」。
+   理由：这类量无法通过「改字节」构造违规，交给下游时会被拒（`non_length_operand`）。
+6. **纯流程/顺序/状态要求** —— 例如「客户端 MUST 先发 TEARDOWN 再发 PLAY」。
+   理由：它约束的是**时序**，不是某个字段的取值，无法用单值比较表达。
+7. **纯行为/态度要求** —— 例如「MUST 用 TLS 联系」。
+   理由：无法机械判定「有没有用 TLS」。
+8. **ABNF 语法行、表格行、举例** —— 不是规范要求。
+
+### 4.4 边界规则
+
+- **「存在性」与「取值」是两回事**：`MUST contain a Transport header` → `present`（无操作数）；
+  「必须恰好含有一个 X」形式（`MUST contain exactly one <对象>`）→ `present`（"exactly one" 是数量语义，本词表无对应算子，仍归 `present`）。
+- **`MUST NOT` 出现时**，若原句是「某对象不得存在」⇒ `absent`；
+  若原句是「某对象的取值不得是 X」⇒ `ne`。**看否定的是「存在」还是「取值」**。
+  （真实例句，非冻结集：`A field body MUST NOT include CR and LF except` ⇒ `absent`。）
+- **同时含「存在」和「取值」** —— 例如「必须包含 CSeq，且其值必须递增」——
+  这条候选**只允许填一个算子**：请填**能独立成立、且违反后果最明确**的那个，并在 `uncertain_reason` 里说明「原句含多重约束，此处只标了其一」。
+- **拿不准算子** → 填最接近的算子，同时标 `uncertain: true`。
+  **不要**因为「感觉不可执行」就偷懒填「不可」——「不可」是有代价的判定（M1 可执行率会下降），应留给 §4.3 明列的情形。
+
+---
+
+## 5. 字段四：`expected_response_class`（`success`/`protocol_error`/`application_error`/`silence` / `null`）
+
+### 5.1 判定问题
+
+**如果这条约束被违反，接收方（server）会怎么回应？**
+
+### 5.2 取值
+
+| 取值 | 含义 |
+|---|---|
+| `success` | 接收方正常接受/照办，不算错误 |
+| `protocol_error` | 协议层错误响应（如 4xx/5xx、命令不认识、语法不合法） |
+| `application_error` | 协议层成功但应用层拒绝（鉴权失败、目标不存在、权限不足） |
+| `silence` | 接收方不响应（丢弃 / 静默忽略 / 不产生响应） |
+| `null` | **判不出来** —— 原文没给出足够的响应信息 |
+
+### 5.3 判定标准
+
+- **只有原文明确说到「违反后会发生什么」时才填具体值**，否则填 `null`。
+- 原文给出了**明确的错误码/拒绝行为** ⇒ 按该码的语义归类：
+  - 4xx / 5xx、命令未实现、报文非法 ⇒ `protocol_error`
+  - 鉴权失败、对象不存在、权限不足（协议格式正确但语义被拒）⇒ `application_error`
+  - 明确说「丢弃 / 不响应 / 忽略」⇒ `silence`
+  - 明确说「接受 / 照办 / 正常处理」⇒ `success`
+- **原文只规定了「必须做什么」，没说「不这么做会怎样」** ⇒ `null`。
+  这是**最常见**的情况：绝大多数候选句属于这一类，填 `null` 是正常的，不是「没标出来」。
+
+### 5.4 ⚠️ 边界规则
+
+- **`null` 与「不可执行」是两回事**：`operator` = 不可 但 `expected_response_class` = `success` 是**合法组合**
+  （例如「客户端 MUST 发送这个头」——不可机械判定，但发送成功时接收方当然照办）。
+  反过来 `operator` 有值但 `expected_response_class` = `null` 也合法。
+- **不要从协议常识倒推**。例如读到 SMTP 的 `MAIL FROM` 候选，就不要凭「SMTP 通常会回 250」去填 `success` ——
+  **原文没说，就填 `null`**。倒推出来的标注会让 F1 虚高，是这份标注集最需要防的污染。
+- 拿不准 ⇒ `null` + `uncertain: true`（原因写「响应类别不可判定」）。
+
+### 5.5 正例速查（真实候选句，非冻结集）
+
+| 原文示例 | `expected_response_class` | 说明 |
+|---|---|---|
+| `a 554 response on connection opening SHOULD provide enough` | `protocol_error` | 原文明确出现 5xx 响应码 |
+| `If the client receives the 454 response, the client must decide` | `protocol_error` | 原文明确出现 4xx 响应码 |
+| `A client MUST NOT attempt to start a TLS session if a TLS` | `null` | 只规定「不得做什么」，没说违规后如何响应 |
+| `The DESCRIBE response MUST contain all media initialization` | `null` | 约束发送方，未提接收方行为 |
+
+---
+
+## 6. 边界情况总表
+
+| 情况 | 处理规则 |
+|---|---|
+| **候选是半句**（以 `,` 结尾、从从句开始、句子被截断） | 只按 `text` 里**实际出现**的内容判定。关键操作数落在 `text` 外 ⇒ `operator` = 不可 |
+| **候选含表格行 / ABNF 行** | `has_normative_requirement` = 否，`modality` = 无，`operator` = 不可，`expected_response_class` = `null` |
+| **候选是 RFC 2119 关键词的元叙述** | `has_normative_requirement` = 否 |
+| **一句多约束** | `operator` 只填一个（选最明确的），其余在 `uncertain_reason` 里说明 |
+| **同一句里既有 MUST 又有 MAY** | `modality` 取 **MUST**（最强）；`operator` 取 MUST 那部分对应的算子 |
+| **MUST NOT 的方向** | 「不得存在」⇒ `absent`；「取值不得是 X」⇒ `ne` |
+| **完全读不懂 / 与协议无关的句子** | 四个字段照实填（多半是「否 / 无 / 不可 / null」），并在 `uncertain_reason` 里写「候选文本疑似截断或抽取异常」 |
+
+---
+
+## 7. 产出格式
+
+每条候选产出一个 JSON 对象：
+
+```json
+{
+  "candidate_id": "rtsp-xxxxxxxxxxxx",
+  "has_normative_requirement": true,
+  "modality": "MUST",
+  "operator": "ge",
+  "expected_response_class": null,
+  "annotator": "A",
+  "uncertain": false
+}
+```
+
+- `uncertain` 省略或为 `false` 表示你有把握。
+- `uncertain: true` 时**必须**同时给 `uncertain_reason`（一句话说明卡在哪）。
+- `operator` 不可执行时填字符串 `"不可"`（不要填 `null`，也不要填空串）。
+- `expected_response_class` 判不出来时填 `null`（JSON 的 `null`）。
+
+---
+
+## 8. 标注纪律（这几条直接决定这份标注集有没有用）
+
+1. **只用 `text` 判定**。不要翻 RFC 上下文去找「完整的句子」——那会引入信息泄漏：
+   holdout 上的判定必须与训练集同口径。
+2. **不要查 `fused_hub/targets/*/profile.json` 或任何「方法/字段白名单」**。
+   那类清单是**实现侧的既有产物**，不是规范本身；拿它当参照会把实现的既有偏见反向灌进标注集，
+   让下游 F1 变成「自己抄自己」。**只以 RFC 原文为准。**
+3. **不要参考任何已有的抽取结果**（`derived/per_source/` 下的 fact、`core/fused/` 里的规则表等）。
+   你标的是「标准答案」，不是「和实现对齐」。
+4. **标不准就标 `uncertain`**，不要猜。`uncertain` 条目会进仲裁清单，由第三人裁定 —— 这是流程的一部分，不是失败。
+5. **不要为了「让下游好看」而放宽或收紧标准**。一致率（κ）低是需要报告的事实，不是需要掩盖的问题。
+
+---
+
+## 9. 流程与分工
+
+1. **冻结**：候选句已冻结在 `derived/exp_semantic/candidates_frozen.jsonl`（120 条，三协议各 40 条）。
+2. **双人独立标注**：标注者 A 与标注者 B **各自独立**完成同一份 120 条，**互不可见对方的标注**。
+3. **算 κ**：用 `scripts/calc_cohen_kappa.py` 计算 Cohen's κ 与分歧率。
+   - 若某协议 κ < 0.6 ⇒ **不要自行"修正"标注**，先上报，由项目负责人决定是否重标并修订本指南。
+   - 分歧条目由**第三人仲裁**。
+4. **分离 holdout**：训练集 100 条与 holdout 20 条已分离落盘。
+   **模式表迭代阶段只看训练集**；holdout 只在最终评测用一次。
+5. **冻结定稿**：定稿后标注集不再改动。
+
+> ⚠️ 本指南**不包含任何一条候选句的标注答案**。
+> 若你发现指南里出现了某个 `candidate_id` 对应的标注结果，请立即上报 —— 那会导致标注者被引导，标注集作废。

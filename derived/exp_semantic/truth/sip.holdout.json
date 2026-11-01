@@ -1,0 +1,83 @@
+[
+  {
+    "candidate_id": "sip-8f4d56e6099f",
+    "protocol": "sip",
+    "text": "applications sending SIP messages MUST include a SIP-Version",
+    "has_normative_requirement": true,
+    "modality": "MUST",
+    "operator": "present",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": false
+  },
+  {
+    "candidate_id": "sip-59c051a73079",
+    "protocol": "sip",
+    "text": "All SIP UAs must have a means to guarantee that the Call-",
+    "has_normative_requirement": true,
+    "modality": "MUST",
+    "operator": "不可",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": true,
+    "uncertain_reason": "truncated-constraint: 约束内容在 text 外"
+  },
+  {
+    "candidate_id": "sip-5c8c8538c2a5",
+    "protocol": "sip",
+    "text": "allows for an arbitrary amount of whitespace on either side of the",
+    "has_normative_requirement": false,
+    "modality": "无",
+    "operator": "不可",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": false
+  },
+  {
+    "candidate_id": "sip-2f6898a02beb",
+    "protocol": "sip",
+    "text": "header field MUST be selected by the UAC as a globally unique",
+    "has_normative_requirement": true,
+    "modality": "MUST",
+    "operator": "不可",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": false
+  },
+  {
+    "candidate_id": "sip-5fada95585f9",
+    "protocol": "sip",
+    "text": "the domain that should interpret a telephone number that has been",
+    "has_normative_requirement": false,
+    "modality": "无",
+    "operator": "不可",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": true,
+    "uncertain_reason": "descriptive-vs-normative: 小写 should 描述域名角色，非对实现的要求"
+  },
+  {
+    "candidate_id": "sip-e32335d890d1",
+    "protocol": "sip",
+    "text": "The start-line, each message-header line, and the empty line MUST be",
+    "has_normative_requirement": true,
+    "modality": "MUST",
+    "operator": "不可",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": true,
+    "uncertain_reason": "truncated-constraint: 谓语与操作数(CRLF)在 text 外"
+  },
+  {
+    "candidate_id": "sip-645150405362",
+    "protocol": "sip",
+    "text": "The option tags listed MUST only refer to extensions defined in",
+    "has_normative_requirement": true,
+    "modality": "MUST",
+    "operator": "in",
+    "expected_response_class": null,
+    "annotator": "A",
+    "uncertain": true,
+    "uncertain_reason": "truncated-constraint: 集合成员(standards-track RFCs)在 text 外"
+  }
+]

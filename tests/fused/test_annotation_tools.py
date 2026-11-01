@@ -1,0 +1,642 @@
+# -*- coding: utf-8 -*-
+"""tests/fused/test_annotation_tools.py —— B 阶段人工标注集工具的行为契约。
+
+本文件把「标注基础设施不能被悄悄破坏」固化成可执行断言。覆盖：
+
+  · **冻结脚本** —— 确定性（两次跑同一份 md5）、分层规模（120 条 / 三协议各 40 /
+    四类主体全非空）、train/holdout 分离（100/20）、span 可逐字核对、必需字段齐全
+  · **标注校验器** —— 10 条规则逐一必须被拦下（**故意造非法值 → 退出码非 0**）
+  · **κ 计算** —— 完全一致 ⇒ κ=1.0；50% 一致 ⇒ κ 显著 < 0.6；**类别分布退化**须显式报告
+  · **指南防泄漏** —— 标注指南不得逐字/近似包含任何**待标注**候选
+
+★ **本文件用 ``tmp_path`` 构造合成数据**，不依赖 ``derived/exp_semantic/`` 下的
+  实验产物（那些内容会随实验重生成而变，会让本文件变成"测实验产物"而不是
+  "测工具逻辑"）。唯一例外是「指南防泄漏」那一条：它必须对着**真实冻结集**跑，
+  因为泄漏风险恰恰发生在"指南 vs 真实候选"之间 —— 故该用例在冻结集不存在时
+  自行 ``pytest.skip``（而不是静默通过）。
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.annotate_candidates import (  # noqa: E402
+    MODALITIES,
+    NOT_EXECUTABLE,
+    OPERATORS,
+    RESPONSE_CLASSES,
+    build_template,
+    check_guide_leaks,
+    validate_all,
+    validate_one,
+)
+from scripts.calc_cohen_kappa import (  # noqa: E402
+    KAPPA_THRESHOLD,
+    cohen_kappa,
+    compare,
+)
+from scripts.freeze_annotation_candidates import (  # noqa: E402
+    SUBJECT_TYPES,
+    _allocate,
+    _even_spread,
+    _looks_like_field_name,
+    _stable_key,
+    classify_subject,
+    freeze,
+)
+
+#: 合成候选池：覆盖四类主体 × 三个协议。
+#: ★ 字段集与 ``freeze()`` 的真实产出**保持一致**（含 candidate_id / split）——
+#:   测试夹具若比真实数据少字段，测出来的就是「夹具缺字段」而不是产品行为。
+_FAKE_CANDIDATES = [
+    {"candidate_id": "f1", "text": "A client MUST NOT issue a PLAY request",
+     "source": "file:a.txt#@1", "protocol": "rtsp", "span_start": 0, "span_end": 38,
+     "section_path": ["PLAY"], "section_no": "10.5", "spec_version": "RFC 2326",
+     "subject_type": "method", "split": "train"},
+    {"candidate_id": "f2", "text": "The Contact header field MUST be present",
+     "source": "file:a.txt#@2", "protocol": "rtsp", "span_start": 40, "span_end": 80,
+     "section_path": ["Contact"], "section_no": "8.1.1.8", "spec_version": "RFC 2326",
+     "subject_type": "field", "split": "train"},
+    {"candidate_id": "f3", "text": "457            Invalid Range                    PLAY",
+     "source": "file:a.txt#@3", "protocol": "rtsp", "span_start": 82, "span_end": 125,
+     "section_path": ["Status Code and Reason Phrase"], "section_no": "7.1.1",
+     "spec_version": "RFC 2326", "subject_type": "status", "split": "train"},
+    {"candidate_id": "f4",
+     "text": "Session identifiers are opaque strings of arbitrary length.",
+     "source": "file:b.txt#@4", "protocol": "sip", "span_start": 0, "span_end": 58,
+     "section_path": ["Session Identifiers"], "section_no": "3.4",
+     "spec_version": "RFC 3261", "subject_type": "message_type", "split": "train"},
+    {"candidate_id": "f5", "text": "The start-line MUST be terminated by CRLF",
+     "source": "file:b.txt#@5", "protocol": "sip", "span_start": 60, "span_end": 101,
+     "section_path": ["SIP Messages"], "section_no": "7", "spec_version": "RFC 3261",
+     "subject_type": "message_type", "split": "train"},
+    {"candidate_id": "f6", "text": "The client MUST reject the AUTH command with a 501 reply",
+     "source": "file:c.txt#@6", "protocol": "smtp", "span_start": 0, "span_end": 58,
+     "section_path": ["The AUTH Command"], "section_no": "4", "spec_version": "RFC 4954",
+     "subject_type": "method", "split": "train"},
+]
+
+
+# ===========================================================================
+# 冻结脚本
+# ===========================================================================
+class TestFreezeDeterminism:
+    """抽样必须**完全确定** —— roadmap §4.2 的「同一批候选句」是 C0/E1/E2 可比的前提。"""
+
+    def test_stable_key_is_pure_function(self):
+        """稳定哈希键只依赖内容，不依赖运行顺序 / 字典序。"""
+        cand = {"source": "file:a.txt#@1", "span_start": 3, "text": "hello"}
+        k1 = _stable_key("salt", "rtsp", cand)
+        k2 = _stable_key("salt", "rtsp", dict(cand))
+        assert k1 == k2
+        # 换 salt 必须换键（否则 salt 形同虚设）
+        assert _stable_key("other", "rtsp", cand) != k1
+        # 换 protocol 必须换键
+        assert _stable_key("salt", "sip", cand) != k1
+
+    def test_stable_key_is_hex_sha256(self):
+        cand = {"source": "file:a.txt#@1", "span_start": 3, "text": "hello"}
+        key = _stable_key("salt", "rtsp", cand)
+        assert len(key) == 64
+        assert all(c in "0123456789abcdef" for c in key)
+
+    def test_even_spread_is_deterministic_and_bounded(self):
+        idx = _even_spread(10, 3)
+        assert idx == _even_spread(10, 3)
+        assert all(0 <= i < 10 for i in idx)
+        assert len(set(idx)) == 3
+
+    def test_even_spread_edge_cases(self):
+        assert _even_spread(0, 3) == []
+        assert _even_spread(5, 0) == []
+        assert _even_spread(2, 5) == [0, 1]      # k >= n ⇒ 全取
+        assert _even_spread(5, 1) == [0]         # 单个 ⇒ 取首
+
+
+class TestAllocate:
+    """最大余数法分配：每层保底 + 按比例分配。"""
+
+    def test_min_one_guarantees_coverage(self):
+        sizes = {"method": 25, "field": 9, "status": 8, "message_type": 39}
+        alloc = _allocate(40, sizes, min_one=True)
+        assert sum(alloc.values()) == 40
+        for st in SUBJECT_TYPES:
+            if sizes[st] > 0:
+                assert alloc[st] >= 1, f"{st} 层应保底 1 个"
+
+    def test_allocation_never_exceeds_pool(self):
+        sizes = {"method": 3, "field": 1, "status": 0, "message_type": 100}
+        alloc = _allocate(40, sizes, min_one=True)
+        for st in SUBJECT_TYPES:
+            assert alloc[st] <= sizes[st], f"{st} 分配量超过池容量"
+
+    def test_allocation_is_deterministic(self):
+        sizes = {"method": 25, "field": 9, "status": 8, "message_type": 39}
+        assert _allocate(40, sizes, True) == _allocate(40, sizes, True)
+
+    def test_empty_pool(self):
+        alloc = _allocate(10, {"method": 0, "field": 0, "status": 0,
+                               "message_type": 0}, min_one=True)
+        assert sum(alloc.values()) == 0
+
+
+class TestSubjectClassifier:
+    """主体分类只依据**章节结构**，不得引入方法/字段白名单。"""
+
+    def test_status_section(self):
+        cfg = {"method_sections": ["10"], "field_sections": ["6.2"],
+               "status_sections": ["7.1.1"]}
+        cand = {"section_no": "7.1.1", "section_path": ["Status Code and Reason Phrase"]}
+        assert classify_subject(cand, cfg) == "status"
+
+    def test_method_section(self):
+        cfg = {"method_sections": ["10"], "field_sections": ["6.2"],
+               "status_sections": ["7.1.1"]}
+        cand = {"section_no": "10.5", "section_path": ["PLAY"]}
+        assert classify_subject(cand, cfg) == "method"
+
+    def test_field_section(self):
+        cfg = {"method_sections": ["10"], "field_sections": ["6.2"],
+               "status_sections": ["7.1.1"]}
+        cand = {"section_no": "6.2", "section_path": ["Request Header Fields"]}
+        assert classify_subject(cand, cfg) == "field"
+
+    def test_fallback_is_message_type(self):
+        cfg = {"method_sections": ["10"], "field_sections": ["6.2"],
+               "status_sections": ["7.1.1"]}
+        cand = {"section_no": "3.4", "section_path": ["Session Identifiers"]}
+        assert classify_subject(cand, cfg) == "message_type"
+
+    def test_never_returns_unknown(self):
+        cfg = {"method_sections": [], "field_sections": [], "status_sections": []}
+        for cand in _FAKE_CANDIDATES:
+            assert classify_subject(cand, cfg) in SUBJECT_TYPES
+
+    def test_field_name_heuristic(self):
+        assert _looks_like_field_name("Call-ID") is True
+        assert _looks_like_field_name("Via") is True
+        assert _looks_like_field_name("Introduction") is False
+        assert _looks_like_field_name("Request Header Fields") is False
+
+    def test_classifier_does_not_read_profile(self):
+        """★ 防泄漏硬约束：分类器**不得**读取 profile.json 的 allowed_methods。
+
+        判据：源码里**不得出现对 profile.json 的文件读取**。
+        注意 docstring 里**可以**提到这两个词 —— 那是在写「不许用它」的约束说明，
+        若把文档说明也判成违规，这条约束就没法在代码里自我说明。故本断言查的是
+        「有没有真的去读这个文件」，而不是「有没有提到这个文件名」。
+        """
+        import scripts.freeze_annotation_candidates as mod
+        src = Path(mod.__file__).read_text(encoding="utf-8")
+        # 去掉所有 docstring 与注释后再查（只看**可执行代码**）
+        code = "\n".join(
+            line.split("#", 1)[0] for line in src.splitlines()
+        )
+        for token in ('"profile.json"', "'profile.json'",
+                      '"allowed_methods"', "'allowed_methods'"):
+            assert token not in code, f"可执行代码里出现了 {token}"
+
+    def test_classifier_only_reads_rfc_config(self):
+        """★ 分层的唯一数据源是 rfc_config.json（章节结构），不是 profile.json。"""
+        import scripts.freeze_annotation_candidates as mod
+        src = Path(mod.__file__).read_text(encoding="utf-8")
+        assert "rfc_config.json" in src
+
+
+class TestFreezeEndToEnd:
+    """端到端：冻结脚本在真实 kb 上跑，产出必须满足 §4.6 的规模与分层要求。"""
+
+    @pytest.fixture(scope="class")
+    def frozen(self):
+        return freeze(("rtsp", "sip", "smtp"), 40,
+                      {"rtsp": 7, "sip": 7, "smtp": 6}, "test-salt")
+
+    def test_total_is_120(self, frozen):
+        assert len(frozen) == 120
+
+    def test_per_protocol_is_40(self, frozen):
+        counts = {}
+        for r in frozen:
+            counts[r["protocol"]] = counts.get(r["protocol"], 0) + 1
+        assert counts == {"rtsp": 40, "sip": 40, "smtp": 40}
+
+    def test_split_is_100_20(self, frozen):
+        train = sum(1 for r in frozen if r["split"] == "train")
+        holdout = sum(1 for r in frozen if r["split"] == "holdout")
+        assert (train, holdout) == (100, 20)
+
+    def test_holdout_is_stratified_by_protocol(self, frozen):
+        holdout = {}
+        for r in frozen:
+            if r["split"] == "holdout":
+                holdout[r["protocol"]] = holdout.get(r["protocol"], 0) + 1
+        assert holdout == {"rtsp": 7, "sip": 7, "smtp": 6}
+
+    def test_all_four_subject_types_present_per_protocol(self, frozen):
+        """四类主体在**每个协议**里都非空（roadmap §4.6 第 1 条）。"""
+        for proto in ("rtsp", "sip", "smtp"):
+            subs = {r["subject_type"] for r in frozen if r["protocol"] == proto}
+            assert subs == set(SUBJECT_TYPES), f"{proto} 缺主体类型: {set(SUBJECT_TYPES) - subs}"
+
+    def test_candidate_ids_unique(self, frozen):
+        ids = [r["candidate_id"] for r in frozen]
+        assert len(ids) == len(set(ids))
+
+    def test_required_fields_present(self, frozen):
+        required = ("candidate_id", "protocol", "text", "span_start", "span_end",
+                    "source", "section_path", "spec_version")
+        for r in frozen:
+            for f in required:
+                assert f in r, f"{r.get('candidate_id')} 缺字段 {f}"
+
+    def test_span_is_verbatim_verifiable(self, frozen):
+        """★ span 必须能在源文件里逐字核对 —— 否则标注无从复核。"""
+        from core import paths
+        checked = 0
+        for r in frozen:
+            fname = r["source"].split("#@")[0][len("file:"):]
+            path = paths.kb_source_dir(r["protocol"], "rfc") / fname
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            assert text[r["span_start"]:r["span_end"]] == r["text"], \
+                f"{r['candidate_id']} span 不可核对"
+            checked += 1
+        assert checked == 120
+
+    def test_is_reproducible(self):
+        """两次冻结 ⇒ 完全相同的候选集。"""
+        a = freeze(("rtsp", "sip", "smtp"), 40,
+                   {"rtsp": 7, "sip": 7, "smtp": 6}, "test-salt")
+        b = freeze(("rtsp", "sip", "smtp"), 40,
+                   {"rtsp": 7, "sip": 7, "smtp": 6}, "test-salt")
+        assert a == b
+
+    def test_cli_is_reproducible_by_md5(self, tmp_path):
+        """★ 验收项：脚本两次运行 md5 相同（用 --quiet 抑制摘要）。"""
+        py = sys.executable
+        outs = []
+        for i in range(2):
+            out = tmp_path / f"cand{i}.jsonl"
+            r = subprocess.run(
+                [py, str(ROOT / "scripts" / "freeze_annotation_candidates.py"),
+                 "--out", str(out), "--quiet"],
+                cwd=str(ROOT), capture_output=True, text=True)
+            assert r.returncode == 0, r.stderr
+            outs.append(hashlib.md5(out.read_bytes()).hexdigest())
+        assert outs[0] == outs[1]
+
+
+# ===========================================================================
+# 标注校验器
+# ===========================================================================
+def _good_rec(cid: str, **over) -> dict:
+    rec = {
+        "candidate_id": cid,
+        "has_normative_requirement": True,
+        "modality": "MUST",
+        "operator": "ge",
+        "expected_response_class": None,
+        "annotator": "A",
+        "uncertain": False,
+    }
+    rec.update(over)
+    return rec
+
+
+class TestValidator:
+    """★ 故意造非法值 ⇒ 必须被拦下（验收项 3）。"""
+
+    KNOWN = {"x1", "x2", "x3"}
+
+    def test_valid_record_passes(self):
+        assert validate_one(_good_rec("x1"), self.KNOWN) == []
+
+    def test_r1_missing_field(self):
+        rec = _good_rec("x1")
+        del rec["modality"]
+        problems = validate_one(rec, self.KNOWN)
+        assert any("缺字段" in p for p in problems)
+
+    def test_r2_bad_modality(self):
+        problems = validate_one(_good_rec("x1", modality="SUPER"), self.KNOWN)
+        assert any("modality 非法" in p for p in problems)
+
+    def test_r3_has_normative_must_be_bool(self):
+        problems = validate_one(_good_rec("x1", has_normative_requirement="true"),
+                                self.KNOWN)
+        assert any("必须是 bool" in p for p in problems)
+
+    def test_r4_bad_operator(self):
+        """★ 验收项 3 的核心：`operator='BAD'` 必须被拒绝。"""
+        problems = validate_one(_good_rec("x1", operator="BAD"), self.KNOWN)
+        assert any("operator 非法" in p for p in problems)
+
+    def test_r4_not_executable_operator_allowed(self):
+        assert validate_one(_good_rec("x1", operator=NOT_EXECUTABLE), self.KNOWN) == []
+
+    def test_r4_all_operators_allowed(self):
+        for op in sorted(OPERATORS):
+            rec = _good_rec("x1", operator=op)
+            assert not any("operator 非法" in p
+                           for p in validate_one(rec, self.KNOWN)), f"{op} 应被接受"
+
+    def test_r5_bad_response_class(self):
+        problems = validate_one(_good_rec("x1", expected_response_class="NOT_A_CLASS"),
+                                self.KNOWN)
+        assert any("expected_response_class 非法" in p for p in problems)
+
+    def test_r5_null_response_class_allowed(self):
+        assert validate_one(_good_rec("x1", expected_response_class=None), self.KNOWN) == []
+
+    def test_r5_all_response_classes_allowed(self):
+        for rc in sorted(RESPONSE_CLASSES):
+            rec = _good_rec("x1", expected_response_class=rc)
+            assert not any("expected_response_class 非法" in p
+                           for p in validate_one(rec, self.KNOWN)), f"{rc} 应被接受"
+
+    def test_r6_cross_consistency_modality(self):
+        """has_normative=False ⇒ modality 必须是「无」。"""
+        problems = validate_one(
+            _good_rec("x1", has_normative_requirement=False, modality="MUST"),
+            self.KNOWN)
+        assert any("交叉不一致" in p and "modality" in p for p in problems)
+
+    def test_r7_cross_consistency_operator(self):
+        """has_normative=False ⇒ operator 必须是「不可」。"""
+        problems = validate_one(
+            _good_rec("x1", has_normative_requirement=False, modality="无",
+                      operator="ge"),
+            self.KNOWN)
+        assert any("交叉不一致" in p and "operator" in p for p in problems)
+
+    def test_r8_uncertain_requires_reason(self):
+        problems = validate_one(_good_rec("x1", uncertain=True), self.KNOWN)
+        assert any("uncertain_reason" in p for p in problems)
+
+    def test_r9_unknown_candidate_id(self):
+        problems = validate_one(_good_rec("NOPE"), self.KNOWN)
+        assert any("candidate_id 未知" in p for p in problems)
+
+    def test_r10_empty_annotator(self):
+        problems = validate_one(_good_rec("x1", annotator="  "), self.KNOWN)
+        assert any("annotator" in p for p in problems)
+
+    def test_duplicate_ids_rejected(self):
+        frozen = [{"candidate_id": "x1"}]
+        problems = validate_all([_good_rec("x1"), _good_rec("x1")], frozen)
+        assert any("重复" in p for p in problems)
+
+    def test_missing_ids_rejected(self):
+        frozen = [{"candidate_id": "x1"}, {"candidate_id": "x2"}]
+        problems = validate_all([_good_rec("x1")], frozen)
+        assert any("缺漏" in p for p in problems)
+
+    def test_allow_partial_skips_missing_check(self):
+        frozen = [{"candidate_id": "x1"}, {"candidate_id": "x2"}]
+        problems = validate_all([_good_rec("x1")], frozen, require_complete=False)
+        assert not any("缺漏" in p for p in problems)
+
+    def test_cli_rejects_bad_operator_with_nonzero_exit(self, tmp_path):
+        """★ 验收项 3 的 CLI 形态：非法文件 ⇒ 退出码非 0。"""
+        bad = [{"candidate_id": "x1", "has_normative_requirement": True,
+                "modality": "MUST", "operator": "BAD",
+                "expected_response_class": None, "annotator": "A"}]
+        path = tmp_path / "bad.json"
+        path.write_text(json.dumps(bad, ensure_ascii=False), encoding="utf-8")
+        r = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "annotate_candidates.py"),
+             "validate", "--annotations", str(path)],
+            cwd=str(ROOT), capture_output=True, text=True)
+        assert r.returncode != 0
+        assert "operator 非法" in r.stderr
+
+    def test_cli_accepts_good_file(self, tmp_path):
+        good = [{"candidate_id": "x1", "has_normative_requirement": True,
+                 "modality": "MUST", "operator": "ge",
+                 "expected_response_class": None, "annotator": "A"}]
+        path = tmp_path / "good.json"
+        path.write_text(json.dumps(good, ensure_ascii=False), encoding="utf-8")
+        frozen = tmp_path / "frozen.jsonl"
+        frozen.write_text(json.dumps({"candidate_id": "x1"}) + "\n", encoding="utf-8")
+        r = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "annotate_candidates.py"),
+             "--frozen", str(frozen), "validate", "--annotations", str(path)],
+            cwd=str(ROOT), capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr
+        assert "全部通过校验" in r.stdout
+
+
+class TestTemplate:
+    """模板必须**只给题面**，绝不能带答案。"""
+
+    def test_template_has_no_answers(self):
+        tpl = build_template(_FAKE_CANDIDATES, "A")
+        items = [i for lst in tpl.values() for i in lst]
+        assert items
+        for item in items:
+            assert item["has_normative_requirement"] is None
+            assert item["modality"] is None
+            assert item["operator"] is None
+            assert item["expected_response_class"] is None
+            assert item["annotator"] == "A"
+
+    def test_template_keeps_provenance(self):
+        tpl = build_template(_FAKE_CANDIDATES, "B")
+        items = [i for lst in tpl.values() for i in lst]
+        for item in items:
+            assert item["candidate_id"]
+            assert item["text"]
+            assert "source" in item
+            assert "span_start" in item
+
+    def test_template_split_filter(self):
+        frozen = [dict(c, split="train") for c in _FAKE_CANDIDATES]
+        frozen[0]["split"] = "holdout"
+        tpl = build_template(frozen, "A", split="holdout")
+        assert sum(len(v) for v in tpl.values()) == 1
+
+
+class TestGuideLeak:
+    """★ 防信息泄漏的机械闸：指南不得泄漏待标注候选的答案。"""
+
+    def test_exact_quote_is_leak(self, tmp_path):
+        guide = tmp_path / "g.md"
+        guide.write_text("示例：`A client MUST NOT issue a PLAY request`", encoding="utf-8")
+        frozen = [{"candidate_id": "c1", "text": "A client MUST NOT issue a PLAY request"}]
+        problems, _ = check_guide_leaks(guide, frozen)
+        assert any("L1" in p for p in problems)
+
+    def test_clean_guide_passes(self, tmp_path):
+        guide = tmp_path / "g.md"
+        guide.write_text("示例：`A client MUST NOT issue something`", encoding="utf-8")
+        frozen = [{"candidate_id": "c1", "text": "A client MUST NOT issue a PLAY request"}]
+        problems, _ = check_guide_leaks(guide, frozen)
+        assert problems == []
+
+    def test_short_candidate_overlap_is_note_not_block(self, tmp_path):
+        """短候选与指南共享表格词汇属正常 ⇒ 只提示不阻断。"""
+        guide = tmp_path / "g.md"
+        guide.write_text("表格行示例 `| \"411\" ; Length Required`", encoding="utf-8")
+        frozen = [{"candidate_id": "c1", "text": "411            Length Required  all"}]
+        problems, notes = check_guide_leaks(guide, frozen)
+        assert problems == []
+        assert notes
+
+    def test_real_guide_does_not_leak_real_frozen_set(self):
+        """★ 对**真实冻结集**跑：标注指南必须零泄漏。"""
+        frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        guide_path = ROOT / "docs" / "annotation_guide.md"
+        if not frozen_path.is_file() or not guide_path.is_file():
+            pytest.skip("冻结集或指南尚未生成（该用例需真实数据）")
+        frozen = [json.loads(line) for line in
+                  frozen_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        problems, _ = check_guide_leaks(guide_path, frozen)
+        assert problems == [], f"指南泄漏了待标注候选: {problems}"
+
+
+# ===========================================================================
+# κ 计算
+# ===========================================================================
+class TestKappa:
+    """★ 验收项 4：完全一致 ⇒ κ=1.0；50% 一致 ⇒ κ 显著 < 0.6。"""
+
+    def test_perfect_agreement_is_one(self):
+        labels = ["MUST"] * 50
+        st = cohen_kappa(labels, list(labels))
+        assert st["kappa"] == 1.0
+        assert st["po"] == 1.0
+
+    def test_half_agreement_is_below_threshold(self):
+        """50% 一致 ⇒ κ 显著 < 0.6（roadmap 阈值）。"""
+        a = ["MUST", "SHOULD"] * 50
+        b = ["MUST", "MAY"] * 50
+        st = cohen_kappa(a, b)
+        assert st["kappa"] < KAPPA_THRESHOLD
+        assert st["po"] == 0.5
+
+    def test_degenerate_distribution_is_reported(self):
+        """双方只用同一个类别 ⇒ pe=1 ⇒ κ 无定义 ⇒ 必须**显式**报告而非悄悄给个数。"""
+        st = cohen_kappa(["MUST"] * 10, ["MUST"] * 10)
+        assert st["degenerate"] is True
+        assert st["note"]
+        assert st["kappa"] == 1.0
+
+    def test_disjoint_categories_is_not_degenerate(self):
+        """★ 双方各用**互斥**的单类别 ⇒ pe=0 ⇒ κ=po 良定义，**不是**退化。
+
+        （pe==1 ⟺ 双方集中在**同一个**类别；此时必然完全一致。
+          类别互斥时 pe=0，κ=(po-0)/(1-0)=po，数学上完全良定义。）
+        """
+        st = cohen_kappa(["MUST"] * 10, ["SHOULD"] * 10)
+        assert st["degenerate"] is False
+        assert st["pe"] == 0.0
+        assert st["kappa"] == 0.0
+
+    def test_empty_sample(self):
+        st = cohen_kappa([], [])
+        assert st["kappa"] is None
+
+    def test_mismatched_length_raises(self):
+        with pytest.raises(ValueError):
+            cohen_kappa(["MUST"], ["MUST", "SHOULD"])
+
+
+class TestCompare:
+    def test_per_field_kappa_reported(self):
+        a = {"c1": _good_rec("c1"), "c2": _good_rec("c2")}
+        b = {"c1": _good_rec("c1"), "c2": _good_rec("c2", operator="le")}
+        result = compare(a, b)
+        assert set(result["per_field"]) == {
+            "has_normative_requirement", "modality", "operator",
+            "expected_response_class"}
+
+    def test_disagreements_listed(self):
+        a = {"c1": _good_rec("c1")}
+        b = {"c1": _good_rec("c1", operator="le")}
+        result = compare(a, b)
+        assert len(result["disagreements"]) == 1
+        d = result["disagreements"][0]
+        assert d["candidate_id"] == "c1"
+        assert "operator" in d["diff_fields"]
+
+    def test_only_common_ids_compared(self):
+        a = {"c1": _good_rec("c1"), "c2": _good_rec("c2")}
+        b = {"c1": _good_rec("c1")}
+        result = compare(a, b)
+        assert result["n_common"] == 1
+        assert result["n_only_a"] == 1
+        assert result["n_only_b"] == 0
+
+    def test_exact_agreement_rate(self):
+        a = {"c1": _good_rec("c1"), "c2": _good_rec("c2")}
+        b = {"c1": _good_rec("c1"), "c2": _good_rec("c2")}
+        result = compare(a, b)
+        assert result["exact"]["rate"] == 1.0
+        assert result["disagreement_rate"] == 0.0
+
+    def test_cli_reports_kappa(self, tmp_path):
+        """★ 验收项 4 的 CLI 形态。"""
+        recs = [_good_rec(f"c{i}", operator="ge" if i % 2 == 0 else "le")
+                for i in range(20)]
+        pa = tmp_path / "a.json"
+        pb = tmp_path / "b.json"
+        pa.write_text(json.dumps(recs, ensure_ascii=False), encoding="utf-8")
+        pb.write_text(json.dumps(
+            [dict(r, operator="ge") for r in recs], ensure_ascii=False),
+            encoding="utf-8")
+        r = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "calc_cohen_kappa.py"),
+             "--a", str(pa), "--b", str(pb)],
+            cwd=str(ROOT), capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr
+        assert "operator" in r.stdout
+        assert "κ" in r.stdout
+
+    def test_cli_does_not_modify_inputs(self, tmp_path):
+        """★ κ 脚本只算不改 —— 「为了 κ 好看而改标注」是最需要防的失败模式。"""
+        recs = [_good_rec("c1"), _good_rec("c2", operator="le")]
+        pa = tmp_path / "a.json"
+        pb = tmp_path / "b.json"
+        pa.write_text(json.dumps(recs, ensure_ascii=False), encoding="utf-8")
+        pb.write_text(json.dumps(recs, ensure_ascii=False), encoding="utf-8")
+        before = (pa.read_bytes(), pb.read_bytes())
+        subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "calc_cohen_kappa.py"),
+             "--a", str(pa), "--b", str(pb)],
+            cwd=str(ROOT), capture_output=True, text=True)
+        assert (pa.read_bytes(), pb.read_bytes()) == before
+
+
+# ===========================================================================
+# 词表一致性（防止标注词表与 roadmap / semantic.py 漂移）
+# ===========================================================================
+class TestVocabulary:
+    def test_operator_vocabulary_matches_roadmap(self):
+        """★ OPERATORS 必须与 roadmap §3.1 逐项相等（10 个）。"""
+        assert OPERATORS == frozenset({
+            "eq", "ne", "lt", "gt", "le", "ge", "in", "present", "absent", "range"})
+
+    def test_modality_vocabulary(self):
+        assert MODALITIES == frozenset({"MUST", "SHOULD", "MAY", "无"})
+
+    def test_response_class_vocabulary_matches_rfc_config(self):
+        """★ 期望响应类别必须与各协议 rfc_config.expected_response_classes 一致。"""
+        import json as _json
+        for proto in ("rtsp", "sip", "smtp"):
+            cfg_path = (ROOT / "fused_hub" / "targets" / proto / "rfc_config.json")
+            if not cfg_path.is_file():
+                continue
+            cfg = _json.loads(cfg_path.read_text(encoding="utf-8"))
+            assert set(cfg["expected_response_classes"]) == set(RESPONSE_CLASSES), \
+                f"{proto} 的 expected_response_classes 与标注词表漂移"
+
+    def test_threshold_matches_roadmap(self):
+        assert KAPPA_THRESHOLD == 0.6
