@@ -21,6 +21,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -666,9 +667,15 @@ class TestCRLFRobustness:
             src = (ROOT / "scripts" / name).read_bytes()
             (probe / name).write_bytes(src.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
         yield probe
-        for f in probe.iterdir():
-            f.unlink()
-        probe.rmdir()
+        # ★ 用 shutil.rmtree 而不是「逐个 unlink + rmdir」：
+        #   探针目录里跑的脚本会 `from annotate_candidates import …`，
+        #   Python 会在**脚本旁边**生成 `__pycache__/` 目录
+        #   （实测：Linux CI runner 上必然出现，Windows 上不一定出现）
+        #   ⇒ 逐个 unlink 遇到目录就抛 `IsADirectoryError`
+        #   ⇒ teardown 失败 ⇒ pytest 把**该类最后一个测试**记成 ERROR
+        #   ⇒ CI 的 ERROR 集合多出 `test_frozen_jsonl_is_lf_on_disk`
+        #   （真机实测：CI run 41356142634，Ubuntu 21 errors vs 基线 20）
+        shutil.rmtree(probe, ignore_errors=True)
 
     def test_crlf_probe_is_actually_crlf(self, crlf_probe):
         """先确认探针真的物化成了 CRLF（否则下面的断言是空转）。"""
