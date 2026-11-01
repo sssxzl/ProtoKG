@@ -1,0 +1,10 @@
+# 护栏脚本的本地产物（默认 --out-dir 指向本目录），不入库。
+# CI 上产物写到工作区的 _ci_artifacts/ 并作为 artifact 上传，不受此文件影响。
+_guarded_raw.txt
+_guarded_result.json
+_guarded_before.txt
+_guarded_after.txt
+
+# Python 字节码缓存（根 .gitignore 已有同规则，此处冗余保险）
+__pycache__/
+*.py[cod]

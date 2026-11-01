@@ -220,7 +220,407 @@ def _inject_vuln_self_loops(transitions: list, vuln_patterns: dict,
     return sorted(trans_set)
 
 
-def assemble_bundle(views: list[dict], protocol: str = "rtsp") -> dict:
+# ===========================================================================
+# 2.5 bundle 契约扩展 + 语义规则投影（B-8）
+#
+# 设计依据：docs/rfc_source_bcd_roadmap.md
+#   · §3.6（选项 c：「影子实现升级为两层模型，`legal_boundary` 桶保留但由两层
+#     模型投影填充」）—— 语义规则走 bundle 的**独立键** `semantic_rules`，
+#     不进 `facts.jsonl`（`models.py` 的 fact_id 派生链零影响）；
+#   · §3.8 任务表 B-8（文档任务号 B7）。
+#
+# ★ 投影是**单向、纯函数、可测**的：
+#     semantic_rules[i] ──project──► legal_boundary[subject] += {dim,legal,illegal,trigger}
+#                                └─► response_expectation[subject] += {violation,expected_code,expected_behavior}
+#   `legal`/`illegal` 由 operator/operand **反向渲染**回自然语言（供 LLM prompt
+#   读），`trigger` 由 `expected_behavior` 填 ⇒ **投影产物不带新信息**。
+#
+# ★ 三条硬约束（缺一不可）：
+#   ① **幂等** —— 同一 bundle 连续投影两次 ⇒ 两桶逐字节相同；
+#   ② **旧 bundle 兼容** —— 无 `semantic_rules` 键 ⇒ 投影是**空操作**；
+#   ③ **旧 facts 来源保留** —— 投影是**新增**来源（追加 + 去重），不替换
+#      既有 facts 条目 ⇒ `boundary_probe` / `strategy` 零改动仍工作。
+# ===========================================================================
+
+#: 当前 bundle 契约版本（新增 `semantic_rules` 键之后的版本号）。
+BUNDLE_SCHEMA_VERSION = "2.0"
+
+#: 旧 bundle（无 `bundle_schema_version` 键）的版本号 —— 读取方按 1.0 容忍。
+BUNDLE_SCHEMA_VERSION_LEGACY = "1.0"
+
+#: 响应类（`rfc_config.expected_response_classes` 的规范词表，实测 rtsp/sip/smtp
+#: 三协议一致：`success` / `protocol_error` / `application_error` / `silence`）
+#: → 状态码族。
+#: ★ **词表外一律留空** —— 不臆造状态码（投影不带新信息）。
+_EXPECTED_BEHAVIOR_CODES: dict[str, str] = {
+    "success": "2xx",
+    "protocol_error": "4xx",
+    # 应用级错误（RTSP §11 的 4xx 族 / SIP 的 4xx 族，如 404 Not Found）
+    "application_error": "4xx",
+    # 无响应 ⇒ 无状态码
+    "silence": "",
+}
+
+#: operator → (合法域模板, 非法域模板)。`{op}` = 操作数的渲染文本。
+#: ★ 模板里**不含任何协议特定词** ⇒ 协议无关（rtsp/sip/smtp 通用）。
+#: ★ 合法域 = **满足**约束的取值域；非法域 = **违反**约束的取值域。
+#:   `absent` ⇒「该字段不得出现」⇒ **出现即非法**（illegal = 存在）。
+_OPERATOR_DOMAINS: dict[str, tuple[str, str]] = {
+    "le": ("<= {op}", "> {op}"),
+    "ge": (">= {op}", "< {op}"),
+    "lt": ("< {op}", ">= {op}"),
+    "gt": ("> {op}", "<= {op}"),
+    "eq": ("= {op}", "!= {op}"),
+    "ne": ("!= {op}", "= {op}"),
+    "in": ("属于 {op}", "不属于 {op}"),
+    "range": ("介于 {op} 之间", "超出 {op} 区间"),
+    "present": ("存在（必须出现）", "缺失（不得出现）"),
+    "absent": ("缺失（不得出现）", "存在（出现即非法）"),
+}
+
+
+def get_bundle_schema_version(bundle: dict) -> str:
+    """读 bundle 的契约版本。
+
+    ★ **读取方必须容忍旧 bundle**：无 `bundle_schema_version` 键 ⇒ 返回
+      `"1.0"`（不抛异常、不猜版本）。
+    """
+    if not isinstance(bundle, dict):
+        return BUNDLE_SCHEMA_VERSION_LEGACY
+    raw = bundle.get("bundle_schema_version")
+    text = str(raw).strip() if raw is not None else ""
+    return text or BUNDLE_SCHEMA_VERSION_LEGACY
+
+
+def _as_operand_tuple(value: Any) -> tuple[str, ...]:
+    """操作数归一为 `tuple[str, ...]`（JSON 形态可能是 list / str / None）。"""
+    if value is None:
+        return ()
+    if isinstance(value, str):
+        text = value.strip()
+        return (text,) if text else ()
+    if isinstance(value, (list, tuple)):
+        return tuple(str(v).strip() for v in value if str(v).strip())
+    text = str(value).strip()
+    return (text,) if text else ()
+
+
+def _jsonable(value: Any) -> Any:
+    """递归把 tuple 转成 list（bundle 要能被 `json.dumps` 落盘）。"""
+    if isinstance(value, dict):
+        return {k: _jsonable(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_jsonable(v) for v in value]
+    return value
+
+
+def _rule_to_plain(rule: Any) -> Optional[dict]:
+    """把一条语义规则归一为 **bundle 形态**（两层嵌套 dict）。
+
+    接受两种形态（**二选一，不猜**）：
+
+      ① `SemanticRule` 本体 —— 用 `dataclasses.asdict` 展开，
+         `evidence` / `constraint` 各成**一层**嵌套 dict（§3.6「两层嵌套」）；
+      ② `dict` —— `dataclasses.asdict(SemanticRule)` 的产物，顶层含
+         `rule_id` / `evidence` / `constraint` / `subject_type` /
+         `subject_name` / `rule_state` / `supersedes` / `model_confidence` /
+         `validated`，其中 `constraint` 是**嵌套一层**的 dict。
+
+    ★ `KnowledgeCandidate` **投影不了**（结构上没有 `constraint` / `rule_state`
+      字段）⇒ 返回 `None` ⇒ 调用方跳过（不猜、不投影）。
+    ★ 无法识别 ⇒ 返回 `None`（调用方跳过）。
+    """
+    if isinstance(rule, dict):
+        return _jsonable(rule)
+    constraint = getattr(rule, "constraint", None)
+    rule_state = getattr(rule, "rule_state", None)
+    if constraint is None and rule_state is None:
+        return None
+    try:
+        from dataclasses import asdict, is_dataclass
+    except ImportError:      # pragma: no cover —— dataclasses 是标准库
+        return None
+    if is_dataclass(rule) and not isinstance(rule, type):
+        return _jsonable(asdict(rule))
+    # duck-typing 对象（非 dataclass）：逐字段取
+    return {
+        "rule_id": getattr(rule, "rule_id", "") or "",
+        "evidence": _jsonable(getattr(rule, "evidence", None)),
+        "constraint": _jsonable(constraint),
+        "subject_type": getattr(rule, "subject_type", "") or "",
+        "subject_name": getattr(rule, "subject_name", "") or "",
+        "rule_state": rule_state or "",
+        "supersedes": _jsonable(getattr(rule, "supersedes", ()) or ()),
+        "model_confidence": getattr(rule, "model_confidence", None),
+        "validated": bool(getattr(rule, "validated", False)),
+    }
+
+
+def _constraint_fields(rule_plain: dict) -> Optional[dict]:
+    """取规则的可执行层字段（dict）。
+
+    ★ `constraint is None` ⇒ 返回 `None`（**不投影**）——
+      「不可转换」既不是知识候选也不是可执行规则，两桶都不收。
+    ★ `constraint` 键**缺失**同样按 None 处理（不可验证的约束不投影）。
+    """
+    constraint = rule_plain.get("constraint")
+    if not isinstance(constraint, dict):
+        return None
+    return constraint
+
+
+def _render_operand(operator: str, operand: tuple[str, ...]) -> str:
+    """操作数 → 自然语言片段（集合 / 区间 / 单值）。"""
+    vals = list(operand)
+    if not vals:
+        return ""
+    if operator == "range":
+        if len(vals) >= 2:
+            return f"[{vals[0]}, {vals[1]}]"
+        return vals[0]
+    if operator == "in":
+        return "{" + ", ".join(vals) + "}"
+    if len(vals) == 1:
+        return vals[0]
+    return ", ".join(vals)
+
+
+def _render_domains(operator: str, operand: tuple[str, ...],
+                    operand_source: str, operand_ref: Optional[str]) -> tuple[str, str]:
+    """(operator, operand) → (合法域自然语言, 非法域自然语言)。
+
+    ★ **反向渲染**（§3.6 选项 c）：operator/operand → 自然语言，供 LLM prompt
+      读；**不引入新信息**。
+    ★ 字段引用（`operand_source == "field_ref"`）⇒ 操作数不是常量而是另一个
+      字段 ⇒ 渲染成「等于/不等于字段 X 的取值」。
+    """
+    legal_t, illegal_t = _OPERATOR_DOMAINS[operator]
+    if operand_source == "field_ref" and operand_ref:
+        ref = str(operand_ref).strip()
+        if operator == "eq":
+            return (f"等于字段 {ref} 的取值",
+                    f"不等于字段 {ref} 的取值")
+        if operator == "ne":
+            return (f"不等于字段 {ref} 的取值",
+                    f"等于字段 {ref} 的取值")
+        return legal_t.format(op=ref), illegal_t.format(op=ref)
+    op_text = _render_operand(operator, operand)
+    return legal_t.format(op=op_text), illegal_t.format(op=op_text)
+
+
+def _project_rule(rule: Any) -> Optional[tuple[str, dict, Optional[dict]]]:
+    """投影**一条**规则 → (归组键, legal_boundary 条目, response_expectation 条目)。
+
+    返回 `None` 表示**不投影**，理由只有四类（不猜、不臆造）：
+
+      ① `rule_state != "authoritative"` —— candidate / revoked / feedback
+         **不进权威桶**（与 `rule_store` 的四库隔离一致：反馈只影响调度，
+         不进权威知识）；
+      ② `constraint is None` —— 不可转换（不是知识候选，也不是可执行规则）；
+      ③ operator 不在词表内 / 有参算子缺 operand —— **不可渲染**；
+      ④ 归组键为空（既无 `target_field` 又无 `subject_name`）—— 无处安放。
+    """
+    plain = _rule_to_plain(rule)
+    if plain is None:
+        return None
+    # 过滤①：只投影权威规则
+    if str(plain.get("rule_state") or "").strip() != "authoritative":
+        return None
+    # 过滤②：只投影有可执行层的规则
+    constraint = _constraint_fields(plain)
+    if constraint is None:
+        return None
+    operator = str(constraint.get("operator") or "").strip()
+    if operator not in _OPERATOR_DOMAINS:
+        return None
+    operand = _as_operand_tuple(constraint.get("operand"))
+    if operator not in ("present", "absent") and not operand:
+        return None
+    operand_source = str(constraint.get("operand_source") or "constant").strip()
+    raw_ref = constraint.get("operand_ref")
+    operand_ref = str(raw_ref).strip() if raw_ref else None
+    # 归组键：目标字段优先，缺省用 subject_name
+    target_field = str(constraint.get("target_field") or "").strip()
+    subject_name = str(plain.get("subject_name") or "").strip()
+    group_key = target_field or subject_name
+    if not group_key:
+        return None
+
+    legal, illegal = _render_domains(operator, operand, operand_source, operand_ref)
+    expected_behavior = str(constraint.get("expected_behavior") or "").strip()
+    lb_entry = {
+        "dim": group_key,
+        "legal": legal,
+        "illegal": illegal,
+        "trigger": expected_behavior,
+    }
+    # 无处理期望（expected_behavior 为空）⇒ 不产出 response_expectation 条目
+    # （与 `norm.constraint_norm_to_facts` 的既有口径一致：缺 P 时只出 C）。
+    re_entry: Optional[dict] = None
+    if expected_behavior:
+        re_entry = {
+            "violation": illegal,
+            "expected_code": _EXPECTED_BEHAVIOR_CODES.get(expected_behavior, ""),
+            "expected_behavior": expected_behavior,
+        }
+    return group_key, lb_entry, re_entry
+
+
+def _canonical_key(item: Any) -> str:
+    """桶内条目的**去重键**（规范化 JSON；非 dict 用 repr 兜底）。"""
+    try:
+        return json.dumps(item, sort_keys=True, ensure_ascii=False, default=str)
+    except (TypeError, ValueError):       # pragma: no cover —— 理论不可达
+        return repr(item)
+
+
+def _dedup_entries(items: list) -> list:
+    """按规范化 JSON 去重（**保留首次出现的位置与顺序** ⇒ 幂等的基础）。"""
+    seen: set[str] = set()
+    out: list = []
+    for item in items:
+        key = _canonical_key(item)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(item)
+    return out
+
+
+def _merge_bucket(existing: Any, incoming: dict) -> dict:
+    """把投影条目**追加**到既有桶（同名键合并），并按规范化 JSON 去重。
+
+    ★ **合并语义**：`legal_boundary[field] = 既有 facts 条目 + 投影条目`
+      —— 既有条目在前、投影条目在后，各自保持稳定序 ⇒
+      · **幂等**：第二次投影产生的条目已在桶中 ⇒ 去重后**逐字节不变**；
+      · **旧 facts 来源保留可用**：投影是**新增**来源而非替换 ⇒
+        `boundary_probe` / `strategy` 的既有行为**零变化**。
+    """
+    base: dict = existing if isinstance(existing, dict) else {}
+    out: dict[str, list] = {}
+    for key in list(base.keys()):
+        out[key] = _dedup_entries(list(base.get(key) or []))
+    for key in sorted(incoming.keys()):
+        merged = list(out.get(key) or []) + list(incoming.get(key) or [])
+        out[key] = _dedup_entries(merged)
+    return out
+
+
+def project_semantic_rules(bundle: dict) -> dict:
+    """把 `bundle["semantic_rules"]` **投影**进 `legal_boundary` /
+    `response_expectation` 两个桶（§3.6 选项 c）。
+
+    ── 输入形态 ──────────────────────────────────────────────────────────
+    `bundle["semantic_rules"]` 是一个**列表**，每项为下列两种形态之一：
+
+      ① `SemanticRule` 本体（`core.fused.semantic` 的 frozen dataclass）；
+      ② `dict` —— `dataclasses.asdict(SemanticRule)` 的产物
+         （顶层 `rule_id` / `evidence` / `constraint` / `subject_type` /
+         `subject_name` / `rule_state` / ...，其中 `constraint` **嵌套一层**）。
+
+    ── 投影映射规则 ──────────────────────────────────────────────────────
+    对每条规则：
+
+      · **过滤**：只投影 `rule_state == "authoritative"` 且
+        `constraint is not None` 的规则（其余一律跳过，见 `_project_rule`）；
+      · **归组键**：`constraint.target_field`，缺省用 `subject_name`
+        （两者皆空 ⇒ 不投影）；
+      · **legal_boundary 条目**：
+        `{"dim": 归组键, "legal": 合法域, "illegal": 非法域,
+          "trigger": constraint.expected_behavior}`
+        —— `legal` / `illegal` 由 operator + operand **反向渲染**：
+            le/ge/lt/gt/eq/ne ⇒ 数值比较式及其反面；
+            in ⇒ 「属于 {a, b, c}」/「不属于 {a, b, c}」；
+            range ⇒ 「介于 [lo, hi] 之间」/「超出 [lo, hi] 区间」；
+            present ⇒ 「存在（必须出现）」/「缺失（不得出现）」；
+            absent ⇒「缺失（不得出现）」/「存在（出现即非法）」
+              （该字段**不得出现** ⇒ 出现即**非法**）。
+      · **response_expectation 条目**：
+        `{"violation": 非法域, "expected_code": 状态码族,
+          "expected_behavior": constraint.expected_behavior}`
+        —— `expected_behavior` 为空 ⇒ **不产出**本桶条目（缺 P 时只出 C）；
+        `expected_code` 由响应类经**封闭词表**映射（词表外留空，不臆造）。
+
+    ── 合并语义（幂等的关键）────────────────────────────────────────────
+    投影结果**追加**到既有桶（同键合并），并按**规范化 JSON**去重（保留首次
+    出现的位置与顺序）⇒ 对同一 bundle 连续调用两次，两桶**逐字节相同**。
+
+    ── 旧 bundle 兼容 ───────────────────────────────────────────────────
+    ★ 必须用 `bundle.get("semantic_rules") or []`（**不得** `bundle["semantic_rules"]`
+      直接索引）—— 无该键的旧 bundle ⇒ 投影是**空操作**：不报错、不改任何桶。
+
+    Args:
+        bundle: bundle dict（**原地修改**）。
+
+    Returns:
+        同一个 bundle dict（便于链式调用）。
+    """
+    if not isinstance(bundle, dict):
+        return bundle
+    # ★ 旧 bundle 兼容：必须 `bundle.get(...) or []`，不得直接索引。
+    rules = bundle.get("semantic_rules") or []
+    if not rules:
+        return bundle
+    projected_lb: dict[str, list] = {}
+    projected_re: dict[str, list] = {}
+    for rule in rules:
+        item = _project_rule(rule)
+        if item is None:
+            continue
+        key, lb_entry, re_entry = item
+        projected_lb.setdefault(key, []).append(lb_entry)
+        if re_entry is not None:
+            projected_re.setdefault(key, []).append(re_entry)
+    if not projected_lb and not projected_re:
+        # 无可投影内容 ⇒ 两桶**一个字节都不动**（保持空操作语义）。
+        return bundle
+    # 确定性排序：投影条目与 `semantic_rules` 的**输入顺序无关**。
+    projected_lb = {k: sorted(v, key=_canonical_key)
+                    for k, v in projected_lb.items()}
+    projected_re = {k: sorted(v, key=_canonical_key)
+                    for k, v in projected_re.items()}
+    bundle["legal_boundary"] = _merge_bucket(
+        bundle.get("legal_boundary"), projected_lb)
+    bundle["response_expectation"] = _merge_bucket(
+        bundle.get("response_expectation"), projected_re)
+    return bundle
+
+
+def load_semantic_rules(protocol: str = "rtsp") -> list[dict]:
+    """读 **authoritative** 规则库 → bundle 形态（两层嵌套 dict）列表。
+
+    ★ 走 `core.fused.downstream.rule_store` 的**四库隔离**：只读 `rules.jsonl`
+      （candidate / revoked / feedback 三库**根本不在路径上**）⇒ 天然只投影
+      权威规则，与 `project_semantic_rules` 的 `rule_state` 过滤**同口径**。
+    ★ 库文件不存在 ⇒ 返回空列表（B 阶段前语义库尚未落地，**不是错误**）。
+    """
+    from .rule_store import library_path, load_rules
+    path = library_path(protocol, "authoritative")
+    if not path.is_file():
+        return []
+    out: list[dict] = []
+    for rule in load_rules(path):
+        plain = _rule_to_plain(rule)
+        if plain is not None:
+            out.append(plain)
+    return out
+
+
+def _resolve_semantic_rules(semantic_rules: Optional[list],
+                            protocol: str) -> list[dict]:
+    """决定 bundle 里的 `semantic_rules` 内容：显式传入优先，否则读权威库。"""
+    if semantic_rules is None:
+        semantic_rules = load_semantic_rules(protocol)
+    out: list[dict] = []
+    for rule in semantic_rules or []:
+        plain = _rule_to_plain(rule)
+        if plain is not None:
+            out.append(plain)
+    return out
+
+
+def assemble_bundle(views: list[dict], protocol: str = "rtsp",
+                    *, semantic_rules: Optional[list] = None) -> dict:
     """把 fact views 按 aspect 分桶成「种子生成知识」。
 
     产出:
@@ -238,6 +638,18 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp") -> dict:
       session_header   method_name -> [{header, from_occurrence}, ...]  (会话语义：会话头)
       url_template     method_name -> pattern  (会话语义：URL 结构)
       available_sources 本次参与的事实来源集合（五源分工传导，P0）
+      semantic_rules   [两层嵌套的语义规则 dict, ...]  (B-8：两层模型，**不进 facts.jsonl**)
+      bundle_schema_version "2.0"  (B-8：bundle 契约版本；旧 bundle 无此键，读取方须容忍)
+
+    ★ B-8（§3.6 选项 c）：`legal_boundary` / `response_expectation` 两桶在返回前
+      由 `semantic_rules` **投影**填充（追加 + 去重 ⇒ 幂等）；既有 facts 来源
+      **保留可用** ⇒ `boundary_probe` / `strategy` 零改动仍工作。
+
+    Args:
+        views: fact view 列表（`load_fact_views()` 的产物）。
+        protocol: 协议名；facts 里带 protocol 时以 facts 为准。
+        semantic_rules: 显式给定语义规则（bundle 形态 dict 或 `SemanticRule`）；
+            缺省则从 **authoritative 规则库**读（`rule_store.load_rules`）。
 
     五源分工传导（P0）：分桶时保留 provenance——
       - methods[*].declared_by：哪些源「声明」了该方法（definition/state_changing 等）
@@ -492,7 +904,7 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp") -> dict:
             message_instances[_key] = [
                 (fn, _traffic_real.get(fn, fv)) for fn, fv in _fields
             ]
-    return {
+    bundle = {
         "methods": methods,
         "headers": headers,
         "required_headers": {k: sorted(set(v)) for k, v in required_headers.items()},
@@ -512,7 +924,14 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp") -> dict:
         "message_instances": message_instances,
         "available_sources": sorted(available_sources),  # P0
         "method_order": _derive_method_order(method_sequences),  # P2b 拓扑序
+        # ── B-8：bundle 契约扩展 ──────────────────────────────────────
+        "semantic_rules": _resolve_semantic_rules(semantic_rules, _protocol_name),
+        "bundle_schema_version": BUNDLE_SCHEMA_VERSION,
     }
+    # ★ B-8（§3.6 选项 c）：两桶由 `semantic_rules` **投影**填充 ——
+    #   追加 + 去重 ⇒ 幂等；既有 facts 条目**保留** ⇒ 下游零改动仍工作。
+    project_semantic_rules(bundle)
+    return bundle
 
 
 # ===========================================================================

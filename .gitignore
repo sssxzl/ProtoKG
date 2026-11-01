@@ -67,7 +67,13 @@ local/*.tar.gz
 !.env.example
 
 # QA 本地工作区（备份 / 探针副本 / 临时脚本），非项目资产
-qa/
+# ★ 用 `/qa/`（前导斜杠）而不是 `qa/`：
+#   `qa/` 会匹配**任意层级**名为 qa 的目录 ⇒ 连入库的 `tools/qa/`（CI 验收工具）都被排除。
+#   加前导斜杠后只匹配仓库根的 `qa/`。
+/qa/
+
+# 护栏验收脚本的产物目录（tools/qa/run_guarded_pytest.py 默认写这里）
+_ci_artifacts/
 
 # CRLF 鲁棒性探针的仓内临时目录（tests/fused/test_annotation_tools.py 生成）。
 #   目录名带进程号，正常跑完会自清理；但进程被 kill 时会残留 ⇒ 顺手排除掉，

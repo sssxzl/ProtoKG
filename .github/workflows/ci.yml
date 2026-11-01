@@ -1,0 +1,390 @@
+# ProtoRAG CI —— 协议模糊测试知识中枢的验收闸门
+#
+# ★ 闸门语义（本文件最重要的一行，请勿误读）
+#   **不是「零失败」，而是「失败集合不漂移」。**
+#   本仓当前有 **37 个预存失败**（rq3 语料契约脱节 / 字典 token 数等，见
+#   docs/ci_and_acceptance.md §4），它们**不是**本轮改动引入的。
+#   若 CI 要求全绿 ⇒ 永远红 ⇒ 闸门失效。
+#   ⇒ 本 CI 的判据是：**新增任何失败/错误 ⇒ job 红；旧的失败消失 ⇒ 同样报出**
+#     （消失也报，是为了防止有人「改测试/改基线」把失败偷偷洗掉）。
+#
+# ★ 三层基线（为什么不止一份）
+#   失败集合**依赖运行环境**，不是纯代码属性。实测（2026-11-02）：
+#     · 本机工作区（有 derived/ 产物）：37 failed / 1252 passed / 1 skipped / 20 errors
+#     · 全新 checkout（无 derived/ 产物）：68 failed / 1179 passed / 4 skipped / 20 errors
+#   差的那 31 条**全部**源于 `derived/` 是 gitignored 的中间产物
+#   （`.gitignore` 明写「derived/* … 由 kb/ 重建」），**不是代码缺陷**。
+#   ⇒ 因此基线分两份：
+#       tools/qa/baseline/expected_b_class_failed_ids.txt   ← 本机/完整环境（37）
+#       tools/qa/baseline/ci_expected_failed_ids.txt        ← CI/干净 checkout（68）
+#     两个 job 各用各的，**语义一致**：都是「相对本环境的已知集合不许漂移」。
+#     ⚠ 这两份基线**不可互换**：拿 68 的基线去比本机、或拿 37 的去比 CI，
+#       都会报出大量漂移 —— 那是**环境不匹配**，不是回归。
+#
+# ★ 为什么 Windows 与 Ubuntu 各一个 job
+#   本仓 `core.autocrlf=true`（Windows 默认）会把 LF blob **物化成 CRLF**，
+#   而 `.gitattributes` 只对 `*.dict` / `*.raw` / `*.sip` 做了 `-text` 字节保护。
+#   实测：Windows checkout 上 `.sh`/`.py` 变 CRLF ⇒ 多出 10 条失败
+#   （test_scripts_syntax / test_rq4_*_parity 等行尾断言）。
+#   ⇒ Windows job 必须显式 `core.autocrlf=false` 才能得到与 Ubuntu 一致的集合，
+#     同时它也是「字节契约在 Windows 上仍然成立」的必要验证。
+
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# 取消同一 PR 的旧运行（省 runner，不影响闸门语义）
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ==========================================================================
+  # Job 1 —— 静态检查（Ubuntu）
+  # 验证什么：新增的 CI 工具自身（tools/）的 lint + **全仓语法可解析**。
+  # 为什么放 Ubuntu：不需要 pytest 依赖，秒级完成，是最便宜的第一道网。
+  # 闸门语义：任一检查失败 ⇒ job 红。
+  # ==========================================================================
+  static-checks:
+    name: static-checks (ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ruff
+        run: python -m pip install --upgrade "ruff==0.12.0"
+
+      # ★ 只查 tools/：全仓 ruff 有 114 个既存告警（core/ scripts/ tests/ 的历史遗留，
+      #   那些文件不在本次改动范围内，动它们会污染 diff）。
+      #   tools/ 是本次新增的 CI 工具，必须 100% 干净 —— 它是闸门本体，闸门自己有 lint 债很荒唐。
+      - name: Ruff check (tools/ only)
+        run: python -m ruff check tools/
+
+      # ★ 语法扫描范围**必须限定**在 core/ scripts/ tests/ tools/：
+      #   `kb/` 下有 vendored 的第三方源码（如 kamailio 的 Python 2 示例），
+      #   那些是**研究素材**不是本仓代码，用 Python 3 的 ast.parse 解析它们必然 SyntaxError
+      #   （实测 `print res` → Missing parentheses in call to 'print'）。
+      #   ⇒ 扫描本仓自己的代码，素材目录不纳入语法门。
+      - name: Syntax scan (ast.parse over core/scripts/tests/tools)
+        run: |
+          python - <<'PY'
+          import ast, pathlib, sys
+          bad = []
+          n = 0
+          for d in ("core", "scripts", "tests", "tools"):
+              for p in pathlib.Path(d).rglob("*.py"):
+                  if "__pycache__" in str(p):
+                      continue
+                  n += 1
+                  try:
+                      # utf-8-sig：core/raw_writers.py 带 UTF-8 BOM，
+                      # 用 utf-8 读会把 BOM 当成 U+FEFF 字符 → ast.parse 报
+                      # "invalid non-printable character"（实测踩过）。
+                      ast.parse(p.read_text(encoding="utf-8-sig"), filename=str(p))
+                  except SyntaxError as e:
+                      bad.append(f"{p}: {e}")
+          print(f"scanned {n} python files under core/scripts/tests/tools")
+          for b in bad:
+              print("SYNTAX ERROR:", b)
+          sys.exit(1 if bad else 0)
+          PY
+
+  # ==========================================================================
+  # Job 2 —— 字节契约验证（Windows）
+  # 验证什么：本仓最特有的坑 —— `core.autocrlf=true` + `.gitattributes` 的
+  #           「入库字节 == 工作区字节」契约是否仍然成立。
+  # 为什么必须有：`.dict` / `.raw` 是**按字节比对**的数据文件
+  #   （DICT_FROZEN.json 的 base_md5 记录了它们的指纹）。
+  #   若某次 checkout 把 LF blob 物化成 CRLF ⇒ md5 变了 ⇒
+  #   指纹失效，且 `git diff` 全程显示干净（autocrlf 归一化）⇒ 极难察觉。
+  # 闸门语义：任一受保护文件的工作区字节 != blob 字节 ⇒ job 红。
+  # ==========================================================================
+  byte-contract:
+    name: byte-contract (windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify -text protected files are byte-identical to their blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          # ★ 用 git 自己的 smudge 过滤器 `git cat-file --filters` 现场求值，
+          #   **零写盘**（不 checkout、不 stash、不改工作区）。
+          #   判据：filtered（checkout 后应有的字节）== blob（入库字节）。
+          #   若不等 ⇒ 说明该文件被行尾转换物化了 ⇒ 字节契约破裂。
+          #
+          # ★ `-z` + `core.quotepath=false` 是必需的：本仓有中文路径
+          #   （如 kb/sip/协议实现源码/…），默认 git 会把它们转义成
+          #   "kb/sip/\345\215\217…" 的八进制字符串 ⇒ `git cat-file HEAD:<路径>`
+          #   报 "path does not exist in 'HEAD'"（实测踩过）。
+          fail=0
+          count=0
+          while IFS= read -r -d '' f; do
+            count=$((count + 1))
+            blob=$(git cat-file blob "HEAD:$f" | md5sum | cut -d' ' -f1)
+            filt=$(git cat-file --filters --path="$f" "HEAD:$f" | md5sum | cut -d' ' -f1)
+            work=$(md5sum "$f" | cut -d' ' -f1)
+            if [ "$blob" != "$filt" ] || [ "$blob" != "$work" ]; then
+              echo "BYTE CONTRACT VIOLATED: $f"
+              echo "  blob=$blob filtered=$filt worktree=$work"
+              fail=1
+            fi
+          done < <(git -c core.quotepath=false ls-files -z '*.dict' '*.raw' '*.sip')
+          echo "checked $count protected files"
+          if [ "$fail" -ne 0 ]; then
+            echo "::error::byte contract violated — checkout materialized CRLF into byte-compared files"
+            exit 1
+          fi
+          echo "all -text protected files are byte-identical to their blobs"
+
+  # ==========================================================================
+  # Job 3 —— 护栏全量 pytest（Ubuntu，主闸门）
+  # 验证什么：全量测试套件的**失败集合相对 CI 基线不漂移**。
+  # 闸门语义：**不是零失败**。CI 基线里有 68 个已知失败（其中 31 个源于
+  #   `derived/` 中间产物未入库，见文件头说明），允许它们存在；
+  #   **任何新增失败/错误 ⇒ job 红**（护栏脚本退出码 1 ⇒ step 失败）。
+  # 为什么放 Ubuntu：checkout 天然是 LF，与本机工作区字节一致 ⇒
+  #   失败集合可复现（Windows 的 CRLF 物化问题见 Job 4）。
+  # 依赖：实测 `pytest + numpy` 即足够（matplotlib/docx/sentence_transformers
+  #   只被 scripts/ 与可选降级路径用到，不在测试路径上；实测两者都装不上
+  #   也不影响失败集合 —— 见文件末尾「实测记录」）。
+  # ==========================================================================
+  guarded-pytest:
+    name: guarded-pytest (ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: python -m pip install --upgrade "pytest==8.4.2" "numpy==2.5.4"
+
+      # ★ 跑护栏脚本本体。它自己负责：解释器回退、mtime 快照、summary 行断言、
+      #   FAILED/ERROR 抽取口径自检、与基线逐行比对、产物落盘。
+      #   ★ 退出码：0 = 集合未漂移；1 = 漂移/护栏触发 ⇒ job 红（这就是闸门）。
+      - name: Run guarded pytest (drift gate)
+        run: |
+          python tools/qa/run_guarded_pytest.py \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --out-dir "$GITHUB_WORKSPACE/_ci_artifacts" \
+            --expect-failed "$GITHUB_WORKSPACE/tools/qa/baseline/ci_expected_failed_ids.txt" \
+            --expect-errors "$GITHUB_WORKSPACE/tools/qa/baseline/ci_expected_errors.txt"
+
+      # ★ 无论成败都上传护栏产物 —— CI 挂了也得能查「到底哪条漂移了」。
+      - name: Upload guarded artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guarded-pytest-ubuntu
+          path: |
+            _ci_artifacts/_guarded_raw.txt
+            _ci_artifacts/_guarded_result.json
+            _ci_artifacts/_guarded_before.txt
+            _ci_artifacts/_guarded_after.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+  # ==========================================================================
+  # Job 4 —— 护栏全量 pytest（Windows，与 Ubuntu 对照）
+  # 验证什么：同一套护栏在 **Windows** 上也得到与 Ubuntu 一致的失败集合。
+  #   这是本仓的**特有必要验证**：Windows 的 `core.autocrlf=true` 默认会把
+  #   LF 物化成 CRLF。实测：不做处理时 Windows 比 Ubuntu **多 10 条失败**
+  #   （全是行尾断言）。
+      # ★ 因此这里显式关掉 autocrlf。
+  #   注意：`actions/checkout` 没有 autocrlf 开关，且 checkout 发生在 `run` 步骤之前
+  #   ⇒ 只能在 checkout **之后**改配置并按 blob 重新物化工作区（见下一步）。
+  # 闸门语义：与 Ubuntu 完全相同 —— 相对 CI 基线不许漂移。
+  # ==========================================================================
+  guarded-pytest-windows:
+    name: guarded-pytest (windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ★ 关掉 autocrlf 并按 blob 重新物化工作区。
+      #   为什么必须做：GitHub 的 windows runner 上 git 默认 `core.autocrlf=true`
+      #   ⇒ checkout 后 `.sh`/`.py`/`.md` 变成 CRLF ⇒ 失败集合比 Ubuntu 多 10 条
+      #   ⇒ 闸门会误报「漂移」（那是环境差异，不是回归）。
+      #   ⇒ 强制 LF，让两个平台的失败集合可比。
+      #   ⚠ 注意 `*.dict`/`*.raw`/`*.sip` 由 `.gitattributes` 的 `-text` 保护，
+      #     本就不受 autocrlf 影响 ⇒ 这里重物化不会破坏字节契约
+      #     （Job 2 单独验证这一点）。
+      - name: Normalize to LF (disable autocrlf materialization)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config core.autocrlf false
+          git config core.eol lf
+          # ★ `git checkout-index --all --force` 一次重物化全部跟踪文件（实测 ~1s）。
+          #   ⚠ 不要写成 `git ls-files -z | xargs -0 git checkout-index --stdin -z` ——
+          #     xargs 会把文件名追加到命令行 ⇒ 与 `--stdin` 混用 ⇒
+          #     git 报 "don't mix '--stdin' and explicit filenames"（实测踩过）。
+          git checkout-index --all --force
+          # 校验：代码目录不得再有 CRLF（研究素材如 kb/**.csv 入库时即 CRLF，不在此列）
+          if grep -rlIU $'\r' --include='*.sh' --include='*.py' scripts/ core/ tests/ 2>/dev/null | head -1 | grep -q .; then
+            echo "::error::CRLF still present after normalization"
+            exit 1
+          fi
+          echo "worktree normalized to LF"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: python -m pip install --upgrade "pytest==8.4.2" "numpy==2.5.4"
+
+      - name: Run guarded pytest (drift gate)
+        run: |
+          python tools/qa/run_guarded_pytest.py `
+            --repo-root "${{ github.workspace }}" `
+            --out-dir "${{ github.workspace }}/_ci_artifacts" `
+            --expect-failed "${{ github.workspace }}/tools/qa/baseline/ci_expected_failed_ids.txt" `
+            --expect-errors "${{ github.workspace }}/tools/qa/baseline/ci_expected_errors.txt"
+
+      - name: Upload guarded artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guarded-pytest-windows
+          path: |
+            _ci_artifacts/_guarded_raw.txt
+            _ci_artifacts/_guarded_result.json
+            _ci_artifacts/_guarded_before.txt
+            _ci_artifacts/_guarded_after.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+  # ==========================================================================
+  # Job 5 —— corpus_gate 冒烟（Ubuntu）
+  # 验证什么：`scripts/corpus_gate.py`（语料发布准入闸，G1/G2/G5）**有调用方、
+  #   且能被 CI 执行** —— 此前它零调用方，是本项目最重要的质量红线之一。
+  # 为什么需要最小 fixture：真实语料在 `derived/seeds/`（gitignored，不在库里），
+  #   且 `derived/seeds/rtsp/live555_20261024_110155` 是**真实抓包语料**，
+  #   无法在 CI 里重建 ⇒ workflow 现场生成一份**最小** RTSP 语料。
+  # 闸门语义：
+  #   · 干净 fixture → 三条红线全 PASS、退出码 0；
+  #   · 污染 fixture（把 host 换成非目标主机）→ **必须** G1 违规并阻断（退出码 1）。
+  #     ★ 这一步是「闸门有牙齿」的证明：若污染语料也放过，G1 就是摆设。
+  # ==========================================================================
+  corpus-gate-smoke:
+    name: corpus-gate smoke (ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ★ 不装任何第三方包 —— corpus_gate 只依赖标准库 + 本仓 core/。
+      #   这也是「它能被 CI 执行」的证明（无需 pip install）。
+      - name: Generate minimal RTSP corpus fixture
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          # 干净 fixture：端点 127.0.0.1:8554（RTSP profile 的合法端点）、
+          # 会话 mp3AudioTest（在 rtsp_playable_streams.json 的可播清单里）、
+          # 39 个种子（= rq2-live555 环境 B 组契约条数 ⇒ G5 也命中）。
+          GOOD = """OPTIONS rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0
+          CSeq: 1
+
+          DESCRIBE rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0
+          CSeq: 2
+
+          SETUP rtsp://127.0.0.1:8554/mp3AudioTest/track1 RTSP/1.0
+          CSeq: 3
+
+          PLAY rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0
+          CSeq: 4
+
+          TEARDOWN rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0
+          CSeq: 5
+          """
+          # 污染 fixture：换成非目标主机（复刻 2026-10-31 坐实过的静默退化场景）
+          BAD = GOOD.replace("127.0.0.1:8554", "10.11.26.98:554")
+          root = Path("_gate_fixture")
+          for name, body in (("good", GOOD), ("bad", BAD)):
+              d = root / name / "rq4_B"      # 目录名尾部 B ⇒ 聚焦组判定为 B
+              d.mkdir(parents=True, exist_ok=True)
+              for i in range(39):
+                  (d / f"{i:02d}.raw").write_text(body, encoding="utf-8")
+          print(f"fixture generated under {root}")
+          PY
+
+      - name: corpus_gate --help must succeed
+        run: python scripts/corpus_gate.py --help
+
+      - name: corpus_gate on clean fixture must pass (exit 0)
+        run: |
+          set -euo pipefail
+          python scripts/corpus_gate.py \
+            --protocol rtsp \
+            --seed-dir "$GITHUB_WORKSPACE/_gate_fixture/good/rq4_B" \
+            --json-out "$GITHUB_WORKSPACE/_ci_artifacts/corpus_gate_clean.json"
+          echo "::notice::clean fixture passed all gates"
+
+      - name: corpus_gate on polluted fixture must block (exit 1)
+        run: |
+          set -euo pipefail
+          set +e
+          python scripts/corpus_gate.py \
+            --protocol rtsp \
+            --seed-dir "$GITHUB_WORKSPACE/_gate_fixture/bad/rq4_B" \
+            --json-out "$GITHUB_WORKSPACE/_ci_artifacts/corpus_gate_polluted.json"
+          rc=$?
+          set -e
+          if [ "$rc" -ne 1 ]; then
+            echo "::error::expected exit code 1 (blocked by G1) for polluted fixture, got $rc"
+            exit 1
+          fi
+          echo "::notice::polluted fixture correctly blocked by G1"
+
+      - name: Upload corpus gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: corpus-gate-smoke
+          path: _ci_artifacts/corpus_gate_*.json
+          if-no-files-found: warn
+          retention-days: 14
+
+# ============================================================================
+# 实测记录（2026-11-02，Windows 11 + Git Bash / Anaconda Python 3.13.9）
+# ---------------------------------------------------------------------------
+# 本机工作区（有 derived/ 产物）：
+#   37 failed / 1252 passed / 1 skipped / 20 errors   → 与本机基线逐行一致，漂移 0/0
+# 干净 LF checkout（等价本 workflow 的 Ubuntu job，缺 derived/ 产物）：
+#   68 failed / 1179 passed / 4 skipped / 20 errors   → 与 CI 基线逐行一致，漂移 0/0
+#   · ERROR 集合在两种环境下**完全相同**（20 条，漂移 0）—— ERROR 侧环境无关。
+#   · FAILED 集合差 31 条，**全部**源于 gitignored 的 derived/ 中间产物缺失。
+# 依赖最小集：`pytest==8.4.2` + `numpy` 足够（实测最小 venv 与 Anaconda 结果一致）。
+#   numpy 是 tests/fused/test_analyze_compare_index.py 的硬依赖；
+#   matplotlib / python-docx / sentence-transformers 不在测试路径上。
+# ⚠ 本地无法启动 Docker Desktop（需 WSL2，被环境安全策略拦截），
+#   故「Ubuntu 等价」以「干净 LF checkout + 最小 venv」实测，而非真机 Ubuntu 容器。
+# ============================================================================
