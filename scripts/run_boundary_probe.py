@@ -4,7 +4,7 @@
 流程：
   读漏洞 → classify → derive_boundary_param → generate_candidates
   → 序列化 .raw → scp 到虚拟机 → oracle 判定(重放检测崩溃)
-  → probe_boundary 定位合法边界 → 输出合法边界种子。
+  → 批量 oracle 判定 + 定位合法边界 → 输出合法边界种子。
 
 ★协议耦合说明（2026-10-21）：本脚本是【RTSP 专用】运行时辅助脚本——VM 地址/SSH 密钥、
 端口 8560、触发 Session 值 000022B8、load_vuln_kb(protocol="rtsp") 都是 RTSP/live555
@@ -17,11 +17,10 @@ oracle 脚本应配置化；当前仅 RTSP 边界探测实验使用，保持现�
 from __future__ import annotations
 
 import argparse
-import json
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -29,7 +28,7 @@ sys.path.insert(0, str(ROOT))
 from core.fused.downstream.strategy import load_vuln_kb, classify_all, dedupe_reqs  # noqa: E402
 from core.fused.downstream.boundary_probe import (  # noqa: E402
     derive_boundary_param, generate_candidates, derive_semantic_candidates,
-    probe_boundary, emit_boundary_fact,
+    emit_boundary_feedback,
 )
 from core.fused.downstream.rag_seedgen import load_fact_views, assemble_bundle  # noqa: E402
 from core.raw_writers import seedcorpus_to_raw  # noqa: E402
@@ -40,6 +39,29 @@ SSH = ["ssh", "-i", str(Path.home() / ".ssh/vm_ubuntu_zxy"),
        "-o", "StrictHostKeyChecking=no", VM]
 VM_TMP = "/tmp/boundary_candidates"
 PORT = 8560
+
+
+def purge_legacy_boundary_facts(protocol: str = "rtsp") -> Optional[Path]:
+    """清理**旧路径**的探测回写残留（历史产物）。
+
+    ★ B-7 ④ 改道：探测反馈现在落 ``semantic/feedback.jsonl``（**不在**
+      ``*/facts/*.jsonl`` glob 内 ⇒ ``rag_seedgen.load_fact_views`` 读不到）。
+      但旧版脚本写过的 ``per_source/<protocol>/boundary_probe/facts/
+      boundary_probe.jsonl`` **仍在磁盘上、仍会被 glob 命中** ⇒ 必须清掉，
+      否则探测反馈照样进权威知识中枢（改进v2 问题⑤）。
+
+    ★ **只删这一个具体文件** —— 不动 derived/ 下任何其它产物
+      （derived/seeds/、derived/rq3/、derived/rq4/、derived/per_source/*/rfc/ …）。
+
+    Returns:
+        被删除的路径；文件本来就不存在 ⇒ None。
+    """
+    legacy = (paths.per_source_facts_dir(protocol, "boundary_probe")
+              / "boundary_probe.jsonl")
+    if legacy.is_file():
+        legacy.unlink()
+        return legacy
+    return None
 
 
 def oracle(vm_path: str, retries: int = 3) -> bool:
@@ -122,9 +144,16 @@ def main() -> int:
 
     print(f"\n定位到合法边界种子: {len(boundary_seeds)} 个")
 
-    # 4.5 回写知识中枢：对「legal=合法 且 illegal=越界」的边界对，生成 legal_boundary fact
-    facts: list = []
-    facts_written = 0
+    # 4.5 探测反馈入库：★ B-7 ④ 改道 —— 探测结果是**实验反馈**，不是规范事实。
+    #   旧写法把探测结果转成 legal_boundary fact 写进
+    #   per_source/<protocol>/boundary_probe/facts/ —— 那个目录**在**
+    #   `*/facts/*.jsonl` glob 内 ⇒ rag_seedgen.load_fact_views 会读走
+    #   ⇒ 探测反馈混进**权威知识中枢**（改进v2 问题⑤：反馈污染权威事实）。
+    #   改道后：写 **feedback 库**（semantic/feedback.jsonl，与 rule_store 同一
+    #   目录体系）⇒ 不在 facts glob 内 ⇒ **进不了** fact 视图；
+    #   反馈只影响规则的**调度顺序**（reflow_rules 的 priority_score），
+    #   **不改**规则内容。
+    feedbacks: list = []
     for j in range(0, len(verdicts) - 1, 2):
         (req_a, param_a, lab_a, seed_a, ok_a) = verdicts[j]
         (req_b, param_b, lab_b, seed_b, ok_b) = verdicts[j + 1]
@@ -138,23 +167,20 @@ def main() -> int:
         else:  # 源 A
             dim = "self-loop"
             legal_d, illegal_d = "single occurrence", "repeat occurrence"
-        fact = emit_boundary_fact(method, dim, legal_d, illegal_d, trigger="Session=000022B8")
-        facts.append(fact)
-        facts_written += 1
+        feedbacks.append(emit_boundary_feedback(
+            method, dim, legal_d, illegal_d, trigger="Session=000022B8",
+            protocol="rtsp"))
 
-    if facts_written:
-        # 回写知识中枢：oracle 验证的 legal_boundary fact，带 protocol 维度写入
-        # per_source/<protocol>/boundary_probe/facts/（供 load_fact_views/assemble_bundle
-        # 消费）。覆盖写（每次探测得到完整边界集合，避免追加累积重复）。
-        # 注意：boundary_probe 目录不在五源内，build_hub 的 _clean_per_source 只清五源，
-        # 不会误清这里的运行时富化回写。
-        bf_dir = paths.per_source_facts_dir("rtsp", "boundary_probe")
-        bf_dir.mkdir(parents=True, exist_ok=True)
-        bf_path = bf_dir / "boundary_probe.jsonl"
-        with open(bf_path, "w", encoding="utf-8") as f:
-            for fact in facts:
-                f.write(json.dumps(fact, ensure_ascii=False) + "\n")
-        print(f"回写知识中枢: {facts_written} 条 legal_boundary fact → {bf_path}")
+    if feedbacks:
+        fb_path = Path(feedbacks[0]["path"])
+        # 清理**旧路径**的残留产物（历史回写）：那个文件**仍在** facts glob 内
+        # ⇒ 留着就会被 load_fact_views 读走 ⇒ 探测反馈照样进权威知识中枢。
+        # ★ 只删这一个具体文件（不动 derived/ 下任何其它产物）。
+        legacy = purge_legacy_boundary_facts("rtsp")
+        print(f"写入 feedback 库: {len(feedbacks)} 条探测反馈 → {fb_path}")
+        print("  （不再进知识中枢：探测反馈只影响规则调度顺序，不改规则内容）")
+        if legacy is not None:
+            print(f"  已清理旧路径残留: {legacy}")
 
     # 5. 落盘
     out = Path(args.out)

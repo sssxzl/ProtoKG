@@ -12,6 +12,7 @@
 """
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Optional
 
 from core.models import SeedCorpus, SeedMessage
@@ -406,7 +407,7 @@ def probe_boundary(candidates: list[tuple[str, SeedCorpus]], oracle) -> Optional
         ok = oracle(seed)  # True=合法(不崩), False=非法(崩)
         verdicts.append((label, seed, ok))
 
-    legal_seeds = [s for l, s, ok in verdicts if ok]
+    legal_seeds = [s for label, s, ok in verdicts if ok]
     if not legal_seeds:
         return None
     # 离散场景：legal 端点即边界；若还有更细的候选，这里可扩展为「合法里最接近非法」的选择
@@ -415,11 +416,30 @@ def probe_boundary(candidates: list[tuple[str, SeedCorpus]], oracle) -> Optional
 
 def emit_boundary_fact(method: str, dim: str, legal_desc: str, illegal_desc: str,
                        trigger: str, authority: str = "boundary_probe",
-                       protocol: str = "rtsp") -> dict:
-    """把探测到的合法边界转成 legal_boundary fact（回写知识中枢，形成闭环）。
+                       protocol: str = "rtsp", *,
+                       feedback_sink: Optional[Path] = None) -> dict:
+    """把探测到的合法边界转成 legal_boundary fact（**已改道**：落 feedback 库）。
 
     探测结果 → 知识原子（subject=method, aspect=legal_boundary, value={dim,legal,illegal,trigger}），
-    后续种子生成可直接复用，无需重新探测。protocol 写入 fact_key（换协议回写正确协议）。
+    protocol 写入 fact_key（换协议回写正确协议）。
+
+    ★ **B-7 ④ 改道（改进v2 问题⑤）**：探测结果是**实验反馈**，不是规范事实。
+      它**不得**再作为权威 ``legal_boundary`` fact 进入知识中枢 ——
+      否则实验反馈会与 RFC 源产出的权威 legal_boundary fact 混在同一个
+      ``*/facts/*.jsonl`` glob 下（``rag_seedgen.load_fact_views`` 会一起读走），
+      即「反馈污染权威事实」。
+      ⇒ 探测结果的**规范落点**是 **feedback 库**
+        （``derived/per_source/<协议>/rfc/semantic/feedback.jsonl``，
+        见 :mod:`core.fused.downstream.rule_store`），它**只影响规则的调度顺序**
+        （``reflow_rules`` 的 ``priority_score``），**不改规则内容**。
+
+    ⚠ **本函数保持签名与返回结构不变**（既有调用方 ``scripts/run_boundary_probe.py``
+      与既有测试 ``tests/fused/test_boundary_probe.py`` 都依赖它）：
+      - 返回值仍是同构的 legal_boundary fact dict（**向后兼容**）；
+      - 新增 keyword-only ``feedback_sink``：**给出**时把探测结果并入
+        feedback 库；**不给**（默认）⇒ 纯函数、不落盘（行为与改道前一致）。
+      - 改道后的**规范入口**是 :func:`emit_boundary_feedback`（只写 feedback 库、
+        **不产出** legal_boundary fact）。
     """
     import hashlib
     import json
@@ -436,7 +456,46 @@ def emit_boundary_fact(method: str, dim: str, legal_desc: str, illegal_desc: str
              "epistemic_type": "observed", "authority": authority, "scope": None,
              "evidence_summary": [f"{authority}:{method}.legal_boundary.{dim}"],
              "confidence": None}
+    if feedback_sink is not None:
+        # ★ 改道：探测结果落 feedback 库（实验反馈位），**不**落权威 facts。
+        emit_boundary_feedback(
+            method, dim, legal_desc, illegal_desc, trigger,
+            protocol=protocol, authority=authority, sink=feedback_sink)
     return {"fact_key": fact_key, "resolution": None, "all_claims": [claim]}
+
+
+def emit_boundary_feedback(method: str, dim: str, legal_desc: str,
+                            illegal_desc: str, trigger: str, *,
+                            protocol: str = "rtsp",
+                            authority: str = "boundary_probe",
+                            sink: Optional[Path] = None) -> dict:
+    """**改道后的规范入口**：探测结果 → feedback 库（**不产出** legal_boundary fact）。
+
+    ★ 返回的是**反馈记录**（dict），不是 fact ⇒ 调用方若把它写进
+      ``*/facts/*.jsonl``，``load_fact_views`` 也**读不出** legal_boundary
+      （没有 ``fact_key``/``all_claims``）⇒ 反馈**进不了**知识中枢的权威事实桶。
+
+    Args:
+        sink: feedback 库的落盘路径；缺省 ⇒ 该协议的标准 feedback 库
+              （``derived/per_source/<协议>/rfc/semantic/feedback.jsonl``）。
+    """
+    from core.fused.downstream import rule_store
+    key = rule_store.probe_feedback_key(protocol, method, dim)
+    record = {
+        "kind": "boundary_probe",
+        "method": method,
+        "dim": dim,
+        "legal": legal_desc,
+        "illegal": illegal_desc,
+        "trigger": trigger,
+        "authority": authority,
+        # ★ 反馈表的标准字段（§3.5）：只影响调度顺序，不含规则内容
+        "priority_score": 0.0,
+        "selection_count": 1,
+        "coverage_signal": 1.0,
+    }
+    path = rule_store.record_feedback(protocol, key, record, sink=sink)
+    return {"key": key, "record": record, "path": str(path)}
 
 
 def generate_dict(bundle: dict, resources: Optional[list] = None) -> str:
@@ -1024,6 +1083,7 @@ def load_base_dict_tokens(protocol: str = "rtsp") -> set:
 
 __all__ = ["BoundaryParam", "derive_boundary_param", "generate_candidates",
            "derive_semantic_candidates", "probe_boundary", "emit_boundary_fact",
+           "emit_boundary_feedback",
            "extract_session_candidates", "search_trigger_value",
            "binary_search_boundary", "derive_field_candidates",
            "probe_field_space", "derive_constraint_candidates",

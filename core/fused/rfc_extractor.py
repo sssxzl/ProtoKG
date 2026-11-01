@@ -553,6 +553,9 @@ def _merge_leaf_windows(roots: list[SectionNode],
         windows.append({
             "path": path,
             "section_no": node.number,
+            # ★ 章节**号**链（与 `path`（标题链）并列）—— 给机器做 rule_id
+            #   派生用；标题措辞会变、章节号稳定（见 `_section_number_path`）。
+            "section_no_path": _section_number_path(node),
             "title": node.title,
             "level": node.level,
             "line": node.head.line,
@@ -583,6 +586,37 @@ def _section_path(node: SectionNode) -> tuple[str, ...]:
         cur = cur.parent
     chain.reverse()
     return tuple(c.title for c in chain)
+
+
+def _section_number_path(node: SectionNode) -> tuple[str, ...]:
+    """节点的**章节号**路径（如 ('10', '10.1')）。
+
+    ★ 与 `_section_path`（**标题**链）**并列**的第二条路径，用途不同：
+      - `_section_path`（标题链）⇒ **给人看 / 溯源展示**
+        （`EvidenceAnchor.section_path`；标题措辞会随 RFC 修订变化）。
+      - `_section_number_path`（章节号链）⇒ **给机器做 rule_id 派生**
+        （`compute_rule_id` 的 `section_path` 入参）。
+        §3.2 要求「措辞微调 ⇒ id 不变」—— 章节号比标题**稳定**：
+        标题改一个字不该让 rule_id 漂移（否则规则无法跨构建对齐/增量更新）。
+
+    ⚠ **空 number 的层会被跳过**：无编号的一级标题（number 为空串）若塞进
+      链里会产出 `("21", "", "1.1")` 这种形态 ⇒ id 会依赖**层数**，
+      且不同 RFC 的链形不可比。跳过 ⇒ 链里**每一层都是真实章节号**。
+
+    ⚠ **层数一一对应不是契约**：因「跳过空 number 层」，号链的层数
+      **可能少于**标题链的层数（某层标题无编号时）。设计对号链的唯一要求是
+      「**能区分不同章节**」—— rule_id 只需这一点；「层数与标题链一一对应」
+      是**展示层**的关切，且在当前三份 RFC 上恰好成立（数据事实，
+      非代码保证）。层数对齐**不**应被写成契约，否则换一份带无编号一级
+      标题的 RFC 就会假失败。
+    """
+    chain: list[SectionNode] = []
+    cur: Optional[SectionNode] = node
+    while cur is not None:
+        chain.append(cur)
+        cur = cur.parent
+    chain.reverse()
+    return tuple(c.number for c in chain if c.number)
 
 
 def _section_kind(window: dict, cfg: dict) -> Optional[str]:
@@ -1850,6 +1884,18 @@ def _line_offsets(raw_text: str) -> dict[int, int]:
     ★ 与 `str.splitlines()` 的切分口径**完全一致**（都用 `splitlines`），
       故行号 ↔ 偏移的映射与 `_extract_rfc_file` 的行号语义严格对齐
       （P1-3 的真实行号语义）。
+
+    ⚠⚠ **换页符陷阱（务必读）**：RFC 正文含**换页符 `\x0c`**（实测
+      rtsp 92 / sip 269 / smtp 95 处），而 `str.splitlines()` 会把它
+      （以及 `\v` `\x1c` `\x1d` `\x1e` `\x85` `\u2028` `\u2029`）
+      **当作行边界**，而 `text.count("\n")` / `text.split("\n")` **不会**
+      ⇒ 两种口径的行号相差**正好等于换页符处数**（实测 9~11 行）。
+      ⇒ **下游若要用 `#@<行号>` 反查 span 落在第几行，必须用本函数口径
+      （或 `splitlines`），不能用 `count("\n")`** —— 否则会 100% 对不上
+      （实测 430/430 全不符）。
+      本口径下的正确反查式：
+      ``line_offsets[n] <= span_start < line_offsets[n + 1]``
+      （实测对 430/430 候选全部成立）。
     """
     offsets: dict[int, int] = {}
     pos = 0
@@ -1907,8 +1953,13 @@ def _constraint_candidates_from_file(f: Path, protocol: str,
     ⇒ 目录行在候选产生**之前**已被隔离（TOC 污染归零）。
 
     每个候选携带：
-      - `span_start` / `span_end`：**源文件字符区间**（可在原文逐字核对）
-      - `section_path` / `section_no`：章节归属
+      - `span_start` / `span_end`：**源文件字符区间**，**半开区间**
+        `[span_start, span_end)`（Python 切片语义 ⇒
+        `raw[span_start:span_end] == text` **逐字相等**，可在原文核对）
+      - `section_path`：**标题**链（**给人看 / 溯源**）、
+        `section_no`：**单级**章节号、`section_no_path`：**章节号链**
+        （**给机器做 rule_id 派生** —— 章节号比标题稳定，标题改一个字
+        不应让 rule_id 漂移；见 `_section_number_path`）
       - `spec_version`：规范版本（如 `RFC 2326`）
       - `source`：`file:<name>#@<真实行号>`（**唯一** anchor 语义）
     """
@@ -1969,6 +2020,7 @@ def _constraint_candidates_from_file(f: Path, protocol: str,
                 "span_end": abs_end,
                 "section_path": list(w.get("path") or ()),
                 "section_no": w.get("section_no") or "",
+                "section_no_path": list(w.get("section_no_path") or ()),
                 "spec_version": spec_version,
             })
             if len(out) >= max_per_rfc:
@@ -1986,10 +2038,15 @@ def extract_constraint_candidates(protocol: str, max_per_rfc: int = 80) -> list[
       ① **不再绕过章节树** ⇒ 目录行在候选产生**之前**已被隔离
          （TOC 污染实测归零：rtsp 5 / sip 2 / smtp 1 → 0）；
       ② 每个候选带 `span_start`/`span_end`（**源文件字符区间**）、
-         `section_path`/`section_no`（章节归属）、`spec_version`（规范版本）
+         `section_path`（标题链）/ `section_no`（单级号）/
+         `section_no_path`（**章节号链**）、`spec_version`（规范版本）
          ⇒ 改进v2 问题⑧「先验证证据再判显式」在数据上**物理可行**；
+         ⇒ 章节**号**链供 rule_id 派生（标题链只给人看，见 ④）；
       ③ `source` 统一为 `file:<name>#@<真实行号>` —— **唯一** anchor 语义
          （此前全文裸扫产出的是**无行号**的 `file:<name>`）。
+      ④ 章节归属**两条路径并存**：`section_path`（标题链，给人看/溯源）
+         与 `section_no_path`（章节号链，给机器做 rule_id 派生）——
+         章节号比标题稳定，标题措辞微调不应让 rule_id 漂移（§3.2）。
     """
     spec_dir = paths.kb_source_dir(protocol, "rfc")
     if not spec_dir.is_dir():
@@ -2075,6 +2132,8 @@ def infer_constraints(protocol: str, llm=None, max_candidates: int = 40,
                 "span_end": batch[0].get("span_end"),
                 "section_path": list(batch[0].get("section_path") or []),
                 "section_no": batch[0].get("section_no") or "",
+                # ★ 章节号链（给 rule_id 派生用；与标题链 `section_path` 并列）
+                "section_no_path": list(batch[0].get("section_no_path") or []),
                 "spec_version": batch[0].get("spec_version") or "",
             })
     return out
@@ -2141,6 +2200,8 @@ def extract_constraint_norms(protocol: str, llm=None,
             "span_end": c.get("span_end"),
             "section_path": list(c.get("section_path") or []),
             "section_no": c.get("section_no") or "",
+            # ★ 章节号链（给 rule_id 派生用；与标题链 `section_path` 并列）
+            "section_no_path": list(c.get("section_no_path") or []),
             "spec_version": c.get("spec_version") or "",
         })
     return norms
