@@ -79,3 +79,10 @@ _ci_artifacts/
 #   目录名带进程号，正常跑完会自清理；但进程被 kill 时会残留 ⇒ 顺手排除掉，
 #   免得误提交（里面是被物化成 CRLF 的脚本副本）。
 _crlf_probe_*/
+
+# B-10 实验产物（预登记冻结后的实测结果 + 冻结候选集 + LLM 缓存）
+#   与标注集同理：实验结论**不可重建**（含 LLM 调用记录），必须可审计。
+!derived/exp_semantic_gain/
+!derived/exp_semantic_gain/candidates_frozen.jsonl
+!derived/exp_semantic_gain/llm_cache.jsonl
+!derived/exp_semantic_gain/results.json
