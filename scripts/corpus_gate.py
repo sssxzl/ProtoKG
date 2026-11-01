@@ -3,40 +3,41 @@
 
 为什么需要它
 ------------
-2026-10-31 实测坐实过一次**静默退化**：`traffic` 源的事实里混入了两台不同设备
-的抓包（含非目标 IP 摄像机 ``rtsp://10.11.26.98:554/isapi/...``），而当时的
-兜底条件 ``if not msg.url or "localhost/seed" in msg.url:`` 对真实抓包 URL
-**不命中** → 原样透传 → 某份 RTSP 语料 **59.5%（22/37）的种子打向了错误主机**。
+2026-10-31 实测坐实过一次**静默退化**：``traffic`` 源的事实里混入了两台不同设备
+的抓包（含非目标 IP 摄像机 ``rtsp://10.11.26.98:554/isapi/...``），而当时的兜底
+条件 ``if not msg.url or "localhost/seed" in msg.url:`` 对真实抓包 URL **不命中**
+→ 原样透传 → 某份 RTSP 语料 **59.5%（22/37）的种子打向了错误主机**。
 
 ★ 关键教训：**现有所有健康度指标一条都不会红**（dup_fact_ids / toc_sourced_outcomes /
 章节号命中全不受影响）—— 因为"打错主机"不是"弱种子"，是**坏种子**，而坏种子不
 违反任何一条既有的结构不变式。故必须有一条**专门针对"种子指向哪里"的正确性闸**。
 
-本脚本实现三条红线（编号沿用 docs/rq4_aflnet_exp_design.md §12.4.4）：
-
+三条红线（判据见 docs/rq4_s4_corpus_release_gate_spec.md）
+---------------------------------------------------------
 =========  =====================================================================
 红线      判据
 =========  =====================================================================
-**G1**    目标主机正确率 —— 种子**请求行**的 URL host:port 必须指向目标环境的
-          服务端点；指向非目标端点的种子占比 > 阈值 → 失败。
-**G2**    不可播会话占比 —— 种子引用的会话/资源名必须 ⊆ 目标环境的**可播清单**
-          （``target_env.playable_resource_names``）；引用不可播资源名的种子
-          占比 > 阈值 → 失败。
-**G5**    契约一致性 —— profile 声明的 ``seedgen.focus_group.<组>.seeds``
-          （期望条数）与**实际生成的条数**必须一致；不一致 → **分级报告**
-          （默认只告警；``--strict`` 参与阻断）。
+**G1**    目标端点正确率 —— 语料中出现的**每个网络端点**都必须属于该协议的
+          **合法端点集合**；违规端点数 > 阈值 → 失败。
+**G2**    不可播会话占比 —— 语料引用的**会话/资源名**必须 ⊆ 目标环境的**可播
+          清单**；违规引用数 > 阈值 → 失败。
+**G5**    契约一致性 —— ``seedgen`` 产出条数必须 == profile 声明的契约条数；
+          不一致 → **分级报告**（默认只告警；``--strict`` 参与阻断）。
 =========  =====================================================================
+
+★ G1 / G2 是**正确性闸**（无条件阻断）；G5 是**契约闸**（默认只告警）。
+  理由：契约漂移有时是预期的（如 S1′ 重生成后条数合法变化 → 硬阻断会挡正常
+  流程），而"打错主机"永远不是。
 
 设计约束（与本仓既有风格一致）
 ------------------------------
 · **只读**：本脚本**不写任何文件**（不生成/删除/修改 kb/、derived/、fused_hub/ 下
   的任何内容），只读取已存在的语料目录并打印报告。CI 里作为纯检查项接入。
-· **配置驱动、协议无关**：目标端点、可播清单、URL 字段位置、聚焦组契约**全部从
-  profile 派生**（复用 ``core/fused/downstream/target_env.py`` 的既有函数，不重复
-  实现 host 解析），换协议 = 加一份 profile.json，脚本零改动。
-· **适用性显式声明**：每条红线都**显式**给出"适用/不适用 + 原因"——绝不静默跳过。
-  典型：SIP 的 Request-URI 是 ``sip:user@host`` 形态，其 domain 是**逻辑实体标识、
-  不决定路由**（历史结论，见 target_env.py 模块 docstring）→ **G1 对 SIP 不适用**。
+· **配置驱动、协议无关**：合法端点集合、可播清单、端点抽取位置、会话名抽取规则
+  **全部从 profile 派生**（复用 ``core/fused/downstream/target_env.py`` 的既有函
+  数，不重复实现 URL 拆分），换协议 = 加一份 profile.json，脚本零改动。
+· **适用性显式声明**：每条红线都**显式**给出"适用/不适用 + skipped_reason"——
+  绝不静默跳过（「不适用」与「通过」在报告里必须**可区分**，否则 CI 假绿）。
 · **可复算**：每条红线都打印「检查了什么 / 数据来源 / 判定依据 / 实测值 / 阈值 / 结论」。
 
 用法
@@ -44,14 +45,16 @@
     python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/seeds/rtsp/rq4_B
     python scripts/corpus_gate.py --protocol sip  --seed-dir derived/seeds/sip/rq4_B
     python scripts/corpus_gate.py --protocol smtp --seed-dir derived/seeds/smtp/rq4_B
-    python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/rq3/B/seeds --strict
-    python scripts/corpus_gate.py --protocol rtsp --seed-dir <dir> --json   # CI 机器可读
+    python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/seeds/rtsp/rq4_B --json
+    python scripts/corpus_gate.py --protocol rtsp --seed-dir <dir> --strict
+    python scripts/corpus_gate.py --protocol rtsp --seed-dir <dir> --json-out report.json
 
 退出码
 ------
 * ``0`` —— 通过（无阻断级失败；G5 漂移在默认模式下只告警）
-* ``1`` —— **阻断**（存在阻断级红线失败；``--strict`` 时 G5 漂移也参与阻断）
-* ``2`` —— 用法/配置错误（语料目录缺失、profile 缺失、环境名未声明等）
+* ``1`` —— **阻断**（G1/G2 有违规；``--strict`` 时 G5 漂移也阻断）
+* ``2`` —— 用法/环境错误（语料目录缺失、profile 缺失/不可读、环境名未声明或不唯一、
+  可播清单不可解析等）—— **必须与 1 区分**：返 0 会让 CI 假绿，返 1 会掩盖真违规。
 """
 from __future__ import annotations
 
@@ -60,7 +63,6 @@ import json
 import re
 import sys
 from collections import Counter
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
@@ -71,101 +73,30 @@ if str(REPO_ROOT) not in sys.path:
 from core import paths  # noqa: E402
 from core.fused.downstream.target_env import (  # noqa: E402
     _split_url,          # 私有工具函数：复用它保证 URL 拆分口径与归一化修复一致
-    effective_config,
-    endpoint_normalization_enabled,
     playable_resource_names,
-    select_environment,
     target_endpoint,
 )
 
-# ===========================================================================
-# 默认阈值
-# ===========================================================================
+#: JSON 输出的 schema 版本（与 docs/rq4_s4_corpus_release_gate_spec.md §3.2 一致）。
+SCHEMA_VERSION = "1.0"
 
-#: G1 默认阈值：**指向非目标端点的种子占比**上限。
-#: 默认 0.0 —— 与 docs/rq4_aflnet_exp_design.md §12.4.4 的「命中率 = 100%」一致：
-#: 打向错误主机的种子不是"弱种子"是"坏种子"，一条即阻断。阈值可配置。
-DEFAULT_MAX_WRONG_TARGET_RATIO = 0.0
+#: G1 / G2 的默认阈值：**违规数 = 0**（打错主机 / 引用不可播会话都是坏种子）。
+DEFAULT_MAX_VIOLATIONS = 0
 
-#: G2 默认阈值：**引用不可播资源名的种子占比**上限。
-#: 默认 0.0 —— 同上（设计文档建议「= 0%」）。阈值可配置。
-DEFAULT_MAX_UNPLAYABLE_RATIO = 0.0
+#: ``violations[].files`` 最多列出的种子文件名数（避免 JSON 爆炸；总数记在
+#: ``occurrences``）。
+MAX_VIOLATION_FILES = 20
 
-#: 已知的历史**契约漂移**签名（协议, 组）→ (契约期望, 重生成实际)。
-#: 来源：docs/rq4_aflnet_exp_design.md §12.1 与
-#: docs/rfc_reform_a_implementation_report.md（"契约 rtsp 50 / sip 25 / smtp 78 与
-#: 当前实际重生成 65/20/61 失配"）。这是**历史契约过期**（待用户决策），不是本闸门
-#: 引入的回归 → 报告里显式标注为"已知漂移"。
-KNOWN_DRIFT: dict[tuple[str, str], tuple[int, int]] = {
-    ("rtsp", "B"): (50, 65),
-    ("sip", "B"): (25, 20),
-    ("smtp", "B"): (78, 61),
+#: 闸名 → JSON 里的 ``name`` 字段（规格书 §3.2 固定）。
+GATE_NAMES = {
+    "G1": "target_endpoint_correctness",
+    "G2": "playable_resource_ratio",
+    "G5": "corpus_contract_consistency",
 }
 
-#: 状态常量。
-STATUS_PASS = "PASS"
-STATUS_FAIL = "FAIL"
-STATUS_WARN = "WARN"
-STATUS_NA = "N/A"
-
-
-# ===========================================================================
-# 数据结构
-# ===========================================================================
-
-@dataclass
-class Thresholds:
-    """三条红线的阈值（全部可配置）。"""
-
-    #: G1：指向非目标 host:port 的**种子数占比**上限（ratio > 阈值 → 失败）。
-    max_wrong_target_ratio: float = DEFAULT_MAX_WRONG_TARGET_RATIO
-    #: G2：引用不可播资源名的**种子数占比**上限（ratio > 阈值 → 失败）。
-    max_unplayable_ratio: float = DEFAULT_MAX_UNPLAYABLE_RATIO
-
-
-@dataclass
-class GateOutcome:
-    """一条红线的判定结果（可复算：每项都带数据来源与实测值）。"""
-
-    gate: str
-    title: str
-    status: str
-    #: 是否参与阻断（退出码）。
-    blocking: bool = False
-    summary: str = ""
-    #: 检查了什么。
-    checked: str = ""
-    #: 数据来源。
-    sources: str = ""
-    #: 判定依据。
-    criteria: str = ""
-    #: 实测值。
-    measured: str = ""
-    #: 阈值。
-    threshold: str = ""
-    #: 结构化明细（供 --json 消费）。
-    details: dict[str, Any] = field(default_factory=dict)
-
-    @property
-    def failed(self) -> bool:
-        """是否构成阻断级失败。"""
-        return self.status == STATUS_FAIL and self.blocking
-
-    def to_dict(self) -> dict[str, Any]:
-        """转成可 JSON 序列化的字典。"""
-        return {
-            "gate": self.gate,
-            "title": self.title,
-            "status": self.status,
-            "blocking": self.blocking,
-            "summary": self.summary,
-            "checked": self.checked,
-            "sources": self.sources,
-            "criteria": self.criteria,
-            "measured": self.measured,
-            "threshold": self.threshold,
-            "details": self.details,
-        }
+#: 带 authority 的绝对 URL（``scheme://host[:port]/...``）。
+_ABSOLUTE_URL_RE = re.compile(
+    r"[A-Za-z][A-Za-z0-9+.\-]*://(\[[0-9A-Fa-f:.]+\]|[^:/@\s]+)(?::(\d{1,5}))?")
 
 
 # ===========================================================================
@@ -177,7 +108,7 @@ def load_profile(protocol: str, profile_path: Optional[Path] = None) -> dict:
 
     Args:
         protocol: 协议名（小写）。
-        profile_path: 显式 profile 路径（测试/临时场景用）；None → 标准位置。
+        profile_path: 显式 profile 路径；None → 标准位置。
 
     Returns:
         profile 字典；文件不存在或解析失败 → 空 dict（调用方负责报错）。
@@ -212,22 +143,45 @@ def read_manifest(seed_dir: Path) -> dict:
     return {}
 
 
+def profile_environments(profile: dict) -> dict:
+    """profile 声明的目标环境表（``seedgen.environments``）。"""
+    return dict((profile.get("seedgen") or {}).get("environments") or {})
+
+
 def resolve_env(profile: dict, manifest: dict,
                 env_arg: Optional[str] = None) -> tuple[Optional[str], dict]:
     """选出目标环境，返回 ``(环境名, 环境配置)``。
 
     优先级：
-      1. 命令行 ``--target-env``（显式意图最高）；
+      1. 命令行 ``--env``（显式意图最高）；
       2. 语料 ``manifest.json`` 的 ``seedgen.target_env``（**语料自身记录的环境**
          —— 最忠实：它就是当初生成这份语料时用的环境）；
-      3. profile 的默认环境 ``seedgen.environment``（未声明 → 无环境）。
+      3. profile 声明的**唯一**环境（规格书 §3.1 的默认口径）。
+
+    ★ 第 3 条很重要：**违约的语料恰恰没有 manifest**（``seedgen.py`` 在条数
+      自检失败时先退出、不写 manifest）⇒ 若无此兜底，闸会退回**协议级**契约，
+      把"环境级重标定 39"错报成"契约 50"（误导性的期望值）。
 
     Raises:
         KeyError: 显式指定的环境名未在 profile 中声明（拼写错误必须显式失败）。
+        ValueError: profile 声明了多个环境且未显式指定（无法判定 → 配置错误）。
     """
+    envs = profile_environments(profile)
     manifest_env = str((manifest.get("seedgen") or {}).get("target_env") or "").strip()
     name = env_arg or (manifest_env or None)
-    return select_environment(profile, name)
+    if not name:
+        if len(envs) == 1:
+            name = next(iter(envs))
+        elif len(envs) > 1:
+            raise ValueError(
+                f"profile 声明了多个目标环境 {sorted(envs)}，无法判定；"
+                f"请用 --env 显式指定")
+        else:
+            return (None, {})
+    if name not in envs:
+        raise KeyError(
+            f"未知的目标环境 {name!r}（profile 声明了: {sorted(envs)}）")
+    return (str(name), dict(envs.get(name) or {}))
 
 
 def detect_group(seed_dir: Path, manifest: dict,
@@ -244,7 +198,6 @@ def detect_group(seed_dir: Path, manifest: dict,
         value = seedgen_cfg.get(key) or manifest.get(key)
         if value:
             return str(value).strip().upper()
-    # 目录名推断：RQ4 的 "rq4_B" / RQ3 的 "B" / 实验目录的 "..._focusB"
     for candidate in (Path(seed_dir).name, Path(seed_dir).parent.name):
         match = re.search(r"(?:^|[^A-Za-z])([A-D])$", candidate)
         if match:
@@ -258,8 +211,6 @@ def request_url_index(profile: dict) -> Optional[int]:
     模板形如 ``"{method} {url} {version}"`` → URL 是请求行的第 2 个空白分隔字段
     （下标 1）。命令行协议（如 SMTP 的 ``"{method} {argument}"``）**没有** ``{url}``
     字段 → 返回 None（该协议无 URL 概念 → 相关红线不适用）。
-
-    这是**配置驱动**的：换协议不需要改脚本。
     """
     template = str((profile.get("raw_format") or {}).get("request_line") or "").strip()
     if not template:
@@ -270,25 +221,136 @@ def request_url_index(profile: dict) -> Optional[int]:
     return None
 
 
+def uri_form(profile: dict) -> str:
+    """profile 声明的目标 URI 形态。
+
+    · ``hierarchical`` —— ``scheme://authority/...``：authority 即**路由端点**
+      （RTSP）→ 端点从 URL 的 authority 抽取；
+    · ``opaque``       —— ``scheme:opaque``（如 SIP 的 ``sip:user@host``）：URI 的
+      domain 本身是**逻辑实体标识**，但**端点仍要检查**（只是抽取位置不同：请求行
+      R-URI + 客户端自有地址的头部）；
+    · ``none``         —— profile 未声明目标 URI（如 SMTP）→ 无端点概念。
+    """
+    default_url = str(profile.get("default_url") or "").strip()
+    if not default_url:
+        return "none"
+    return "hierarchical" if "://" in default_url else "opaque"
+
+
 # ===========================================================================
-# 语料读取与 URL 抽取
+# 合法端点集合（配置派生）
 # ===========================================================================
 
-def iter_seed_files(seed_dir: Path) -> list[Path]:
-    """列出语料目录下的 ``*.raw`` 种子文件（按名排序）。"""
-    return sorted(Path(seed_dir).glob("*.raw"))
+def allowed_endpoints(profile: dict, env_cfg: dict) -> tuple[set[str], list[str]]:
+    """派生该协议的**合法端点集合**（``host:port``），返回 ``(集合, 来源说明)``。
+
+    数据来源（**全部来自配置，禁止写死**）：
+      1. 目标环境显式声明的端点（``target_endpoint`` / ``target_url`` /
+         ``default_url`` / ``url`` / ``server``）；
+      2. profile 的 ``default_url``（经 ``target_env.target_endpoint()``）；
+      3. profile 的 ``seedgen.client_side``：``server_addr``（服务端目标）与
+         ``client_addr``（客户端源端口）—— SIP 的两个端口分别出现在 R-URI 与
+         Via/Contact，**必须都允许**，否则误报。
+
+    实测（真实 profile）：
+      · RTSP → ``{127.0.0.1:8554}``
+      · SIP  → ``{127.0.0.1:5060, 127.0.0.1:5061}``（5060=R-URI 服务端，
+        5061=客户端源端口，出现在 Via/Contact）
+      · SMTP → ``{}``（无端点概念 → G1 不适用）
+    """
+    endpoints: set[str] = set()
+    sources: list[str] = []
+
+    def _add(value: str, source: str) -> None:
+        text = str(value or "").strip()
+        if not text:
+            return
+        if "://" in text:
+            _scheme, netloc, _path = _split_url(text)
+            text = netloc
+        text = text.rsplit("@", 1)[-1].strip("<>")
+        if ":" in text and text.rsplit(":", 1)[1].isdigit():
+            endpoints.add(text)
+            sources.append(source)
+
+    for key in ("target_endpoint", "target_url", "default_url", "url", "server"):
+        _add((env_cfg or {}).get(key), f"profile.seedgen.environments.<env>.{key}")
+
+    _scheme, netloc = target_endpoint(profile)
+    _add(netloc, "profile.default_url（经 target_endpoint()）")
+
+    client_side = (profile.get("seedgen") or {}).get("client_side") or {}
+    _add(client_side.get("server_addr"), "profile.seedgen.client_side.server_addr")
+    _add(client_side.get("client_addr"), "profile.seedgen.client_side.client_addr")
+
+    return endpoints, sources
 
 
-def read_seed_texts(seed_files: list[Path]) -> list[tuple[Path, str]]:
-    """读取种子文件内容（utf-8，容错解码）。"""
-    out: list[tuple[Path, str]] = []
-    for path in seed_files:
-        try:
-            text = path.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            text = ""
-        out.append((path, text))
-    return out
+def endpoint_default_ports(profile: dict) -> tuple[str, str]:
+    """返回 ``(服务端默认端口, 客户端默认端口)``（无则空串）。
+
+    用于端口缺省时的补齐（SIP 的 ``sip:127.0.0.1`` → 5060；Via 的 ``127.0.0.1``
+    → 5061）。
+    """
+    server_port = ""
+    client_port = ""
+    _scheme, netloc = target_endpoint(profile)
+    if ":" in netloc and netloc.rsplit(":", 1)[1].isdigit():
+        server_port = netloc.rsplit(":", 1)[1]
+    client_side = (profile.get("seedgen") or {}).get("client_side") or {}
+    for value in (client_side.get("server_addr"), client_side.get("client_addr")):
+        text = str(value or "").strip()
+        if ":" in text and text.rsplit(":", 1)[1].isdigit():
+            port = text.rsplit(":", 1)[1]
+            if not server_port:
+                server_port = port
+            if not client_port:
+                client_port = port
+    return server_port, client_port
+
+
+# ===========================================================================
+# 端点抽取
+# ===========================================================================
+
+def _is_hostlike(text: str) -> bool:
+    """判断字符串是否**像网络主机名/地址**（用于区分 ``sip:bob`` 这类"只有 user"的
+    URI）。规则：含 ``.`` 或 ``:``，或是 ``localhost``。"""
+    value = str(text or "").strip()
+    if not value:
+        return False
+    return "." in value or ":" in value or value.lower() == "localhost"
+
+
+def _normalize_hostport(authority: str, default_port: str) -> Optional[str]:
+    """把 authority（可能带 userinfo / 可能缺端口）规范成 ``host:port``。
+
+    * 剥掉 ``user@``（只检查 host:port，不检查 user 部分——官方 SIP 语料本身就有
+      ``sip:35104723@sip.cybercity.dk`` 这类实例特定对端）；
+    * 缺端口时用 ``default_port`` 补齐；
+    * 不像主机名的（如 ``bob``）→ None（**跳过，不判违规**）。
+    """
+    text = str(authority or "").strip().strip("<>")
+    if not text:
+        return None
+    if "@" in text:
+        text = text.rsplit("@", 1)[1]
+    text = text.strip()
+    if not text:
+        return None
+    if text.startswith("["):                      # IPv6 字面量
+        host, _, rest = text.partition("]")
+        host = host + "]"
+        port = rest[1:] if rest.startswith(":") and rest[1:].isdigit() else ""
+        return f"{host}:{port or default_port}" if (port or default_port) else host
+    if ":" in text:
+        host, _, port = text.rpartition(":")
+        if port.isdigit():
+            return f"{host}:{port}"
+        return text
+    if not _is_hostlike(text):
+        return None
+    return f"{text}:{default_port}" if default_port else text
 
 
 def extract_request_urls(text: str, url_index: int) -> list[str]:
@@ -297,13 +359,6 @@ def extract_request_urls(text: str, url_index: int) -> list[str]:
     请求行的判定：第 0 个字段是**不含冒号的全大写方法名**（故 ``CSeq: 1`` /
     ``Via: ...`` 这类头部行不会被误判为请求行），且该行至少有 ``url_index + 1``
     个字段。
-
-    Args:
-        text: 种子文件全文。
-        url_index: URL 在请求行中的字段下标（由 profile 模板决定）。
-
-    Returns:
-        URL 字符串列表（一条消息一个；顺序 = 出现顺序）。
     """
     urls: list[str] = []
     for line in text.splitlines():
@@ -320,780 +375,295 @@ def extract_request_urls(text: str, url_index: int) -> list[str]:
     return urls
 
 
-#: 全文中**带 authority 的绝对 URL**（``scheme://host[:port]/...``）。
-#: RFC 2543 的 URI 模板占位符（不是真实主机名，判违规会**假阻断**）。
-#: 例：``Refer-To: sip:transfer@host``、``sip:user@host:port``。
-_URI_TEMPLATE_PLACEHOLDERS: frozenset[str] = frozenset({"host", "user", "port"})
+def extract_endpoints(text: str, profile: dict,
+                      url_index: Optional[int]) -> list[tuple[str, str]]:
+    """抽取一条种子文本里的**全部网络端点**，返回 ``[(host:port, 位置)]``。
 
-_ABSOLUTE_URL_RE = re.compile(r"[A-Za-z][A-Za-z0-9+.\-]*://[^\s<>\"']+")
+    ★ 抽取位置**按 URI 形态分流**（配置派生，非协议名硬编码）：
 
+    · ``hierarchical``（``scheme://authority/...``，如 RTSP）—— 端点即 URL 的
+      authority，全文扫描（请求行 / 头部 / 消息体都算）。
 
-def extract_absolute_urls(text: str) -> list[str]:
-    """抽取种子全文里所有**带 authority 的绝对 URL**（不限位置：请求行 / 头部 / 消息体）。
+    · ``opaque``（``scheme:opaque``，如 SIP）—— **只查 3 个路由相关位置**：
+      ① 请求行 **R-URI** 的主机（剥掉 ``user@``；无 host 的跳过）；
+      ② **客户端自有地址的头部**（``profile.seedgen.client_side.headers`` 声明，
+         实测 SIP = ``["Via", "Contact"]``）——**只取 ``;`` 之前的 sent-by**
+         （``branch=``/``tag=``/``rport=`` 里的 IP 是随机不透明串，不是端点）。
 
-    G1 的语义是"语料里**所有** URL 的 host:port 都必须指向目标环境"——只查请求行
-    会漏掉头部/消息体里指向别处的 URL。故 G1 用本函数做全集扫描，G2 的资源名抽取
-    则仍以请求行为准（资源名由请求 URI 承载）。
+      ★ **明确排除** ``From:`` / ``To:``（实例特定对端身份，官方语料本身就有）、
+        ``Call-ID`` 之类事务标识符、以及所有 ``client_side.headers`` 之外的头部；
+        也**不抓全文 IP**（否则 ``branch=`` 里的 ``192.168.1.2`` 会误报上百次）。
     """
-    return [m.group(0).rstrip(".,;") for m in _ABSOLUTE_URL_RE.finditer(text)]
-
-
-
-def authority_of(url: str) -> Optional[str]:
-    """取 URL 的 **authority**（``host[:port]``）；非分层 URI（无 ``//``）→ None。
-
-    复用 ``target_env._split_url``，保证与种子端点归一化修复**同一套拆分口径**。
-    """
-    _scheme, netloc, _path = _split_url(url)
-    if not netloc or "://" not in url:
-        return None
-    return netloc
-
-
-def hostport_parts(netloc: str) -> tuple[str, str]:
-    """把 ``host[:port]`` 拆成 ``(host, port)``；无端口 → port 为空串。
-
-    兼容 IPv6 字面量（``[::1]:8554``）。
-    """
-    text = str(netloc or "").strip()
-    if not text:
-        return "", ""
-    if "@" in text:
-        text = text.rsplit("@", 1)[1]
-    if text.startswith("["):
-        host, _, rest = text.partition("]")
-        return host + "]", rest[1:] if rest.startswith(":") else ""
-    host, sep, port = text.rpartition(":")
-    if sep and port.isdigit():
-        return host, port
-    return text, ""
-
-
-def endpoint_matches(url_authority: str, target_netloc: str) -> bool:
-    """URL 的 authority 是否与目标端点**同 host 同 port**。
-
-    host 大小写不敏感；端口必须**逐字相等**——URL 省略端口意味着走协议的默认端口
-    （RTSP 是 554，与目标 8554 不同）→ 判为不匹配（这是真实缺陷，不该放过）。
-    """
-    url_host, url_port = hostport_parts(url_authority)
-    tgt_host, tgt_port = hostport_parts(target_netloc)
-    return url_host.lower() == tgt_host.lower() and url_port == tgt_port
-
-
-def client_side_legal_hosts(profile: dict) -> set[str]:
-    """从 ``seedgen.client_side`` 派生合法 host 集合（小写、**不含端口**）。
-
-    SIP 的端点语义由 ``Via``/``Contact`` 头承载（``client_side.headers`` 声明），
-    其合法 host 来自 ``server_addr``/``client_addr``（实测均为 ``127.0.0.1``）。
-    SIP 的端口语义灵活（客户端源端口 5061 可动态分配），故 G1 对 SIP 按 **host**
-    判定（非 host:port 严格相等）。
-    """
-    cs = (profile.get("seedgen") or {}).get("client_side") or {}
-    hosts: set[str] = set()
-    for key in ("server_addr", "client_addr"):
-        raw = str(cs.get(key) or "").strip()
-        if not raw:
-            continue
-        # 剥 scheme（sip:host:port / sip://host:port → host:port）
-        if "://" in raw:
-            raw = raw.split("://", 1)[1]
-        elif raw.startswith(("sip:", "sips:")):
-            raw = raw.split(":", 1)[1]
-        host, _port = hostport_parts(raw)
-        if host:
-            hosts.add(host.lower())
-    return hosts
-
-
-def client_side_header_names(profile: dict) -> list[str]:
-    """``seedgen.client_side.headers`` 声明的、承载端点语义的头名（如 Via/Contact）。"""
-    cs = (profile.get("seedgen") or {}).get("client_side") or {}
-    return [str(h) for h in (cs.get("headers") or [])]
-
-
-def _sip_uri_host(uri: str) -> Optional[str]:
-    """从 ``sip:user@host:port;params`` 抽 host（小写）；非 SIP URI / 无法解析 → None。
-
-    ★ 排除 **RFC 2543 的 URI 模板占位符** ``host``（如 ``sip:transfer@host``）——
-      它是「主机名占位」而非真实主机，判它违规会造成**假阻断**。
-    """
-    u = str(uri or "").strip().strip("<>")
-    if not u.startswith(("sip:", "sips:")):
-        return None
-    u = u.split(":", 1)[1]           # 去 scheme
-    u = u.split(";", 1)[0]           # 去参数（;transport=udp 等）
-    u = u.rsplit("@", 1)[-1]         # 去 userinfo
-    host, _port = hostport_parts(u)  # 去端口
-    if not host:
-        return None
-    host = host.lower()
-    # RFC 2543 URI 模板占位符：'host' / 'user' 之类不是真实主机名
-    if host in _URI_TEMPLATE_PLACEHOLDERS:
-        return None
-    return host
-
-
-def extract_client_side_hosts(text: str, header_names: list[str]) -> list[str]:
-    """从「端点语义位置」抽 host：请求行 R-URI + client_side 头（Via sent-by / Contact URI）。
-
-    ★ 只从这三处抽取，**天然排除**：
-      · ``Call-ID`` 里的 IP（如 ``105090259-446faf7a@192.168.1.2`` 的 192.168.1.2）；
-      · ``branch=`` 随机串里的 IP（``z9hG4bK...192.168.1.2``）；
-      · ``From``/``To`` 的逻辑域名（``sip.cybercity.dk``，官方语料自带、不决定路由）。
-      · **其它头里的 SIP URI**（如 ``Refer-To: sip:transfer@host``）—— 见下方
-        「请求行判定」。
-    这几类都不承载端点语义，纳入会误报。返回 host 列表（小写）。
-    """
-    names = {n.lower() for n in header_names}
-    hosts: list[str] = []
-    for line in text.splitlines():
-        s = line.strip()
-        if not s:
-            continue
-        # Via sent-by：`Via: SIP/2.0/UDP 127.0.0.1:5061;branch=...`
-        m = re.match(r"^Via:\s*\S+\s+([^;\s]+)", s, re.IGNORECASE)
-        if m and "via" in names:
-            host, _p = hostport_parts(m.group(1))
-            if host:
-                hosts.append(host.lower())
-            continue
-        # Contact URI：`Contact: <sip:127.0.0.1:5061>`
-        m = re.match(r"^Contact:\s*<?(sips?:[^;>\s]+)", s, re.IGNORECASE)
-        if m and "contact" in names:
-            host = _sip_uri_host(m.group(1))
-            if host:
-                hosts.append(host)
-            continue
-        # 请求行 R-URI：`METHOD sip:host SIP/2.0`
-        # ★ 必须是**真正的请求行**：三段形态 `<方法名> <R-URI> SIP/2.0`。
-        #   仅凭「第二 token 以 sip: 开头」会把**任意头里的 SIP URI**误当 R-URI
-        #   （实测 `Refer-To: sip:transfer@host` ⇒ 抽出 host='host' ⇒ 对 SIP 语料
-        #   假阻断）。Refer-To 是对话目标，**不承载回包地址** ⇒ 必须排除。
-        parts = s.split()
-        if (len(parts) >= 3
-                and parts[2].upper().startswith("SIP/")
-                and parts[1].startswith(("sip:", "sips:"))):
-            host = _sip_uri_host(parts[1])
-            if host:
-                hosts.append(host)
-    return hosts
-
-
-def resource_candidate(url: str) -> Optional[str]:
-    """取 URL 路径的**第一段**作为会话/资源名候选（与 ``normalize_seed_resource``
-    同一口径：URL path 的第一段标识资源实例）。
-
-    无路径 / 路径为空 → None。
-    """
-    _scheme, _netloc, path = _split_url(url)
-    if not path:
-        return None
-    segments = [seg for seg in path.split("/") if seg]
-    return segments[0] if segments else None
-
-
-def protocol_uri_schemes(profile: dict) -> set[str]:
-    """profile 声明的 URI scheme 集合（用于限定资源名抽取的适用范围）。"""
-    schemes: set[str] = set()
-    default_url = str(profile.get("default_url") or "").strip()
-    if "://" in default_url:
-        schemes.add(default_url.split("://", 1)[0].lower())
-    scheme, _netloc = target_endpoint(profile)
-    if scheme:
-        schemes.add(scheme.lower())
-    return schemes
-
-
-def unique_playable_env(profile: dict) -> tuple[Optional[str], dict]:
-    """找出 profile 中**唯一**声明了可播清单的目标环境。
-
-    用途：语料未绑定目标环境（manifest 无 ``target_env``）时，仍可用它做**交叉
-    校验**（"若按该环境生成，这些种子可播吗？"）。返回 ``(环境名, 环境配置)``；
-    无 / 不唯一 → ``(None, {})``。
-
-    ★ 这只是**交叉校验**：语料本身未受环境级约束时，"不可播"并不等于"坏种子"
-    （它只是没按该环境收敛），故交叉校验的结果在报告里会明确标注口径。
-    """
-    envs = (profile.get("seedgen") or {}).get("environments") or {}
-    hits = [(str(name), dict(cfg or {})) for name, cfg in envs.items()
-            if (cfg or {}).get("playable_resources_file")]
-    if len(hits) != 1:
-        return (None, {})
-    return hits[0]
-
-
-
-# ===========================================================================
-# 目标端点解析（G1 的判定基准）
-# ===========================================================================
-
-def resolve_endpoint_context(profile: dict, env_cfg: dict, env_name: Optional[str],
-                              corpus_urls: list[str]) -> tuple[Optional[str], str, str]:
-    """解析**目标服务端点**及其来源、URI 形态。
-
-    数据来源优先级（全部来自配置，**禁止写死**）：
-      1. 目标环境显式声明的端点——环境配置取自
-         ``profile.seedgen.environments.<env>``（``target_env.select_environment``
-         的返回值）；同时兼容 ``profile.environments.<env>`` 这一顶层布局；
-      2. profile 的 ``default_url``（经 ``target_env.target_endpoint()``）；
-      3. profile 的 ``url_placeholders["<server>"]``（``target_endpoint()`` 的兜底）。
-
-    URI 形态（决定 G1 是否适用）：
-      · ``hierarchical`` —— ``scheme://authority/...``，authority 即**路由端点**；
-      · ``opaque``       —— ``scheme:opaque``（如 SIP 的 ``sip:user@host``），其
-        domain 是**逻辑实体标识、不决定路由** → G1 不适用（历史结论）；
-      · ``none``         —— profile 未声明任何端点 → G1 不适用。
-
-    Returns:
-        ``(host:port 或 None, 来源说明, URI 形态)``。
-    """
-    # 环境级端点声明：先看 seedgen.environments.<env>，再看顶层 environments.<env>
-    env_sources: list[tuple[str, dict]] = []
-    if env_cfg:
-        env_sources.append(("profile.seedgen.environments.<env>", env_cfg))
-    top_envs = profile.get("environments") or {}
-    if env_name and isinstance(top_envs.get(env_name), dict):
-        env_sources.append(("profile.environments.<env>", dict(top_envs[env_name])))
-
-    for source_label, env_src in env_sources:
-        for key in ("target_endpoint", "target_url", "default_url", "url", "server"):
-            raw = str(env_src.get(key) or "").strip()
-            if not raw:
-                continue
-            if "://" in raw:
-                _scheme, netloc, _path = _split_url(raw)
-                if netloc:
-                    return (netloc, f"{source_label}.{key}", "hierarchical")
-            elif ":" in raw:
-                return (raw, f"{source_label}.{key}", "hierarchical")
-
-    default_url = str(profile.get("default_url") or "").strip()
-    if default_url:
-        if "://" in default_url:
-            _scheme, netloc = target_endpoint(profile)
-            if netloc:
-                return (netloc, "profile.default_url（经 target_endpoint()）",
-                        "hierarchical")
-        else:
-            # 形如 sip:127.0.0.1:5060 —— 无 authority 分量。
-            return (None, "profile.default_url（opaque URI，无 authority 分量）",
-                    "opaque")
-
-    _scheme, netloc = target_endpoint(profile)
-    if netloc and any("://" in url for url in corpus_urls):
-        return (netloc, "profile.url_placeholders['<server>']（经 target_endpoint()）",
-                "hierarchical")
-    return (None, "profile 未声明可路由端点", "none")
-
-
-def endpoint_applicability(profile: dict) -> tuple[bool, str]:
-    """G1 对该协议**是否适用**，返回 ``(适用, 原因)``。
-
-    判定**完全由配置驱动**（不硬编码协议名）：
-
-    1. **协议级显式开关**（首选）——``profile.seedgen.target_endpoint_normalization``
-       （经 ``target_env.endpoint_normalization_enabled()`` 读取）。
-       该开关的含义是"本协议的 URI 端点**决定请求目标**"：
-         · RTSP 开启 → Request-URI 的 host:port 决定请求打到哪 → **G1 适用**；
-         · SIP 未开启 → URI domain 是逻辑实体标识、**不决定路由**（真正决定回包
-           地址的是 ``Contact``/``Via``）→ **G1 不适用**。
-       这是生成侧与校验侧**共用同一份语义声明**，故不会出现"生成时归一化了、
-       校验时却不查"的口径裂缝。
-       ★ 开关**显式声明**时以它为准（显式 false = 该协议明确声明"端点不决定
-         请求目标"，不再走兜底）；**未声明**时才走下面的 URI 形态兜底。
-    2. **URI 形态兜底**（开关缺省时）——``default_url`` 是否带 authority 分量：
-       带（``scheme://host:port``）→ 适用；不带（``sip:host``）→ 不适用。
-    """
-    seedgen_cfg = (profile or {}).get("seedgen") or {}
-    if "target_endpoint_normalization" in seedgen_cfg:
-        if endpoint_normalization_enabled(profile):
-            return (True, "profile.seedgen.target_endpoint_normalization=true"
-                           "（本协议 URI 端点决定请求目标）")
-        return (False, "profile.seedgen.target_endpoint_normalization=false"
-                       "（本协议明确声明 URI 端点不决定请求目标）→ G1 不适用")
-    default_url = str(profile.get("default_url") or "").strip()
-    if default_url and "://" in default_url:
-        return (True, "profile.default_url 为分层 URI（带 authority 分量）")
-    if default_url:
-        # ★ D2：opaque URI（如 SIP 的 sip:127.0.0.1:5060）—— 其 domain 不决定路由，
-        #   但 profile 若声明了 `seedgen.client_side`（Via/Contact 承载端点语义），
-        #   则 G1 仍适用：检查 Via/Contact/R-URI 的 host 是否指向合法端点。
-        if client_side_legal_hosts(profile):
-            return (True, "profile.seedgen.client_side 声明了端点"
-                          "（Via/Contact 承载端点语义）→ G1 适用")
-        return (False, "profile.seedgen.target_endpoint_normalization 未开启，"
-                       "且 default_url 为 opaque URI（无 authority 分量）——"
-                       "其 domain 是逻辑实体标识、不决定路由")
-    return (False, "profile.seedgen.target_endpoint_normalization 未开启，"
-                   "且 profile 未声明带 authority 的 default_url")
-
-
-
-# ===========================================================================
-# 红线 G1 —— 目标主机正确率
-# ===========================================================================
-
-def _check_g1_client_side(profile: dict, protocol: str,
-                          seed_texts: list[tuple[Path, str]],
-                          thresholds: Thresholds,
-                          legal_hosts: set[str]) -> GateOutcome:
-    """G1 的 **client_side 分支**（D2）：SIP 语料 Via/Contact/R-URI 的 host 必须 ∈ 合法集。
-
-    与分层 URI 分支（RTSP，host:port 严格相等）不同，这里按 **host** 判定：
-    SIP 的端口语义灵活（客户端源端口 5061 可动态分配），只校验 host 是否指向
-    合法端点（如 127.0.0.1）。抽取位置**限定**请求行 R-URI + ``client_side.headers``
-    声明的头（Via/Contact），天然排除 Call-ID 里的 IP、branch= 随机串、From/To 逻辑域名。
-    """
-    title = "G1 目标主机正确率"
-    header_names = client_side_header_names(profile)
-    wrong_files: list[str] = []
-    checkable = 0
-    offenders: Counter[str] = Counter()
-    for path, text in seed_texts:
-        hosts = extract_client_side_hosts(text, header_names)
-        if not hosts:
-            continue
-        checkable += 1
-        bad = [h for h in hosts if h not in legal_hosts]
-        if bad:
-            wrong_files.append(path.name)
-            offenders.update(bad)
-
-    ratio = (len(wrong_files) / checkable) if checkable else 0.0
-    failed = ratio > thresholds.max_wrong_target_ratio
-    details = {
-        "applicable": True,
-        "endpoint_kind": "client_side",
-        "legal_hosts": sorted(legal_hosts),
-        "header_names": header_names,
-        "seed_files": len(seed_texts),
-        "checkable_seeds": checkable,
-        "wrong_target_seeds": len(wrong_files),
-        "wrong_target_ratio": round(ratio, 6),
-        "offending_hosts": dict(offenders.most_common(10)),
-        "wrong_target_seed_files": wrong_files[:20],
+    form = uri_form(profile)
+    server_port, client_port = endpoint_default_ports(profile)
+    client_headers = {
+        str(h).strip().lower()
+        for h in ((profile.get("seedgen") or {}).get("client_side") or {}
+                  ).get("headers") or []
     }
-    measured = (f"可判定种子 {checkable}/{len(seed_texts)}；"
-                f"含非合法 host 的种子 {len(wrong_files)} 个"
-                f"（{ratio * 100:.2f}%）")
-    if offenders:
-        measured += f"；非合法 host 分布 {dict(offenders.most_common(5))}"
-    return GateOutcome(
-        gate="G1", title=title,
-        status=STATUS_FAIL if failed else STATUS_PASS,
-        blocking=True,
-        summary=(f"失败：{len(wrong_files)} 个种子含非合法 host"
-                 if failed else
-                 f"通过：全部 {checkable} 个可判定种子的端点 host 均 ∈ {sorted(legal_hosts)}"),
-        checked="种子中 Via/Contact/R-URI 的 host 是否 ∈ client_side 声明的合法端点",
-        sources=(f"{len(seed_texts)} 个 .raw 种子文件；"
-                 f"合法 host 来自 profile.seedgen.client_side"),
-        criteria=("按种子计数：一条种子的任意端点 host 不在合法集即计为坏种子；"
-                  "host 大小写不敏感、按 host 判定（不严格比端口）"),
-        measured=measured,
-        threshold=f"非合法 host 的种子占比 ≤ {thresholds.max_wrong_target_ratio:.2%}",
-        details=details,
-    )
+    found: list[tuple[str, str]] = []
+
+    if form == "hierarchical":
+        for match in _ABSOLUTE_URL_RE.finditer(text):
+            host = match.group(1)
+            port = match.group(2) or server_port
+            endpoint = _normalize_hostport(f"{host}:{port}" if port else host,
+                                           server_port)
+            if endpoint:
+                found.append((endpoint, "url-authority"))
+        return found
+
+    if form == "opaque":
+        # ① R-URI（请求行的 URL 字段）—— 容忍 `sip:` 与 `sip://` 双斜杠两种形态
+        if url_index is not None:
+            for url in extract_request_urls(text, url_index):
+                _scheme, netloc, _path = _split_url(url)
+                endpoint = _normalize_hostport(netloc, server_port)
+                if endpoint:
+                    found.append((endpoint, "r-uri"))
+        # ② 客户端自有地址的头部（Via / Contact）
+        for line in text.splitlines():
+            name, sep, value = line.partition(":")
+            if not sep:
+                continue
+            if name.strip().lower() not in client_headers:
+                continue
+            # 只取第一个 ';' 之前的部分（sent-by）—— ';' 之后是 branch/tag/rport
+            head = value.split(";", 1)[0]
+            for token in head.split():
+                _scheme, netloc, _path = _split_url(token.strip("<>"))
+                endpoint = _normalize_hostport(netloc, client_port)
+                if endpoint:
+                    found.append((endpoint, "client-header"))
+        return found
+
+    return found
+
+
+def extract_sessions(text: str, profile: dict) -> list[str]:
+    """抽取一条种子文本里引用的**会话/资源名**（G2 用）。
+
+    ★ 规则（规格书 §2.2）：从**请求行**取**主机后的第一个路径段**——
+    ``SETUP rtsp://host/<session>/track1`` 的末段是 ``track1``（那是 track，不是
+    会话名），第一段才是会话名。
+
+    方法名清单来自 ``profile.allowed_methods``，scheme 来自 profile 的
+    ``default_url`` ⇒ **不硬编码协议**。
+    """
+    methods = [str(m).strip().upper() for m in (profile.get("allowed_methods") or [])
+               if str(m).strip()]
+    default_url = str(profile.get("default_url") or "").strip()
+    scheme = default_url.split("://", 1)[0] if "://" in default_url else ""
+    if not methods or not scheme:
+        return []
+    pattern = re.compile(
+        r"^(?:" + "|".join(re.escape(m) for m in methods) + r")\s+"
+        + re.escape(scheme) + r"://[^/\s]+/([^/\s?]+)", re.MULTILINE)
+    return pattern.findall(text)
+
+
+# ===========================================================================
+# 三条红线
+# ===========================================================================
+
+def _skip(gate: str, reason: str, **extra: Any) -> dict:
+    """构造一条「不适用」的红线结果（``skipped_reason`` 必填）。
+
+    ★ ``"pass"`` 键**由本函数默认填入**（不适用 ⇒ 不算失败）。
+      原因：``pass`` 是 Python 保留字，**不能**作函数调用的关键字实参
+      （``f(pass=True)`` 是 SyntaxError），而 ``f("pass": True)`` 也不是合法的
+      调用语法（那是 dict 字面量语法）⇒ 调用处无法安全地传这个键。
+      统一由本函数兜底，调用处只传普通键。
+    """
+    result: dict[str, Any] = {
+        "name": GATE_NAMES[gate],
+        "applicable": False,
+        "skipped_reason": reason,
+        "pass": True,
+    }
+    result.update(extra)
+    return result
 
 
 def check_g1(profile: dict, protocol: str, seed_texts: list[tuple[Path, str]],
-             env_cfg: dict, env_name: Optional[str],
-             thresholds: Thresholds) -> GateOutcome:
-    """G1：种子请求行的 URL host:port 是否指向目标环境的服务端点。
-
-    判定口径：按**种子**计数——一条种子只要有**任意一个**指向非目标 host:port 的
-    URL，该种子即计入"坏种子"（避免"一个种子里 9 个 URL 对、1 个错"被稀释）。
-
-    适用性（**配置驱动**，见 :func:`endpoint_applicability`）：
-      ① profile 的 ``raw_format.request_line`` 声明了 ``{url}`` 字段（否则该协议
-         无 URL 概念，如 SMTP 命令行协议）；
-      ② 协议级开关 ``seedgen.target_endpoint_normalization`` 开启（或 URI 形态
-         兜底判定为分层 URI）——即"本协议的 URI 端点决定请求目标"。
-         SIP 未开启该开关且其 ``sip:user@host`` 形态的 domain 是逻辑实体标识、
-         不决定路由 → **显式标注不适用及原因**。
-    """
-    title = "G1 目标主机正确率"
+             env_cfg: dict, max_violations: int) -> dict:
+    """G1：语料中出现的每个网络端点都必须属于该协议的合法端点集合。"""
     url_index = request_url_index(profile)
-    if url_index is None:
-        return GateOutcome(
-            gate="G1", title=title, status=STATUS_NA,
-            summary="不适用：profile.raw_format.request_line 未声明 {url} 字段"
-                    "（该协议无 URL 概念，URL 不承载端点信息）",
-            checked="请求行 URL 的 host:port 是否指向目标环境服务端点",
-            sources="profile.raw_format.request_line",
-            criteria="模板中不含 {url} 占位 → 该协议不通过 URL 表达端点",
-            measured="不适用", threshold="不适用",
-            details={"applicable": False, "reason": "no_url_field"},
-        )
+    allowed, _endpoint_sources = allowed_endpoints(profile, env_cfg)
 
-    applicable, applicability_reason = endpoint_applicability(profile)
-    corpus_urls = [url for _path, text in seed_texts
-                   for url in extract_absolute_urls(text)]
-    target_netloc, endpoint_source, uri_form = resolve_endpoint_context(
-        profile, env_cfg, env_name, corpus_urls)
-
-    if not applicable:
-        return GateOutcome(
-            gate="G1", title=title, status=STATUS_NA,
-            summary="不适用：" + applicability_reason,
-            checked="请求行 URL 的 host:port 是否指向目标环境服务端点",
-            sources=("profile.seedgen.target_endpoint_normalization；"
-                     "profile.default_url"),
-            criteria=("本协议 URI 端点不决定请求目标时，host:port 无路由语义 → "
-                      "该红线不适用"),
-            measured="不适用", threshold="不适用",
-            details={"applicable": False, "reason": "endpoint_not_routing_bearing",
-                     "applicability_reason": applicability_reason},
-        )
-
-    # ★ D2：client_side 端点检查（SIP 的 Via/Contact 承载端点语义，host 判定）。
-    cs_hosts = client_side_legal_hosts(profile)
-    if cs_hosts and uri_form != "hierarchical":
-        return _check_g1_client_side(profile, protocol, seed_texts,
-                                     thresholds, cs_hosts)
-
-    if uri_form != "hierarchical" or not target_netloc:
-        reason = {
-            "opaque": "目标端点是 opaque URI（无 authority 分量）——其 domain 是逻辑"
-                      "实体标识、不决定路由（SIP 历史结论）→ G1 不适用",
-            "none": "profile 未声明可路由的目标端点 → G1 不适用",
-        }.get(uri_form, "目标端点不可解析 → G1 不适用")
-        return GateOutcome(
-            gate="G1", title=title, status=STATUS_NA,
-            summary="不适用：" + reason,
-            checked="请求行 URL 的 host:port 是否指向目标环境服务端点",
-            sources=f"profile.default_url；{endpoint_source}",
-            criteria="目标端点必须是分层 URI（scheme://authority）才承载路由语义",
-            measured="不适用", threshold="不适用",
-            details={"applicable": False, "reason": uri_form,
-                     "endpoint_source": endpoint_source},
-        )
-
-    if not corpus_urls:
-        return GateOutcome(
-            gate="G1", title=title, status=STATUS_NA,
-            summary="不适用：语料中未解析出任何请求行 URL（无从判定）",
-            checked="请求行 URL 的 host:port 是否指向目标环境服务端点",
-            sources=f"{len(seed_texts)} 个种子文件",
-            criteria="语料中至少含一条请求行 URL 才可判定",
-            measured="URL 数 = 0", threshold="不适用",
-            details={"applicable": False, "reason": "no_urls_in_corpus"},
-        )
-
-    wrong_files: list[str] = []
-    checkable = 0
-    offenders: Counter[str] = Counter()
+    # 先抽端点（用于判定"语料里到底有没有端点"——SMTP 的 skip 依据）
+    per_file: list[tuple[Path, list[str]]] = []
+    all_endpoints: list[str] = []
     for path, text in seed_texts:
-        authorities = []
-        for url in extract_absolute_urls(text):
-            authority = authority_of(url)
-            if authority:
-                authorities.append(authority)
-        if not authorities:
-            continue
-        checkable += 1
-        bad = [a for a in authorities if not endpoint_matches(a, target_netloc)]
+        endpoints = [ep for ep, _pos in
+                     extract_endpoints(text, profile, url_index)]
+        per_file.append((path, endpoints))
+        all_endpoints.extend(endpoints)
+
+    if not allowed:
+        if all_endpoints:
+            reason = (f"{protocol}: profile 未声明任何目标端点（default_url 为空），"
+                      f"无法派生合法端点集合 → G1 不适用"
+                      f"（但语料中检出 {len(all_endpoints)} 个端点，需人工确认）")
+        else:
+            reason = (f"{protocol}: 语料中不含任何网络端点（端点数 = 0），"
+                      f"且 profile.default_url 为空 → G1 不适用"
+                      f"（SMTP 是明文协议，连接目标在 TCP 层决定，不以 URL 表达）")
+        return _skip("G1", reason, allowed_endpoints=[], endpoints_found={},
+                     violations=[], violation_count=0, threshold=max_violations)
+
+    if not all_endpoints:
+        return _skip("G1", f"{protocol}: 语料中不含任何网络端点（端点数 = 0）"
+                            f" → G1 不适用（无可比对的端点）",
+                     allowed_endpoints=sorted(allowed), endpoints_found={},
+                     violations=[], violation_count=0, threshold=max_violations)
+
+    endpoints_found = Counter(all_endpoints)
+    violations: Counter[str] = Counter()
+    violation_files: dict[str, list[str]] = {}
+    for path, endpoints in per_file:
+        bad = sorted({endpoint for endpoint in endpoints if endpoint not in allowed})
         if bad:
-            wrong_files.append(path.name)
-            offenders.update(bad)
+            for endpoint in bad:
+                violations[endpoint] += 1
+                violation_files.setdefault(endpoint, []).append(path.name)
 
-    ratio = (len(wrong_files) / checkable) if checkable else 0.0
-    failed = ratio > thresholds.max_wrong_target_ratio
-    details = {
+    violation_list = [
+        {
+            "endpoint": endpoint,
+            "occurrences": count,
+            "files": violation_files.get(endpoint, [])[:MAX_VIOLATION_FILES],
+        }
+        for endpoint, count in violations.most_common()
+    ]
+    violation_count = sum(violations.values())
+    return {
+        "name": GATE_NAMES["G1"],
         "applicable": True,
-        "seed_files": len(seed_texts),
-        "checkable_seeds": checkable,
-        "wrong_target_seeds": len(wrong_files),
-        "wrong_target_ratio": round(ratio, 6),
-        "target_endpoint": target_netloc,
-        "endpoint_source": endpoint_source,
-        "uri_form": uri_form,
-        "offending_endpoints": dict(offenders.most_common(10)),
-        "wrong_target_seed_files": wrong_files[:20],
+        "skipped_reason": None,
+        "allowed_endpoints": sorted(allowed),
+        "endpoints_found": dict(endpoints_found.most_common()),
+        "violations": violation_list,
+        "violation_count": violation_count,
+        "threshold": max_violations,
+        "pass": violation_count <= max_violations,
     }
-    measured = (f"可判定种子 {checkable}/{len(seed_texts)}；"
-                f"指向非目标端点的种子 {len(wrong_files)} 个"
-                f"（{ratio * 100:.2f}%）")
-    if offenders:
-        measured += f"；非目标端点分布 {dict(offenders.most_common(5))}"
-    return GateOutcome(
-        gate="G1", title=title,
-        status=STATUS_FAIL if failed else STATUS_PASS,
-        blocking=True,
-        summary=(f"失败：{len(wrong_files)} 个种子指向非目标端点 {target_netloc}"
-                 if failed else
-                 f"通过：全部 {checkable} 个可判定种子均指向目标端点 {target_netloc}"),
-        checked="种子中所有带 authority 的绝对 URL（请求行/头部/消息体）的 host:port"
-                " 是否等于目标端点",
-        sources=(f"{len(seed_texts)} 个 .raw 种子文件；目标端点来自 {endpoint_source}"),
-        criteria=("按种子计数：一条种子含任意一个非目标 authority 即计为坏种子；"
-                  "host 大小写不敏感、端口必须逐字相等"),
-        measured=measured,
-        threshold=f"非目标端点种子占比 ≤ {thresholds.max_wrong_target_ratio:.2%}",
-        details=details,
-    )
 
-
-# ===========================================================================
-# 红线 G2 —— 不可播会话占比
-# ===========================================================================
 
 def check_g2(profile: dict, protocol: str, seed_texts: list[tuple[Path, str]],
-             env_cfg: dict, env_name: Optional[str],
-             thresholds: Thresholds,
-             escalate_cross_check: bool = False) -> GateOutcome:
-    """G2：种子引用的会话/资源名是否 ⊆ 目标环境的可播清单。
-
-    可播清单来源：``target_env.playable_resource_names(profile, protocol, env_cfg)``
-    （即 profile 的 ``seedgen.environments.<env>.playable_resources_file``）。
-
-    适用性与口径（**分级**，不静默跳过）：
-      · **env 绑定口径**（语料 manifest 记录了 ``target_env``，或 ``--target-env``
-        显式指定）→ 该环境的可播清单就是这份语料的**契约** → 违规判**阻断级失败**；
-      · **交叉校验口径**（语料未绑定环境，但 profile 里**唯一**一个环境声明了可播
-        清单）→ "若按该环境部署，这份语料可播吗？" → 默认判**告警**（不阻断）：
-        语料本身未受环境级约束，"不可播"是**部署配对问题**而非语料生成缺陷
-        （历史语料为保持逐字节可复现，刻意不加环境约束）。``--escalate-cross-check``
-        可把它升级为阻断；
-      · 两者都不成立 → **不适用**，并显式说明原因。
-    """
-    title = "G2 不可播会话占比"
-    mode = "env"
-    scope_note = ""
-    if not (env_cfg or {}).get("playable_resources_file"):
-        cross_name, cross_cfg = unique_playable_env(profile)
-        if cross_name and cross_cfg.get("playable_resources_file"):
-            mode = "cross-check"
-            scope_note = (f"（语料未绑定目标环境 → 按 profile 中唯一声明可播清单的"
-                          f"环境 {cross_name} 做交叉校验）")
-            env_cfg = cross_cfg
-        else:
-            return GateOutcome(
-                gate="G2", title=title, status=STATUS_NA,
-                summary="不适用：profile 未声明目标环境的可播清单"
-                        "（environments.<env>.playable_resources_file 缺失 → "
-                        "该协议无「可播会话」概念）",
-                checked="种子引用的会话/资源名是否 ⊆ 目标环境可播清单",
-                sources="profile.seedgen.environments",
-                criteria="无 playable_resources_file → 无可播清单可对照",
-                measured="不适用", threshold="不适用",
-                details={"applicable": False, "reason": "no_playable_list"},
-            )
-
+             env_cfg: dict, max_violations: int) -> dict:
+    """G2：语料引用的会话/资源名必须 ⊆ 目标环境的可播清单。"""
     try:
         playable = playable_resource_names(profile, protocol, env_cfg)
     except (FileNotFoundError, ValueError) as exc:
-        return GateOutcome(
-            gate="G2", title=title, status=STATUS_NA,
-            summary=f"不适用：可播清单不可用（{exc}）",
-            checked="种子引用的会话/资源名是否 ⊆ 目标环境可播清单",
-            sources="profile.seedgen.environments.<env>.playable_resources_file",
-            criteria="清单文件必须存在且可解析",
-            measured="不适用", threshold="不适用",
-            details={"applicable": False, "reason": "playable_list_unavailable"},
-        )
+        raise ValueError(
+            f"可播资源清单不可用（profile.seedgen.environments.<env>."
+            f"playable_resources_file）：{exc}") from exc
 
     if not playable:
-        return GateOutcome(
-            gate="G2", title=title, status=STATUS_NA,
-            summary="不适用：可播清单为空",
-            checked="种子引用的会话/资源名是否 ⊆ 目标环境可播清单",
-            sources="profile.seedgen.environments.<env>.playable_resources_file",
-            criteria="清单为空 → 无可播清单可对照",
-            measured="不适用", threshold="不适用",
-            details={"applicable": False, "reason": "empty_playable_list"},
-        )
-
-    url_index = request_url_index(profile)
-    if url_index is None:
-        return GateOutcome(
-            gate="G2", title=title, status=STATUS_NA,
-            summary="不适用：协议无请求行 URL 字段（会话名不由 URL 承载）",
-            checked="种子引用的会话/资源名是否 ⊆ 目标环境可播清单",
-            sources="profile.raw_format.request_line",
-            criteria="模板中不含 {url} 占位 → 无 URL 可解析资源名",
-            measured="不适用", threshold="不适用",
-            details={"applicable": False, "reason": "no_url_field"},
-        )
+        return _skip("G2", f"{protocol}: 协议无「会话/资源」概念，"
+                            f"profile 未声明可播清单 → G2 不适用",
+                     allowed_resources=[], resources_found={}, violations=[],
+                     violation_count=0, threshold=max_violations)
 
     allowed = {str(name) for name in playable}
-    schemes = protocol_uri_schemes(profile)
-    wrong_files: list[str] = []
-    checkable = 0
-    offenders: Counter[str] = Counter()
+    per_file: list[tuple[Path, list[str]]] = []
+    all_sessions: list[str] = []
     for path, text in seed_texts:
-        candidates: list[str] = []
-        for url in extract_request_urls(text, url_index):
-            if "://" not in url:
-                continue
-            if schemes and url.split("://", 1)[0].lower() not in schemes:
-                continue
-            candidate = resource_candidate(url)
-            if candidate:
-                candidates.append(candidate)
-        if not candidates:
-            continue
-        checkable += 1
-        bad = sorted({c for c in candidates if c not in allowed})
+        sessions = extract_sessions(text, profile)
+        per_file.append((path, sessions))
+        all_sessions.extend(sessions)
+
+    if not all_sessions:
+        return _skip("G2", f"{protocol}: 语料中未解析出任何会话名 → G2 不适用"
+                            f"（无可比对的会话引用）",
+                     allowed_resources=sorted(allowed), resources_found={},
+                     violations=[], violation_count=0, threshold=max_violations)
+
+    resources_found = Counter(all_sessions)
+    violations: Counter[str] = Counter()
+    violation_files: dict[str, list[str]] = {}
+    for path, sessions in per_file:
+        bad = sorted({name for name in sessions if name not in allowed})
         if bad:
-            wrong_files.append(path.name)
-            offenders.update(bad)
+            for name in bad:
+                violations[name] += 1
+                violation_files.setdefault(name, []).append(path.name)
 
-    ratio = (len(wrong_files) / checkable) if checkable else 0.0
-    over = ratio > thresholds.max_unplayable_ratio
-    blocking = mode == "env" or escalate_cross_check
-    failed = over and blocking
-    warned = over and not blocking
-    details = {
+    violation_list = [
+        {
+            "resource": name,
+            "occurrences": count,
+            "files": violation_files.get(name, [])[:MAX_VIOLATION_FILES],
+        }
+        for name, count in violations.most_common()
+    ]
+    violation_count = sum(violations.values())
+    return {
+        "name": GATE_NAMES["G2"],
         "applicable": True,
-        "mode": mode,
-        "target_env": env_name,
-        "seed_files": len(seed_texts),
-        "checkable_seeds": checkable,
-        "unplayable_seeds": len(wrong_files),
-        "unplayable_ratio": round(ratio, 6),
-        "playable_resources": sorted(allowed),
-        "offending_resources": dict(offenders.most_common(10)),
-        "unplayable_seed_files": wrong_files[:20],
+        "skipped_reason": None,
+        "allowed_resources": sorted(allowed),
+        "resources_found": dict(resources_found.most_common()),
+        "violations": violation_list,
+        "violation_count": violation_count,
+        "threshold": max_violations,
+        "pass": violation_count <= max_violations,
     }
-    measured = (f"可判定种子 {checkable}/{len(seed_texts)}；"
-                f"引用不可播资源名的种子 {len(wrong_files)} 个"
-                f"（{ratio * 100:.2f}%）")
-    if offenders:
-        measured += f"；不可播资源分布 {dict(offenders.most_common(5))}"
-    if warned:
-        summary = (f"告警：{len(wrong_files)} 个种子引用了不可播资源名{scope_note}"
-                   f"（交叉校验口径，不阻断）")
-        status = STATUS_WARN
-    elif failed:
-        summary = f"失败：{len(wrong_files)} 个种子引用了目标环境不可播的资源名"
-        status = STATUS_FAIL
-    else:
-        summary = (f"通过：全部 {checkable} 个可判定种子引用的资源名均在可播清单内"
-                   + scope_note)
-        status = STATUS_PASS
-    return GateOutcome(
-        gate="G2", title=title, status=status, blocking=blocking,
-        summary=summary,
-        checked="每个种子请求行 URL 路径第一段（会话/资源名）是否 ∈ 可播清单",
-        sources=(f"{len(seed_texts)} 个 .raw 种子文件；可播清单 "
-                 f"({len(allowed)} 项) 来自 "
-                 f"playable_resource_names(profile, {protocol}, env_cfg)"),
-        criteria=("按种子计数：引用任意一个不可播资源名即计为坏种子；"
-                  + ("env 绑定口径 → 违规阻断" if mode == "env"
-                     else "交叉校验口径 → 违规仅告警"
-                     + ("（--escalate-cross-check 已升级为阻断）"
-                        if escalate_cross_check else ""))),
-        measured=measured,
-        threshold=f"不可播种子占比 ≤ {thresholds.max_unplayable_ratio:.2%}",
-        details=details,
-    )
 
-
-# ===========================================================================
-# 红线 G5 —— 契约一致性（focus_group 条数）
-# ===========================================================================
 
 def check_g5(profile: dict, protocol: str, group: Optional[str],
              seed_files: list[Path], manifest: dict, env_name: Optional[str],
-             strict: bool) -> GateOutcome:
-    """G5：profile 声明的 ``focus_group.<组>.seeds`` 与实际生成条数是否一致。
+             strict: bool) -> dict:
+    """G5：产出条数 == profile 声明的契约条数。
 
-    期望值取**生效契约**（``target_env.effective_config``：环境级 focus_group 覆盖
-    协议级）——这正是 ``seedgen.py`` 生成时实际使用的契约；同时打印协议级原值以便
-    对照（两者不同时说明"环境级重标定"）。
+    期望值来源（**分协议级 vs 环境级**，规格书 §1 / §5）：
+      · 环境级 ``profile.seedgen.environments.<env>.focus_group.<组>.seeds``
+        （RTSP / SIP）；
+      · 协议级 ``profile.seedgen.focus_group.<组>.seeds``（SMTP —— profile **没有**
+        ``environments`` 段，取错字段会拿到 undefined）。
 
-    严重级别：默认只**告警**（WARN，不阻断）；``--strict`` 时升级为阻断级失败。
+    严重级别：默认只**告警**；``--strict`` 时升级为阻断级失败。
     """
-    title = "G5 契约一致性（focus_group 条数）"
     if not group:
-        return GateOutcome(
-            gate="G5", title=title, status=STATUS_NA,
-            summary="不适用：无法判定语料所属的聚焦组（manifest 无记录且目录名无法推断）",
-            checked="profile 声明的 focus_group.<组>.seeds == 实际生成条数",
-            sources="manifest.json；目录名",
-            criteria="必须能确定聚焦组",
-            measured="不适用", threshold="不适用",
-            details={"applicable": False, "reason": "unknown_group"},
-        )
+        return _skip("G5", "无法判定语料所属的聚焦组（manifest 无记录、目录名无法"
+                            "推断、且未显式 --group）→ G5 不适用",
+                     contract_source=None, expected=None, actual=len(seed_files))
 
     proto_fg = ((profile.get("seedgen") or {}).get("focus_group") or {}).get(group)
-    if not isinstance(proto_fg, dict) or proto_fg.get("seeds") is None:
-        return GateOutcome(
-            gate="G5", title=title, status=STATUS_NA,
-            summary=f"不适用：profile 未声明 focus_group.{group}.seeds 契约",
-            checked="profile 声明的 focus_group.<组>.seeds == 实际生成条数",
-            sources="profile.seedgen.focus_group",
-            criteria="契约必须存在才可比较",
-            measured="不适用", threshold="不适用",
-            details={"applicable": False, "reason": "no_contract", "group": group},
-        )
+    env_fg: dict = {}
+    if env_name:
+        env_cfg = (profile_environments(profile).get(env_name) or {})
+        env_fg = (env_cfg.get("focus_group") or {}).get(group) or {}
 
-    effective = effective_config(profile, env_name)
-    eff_fg = (effective.get("focus_group") or {}).get(group) or {}
-    expected_effective = eff_fg.get("seeds")
-    expected_protocol = proto_fg.get("seeds")
+    if env_fg.get("seeds") is not None:
+        expected = env_fg["seeds"]
+        contract_source = (f"profile.seedgen.environments.{env_name}."
+                           f"focus_group.{group}.seeds")
+    elif isinstance(proto_fg, dict) and proto_fg.get("seeds") is not None:
+        expected = proto_fg["seeds"]
+        contract_source = f"profile.seedgen.focus_group.{group}.seeds"
+    else:
+        return _skip("G5", f"profile 未声明 focus_group.{group}.seeds 契约 → G5 不适用",
+                     contract_source=None, expected=None, actual=len(seed_files))
+
     actual = len(seed_files)
-
-    manifest_count = manifest.get("seed_count")
-    known = KNOWN_DRIFT.get((protocol, group))
-    drift = (expected_effective is not None and actual != expected_effective)
-
-    details: dict[str, Any] = {
+    passed = expected == actual
+    result: dict[str, Any] = {
+        "name": GATE_NAMES["G5"],
         "applicable": True,
-        "group": group,
-        "expected_effective": expected_effective,
-        "expected_protocol_level": expected_protocol,
+        "skipped_reason": None,
+        "contract_source": contract_source,
+        "expected": expected,
         "actual": actual,
-        "manifest_seed_count": manifest_count,
-        "target_env": env_name,
-        "drift": drift,
-        "known_drift": bool(known),
+        "pass": passed,
     }
-
-    if not drift:
-        note = ""
-        if expected_protocol != expected_effective:
-            note = (f"（协议级契约 {expected_protocol} 被环境级 "
-                    f"{env_name or '(无)'} 重标定为 {expected_effective}）")
-        return GateOutcome(
-            gate="G5", title=title, status=STATUS_PASS,
-            blocking=False,
-            summary=f"通过：聚焦组 {group} 实际 {actual} 条 == 契约 {expected_effective}"
-                    + note,
-            checked="profile 声明的 focus_group.<组>.seeds 与实际生成条数是否一致",
-            sources=(f"{len(seed_files)} 个 .raw 种子文件；契约来自 profile.seedgen"
-                     f".focus_group（生效值含环境级覆盖）"),
-            criteria="实际条数 == 生效契约条数",
-            measured=f"期望 {expected_effective} vs 实际 {actual}"
-                     + (f"（manifest.seed_count={manifest_count}）"
-                        if manifest_count is not None else ""),
-            threshold="期望 == 实际（严格相等）",
-            details=details,
-        )
-
-    label = "新引入的契约漂移"
-    if known and actual == known[1] and expected_protocol == known[0]:
-        label = "★ 已知历史契约漂移（契约过期，待用户决策；非本闸门引入的回归）"
-
-    status = STATUS_FAIL if strict else STATUS_WARN
-    return GateOutcome(
-        gate="G5", title=title, status=status, blocking=strict,
-        summary=f"{label}：聚焦组 {group} 契约 {expected_effective} vs 实际 {actual}"
-                + ("（--strict：阻断）" if strict else "（默认仅告警，不阻断）"),
-        checked="profile 声明的 focus_group.<组>.seeds 与实际生成条数是否一致",
-        sources=(f"{len(seed_files)} 个 .raw 种子文件；契约来自 profile.seedgen"
-                 f".focus_group（生效值含环境级覆盖）"),
-        criteria="实际条数 == 生效契约条数（生效值 = 环境级覆盖后的值）",
-        measured=(f"期望 {expected_effective} vs 实际 {actual}"
-                  + (f"（manifest.seed_count={manifest_count}）"
-                     if manifest_count is not None else "")
-                  + (f"；协议级契约 {expected_protocol}" if expected_protocol !=
-                     expected_effective else "")),
-        threshold="期望 == 实际（严格相等）"
-                  + ("；--strict 下失败即阻断" if strict else "；非 strict 下仅告警"),
-        details=details,
-    )
+    if not passed:
+        # 分级：默认只告警（契约漂移有时是预期的），--strict 才阻断。
+        result["warning"] = (
+            f"契约漂移：期望 {expected} != 实际 {actual}"
+            f"（{'阻断' if strict else '默认仅告警，不阻断'}）")
+    return result
 
 
 # ===========================================================================
@@ -1102,59 +672,94 @@ def check_g5(profile: dict, protocol: str, group: Optional[str],
 
 def run_gate(protocol: str, seed_dir: Path, profile: dict,
              env_name: Optional[str] = None, env_cfg: Optional[dict] = None,
-             group: Optional[str] = None, thresholds: Optional[Thresholds] = None,
-             strict: bool = False, manifest: Optional[dict] = None,
-             escalate_cross_check: bool = False) -> list[GateOutcome]:
-    """跑全部红线，返回各红线的判定结果（顺序固定 G1 → G2 → G5）。"""
-    thresholds = thresholds or Thresholds()
+             group: Optional[str] = None,
+             max_violations: int = DEFAULT_MAX_VIOLATIONS,
+             strict: bool = False, manifest: Optional[dict] = None) -> dict:
+    """跑全部红线，返回规格书 §3.2 定义的 JSON 报告。"""
     seed_dir = Path(seed_dir)
     manifest = manifest if manifest is not None else read_manifest(seed_dir)
     if env_cfg is None:
         env_name, env_cfg = resolve_env(profile, manifest, env_name)
-    seed_files = iter_seed_files(seed_dir)
-    seed_texts = read_seed_texts(seed_files)
-    return [
-        check_g1(profile, protocol, seed_texts, env_cfg, env_name, thresholds),
-        check_g2(profile, protocol, seed_texts, env_cfg, env_name, thresholds,
-                 escalate_cross_check=escalate_cross_check),
-        check_g5(profile, protocol, group, seed_files, manifest, env_name, strict),
-    ]
+    seed_files = sorted(seed_dir.glob("*.raw"))
+    seed_texts = [(path, path.read_text(encoding="utf-8", errors="replace"))
+                   for path in seed_files]
+
+    gates = {
+        "G1": check_g1(profile, protocol, seed_texts, env_cfg, max_violations),
+        "G2": check_g2(profile, protocol, seed_texts, env_cfg, max_violations),
+        "G5": check_g5(profile, protocol, group, seed_files, manifest, env_name,
+                       strict),
+    }
+    blocking_failed = any(not gates[g]["pass"] for g in ("G1", "G2"))
+    if strict:
+        blocking_failed = blocking_failed or not gates["G5"]["pass"]
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "protocol": protocol,
+        "env": env_name,
+        "group": group,
+        "seed_dir": str(seed_dir),
+        "seed_files": len(seed_files),
+        "gates": gates,
+        "overall_pass": not blocking_failed,
+    }
 
 
 # ===========================================================================
 # 报告渲染
 # ===========================================================================
 
-def render_report(outcomes: list[GateOutcome], protocol: str, seed_dir: Path,
-                  env_name: Optional[str], group: Optional[str]) -> str:
-    """渲染人类可读报告：每条红线都打印「检查了什么/数据来源/判定依据/实测值/阈值/结论」。"""
+def render_report(report: dict) -> str:
+    """渲染人类可读报告。
+
+    ★ 「不适用」必须与「通过」**可区分**：skip 的红线打印 ``G<n> skipped: <原因>``，
+      避免 CI 日志里把"没查"误读成"查过且通过"（CI 假绿）。
+    """
     lines: list[str] = []
     lines.append("=" * 72)
     lines.append("ProtoRAG 语料发布准入闸（corpus release gate）")
     lines.append("=" * 72)
-    lines.append(f"协议        : {protocol}")
-    lines.append(f"语料目录    : {seed_dir}")
-    lines.append(f"目标环境    : {env_name or '(未选 —— 无环境级约束)'}")
-    lines.append(f"聚焦组      : {group or '(未判定)'}")
-    for outcome in outcomes:
+    lines.append(f"协议        : {report.get('protocol')}")
+    lines.append(f"语料目录    : {report.get('seed_dir')}")
+    lines.append(f"目标环境    : {report.get('env') or '(未选 —— 无环境级约束)'}")
+    lines.append(f"聚焦组      : {report.get('group') or '(未判定)'}")
+    lines.append(f"种子文件数  : {report.get('seed_files')}")
+
+    for gate in ("G1", "G2", "G5"):
+        data = report["gates"][gate]
         lines.append("")
-        lines.append(f"--- {outcome.gate} {outcome.title} ---")
-        lines.append(f"  检查了什么 : {outcome.checked}")
-        lines.append(f"  数据来源   : {outcome.sources}")
-        lines.append(f"  判定依据   : {outcome.criteria}")
-        lines.append(f"  实测值     : {outcome.measured}")
-        lines.append(f"  阈值       : {outcome.threshold}")
-        lines.append(f"  结论       : [{outcome.status}] {outcome.summary}")
-    blocking = [o for o in outcomes if o.failed]
-    warnings = [o for o in outcomes if o.status == STATUS_WARN]
+        if not data.get("applicable", True):
+            lines.append(f"--- {gate} {data['name']} ---")
+            lines.append("  结论       : SKIPPED（不适用）")
+            lines.append(f"  原因       : {data['skipped_reason']}")
+            lines.append("  ⚠ 不适用 ≠ 通过（本闸未对该语料做出判定）")
+            continue
+        lines.append(f"--- {gate} {data['name']} ---")
+        if gate == "G1":
+            lines.append("  检查了什么 : 语料中出现的每个网络端点是否属于合法端点集合")
+            lines.append(f"  合法端点集 : {data['allowed_endpoints']}")
+            lines.append(f"  实测端点   : {data['endpoints_found']}")
+            lines.append(f"  违规       : {data['violations']}")
+        elif gate == "G2":
+            lines.append("  检查了什么 : 语料引用的会话/资源名是否 ⊆ 可播清单")
+            lines.append(f"  可播清单   : {data['allowed_resources']}")
+            lines.append(f"  实测会话   : {data['resources_found']}")
+            lines.append(f"  违规       : {data['violations']}")
+        else:
+            lines.append("  检查了什么 : seedgen 产出条数是否等于 profile 契约条数")
+            lines.append(f"  契约来源   : {data.get('contract_source')}")
+            lines.append(f"  实测值     : 期望 {data.get('expected')} vs "
+                         f"实际 {data.get('actual')}")
+        lines.append(f"  违规数     : {data.get('violation_count', 0)}")
+        lines.append(f"  阈值       : ≤ {data.get('threshold', 0)}")
+        if data.get("warning"):
+            lines.append(f"  ⚠ 告警     : {data['warning']}")
+        lines.append(f"  结论       : [{'PASS' if data.get('pass') else 'FAIL'}]"
+                     f" {'通过' if data.get('pass') else '失败（阻断）'}")
+
     lines.append("")
     lines.append("-" * 72)
-    if blocking:
-        lines.append(f"总判定：阻断（{', '.join(o.gate for o in blocking)} 未通过）")
-    else:
-        lines.append("总判定：通过（无阻断级红线失败）")
-    if warnings:
-        lines.append(f"告警（不阻断）：{', '.join(o.gate for o in warnings)}")
+    lines.append(f"总判定：{'通过' if report['overall_pass'] else '阻断（红线违规）'}")
     lines.append("-" * 72)
     return "\n".join(lines)
 
@@ -1166,41 +771,50 @@ def render_report(outcomes: list[GateOutcome], protocol: str, seed_dir: Path,
 def build_parser() -> argparse.ArgumentParser:
     """构造命令行解析器。"""
     parser = argparse.ArgumentParser(
-        description="ProtoRAG 语料发布准入闸（G1 目标主机正确率 / G2 不可播会话占比"
-                    "/ G5 契约一致性）；退出码非 0 即阻断。**只读**：不修改任何文件。")
+        description="ProtoRAG 语料发布准入闸（G1 目标端点正确率 / G2 不可播会话占比"
+                    "/ G5 契约一致性）；退出码 0 通过 / 1 阻断 / 2 配置错误。"
+                    "**只读**：不修改任何文件。")
     parser.add_argument("--protocol", required=True,
                         help="协议名（如 rtsp / sip / smtp）")
     parser.add_argument("--seed-dir", required=True,
                         help="语料目录（含 *.raw 种子文件）")
     parser.add_argument("--profile", default=None,
                         help="profile.json 路径（默认 fused_hub/targets/<protocol>/profile.json）")
-    parser.add_argument("--target-env", default=None, metavar="NAME",
-                        help="目标环境名（默认取语料 manifest 记录的 target_env，"
-                             "再退回 profile 默认环境）")
+    parser.add_argument("--env", "--target-env", dest="env", default=None,
+                        metavar="NAME",
+                        help="目标环境名（默认取语料 manifest 记录，再退回 profile "
+                             "声明的唯一环境）")
     parser.add_argument("--group", default=None, metavar="A|B|C|D",
                         help="聚焦组（默认取 manifest 记录，再退回目录名推断）")
-    parser.add_argument("--max-wrong-target-ratio", type=float,
-                        default=DEFAULT_MAX_WRONG_TARGET_RATIO,
-                        help="G1 阈值：指向非目标端点的种子占比上限"
-                             f"（默认 {DEFAULT_MAX_WRONG_TARGET_RATIO}）")
-    parser.add_argument("--max-unplayable-ratio", type=float,
-                        default=DEFAULT_MAX_UNPLAYABLE_RATIO,
-                        help="G2 阈值：引用不可播资源名的种子占比上限"
-                             f"（默认 {DEFAULT_MAX_UNPLAYABLE_RATIO}）")
+    parser.add_argument("--max-violations", type=int, default=DEFAULT_MAX_VIOLATIONS,
+                        help="G1/G2 的违规数上限"
+                             f"（默认 {DEFAULT_MAX_VIOLATIONS}）")
     parser.add_argument("--strict", action="store_true",
                         help="G5 契约漂移也参与阻断（默认只告警）")
-    parser.add_argument("--escalate-cross-check", action="store_true",
-                        help="G2 的「交叉校验口径」（语料未绑定目标环境）也升级为阻断")
     parser.add_argument("--json", action="store_true",
                         help="以 JSON 输出报告（CI 机器可读）")
+    parser.add_argument("--json-out", default=None, metavar="FILE",
+                        help="把 JSON 报告写到文件（不会写入 kb/ derived/ fused_hub/）")
+    parser.add_argument("--baseline", default=None, metavar="FILE",
+                        help="历史基线 JSON；提供时额外输出各闸的 delta")
     return parser
+
+
+def _guard_output_path(path: Path) -> None:
+    """禁止把报告写进 kb/ derived/ fused_hub/（闸是只读检查器）。"""
+    resolved = path.resolve()
+    for protected in ("kb", "derived", "fused_hub"):
+        root = (REPO_ROOT / protected).resolve()
+        if resolved == root or root in resolved.parents:
+            raise ValueError(
+                f"拒绝写入受保护目录 {protected}/（闸是只读检查器）：{resolved}")
 
 
 def main(argv: Optional[list[str]] = None) -> int:
     """CLI 入口。
 
     Returns:
-        0 = 通过；1 = 阻断；2 = 用法/配置错误。
+        0 = 通过；1 = 阻断；2 = 用法/环境错误。
     """
     args = build_parser().parse_args(argv)
     protocol = str(args.protocol).lower()
@@ -1221,40 +835,56 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     manifest = read_manifest(seed_dir)
     try:
-        env_name, env_cfg = resolve_env(profile, manifest, args.target_env)
-    except KeyError as exc:
+        env_name, env_cfg = resolve_env(profile, manifest, args.env)
+    except (KeyError, ValueError) as exc:
         print(f"!! {exc}", file=sys.stderr)
         return 2
 
     group = detect_group(seed_dir, manifest, args.group)
-    thresholds = Thresholds(
-        max_wrong_target_ratio=float(args.max_wrong_target_ratio),
-        max_unplayable_ratio=float(args.max_unplayable_ratio),
-    )
-    outcomes = run_gate(protocol, seed_dir, profile, env_name=env_name,
-                        env_cfg=env_cfg, group=group, thresholds=thresholds,
-                        strict=bool(args.strict), manifest=manifest,
-                        escalate_cross_check=bool(args.escalate_cross_check))
+    try:
+        report = run_gate(protocol, seed_dir, profile, env_name=env_name,
+                          env_cfg=env_cfg, group=group,
+                          max_violations=int(args.max_violations),
+                          strict=bool(args.strict), manifest=manifest)
+    except ValueError as exc:
+        print(f"!! {exc}", file=sys.stderr)
+        return 2
+
+    if args.baseline:
+        try:
+            baseline = json.loads(Path(args.baseline).read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            print(f"!! 基线文件不可读: {exc}", file=sys.stderr)
+            return 2
+        report["baseline_delta"] = {
+            gate: report["gates"][gate].get("violation_count", 0)
+            - (baseline.get("gates", {}).get(gate, {}) or {}).get(
+                "violation_count", 0)
+            for gate in ("G1", "G2", "G5")
+        }
+
+    if args.json_out:
+        out_path = Path(args.json_out).expanduser()
+        try:
+            _guard_output_path(out_path)
+        except ValueError as exc:
+            print(f"!! {exc}", file=sys.stderr)
+            return 2
+        try:
+            if out_path.parent and not out_path.parent.exists():
+                out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(json.dumps(report, ensure_ascii=False, indent=2),
+                                encoding="utf-8")
+        except OSError as exc:
+            print(f"!! 报告写入失败: {exc}", file=sys.stderr)
+            return 2
 
     if args.json:
-        payload = {
-            "protocol": protocol,
-            "seed_dir": str(seed_dir),
-            "target_env": env_name,
-            "group": group,
-            "strict": bool(args.strict),
-            "thresholds": {
-                "max_wrong_target_ratio": thresholds.max_wrong_target_ratio,
-                "max_unplayable_ratio": thresholds.max_unplayable_ratio,
-            },
-            "gates": [o.to_dict() for o in outcomes],
-            "blocked": any(o.failed for o in outcomes),
-        }
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
-        print(render_report(outcomes, protocol, seed_dir, env_name, group))
+        print(render_report(report))
 
-    return 1 if any(o.failed for o in outcomes) else 0
+    return 0 if report["overall_pass"] else 1
 
 
 if __name__ == "__main__":
