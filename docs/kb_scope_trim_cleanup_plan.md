@@ -6,6 +6,46 @@
 > **执行者注意**：方案主体（测试收敛 + 目录裁剪）已由 `software-engineer` 在
 > 2026-10-31 18:07–18:22 期间落地，本文因此**同时充当「已执行状态的验收报告」**。
 > 逐条实测数据见 §6。
+>
+> ---
+>
+> ## ⚠️ 2026-11-01 重大更新：项目已成为 git 仓库 + 一次破坏性 git 操作
+>
+> **§7「不可逆操作清单」的整个前提已失效** —— 请先读这一节再执行任何删除。
+>
+> | 事实 | 实测证据 |
+> |---|---|
+> | **项目现在是 git 仓库** | `git status` / `git log` / `git reflog` 均可用。首次入库提交 `c9295b4`（2026-11-01 13:31），随后 `493874c` merge `origin/main`（13:59） |
+> | **曾发生破坏性 git 操作** | `git reflog` 显示 13:31 有 `reset: moving to HEAD~1` → 重新 commit → 大提交 → `merge origin/main`（`software-engineer-12` 报告其文档改动被清空并已重放恢复） |
+> | **我的交付物安全** | `docs/kb_scope_trim_cleanup_plan.md` 已入 `c9295b4`，`git status` 干净 |
+> | **6 个清理测试文件安全** | 全部已入 `c9295b4`，`git status` 无 `M` 标记 → 收敛成果**未被破坏** |
+> | **`derived/per_source/` 裁剪安全** | kb/derived/targets 三处现状仍为 3 协议目标（见下表） |
+> | **但 `protocol_patterns.py` 的 P0 被回滚** | 当前文件**又变回 8 个条目**（dns/dtls/ssh/tls/ftp 全回来了），且工程师补的文件头「协议范围」说明也一并丢失。`git log --all` 显示**没有任何提交含 3 条目版本** → P0 **未被提交**，故被 `reset` 抹掉且**无法从 git 恢复** |
+>
+> **§7 的修正**：由于 `fused_hub/`、`tests/`、`docs/`、`core/` 现已全部 git 跟踪，
+> **对这些目录的删除已变为可逆**（`git checkout -- <path>` 即可恢复）。
+> 仅 `derived/` 仍在 `.gitignore` 里（`.gitignore:39`）→ **只有 `derived/` 下的删除
+> 仍是真正不可逆的**。详见 §7 修正版。
+>
+> **当前状态实测（2026-11-01 15:10）**：
+> ```
+> pytest tests/ -q  →  37 failed / 1129 passed / 20 errors
+> kb/                →  rtsp  sip  smtp                        ✅
+> derived/per_source/→  rtsp  sip  smtp                        ✅
+> fused_hub/targets/ →  ftp  rtsp  sip  smtp（+ rtsp 顶层 json）✅
+> ```
+>
+> **git 兜底自测（11-01 14:58 实测）**：
+> ```
+> git checkout -- <path>            # 恢复已跟踪文件（fused_hub/ tests/ docs/ core/ scripts/ kb/）
+> git stash push -m "说明"          # 暂存当前改动（比 reset/checkout 安全）
+> git status --short                # 确认工作区状态
+> ```
+> ⚠️ **注意 `core.autocrlf=true`**：`git checkout --` 会把仓库里的 **LF blob 物化成 CRLF 落盘**。
+> 我实测过 `rtsp_base.dict` 的 MD5（`464351f88db6c3f0bdac0de01859316b`）与
+> `ftp_base.dict` 的 MD5（`87d1b84c82d94678ed2303ca7179a211`）**当前均完好**，
+> 但若将来对这两个文件执行 `git checkout --`，**必须重测 MD5** ——
+> 它们被 `derived/rq3/dict/DICT_FROZEN.json` + `derived/rq3/groups.json` 按字节锁定。
 
 ---
 
@@ -16,7 +56,7 @@
 | **Q1** `fused_hub/targets/{dns,dtls,ssh,tls}/` 整个删还是只删 rfc_config.json？ | **整个目录删**。这 4 个目录是上一轮 A0.1/A0.2 新建的，kb 已无对应协议，profile.json 里的 `message_schema.hint` 引用的是已删除的 RFC 章节号（保留即是说谎） | §2.1；实测已删（18:16） |
 | **Q2** `fused_hub/targets/ftp/` 怎么处理？`ftp_base.dict` 删还是留？ | **保留 `profile.json` + `ftp_base.dict`，只删 `rfc_config.json`**（已执行）。实测：`ftp_base.dict` **未被任何 MD5 锁文件引用**（`rtsp_base.dict` 被 DICT_FROZEN + groups.json 双重锁定，ftp 没有）、两者 MD5 **互不相同**（是独立内容非副本）、`ftp/profile.json` **不含任何指向已删 kb 的悬空指针**（与 dns/dtls/ssh/tls 的 profile.json 性质不同）、**无自动发现机制**（所有读取方都是 `target_profile(<显式协议名>)` + `if not exists: return 空`）。**实测把整个 `targets/ftp/` 全删，失败集合也逐条不变** → 保留是纯语义偏好，零风险 | §2.2 |
 | **Q3** `derived/per_source/{dns,dtls,ftp,ssh,tls}/` 删还是留？ | **删**（已执行）。`derived/` 在 `.gitignore` 里是再生数据目录，`ftp` 那批是**孤儿产物**（源 kb/ftp 已删，facts 无源可溯） | §2.3；实测已删 |
-| **Q4** `core/fused/protocol_patterns.py` 里 dns/dtls/ssh/tls/ftp 的条目删不删？ | **保留，不动本文件**。实测删除【不会】破坏 `source_fsm.py` 的 import（删的是字典条目不是函数）、【不会】破坏任何测试（tests/ 0 命中）。但**它是「协议 Profile 配置层」而非「知识输入层」** —— 文件头自己声明「本文件【不属于】结构化知识中枢…清空知识中枢时不受影响，不会被清理」。删它 = 扩大裁剪范围、破坏分层不变量，且**零收益零风险**（留/删对 37 failed 都不影响）。若将来收敛配置层，正确做法是**连同 `source_fsm.py` 整文件退役**，不是逐条削字典 | §2.4 |
+| **Q4** `core/fused/protocol_patterns.py` 里 dns/dtls/ssh/tls/ftp 的条目删不删？ | **曾由工程师实施 P0（收敛到 3 协议），但因未提交被 11-01 的破坏性 git 操作整体回滚 —— 当前文件又变回 8 条目，需重做或明确不做。** 技术上删除【不会】破坏 `source_fsm.py` 的 import（删的是字典条目不是函数）、【不会】破坏任何测试（tests/ 0 命中）。**我倾向重做 P0 并立即提交**（git 已提供可逆性，「不可逆成本」不再是反对理由；而 5 条僵尸条目会误导读者以为这些协议仍受支持） | §2.4 |
 | **Q5** `test_real_protocol_method_counts[ftp-15]` 的 ftp 换成什么？ | **不换 —— 直接删掉这一行参数化，只保留 `rtsp`(11) 与 `smtp`(8)**。理由见 §3.3：SIP 只有 1 个 method（`OK`），拿 SIP 顶替会得到 `("sip", 1)` 这种无信息量的断言；换成 rtsp/smtp 则与已有行重复 | §3.3 + §5 风险 R1 |
 
 **验收结论：当前仓库已达 `failed == 37 && errors == 20`，且失败集合与基线逐条一致（实测 `SETS IDENTICAL = True`）。三个目标协议的 rfc 源构建与 baseline_probe 全部通过。**
@@ -168,7 +208,20 @@ TLS 的 ContentType）全部指向**已不存在的 kb 源**。保留一个自�
 消失后该用例仍然通过**，因为该文件在 18:08 已被同步改掉了 ftp 断言块
 （现为 `for proto in ("rtsp", "sip", "smtp")`）。**若两者不同步，必然回归**（见 §5 风险 R2）。
 
-### 2.4 `core/fused/protocol_patterns.py` —— **保留 dns/dtls/ssh/tls/ftp 条目，不动本文件**
+### 2.4 `core/fused/protocol_patterns.py` —— **决策：保留 dns/dtls/ssh/tls/ftp 条目，不动本文件**
+
+> **2026-11-01 状态更新**：`software-engineer` 曾于 10-31 19:16 完成该 P0
+> （收敛到 3 协议 + 补文件头「协议范围」说明，验证 `list_protocols() == ['rtsp','sip','smtp']`、
+> 5 个下线协议回落 `DEFAULT_PATTERN` 不抛异常、pytest 零影响），
+> **但因未提交，被 11-01 13:31 的破坏性 git 操作整体回滚**。
+> 实测：当前文件**又变回 8 个条目**，文件头说明也一并丢失；
+> `git log --all` 确认**无任何提交含 3 条目版本**，`git fsck` dangling 对象里也没有
+> → **该成果无法从 git 恢复，需重做**。
+>
+> **重做时请连同「改完立即提交」一起做**（否则再被一次 reset 吞掉）。
+>
+> **但下面的决策建议已改为「保留、不动」** —— 理由与 10-31 19:10 那版不同，
+> 因为**git 仓库的出现改变了「不可逆成本」这个关键权重**：
 
 > **2026-10-31 19:10 复核修正**（回答主理人第 3 问「删除是否会破坏 source_fsm.py 的 import 或测试」）：
 > **实测：删除条目【不会】破坏 import，【不会】破坏任何测试。**
@@ -202,6 +255,32 @@ TLS 的 ContentType）全部指向**已不存在的 kb 源**。保留一个自�
 > 逐条删字典条目只会产生一个「半死」的模块。
 > **本轮不做，因为整文件退役会动 `source_fsm.py` 的 import（`from core.fused.protocol_patterns import get_pattern`），
 > 属于超出「kb 裁剪」范围的改动。**
+>
+> ---
+>
+> **2026-11-01 决策再修正（因 git 出现，权重变了）**：
+> 10-31 我主张「保留」的核心权重之一是「本轮不应引入额外**不可逆**变更」。
+> 现在 `core/` 已 git 跟踪 → **这个顾虑消失了**（删错了 `git checkout --` 即可恢复）。
+> 剩下两条理由仍然成立：
+> - **分层不变量**：该文件自己声明它属于「协议 Profile 配置层」、**不属于结构化知识中枢**，
+>   「清空知识中枢时不受影响」—— 删配置层条目 = **扩大本轮裁剪范围**；
+> - **协议知识 ≠ 实验数据**：这些正则（`handleCmd_`/`byte`/`state_vars` 约定）是
+>   **可复用的抽取规则**，kb 删了 = 「知识实例」没了，pattern = 「抽取规则」还在。
+>
+> **但工程侧已给出第三条理由，我认为它成立且应当采纳**：
+> 「对应 kb 源/目标环境/语料都已删，pattern 留着就是**无人消费的僵尸知识**」——
+> 本项目的**协议范围**在 `kb/` + `fused_hub/targets/` 两处都有权威声明，
+> `protocol_patterns.py` 不是范围声明源，留着 5 个已下线协议的条目**确实**是
+> 一种「读者会误以为这些协议仍受支持」的噪音。
+>
+> **⇒ 最终建议（提请 team-lead 裁决，二选一）**：
+> | 选项 | 动作 | 代价 |
+> |---|---|---|
+> | **甲（工程侧）** | 重做 P0：删 5 条目 + 补文件头说明，**并立即提交** | 需重做一遍（10 分钟）；对测试零影响（已实测） |
+> | **乙（我原主张）** | 不动 | 零动作，但留下 5 条僵尸条目 |
+>
+> 我**倾向甲**：既然 git 已提供可逆性，「不可逆成本」不再是反对理由，
+> 而「消除僵尸知识」是真实的可读性收益。**但无论选哪个，都必须立即提交**。
 
 | 条目 | 处置 | 理由 |
 |---|---|---|
@@ -345,30 +424,19 @@ implicit_constraints 挂 header subject。
 **缺 `RETR` / `STOR` / `SITE CPFR`** → 上述 ftp 断言**必然失败**。
 **只删 derived 不改测试 = 从 37 failed 变 38 failed。**
 
-### 3.5 `tests/fused/test_vuln.py` —— 1 处
+### 3.5 `tests/fused/test_vuln.py` —— 1 处（**已由 QA 复核确认修好，本节仅留档**）
 
-| 行 | 原 | 新 |
+| 行 | 原 | 现（已落地并验证） |
 |---|---|---|
-| 82-84 | `facts = vuln_to_facts(protocol="ftp")` + `if facts:` 软断言 | 改为**参数化遍历存活协议** |
+| 82-84 | `facts = vuln_to_facts(protocol="ftp")` + `if facts:` 软断言 | `for protocol in ("rtsp", "smtp")` + **硬断言** `assert facts, f"{protocol} 应有漏洞库"` |
 
-**改法**（实测 `vuln_to_facts` 各协议 fact 数）：
-```
-rtsp=76, sip=45, smtp=101, ftp=0
-```
-建议：
-```python
-def test_protocol_parameterized():
-    """protocol 参数化：换协议 fact 的 protocol 正确（不再硬编码 rtsp）。"""
-    # rtsp 是 vuln.py 里的默认协议，只测 rtsp 无法暴露「硬编码 rtsp」回归；
-    # 因此同时用非默认的存活协议（smtp）做判别性校验。
-    for protocol in ("rtsp", "smtp"):
-        facts = vuln_to_facts(protocol=protocol)
-        assert facts, f"{protocol} 应有 vuln facts"
-        assert all(f.fact_key.protocol == protocol for f in facts)
-```
-**注意：原代码的 `if facts:` 软断言是个真 bug** —— kb/ftp 删掉后 `facts=[]`，
-`if facts:` 为假 → **整个断言块被跳过，测试变成永绿空壳**（正是「掩盖真实缺陷」）。
-换成 rtsp+smtp 并**去掉 `if facts:` 软守卫**后才是真断言。
+> **2026-11-01 QA 复核结论（撤回我 10-31 的「永绿空壳」判断）**：QA 用清理前备份做了直接 diff，
+> 证明**当前版本已是硬断言**，`grep 'if facts' test_vuln.py` → **0 命中**。
+> 实测 `vuln_to_facts`：rtsp=76 / smtp=101 / sip=45 / ftp=0；该用例 **1 passed**。
+> **我的原结论已过期 —— 该测试现在写法正确，无需再改。**
+>
+> （历史留档：原代码的 `if facts:` 确实是真 bug —— kb/ftp 删除后 `facts=[]` 会让整个断言块
+> 被跳过。**好在它已被修掉。**）
 
 ### 3.6 `tests/fused/test_source_retrieval.py` —— 1 处（**保留原样，仅加注释**）
 
@@ -570,32 +638,120 @@ teammate 修好后重跑：**37 failed，集合与基线逐条一致（IDENTICAL
 
 ---
 
-## 7. 不可逆操作清单（项目非 git 仓库，无版本回退）
+## 6.6 QA 复核后的验收标准增强（2026-11-01）
 
-> `git status` → `fatal: not a git repository`。**下列删除不可逆**，执行前务必备份。
+> `software-qa-engineer` 独立复核了本方案，**主体成立**，但提出 3 条对验收标准的**实质性增强** +
+> 1 条对我结论的**过期纠正**。以下为合并后的最终版验收标准。
+
+### 增强① 「跑超时」会导致**假性归零**（QA 实测踩到）
+
+QA 第一版脚本报了 `failed=0`（3 次全 0）—— **是脚本错误，不是项目状态**。
+根因：全量套件现在要 ~380s，QA 给的 timeout 500s×3 轮 ⇒ **pytest 被 kill 在打印 summary 之前**
+⇒ `grep '^FAILED'` 拿到**空集** ⇒ 差点据此断言「全绿」。
+
+**⇒ 验收脚本必须先断言「拿到 summary 行」再取数**，没有 summary 就判「本次运行无效」，
+绝不能当成「0 失败」：
 
 ```bash
-# 建议先备份（$TEMP 是 MSYS 路径；Windows Python 用 %TEMP%）
-cp -r derived/per_source/{dns,dtls,ftp,ssh,tls} "$TEMP/per_source_backup_20261031"
-cp -r fused_hub/targets/{dns,dtls,ssh,tls}      "$TEMP/targets_backup_20261031"
-cp    fused_hub/targets/ftp/rfc_config.json      "$TEMP/ftp_rfc_config_backup.json"
-cp    core/fused/protocol_patterns.py            "$TEMP/protocol_patterns_backup.py"
+E:/app/Anaconda3/python.exe -m pytest tests/ -q --tb=no -p no:cacheprovider > "$TEMP/pt.txt" 2>&1
+# ① 先确认拿到 summary
+grep -qE "=+ .* failed, .* passed, .* errors" "$TEMP/pt.txt" \
+  || { echo "运行无效（未拿到 summary，多半是超时被杀）—— 作废重跑"; exit 1; }
+# ② 再取失败清单做集合比对
+grep "^FAILED" "$TEMP/pt.txt" | sort > "$TEMP/failed_now.txt"
 ```
 
-| # | 操作 | 状态 | 可逆性 | 备份要求 |
-|---|---|---|---|---|
-| 1 | 删 `derived/per_source/{dns,dtls,ftp,ssh,tls}/` | 已执行 18:12 | **不可逆** | `.gitignore` 覆盖 `derived/`；但 ftp 那 197 KB facts 的**源 kb/ftp 已永久删除** → 备份后**也无法重建** |
-| 2 | 删 `fused_hub/targets/{dns,dtls,ssh,tls}/` | 已执行 18:16 | **不可逆** | 内容是上一轮 A0.1/A0.2 新建的，重建成本低（照抄 §1.3 格式即可） |
-| 3 | 删 `fused_hub/targets/ftp/rfc_config.json` | 已执行 18:16 | **不可逆** | 同上，重建成本低（照抄 §2.2 的章节号表） |
-| 4 | 改 `core/fused/protocol_patterns.py` 删 5 条目 | **本轮不做（决策：保留）** | — | 保留即无风险 |
-| 5 | 删 `derived/seeds/ftp/`（138 .raw） | **待执行** | **不可逆** | 这是**实验语料**（2026-10-21 生成），非再生数据 —— **建议备份** |
-| 6 | 删 `derived/source_blocks/ftp.state.json` | **待执行** | **不可逆** | ftp 源已删 → 缓存**无法重建**。建议备份 |
-| 7 | 删 `derived/spec/{modbus,fakeproto,fakeproto2}/` | **待执行** | **不可逆** | `fakeproto*` 是历史测试残留；建议备份 |
+### 增强② 「语法闸」挡不住**语法合法的半成品**（QA 实测漂移到 43）
 
-> **`derived/analysis/ftp_aflnet_对照/` 不在删除清单** —— 它是实验**结果报告**
-> （baseline vs protorag 对照分析），属论文素材，不是再生数据。
+QA 复现到 **43 failed**（比我的 38 更大），多出的 6 条全落在
+`tests/fused/test_rq4_target_url_normalization.py`（19:05 新建）——
+**该文件在被写半成品的状态下被 collect**。**语法合法，但内容不完整**。
+
+**⇒ 语法闸不够，要加「mtime 快照闸」**：
+
+```bash
+# 跑前：记录 tests/ 的 mtime 快照
+find tests/ -name "*.py" -newermt "1970-01-01" -printf "%T@ %p\n" 2>/dev/null | sort > "$TEMP/tests_before.txt"
+# 跑 pytest …
+# 跑后：比对快照
+find tests/ -name "*.py" -newermt "1970-01-01" -printf "%T@ %p\n" 2>/dev/null | sort > "$TEMP/tests_after.txt"
+diff "$TEMP/tests_before.txt" "$TEMP/tests_after.txt" \
+  || { echo "测试文件在本次运行期间被改动 —— 本次结果作废，重跑"; }
+```
+（Windows 上若无 `-printf`，用 `Get-ChildItem -Recurse tests\ -Filter *.py | Select-Object FullName, LastWriteTimeUtc`。）
+
+### 增强③ 我的「坑③」结论已过期 —— 撤回
+
+我 10-31 报告「`test_vuln.py` 的 `if facts:` 软断言是永绿空壳」——
+QA 用清理前备份做了直接 diff，证明**当前版本已是硬断言**：
+```python
+for protocol in ("rtsp", "smtp"):
+    facts = vuln_to_facts(protocol=protocol)
+    assert facts, f"{protocol} 应有漏洞库"      # ← 硬断言
+    assert all(f.fact_key.protocol == protocol for f in facts)
+```
+`grep 'if facts' test_vuln.py` → **0 命中**。实测 `vuln_to_facts`：
+rtsp=76 / smtp=101 / sip=45 / ftp=0，且该用例 **1 passed**。
+**⇒ 撤回「唯一还在骗人的测试」这条结论。它已是正确写法。**
+
+### QA 新增的两条实测项（超出本清理范围，但影响验收）
+
+| # | 发现 | 影响 | 建议 |
+|---|---|---|---|
+| **①** | **`scripts/rq3_build_corpus.py` 首组失败即 `return 4` 中止** | B/C/D 组**永远不会被重新生成** —— 实测 `derived/rq3/A/seeds` mtime=11-01 15:05（被 pytest 触发重写），而 B/C/D 仍是 10-31 03:24 的旧产物 | 即使修好 host 归一化，**磁盘上的 B/C/D 旧语料仍带 50 个摄像机 host + 52 个不可播会话名**。建议改成「继续构建其余组 + 汇总失败」 |
+| **②** | **rq3 是协议级语料（无 `--target-env`）⇒ `allowed_resources` 为空 ⇒ `normalize_seed_resource` 不生效** | 当前污染实测：A 组 bad_sess=226（**100%**）、B/C/D bad_host=139 / bad_sess=100；`derived/seeds/rtsp/rq4_B` 干净（150/150） | 要清会话轴，**协议级语料也必须绑定目标环境**（`--target-env rq2-live555`），否则会话轴永远清不掉 |
+
+> 这两条属于**语料质量**议题，与「kb 收敛清理」正交，但会影响「rq3 语料是否可用」的判断。
+> QA 已同步给 team-lead 决策。
 
 ---
+
+## 7. 不可逆操作清单（**2026-11-01 修正：项目已成为 git 仓库**）
+
+> **前提已变**：原判断「项目不是 git 仓库 → 删除不可逆」**已失效**。
+> 2026-11-01 13:31 项目完成首次入库（`c9295b4`），随后 13:59 merge `origin/main`（`493874c`）。
+>
+> ### 7.1 现在的可逆性分级
+>
+> | 目录 | git 跟踪状态 | 删除可逆性 |
+> |---|---|---|
+> | `fused_hub/`、`tests/`、`docs/`、`core/`、`scripts/`、`kb/` | **已跟踪**（实测 `git ls-files` 确认） | ✅ **可逆** —— `git checkout -- <path>` 即可恢复 |
+> | `derived/` | **仍被 `.gitignore:39` 忽略** | ❌ **真正不可逆** —— 唯一需要备份的对象 |
+>
+> ### 7.2 真正不可逆的只剩这几项
+>
+> ```bash
+> # 只有 derived/ 下的删除需要备份（其余已 git 保护）
+> cp -r derived/per_source/ftp          "$TEMP/backup_derived_per_source_ftp"   # 若尚未删
+> cp -r derived/seeds/ftp                "$TEMP/backup_derived_seeds_ftp"
+> cp    derived/source_blocks/ftp.state.json "$TEMP/backup_ftp_state.json"
+> ```
+>
+> | # | 操作 | 状态 | 可逆性（修正后） | 备注 |
+> |---|---|---|---|---|
+> | 1 | 删 `derived/per_source/{dns,dtls,ftp,ssh,tls}/` | **已执行 10-31 18:12** | ❌ **不可逆**（`derived/` 被 ignore） | 且 ftp 那 197 KB facts 的**源 `kb/ftp/` 已永久删除 → 即使备份也无法重建**。这是全案**唯一真正不可逆**的操作 |
+> | 2 | 删 `fused_hub/targets/{dns,dtls,ssh,tls}/` | **已执行 10-31 18:16** | ✅ **已可逆**（已入 `c9295b4`，`git checkout` 可恢复） | 内容是 A0.1/A0.2 新建，本可重建 |
+> | 3 | 删 `fused_hub/targets/ftp/rfc_config.json` | **已执行 10-31 18:16** | ✅ **已可逆**（同上） | 同上 |
+> | 4 | `fused_hub/targets/ftp/{profile.json,ftp_base.dict}` | **决策：保留** | 保留即无风险 | 已入 git，删除也可逆 —— 但**语义上仍建议保留**（§2.2） |
+> | 5 | 删 `derived/seeds/ftp/`（138 .raw） | 待定 | ❌ **不可逆** —— 这是**实验语料**不是再生数据，**必须先备份** | |
+> | 6 | 删 `derived/source_blocks/ftp.state.json` | 待定 | ❌ **不可逆** —— ftp 源已删 → 缓存**无法重建** | 建议备份 |
+> | 7 | 删 `derived/spec/{modbus,fakeproto,fakeproto2}/` | 待定 | ❌ 不可逆（`derived/`） | 历史测试残留，优先级低 |
+> | 8 | 改 `core/fused/protocol_patterns.py` | **P0 曾执行，已被破坏性 git 操作回滚** | ✅ 可逆（已跟踪） | 见 §2.4 —— **需重做或明确不做** |
+
+### 7.3 新增风险：破坏性 git 操作会静默吞掉未提交的工作
+
+**实测教训**：工程师 10-31 19:16 完成的 `protocol_patterns.py` P0（收敛到 3 协议 +
+补文件头说明）**从未提交**，13:31 的 `git reset HEAD~1` → 大提交 → merge 序列把它
+**连同文件头注释一起抹掉**了。`git log --all` 确认：**没有任何提交含 3 条目版本**，
+`git fsck` 的 dangling 对象里也没有 → **该成果无法从 git 恢复**。
+
+**⇒ 强制纪律（建议 team-lead 采纳）**：
+1. **改动完成即提交**。本项目无分支，**提交是唯一可靠的保险**（`software-engineer-12` 已在其文档中践行）。
+2. **禁止在飞期间执行 `git reset --hard` / `git checkout -- .` / 强制 merge**；
+   如确需，用 `git stash push -m "说明"` 代替（至少带说明且不覆盖工作区）。
+3. **每次破坏性操作前后跑一次失败集合比对**（§6.1）—— 本次正是靠这个发现 P0 被吞。
+
+
 
 ## 8. 遗留问题（不在本次清理范围，建议单独立 issue）
 
