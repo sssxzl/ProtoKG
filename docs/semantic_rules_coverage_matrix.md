@@ -1,0 +1,419 @@
+# 语义规则模式表覆盖矩阵（`core/fused/semantic_rules.py`）
+
+> 生成时间：2026-11-01
+> 适用代码库：`E:\科研\想法idea\rag-chatafl`
+> 覆盖对象：`core/fused/semantic_rules.py` 的 **31 条**有序 operator/operand 模式
+> 上游输入：`docs/rfc_source_bcd_roadmap.md` §3.5（层次 1 的模式表）、§3.8 任务表 B-5 行
+> 本文档性质：**只读测量报告**。撰写过程中未修改仓库任何代码/测试文件（唯一写入为本文件）。
+> **用途**：B-10 独立实验的**直接输入** —— E2 组「消融：只跑规则表无 LLM」需要知道
+> **规则表单独能覆盖什么、漏在哪**。
+
+---
+
+## 0　摘要（先读这一段）
+
+**一句话**：规则表在当前候选集上产出 **19 条可执行约束 / 421 条候选（4.5%）**，
+但这个数字**不能当作规则表质量的度量** —— 因为**候选集本身 87.4% 是换行截断的半句**。
+真正可比的缺口是：**单行完整句 + 含规范动词 + 规则表未命中 = 20 条**，
+其中**只有 3 条涉及数值**，且**其中 2 条的数字并不是操作数**（章节号 / 版本号）。
+
+**给 B-10 / B-5 迭代的三条结论**：
+
+| # | 结论 | 依据 |
+|---|---|---|
+| 1 | ⏸ **扩 `OPERATORS` 的收益极小（≤3 条 / 0.7%）** —— team-lead「先不扩」的裁决**被数据证实** | §5.2：真数值缺口只有 3 条，其中 2 条是「数字不是操作数」（正确的不匹配） |
+| 2 | ⭐ **真正的杠杆是「加句子形态（pattern）」，不是「加算子（operator）」** | §5.3：20 条真缺口里，绝大多数缺的是**句式**（`MUST NOT use/appear`、`SHOULD be sent`、`within the range`），不是算子 |
+| 3 | 🔁 **粒度修正落地后必须重测本矩阵** —— 候选集的**组成**会整体改变 | §4：87.4% 候选是跨行/表格行碎片；本文所有数字都绑定 §2 的快照指纹 |
+
+**★ 另有一条对本轮「并行漂移」现象的正面结论**（§3.2）：候选集在测量期间
+被 engineer-13 的粒度修正改动过（指纹 `1d7a9f43…` → `62b404fb…`），
+**但漏斗的主干数字完全没变**（命中 39 / 可执行 19 / field_unbound 14 …），
+只有「未命中归因」的子桶挪了 ±1。⇒ **E2 的上界对语料修订是稳健的**。
+
+---
+
+## 1　测什么、不测什么
+
+**测**：模式表在**真实 RFC 约束候选**上的命中分布、未命中归因、以及
+「命中 → 可执行约束」这条链路上每一环的损耗。
+
+**不测**（明确排除，避免误读）：
+
+- **不测 LLM 兜底路径**（B-6）—— 本矩阵是「纯规则表」的基线，正是 E2 消融要测的那一档；
+- **不测种子生成效果**（B-8/B-10 的下游）—— 本矩阵只到「产出可执行约束」为止；
+- **不评价候选集本身的质量** —— 候选由 B-3 产出，其粒度问题由 engineer-13 在修；
+  本矩阵**只把它当作既定输入**，并量化它对规则表测量的影响（§4）。
+
+---
+
+## 2　快照与可复现性
+
+⚠ **候选集在本文撰写期间正在变动**（engineer-13 正在改 `core/fused/rfc_extractor.py`
+的 `_split_sentences_with_offsets` 做粒度修正）。实测：撰写期间候选集指纹
+从 `1d7a9f43…` 变为 `62b404fb…`。⇒ **本文所有数字绑定下面这个快照指纹**，换快照数字即失效。
+
+| 项 | 值 |
+|---|---|
+| 快照时间 | 2026-11-01（B-5 交付后） |
+| **权威快照指纹** | `62b404fb53a3d1d5b0ac31ef4eb1511c3532d5b4cc666ed4fb7cc5b924e61c72` |
+| 前一版快照指纹（撰写初期） | `1d7a9f432eabd089cb2100e5c19159400d46d49fe119ac0b6c9ca1351bdc4a18` |
+| 指纹算法 | `sha256( Σ sha256(proto + "|" + source + "|" + text) )` |
+| 候选总数 | **421**（rtsp 80 / sip 80 / smtp 261） |
+| 已知字段集 | rtsp **45** / sip **46** / smtp **0**（`extract_rfc_norms` 的 `kind=="field"`） |
+| 区间逐字可核对 | **421 / 421**（`raw[span_start:span_end] == text`） |
+| 期望响应词表 | `success` / `protocol_error` / `application_error` / `silence` |
+
+**复现方法**（把下面脚本存成任意路径运行即可重新生成全部数字）：
+
+```python
+"""重新生成覆盖矩阵的全部数字。运行：python <此文件>（仓库根目录下）。
+
+★ 前置：`core/fused/rfc_extractor.py` 处于**某个确定版本**（否则候选集指纹会变）。
+  本脚本只读，不写任何文件。
+"""
+import collections
+import hashlib
+import re
+import sys
+
+sys.path.insert(0, ".")
+from core.fused.rfc_extractor import extract_constraint_candidates, extract_rfc_norms
+from core.fused.semantic import EvidenceAnchor, load_source_text, try_convert
+from core.fused.semantic_rules import PATTERNS, bind_field, make_resolver, match_pattern
+
+PROTOS = ("rtsp", "sip", "smtp")
+VOCAB = ("success", "protocol_error", "application_error", "silence")
+
+#: RFC 2119 规范动词 —— **只认大写**（RFC 2119 §3：只有全大写关键字有规范力）
+_NORMATIVE_UPPER = re.compile(
+    r"(?<!\w)(?:MUST|SHALL|REQUIRED|SHOULD|RECOMMENDED|MAY|OPTIONAL)(?!\w)"
+)
+#: RFC 2119 **术语声明句**特征：同时出现 ≥4 个不同的引号关键字
+_BOILERPLATE = re.compile(r'"(?:MUST|SHALL|REQUIRED|SHOULD|RECOMMENDED|MAY|OPTIONAL)"')
+
+fields = {
+    p: sorted({n["name"] for n in extract_rfc_norms(p) if n.get("kind") == "field"})
+    for p in PROTOS
+}
+
+waterfall = collections.Counter()
+miss = collections.Counter()
+per_pattern = collections.Counter()
+per_pattern_bound = collections.Counter()
+blob = hashlib.sha256()
+
+for proto in PROTOS:
+    for c in extract_constraint_candidates(proto):
+        txt = c["text"]
+        blob.update((proto + "|" + c["source"] + "|" + txt).encode())
+        st = txt.strip()
+        m = match_pattern(txt)
+        if m is None:
+            upper = set(_NORMATIVE_UPPER.findall(st))
+            if len(set(_BOILERPLATE.findall(st))) >= 4:
+                key = "M2_RFC2119术语声明句(非约束)"
+            elif not upper:
+                key = "M1_无大写规范动词(描述性)"
+            elif "\n" in st or st.startswith(("|", "*", "-")):
+                key = "M3_有动词但跨行/表格行(粒度)"
+            elif re.search(r"\d", st):
+                key = "M4a_有动词+单行+含数值(真缺口)"
+            else:
+                key = "M4c_有动词+单行+无数值(句式未覆盖)"
+            miss[key] += 1
+            continue
+        per_pattern[m.pattern.name] += 1
+        waterfall["1_模式命中"] += 1
+        if bind_field(m.target_field, fields[proto]):
+            per_pattern_bound[m.pattern.name] += 1
+            waterfall["标记_字段线索可绑定"] += 1
+        if m.reject_reason:
+            waterfall["2_" + m.reject_reason] += 1
+            continue
+        ev = EvidenceAnchor(
+            evidence_id="e0",
+            spec_version=c.get("spec_version") or "X",
+            section_path=tuple(c.get("section_path") or ()),
+            source_anchor=c["source"],
+            span_text=txt,
+            span_start=c["span_start"],
+            span_end=c["span_end"],
+            evidence_kind=m.kind,
+            explicitness="explicit",
+            source_class="normative_spec",
+        )
+        constraint, reason = try_convert(
+            ev,
+            source_text=load_source_text(proto, c["source"]),
+            known_fields=fields[proto],
+            expected_vocab=VOCAB,
+            resolver=make_resolver(known_fields=fields[proto]),
+        )
+        if constraint is not None:
+            waterfall["3_产出可执行约束"] += 1
+        else:
+            waterfall["2_转换被拒_" + reason] += 1
+
+print("候选集指纹:", blob.hexdigest())
+for k in sorted(waterfall):
+    print(f"  {k:34s} {waterfall[k]:4d}")
+for k, v in sorted(miss.items(), key=lambda kv: -kv[1]):
+    print(f"  {k:34s} {v:4d}")
+for pt in PATTERNS:
+    print(f"  {pt.name:20s} op={pt.operator:8s} kind={pt.kind:9s} "
+          f"命中={per_pattern[pt.name]:3d} 绑定成功={per_pattern_bound[pt.name]:3d}")
+```
+
+---
+
+## 3　漏斗：规则表单独能覆盖什么（E2 消融的当前上界）
+
+### 3.1　互斥瀑布（**每条候选只落一处**）
+
+```
+  候选总数                                     421   (100.0%)
+  ├─ 0 未命中（模式表无命中）                   382   ( 90.7%)   ← §5 逐类归因
+  └─ 1 模式命中                                 39   (  9.3%)
+      ├─ 2 non_length_operand（单位不可换算）      1   (  0.2%)
+      ├─ 2 转换被拒 field_unbound                14   (  3.3%)
+      ├─ 2 转换被拒 non_normative_kind            5   (  1.2%)
+      └─ 3 产出可执行约束                        19   (  4.5%)   ← E2 的当前上界
+```
+**标记（非阶段，可与其他阶段并存）**：命中 39 条中，**字段线索可绑定**的只有 **7 条（18%）**。
+
+**每协议可执行约束**：rtsp **7** ｜ sip **8** ｜ smtp **4**
+
+### 3.2　★ 漏斗主干对语料修订**稳健**（本轮实测）
+
+撰写期间候选集被 engineer-13 的粒度修正改动过（指纹 `1d7a9f43…` → `62b404fb…`，
+`rfc_extractor.py` 当时已累积 +330 行改动）。**两版快照的漏斗主干完全一致**：
+
+| 指标 | 快照 `1d7a9f43…` | 快照 `62b404fb…` | 变化 |
+|---|---:|---:|---|
+| 候选总数 | 421 | 421 | 0 |
+| 模式命中 | 39 | 39 | **0** |
+| non_length_operand | 1 | 1 | **0** |
+| field_unbound | 14 | 14 | **0** |
+| non_normative_kind | 5 | 5 | **0** |
+| **产出可执行约束** | **19** | **19** | **0** |
+| 未命中归因 M2（术语声明句） | 5 | 6 | +1 |
+| 未命中归因 M4c（句式未覆盖） | 18 | 17 | −1 |
+
+⇒ **E2 的上界（19）对语料修订稳健；只有「未命中归因」的子桶会挪 ±1。**
+⇒ 报告 E2 数字时**必须同时给指纹**，但不必担心语料微调让结论翻转。
+
+---
+
+## 4　粒度归因：命中缺口里有多少是「粒度」造成的？
+
+这是 team-lead 在 B-5 派单里提出的核心问题：
+> 「8.4% 的命中率里有多少是「粒度」造成的、多少是「缺算子」造成的，现在无法区分」
+
+**本节给出区分。** 判据：候选文本**含换行** ⇒ 它是 `_split_sentences_with_offsets`
+按**物理行**切出来的**跨行碎片**（engineer-13 正在修的那一类）。
+
+| 子集 | 候选 | 有规范动词 | 其中命中 | **命中率（命中/有动词）** |
+|---|---:|---:|---:|---:|
+| **干净子集**（单行、非表格行） | 53 | 22 | 2 | **9.1%** |
+| **脏子集**（跨行 / 表格行） | 368 | 246 | 24 | **9.8%** |
+
+**两个子集的命中率几乎相同（9.1% vs 9.8%）** ⇒
+
+> ★ **命中率的缺口不是「粒度」造成的** —— 碎片候选和完整句的命中概率一样低。
+>   粒度造成的**不是命中率低**，而是**候选集本身的组成被污染**：
+>   87.4% 的语料是碎片 ⇒ 绝对数字（421 → 39 → 19）**不可跨版本比较**，
+>   必须等粒度修完后重测。
+
+**这个区分很重要**：如果误以为「命中率低是粒度造成的」，就会在粒度修完后期待命中率大涨；
+实测表明**更可能是「候选变干净了，但命中率仍是 ~9%」** —— 所以
+**扩句式（§5.3）与扩算子（§5.2）才是提高覆盖率的正路**，而粒度修正的价值在于
+**让候选集与 oracle 可比**（这正是 E2 消融成立的前提）。
+
+---
+
+## 5　漏在哪：未命中归因
+
+### 5.1　未命中总表（382 条未命中，快照 `62b404fb…`）
+
+| 归类 | 条数 | 占 421 | 说明 |
+|---|---:|---:|---|
+| **M1 无大写规范动词（描述性）** | 134 | 31.8% | 本来就**不该**被转成可执行约束（散文、定义、示例） |
+| **M2 RFC 2119 术语声明句** | 6 | 1.4% | 「The key words "MUST", "MUST NOT", ...」——**非约束** |
+| **M3 有规范动词但跨行/表格行（粒度）** | 222 | 52.7% | 见 §4 |
+| **M4a 有动词 + 单行 + 含数值（真缺口）** | **3** | **0.7%** | 见 §5.2 |
+| **M4c 有动词 + 单行 + 无数值（句式未覆盖）** | 17 | 4.0% | 见 §5.3 |
+| **合计** | **382** | 90.7% | = 421 − 39 ✓ |
+
+> ⚠ 「M4a/M4c」的判定用**大写**规范动词（RFC 2119 §3：只有全大写关键字有规范力）。
+> 这与规则表内部 `detect_modality()` 的**大小写不敏感**判定不同 —— 后者是 B-2 的刻意选择
+> （B-5 报告偏差 4：容忍小写 `must`/`may` 以匹配 B-5 未来可能采用的模式风格）。
+> **两套判据的差异不影响本文结论**，但读本文时须知。
+>
+> ⚠ **MAY 候选不单列一类**：本语料有 21 条含大写 MAY/OPTIONAL 的候选，它们**分散在
+> M3/M4c 内**（因为 MAY 句多半不是完整的数值约束句）。其中**只有 1 条命中了模式**，
+> 且该句同时含 MUST（最强动词取 MUST）⇒ 本语料上 `optional_modality` **0 次触发**。
+
+### 5.2　真数值缺口只有 3 条 —— ⇒ **扩 `OPERATORS` 收益 ≤ 0.7%**
+
+| # | 候选 | 真实原因 |
+|---|---|---|
+| 1 | `[rtsp] A server SHOULD implement all header fields described in Section 12.` | 「12」是**章节号**，**不是操作数** ⇒ 正确的不匹配 |
+| 2 | `[sip] The "chunked" transfer encoding of HTTP/1.1 MUST NOT be used for SIP.` | 「1.1」是**版本号**；且句式是「MUST NOT be used」（无比较词）⇒ 正确的不匹配 |
+| 3 | `[smtp] of the zone MUST be within the range 00 through 59.` | ★ **真缺口**：模式表有 `must_range`（`between` / `in the range of`），<br>但这句是 **`within the range 00 through 59`**（少一个 `of`）⇒ **差一个词的模式缺口** |
+
+**⇒ 结论**：即使把 `OPERATORS` 扩到任意大小，在这批候选上**最多也只能多拿到 1 条**
+（第 3 条靠加一个模式即可，不需要加算子）。
+**team-lead「先不扩 `OPERATORS`、等粒度修正后再评估」的裁决，被本节数据证实。**
+
+### 5.3　★ 真正的杠杆：缺的是**句式**，不是算子
+
+M4c 的 17 条 + M4a 的 3 条 = **20 条「单行完整句 + 有规范动词 + 规则表未命中」**。
+逐条看（完整清单，便于 B-5 迭代时逐条对照）：
+
+| # | 协议 | 候选 | 缺的**句式** | 需要的算子 |
+|---|---|---|---|---|
+| 1 | rtsp | A server SHOULD implement all header fields described in Section 12. | 无数值语义型 | （无算子可表达） |
+| 2 | sip | In this document, the key words "MUST", "MUST NOT", "REQUIRED", | 术语声明句片段 | — |
+| 3 | sip | The "chunked" transfer encoding of HTTP/1.1 MUST NOT be used for SIP. | 见 §5.2 | — |
+| 4 | sip | All SIP implementations MUST support the SIP URI scheme. | `MUST support <X>` | present |
+| 5 | sip | method MUST match that of the request. | `MUST match <X>` | eq / field_ref |
+| 6 | sip | In particular, a UAC configured with an outbound proxy SHOULD | 截断 | — |
+| 7 | smtp | In this case, the server SHOULD return the reply code: | `MUST return <code>` | （需新算子或字段化） |
+| 8 | smtp | present, this response MUST be encoded as described in Section | `MUST be encoded as` | （语义型） |
+| 9 | smtp | Note: A server implementation MUST implement a configuration in which | 无数值语义型 | （无算子可表达） |
+| 10 | smtp | The client MUST NOT use | ★ `MUST NOT use <X>` | absent |
+| 11 | smtp | Local aliases MUST NOT appear in any SMTP transaction. | ★ `MUST NOT appear in` | absent |
+| 12 | smtp | Mail transaction commands MUST be used in the order discussed above. | `MUST be used in` | （语义/顺序型） |
+| 13 | smtp | Each line of characters MUST be no more than | ★ `MUST be no more than <N>`（**已有算子**，但本句被截断） | le |
+| 14 | smtp | The date and time-of-day SHOULD express local time. | `SHOULD express` | （语义型） |
+| 15 | smtp | A date-time specification MUST be semantically valid. | `MUST be semantically valid` | （语义型） |
+| 16 | smtp | of the zone MUST be within the range 00 through 59. | ★ `within the range` | range（**已有算子，缺模式**） |
+| 17 | smtp | The "Resent-Message-ID:" field SHOULD be sent. | ★ `SHOULD be sent` | present |
+| 18 | smtp | They MUST conform to the syntax of an optional-field. | `MUST conform to` | present |
+| 19 | smtp | implementation MUST reasonably interpret. | 无数值语义型 | （无算子可表达） |
+| 20 | smtp | When interpreting addresses, the route portion SHOULD be ignored. | `SHOULD be ignored` | absent |
+
+**归类**：
+
+| 类别 | 条数 | 需要的动作 |
+|---|---:|---|
+| **缺模式但算子已有**（`within the range` / `MUST NOT use` / `SHOULD be sent` / `MUST NOT appear in` / `MUST be no more than`） | **≥5** | ⭐ **加模式即可，不需要加算子** |
+| 语义/状态型（「MUST be semantically valid」「MUST return the reply code」「MUST implement」「MUST reasonably interpret」） | ~8 | 需要**新算子**或**降级为知识候选**（本就不该造字节级种子） |
+| 数字不是操作数（章节号/版本号） | 2 | **无需动作**（当前行为正确） |
+| 截断 / 术语声明句碎片 | 3 | 粒度修正后自然消解 |
+
+⇒ **B-5 迭代建议（按性价比排序）**：
+1. 加 `MUST NOT use/appear in`（→ `absent`）、`SHOULD/MUST be sent`（→ `present`）、
+   `within the range`（→ `range`）—— **只加模式，零模型改动**；
+2. 语义/状态型约束**保持不转换**（落知识候选）—— 它们**本来就不该**变成字节级变异种子；
+3. **不要**为「章节号/版本号」加模式 —— 那会把非操作数变成操作数，**制造假规则**。
+
+---
+
+## 6　逐模式覆盖矩阵
+
+**列说明**：`命中` = 在 421 条真实候选上被该模式命中的条数；`绑定` = 其中字段线索可绑定的条数；
+`r/s/m` = rtsp / sip / smtp 各自的命中分布。
+
+| # | 模式名 | operator | kind | 命中 | 绑定 | r/s/m |
+|---:|---|---|---|---:|---:|---|
+| 1 | `must_not_ge` | lt | normative | 0 | 0 | 0/0/0 |
+| 2 | `must_not_le` | gt | normative | 0 | 0 | 0/0/0 |
+| 3 | `must_not_at_least` | lt | normative | 0 | 0 | 0/0/0 |
+| 4 | `must_not_at_most` | gt | normative | 0 | 0 | 0/0/0 |
+| 5 | `must_not_gt` | le | normative | 0 | 0 | 0/0/0 |
+| 6 | `must_not_lt` | ge | normative | 0 | 0 | 0/0/0 |
+| 7 | `must_not_exceed` | le | normative | 0 | 0 | 0/0/0 |
+| 8 | `must_not_equal` | ne | normative | 0 | 0 | 0/0/0 |
+| 9 | `must_ge` | ge | normative | 4 | 0 | 2/0/2 |
+| 10 | `must_le` | le | normative | 2 | 0 | 1/0/1 |
+| 11 | `must_gt` | gt | normative | 0 | 0 | 0/0/0 |
+| 12 | `must_lt` | lt | normative | 0 | 0 | 0/0/0 |
+| 13 | `must_eq` | eq | normative | 1 | 1 | 0/1/0 |
+| 14 | `must_range` | range | normative | 0 | 0 | 0/0/0 |
+| 15 | `at_least` | ge | normative | 0 | 0 | 0/0/0 |
+| 16 | `at_most` | le | normative | 0 | 0 | 0/0/0 |
+| 17 | `no_more_than` | le | normative | 0 | 0 | 0/0/0 |
+| 18 | `fewer_than` | lt | normative | 0 | 0 | 0/0/0 |
+| 19 | `more_than` | gt | normative | 1 | 0 | 0/0/1 |
+| 20 | `limited_to` | le | normative | 2 | 0 | 0/0/2 |
+| 21 | `maximum_of` | le | normative | 0 | 0 | 0/0/0 |
+| 22 | `minimum_of` | ge | normative | 0 | 0 | 0/0/0 |
+| 23 | `one_of_braces` | in | normative | 0 | 0 | 0/0/0 |
+| 24 | `one_of_list` | in | normative | 0 | 0 | 0/0/0 |
+| 25 | `must_not_be_present` | absent | normative | 0 | 0 | 0/0/0 |
+| 26 | `must_not_contain` | absent | normative | 5 | 1 | 1/2/2 |
+| 27 | `must_be_absent` | absent | normative | 0 | 0 | 0/0/0 |
+| 28 | `must_be_present` | present | normative | 3 | 0 | 1/1/1 |
+| 29 | `must_contain` | present | normative | 11 | 4 | 3/5/3 |
+| 30 | `size_of` | eq | normative | 7 | 1 | 3/1/3 |
+| 31 | `abnf_rule` | present | **abnf** | 3 | 0 | 3/0/0 |
+| | **合计** | | | **39** | **7** | 12/9/18 |
+
+### 6.1　21 条模式在真实候选上**从未命中**
+
+`must_not_ge` / `must_not_le` / `must_not_at_least` / `must_not_at_most` / `must_not_gt` /
+`must_not_lt` / `must_not_exceed` / `must_not_equal` / `must_gt` / `must_lt` /
+`must_range` / `at_least` / `at_most` / `no_more_than` / `fewer_than` / `maximum_of` /
+`minimum_of` / `one_of_braces` / `one_of_list` / `must_not_be_present` / `must_be_absent`
+
+**这不是缺陷，是「模式表作为可回归资产」的正常状态**：
+
+- 这些模式**全部有最小可执行样例 + 单测**（B-5 验收①）⇒ 它们是**可回归的契约**，
+  将来语料/句式变化时能被立刻发现；
+- 它们覆盖的是 **RFC 2119 最常见的约束句式**（"MUST NOT exceed N"、"MUST be at least N"），
+  在**更干净或更大的语料**上会大量命中 —— 当前的 421 条候选里
+  「含数字的完整句」本来就只有很少几条；
+- ⇒ **B-10 的 E2 消融若在更大的语料上跑，这 21 条是主要的覆盖来源**。
+  **不要**因为「在当前语料上 0 命中」就删模式。
+
+### 6.2　字段绑定率是**第二个瓶颈**
+
+命中 39 条里只有 **7 条（18%）**字段线索可绑定。两类原因：
+
+1. **16 条根本没有字段线索** —— 数值型约束常常不点名字段
+   （"MUST be at least 8" ⇒ 约束的是哪个字段？语料没说）。⇒ **C6 判 `field_unbound` 是正确的**。
+2. **碎片造成的垃圾线索** —— `t` / `ny` / `ll` / `original` / `full` 等
+   （来自 "the length of that"、"the size of the message-body" 这类被截断的片段）。
+
+⇒ **B-9 的「已知字段集」口径待办**：smtp 的字段集为 **0**（§3.1），这直接压低了 smtp 的 E2 覆盖
+（smtp 只有 4 条 vs rtsp 7 / sip 8，尽管 smtp 候选数是 rtsp 的 3 倍）。
+**这是「已知字段集」口径问题，不是模式表问题。**
+
+---
+
+## 7　给 B-10（E2 消融）的使用建议
+
+1. **E2 组的「规则表单独能覆盖什么」当前答案是 19 条可执行约束**（§3.1），
+   **必须同时报告候选集指纹**（§2）—— 否则粒度修正后数字不可比。
+   ★ 好消息：主干数字对语料修订**稳健**（§3.2）。
+2. **E2 与 E1（全链路）的差值就是「LLM 兜底 + 模式表扩展」的净增益**。
+   按本文分析：模式表侧的扩展空间主要是**句式**（§5.3，≥5 条可零成本加），
+   算子侧的扩展空间 **≤3 条**（§5.2）⇒
+   **E2 的瓶颈大概率在「候选质量 + 句式覆盖」，不在「算子词表」**。
+3. **E3 组若做「关掉 C2 区间核对」的消融**：本矩阵显示 C2 在 421 条候选上
+   **零损耗**（421/421 逐字可核对）⇒ 该消融在当前语料上**预期无差异**，
+   这本身是个值得写进报告的**负结果**（说明 C2 的成本可忽略，值得保留）。
+4. **不要把 §3.1 的「4.5%」当成规则表的质量分** —— 87.4% 的语料是碎片（§4）。
+
+---
+
+## 8　局限与已知不确定项
+
+| # | 局限 | 影响 |
+|---|---|---|
+| 1 | **候选集在分析期间变动过**（指纹 `1d7a9f43…` → `62b404fb…`） | 本文数字绑定 §2 的权威指纹；**主干数字已验证稳健**（§3.2），只有归因子桶挪 ±1。粒度修正**完全**落地后**必须重跑 §2 的脚本**并更新本文 |
+| 2 | 「粒度」用「文本含换行」作代理判据 —— 它捕捉的是**物理行切分**的产物，<br>但**不是**所有碎片都含换行（单行碎片仍漏在「干净子集」里） | §4 的 87.4% 是**下界** |
+| 3 | 「规范动词」在归因时用**大写**判据，规则表内部用**大小写不敏感** | 只影响归因分桶的边界条数，不影响「真缺口 3 条」的结论（§5.2 逐条核对过） |
+| 4 | smtp 字段集为空（§6.2） | smtp 的 E2 覆盖被系统性压低，**不是模式表的问题** |
+| 5 | 本文**不评估**候选集质量本身、**不评估**种子生成效果 | 见 §1 |
+| 6 | 「语义/状态型约束不转换」是**当前的设计选择**，不是遗漏 | 见 §5.3 的建议 2 |
+| 7 | `field_unbound` 的归因**未细分**「无字段线索」vs「线索是垃圾词」vs「字段集缺该字段」 | §6.2 给了三类原因的量级，但未逐条落库 |
+
+---
+
+## 9　变更记录
+
+| 日期 | 变更 | 作者 |
+|---|---|---|
+| 2026-11-01 | 首版（权威快照指纹 `62b404fb…`，421 条候选） | software-engineer-11 |

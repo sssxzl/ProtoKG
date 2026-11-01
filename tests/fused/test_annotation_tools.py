@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -649,8 +651,15 @@ class TestCRLFRobustness:
 
     @pytest.fixture(scope="class")
     def repo_crlf_probe(self, tmp_path_factory):
-        """把 CRLF 版放进**仓内**的临时目录跑（需要能 import core/）。"""
-        probe = ROOT / "_crlf_probe_tmp"
+        """把 CRLF 版放进**仓内**的临时目录跑（需要能 import core/）。
+
+        ★ 目录名**必须带进程号**：本仓多人并行跑 pytest，
+          固定目录名会让两个进程共用同一个探针目录 ⇒ 一方的 teardown
+          把另一方正在用的文件删掉 ⇒ **测试结果随机漂移**
+          （实测踩到：两次连跑，一次 3 失败、一次 1 失败）。
+          ⇒ 目录名带 ``os.getpid()`` ⇒ 并行进程互不干扰。
+        """
+        probe = ROOT / f"_crlf_probe_{os.getpid()}"
         probe.mkdir(exist_ok=True)
         for name in ("freeze_annotation_candidates.py", "annotate_candidates.py",
                      "calc_cohen_kappa.py"):
@@ -739,6 +748,208 @@ class TestCRLFRobustness:
             pytest.skip("冻结集尚未生成")
         b = p.read_bytes()
         assert b.count(b"\r\n") == 0, "冻结产物不应含 CRLF"
+
+
+class TestGranularityImpact:
+    """★ 「抽取粒度修正 ⇒ 哪些已标注条目会失效」的分析工具。
+
+    背景：``core/fused/rfc_extractor.py`` 的 ``_SENT_SPLIT_RE`` 含 ``\\n+`` 分支
+    ⇒ RFC 折行的散文**每行**都被当成一句 ⇒ 候选句大量是**半句**。
+    粒度修正（合并折行）会改变候选文本 ⇒ 已标注条目失联。
+
+    ★ 本工具**不依赖** ``rfc_extractor`` 的实现（那正是被改动的一层），
+      只依据 RFC 原文的行结构 ⇒ 结论与「怎么改」无关。
+    """
+
+    def test_clean_regexes_match_extractor(self):
+        """★ 本工具复制的三个清洗判据必须与 rfc_extractor **逐条相等**。
+
+        ⚠ 抄写时踩过的坑：``_RE_RFC_TITLE`` 若写成 ``r"^\\s*(A|B|)"``（**空分支**）
+        会**匹配一切** ⇒ 整篇文档被当成标题行 ⇒ 段落边界全错 ⇒ 分析结果全错。
+        这条测试就是把那个坑钉死。
+        """
+        from core.fused import rfc_extractor as rx
+        import scripts.annotate_candidates as mod
+        assert mod._RE_PAGE_MARK.pattern == rx._RE_PAGE_MARK.pattern
+        assert mod._RE_RFC_TITLE.pattern == rx._RE_RFC_TITLE.pattern
+        assert mod._RE_EMPTY_OR_DOTS.pattern == rx._RE_EMPTY_OR_DOTS.pattern
+        # 反向护栏：标题正则**不得**匹配普通正文行（空分支的经典症状）
+        assert not mod._RE_RFC_TITLE.match("   the range specified and delivers")
+        assert not mod._RE_RFC_TITLE.match("   range is reached. PLAY requests")
+
+    def test_structural_lines_are_detected(self):
+        from scripts.annotate_candidates import _is_structural_line
+        for s in ('|          Range                    ; Section 12.29',
+                  '|     "457"      ; Invalid Range',
+                  'smpte-range  =   smpte-type "=" smpte-time "-"',
+                  'Content-Length: 332',
+                  '411            Length Required                  all',
+                  '   '):
+            assert _is_structural_line(s) is True, f"{s!r} 应判为结构性行"
+        for s in ('   the range specified and delivers stream data until the end',
+                  '   A client MUST NOT issue a PLAY request'):
+            assert _is_structural_line(s) is False, f"{s!r} 应判为散文行"
+
+    def test_logical_sentence_merges_wrapped_prose(self):
+        """★ 合并折行后应得到**完整逻辑句**。
+
+        ★ 注意本例的候选**位于段落中间**（前半句在上一行）⇒ ``before`` 非空，
+          且 ``before`` **不以句末标点结尾** ⇒ 这正是「句子从中途开始」的信号。
+        """
+        from scripts.annotate_candidates import _logical_sentence
+        raw = ("   The PLAY request positions the normal play time to the beginning of\n"
+               "   the range specified and delivers stream data until the end of the\n"
+               "   range is reached. PLAY requests may be pipelined (queued); a server\n"
+               "   MUST queue PLAY requests to be executed in order.\n")
+        ss = raw.index("the range specified")
+        se = ss + len("the range specified and delivers stream data until the end of the")
+        merged, before, after = _logical_sentence(raw, ss, se)
+        # 合并后应覆盖**整个**逻辑句（含上一行的前半句 + 下一行的后半句）
+        assert merged.startswith("The PLAY request positions")
+        assert merged.endswith("range is reached.")
+        assert "PLAY requests may be pipelined" not in merged   # 只取一句，不越界
+        # 候选之前有内容且不以句末标点结尾 ⇒ 句子从中途开始
+        assert before.strip() != ""
+        assert not _TERMINATOR_AT_END.search(before.rstrip())
+        # 候选之后有内容 ⇒ 句子尚未结束
+        assert "range is reached" in after
+
+    def test_logical_sentence_does_not_absorb_next_sentence(self):
+        """★ 候选**本身已以句末标点结尾** ⇒ 句界就在候选末尾，**不可**并入下一句。
+
+        ⚠ 实测踩到：早期版本无条件向后找句界 ⇒
+        ``Session identifiers are opaque strings of arbitrary length.``
+        被错并成 ``...arbitrary length. Linear white space must be URL-escaped.``
+        ⇒ 预测「文本会变」而实际**不变**（假阳性）。
+        这条测试把该 bug 钉死。
+        """
+        from scripts.annotate_candidates import _logical_sentence
+        raw = ("   Session identifiers are opaque strings of arbitrary length. Linear\n"
+               "   white space must be URL-escaped. A session identifier MUST be chosen\n"
+               "   randomly and MUST be at least eight octets long to make guessing it\n"
+               "   more difficult.\n")
+        first = "Session identifiers are opaque strings of arbitrary length."
+        ss = raw.index(first)
+        se = ss + len(first)
+        merged, _, _ = _logical_sentence(raw, ss, se)
+        assert merged == first
+        assert "white space must be URL-escaped" not in merged
+
+    def test_logical_sentence_keeps_structural_line_standalone(self):
+        """★ 表格行**不跨行合并**（否则会得到无意义的「Accept | Accept-Encoding |」串）。"""
+        from scripts.annotate_candidates import _logical_sentence
+        raw = ("                  |          Accept                   ; Section 12.1\n"
+               "                  |          Range                    ; Section 12.29\n"
+               "                  |          Referer                  ; Section 12.30\n")
+        ss = raw.index("|          Range")
+        se = ss + len("|          Range                    ; Section 12.29")
+        merged, _, _ = _logical_sentence(raw, ss, se)
+        assert merged == "|          Range                    ; Section 12.29"
+        assert "Accept" not in merged
+
+    def test_impact_on_real_frozen_set(self):
+        """★ 对真实冻结集：绝大多数候选都是半句 ⇒ 粒度修正会改变它们。"""
+        from scripts.annotate_candidates import granularity_impact, summarize_impact
+        frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        if not frozen_path.is_file():
+            pytest.skip("冻结集尚未生成")
+        frozen = [json.loads(line) for line in
+                  frozen_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        rows = granularity_impact(frozen, {})
+        summary = summarize_impact(rows)
+        assert summary["total"] == len(frozen)
+        # ★ 核心事实：半句占绝大多数（这是「粒度是瓶颈」的量化证据）
+        assert summary["text_changes"] > summary["total"] * 0.8
+        # 结构性行不应被算成「会变」
+        assert summary["structural"] <= 12
+        for r in rows:
+            if r["structural"]:
+                assert r["text_changes"] is False
+
+    def test_impact_detects_verdict_flips(self):
+        """★ 合并后**新出现规范动词** ⇒ 原「否/无」结论必须翻转。"""
+        from scripts.annotate_candidates import granularity_impact
+        frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        if not frozen_path.is_file():
+            pytest.skip("冻结集尚未生成")
+        frozen = [json.loads(line) for line in
+                  frozen_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        rows = granularity_impact(frozen, {})
+        flips = [r for r in rows if r["verdict_may_flip"]]
+        assert flips, "应至少发现一条「结论可能翻转」的条目"
+        for r in flips:
+            # 翻转的前提：旧文本没有规范动词，新文本有
+            assert not _NORMATIVE_RE.search(r["text"]), r["candidate_id"]
+            assert _NORMATIVE_RE.search(r["merged_text"]), r["candidate_id"]
+
+    def test_impact_prediction_accuracy_against_real_extractor(self):
+        """★ **预测工具 vs 真实抽取器**的对照检验（本工具的价值证明）。
+
+        当 ``core/fused/rfc_extractor.py`` 已落地粒度修正时，
+        本工具对「哪些已标注条目会失效」的预测应当**几乎全对**。
+        判据：对**完整候选池**（不是 120 抽样）比对
+          · 实际失效 = 旧 id 在新池中**不存在**
+          · 预测失效 = 本工具判定 ``text_changes``
+        要求：召回率 = 100%（**零漏报** —— 漏报会让重标做不全），
+             精确率 ≥ 95%（多报只多做几次复核，不会漏标）。
+        """
+        from scripts.annotate_candidates import granularity_impact
+        import hashlib as _h
+        frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        if not frozen_path.is_file():
+            pytest.skip("冻结集尚未生成")
+        try:
+            from core.fused.rfc_extractor import extract_constraint_candidates
+        except Exception:                                  # pragma: no cover
+            pytest.skip("抽取器不可用")
+
+        def _cid(p, c):
+            raw = "|".join([p, str(c.get("source") or ""),
+                            str(c.get("span_start")), str(c.get("text") or "")])
+            return f"{p}-{_h.sha256(raw.encode('utf-8')).hexdigest()[:12]}"
+
+        pool = {}
+        for p in ("rtsp", "sip", "smtp"):
+            for c in extract_constraint_candidates(p):
+                pool[_cid(p, c)] = c
+        if not pool:
+            pytest.skip("新抽取器未产出候选")
+
+        frozen = [json.loads(line) for line in
+                  frozen_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        rows = granularity_impact(frozen, {})
+        gone = {r["candidate_id"] for r in rows if r["candidate_id"] not in pool}
+        pred = {r["candidate_id"] for r in rows if r["text_changes"]}
+        if not gone:
+            pytest.skip("抽取器尚未变更（无失效条目可对照）")
+        hit = gone & pred
+        recall = len(hit) / len(gone)
+        precision = len(hit) / max(1, len(pred))
+        assert recall == 1.0, f"漏报 {len(gone - pred)} 条 ⇒ 重标会做不全"
+        assert precision >= 0.95, f"精确率 {precision:.1%} 偏低"
+
+    def test_impact_is_read_only(self, tmp_path):
+        """★ 本工具**只读** —— 不得改标注文件、不得写任何东西。"""
+        from scripts.annotate_candidates import granularity_impact
+        frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        truth_path = ROOT / "derived" / "exp_semantic" / "truth" / "rtsp.annotated.json"
+        if not (frozen_path.is_file() and truth_path.is_file()):
+            pytest.skip("标注集尚未生成")
+        frozen = [json.loads(line) for line in
+                  frozen_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        anns = json.loads(truth_path.read_text(encoding="utf-8"))
+        before = truth_path.read_bytes()
+        granularity_impact(frozen, {a["candidate_id"]: a for a in anns})
+        assert truth_path.read_bytes() == before
+
+
+#: RFC 2119 关键词（供 TestGranularityImpact 判定「新出现规范动词」）。
+_NORMATIVE_RE = re.compile(
+    r"\b(MUST NOT|MUST|SHALL NOT|SHALL|REQUIRED|SHOULD NOT|SHOULD|"
+    r"RECOMMENDED|NOT RECOMMENDED|MAY NOT|MAY|OPTIONAL)\b")
+
+#: 「本段文字到此结束」的位置判定（用于判断候选是否覆盖到段落末尾的句号）。
+_TERMINATOR_AT_END = re.compile(r"[.!?][\"'’”)\]]*\s*$")
 
 
 class TestVocabulary:

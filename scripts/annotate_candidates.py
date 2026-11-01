@@ -51,6 +51,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -59,6 +60,16 @@ from typing import Any, Optional
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+
+#: RFC 正文清洗的判据（与 core/fused/rfc_extractor.py:87-89 **逐条相等**）。
+#: ★ 这里**独立复制**而非 import —— 被评估的那一层（rfc_extractor）正在被改动，
+#:   若直接 import 它的私有常量，本工具会与「被评估对象」耦合 ⇒ 结论不可信。
+#: ⚠ 抄写这三行时踩过的坑：``_RE_RFC_TITLE`` 若写成 ``r"^\s*(A|B|)"``
+#:   （带**空分支**）会**匹配一切** ⇒ 整篇文档被当成标题行 ⇒ 分析结果全错。
+#:   下面的写法与原实现逐字符一致，已由 test_clean_regexes_match_extractor 守护。
+_RE_PAGE_MARK = re.compile(r"\[Page\s+\d+\]")
+_RE_RFC_TITLE = re.compile(r"^RFC\s+\d+")
+_RE_EMPTY_OR_DOTS = re.compile(r"^\s*(\.+\s*)*$")
 
 #: 可执行算子全集。**与 docs/rfc_source_bcd_roadmap.md §3.1 的 OPERATORS 逐项相等**
 #: （新增算子必须同步改 core/fused/semantic.py 的 OPERATORS）。
@@ -262,6 +273,222 @@ def _write_json(path: Path, payload: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
+# 粒度影响分析（抽取粒度改动 ⇒ 哪些已标注条目会失效）
+# ---------------------------------------------------------------------------
+#: 句末标点（可带收尾引号/括号）。用于判断「一个候选是否覆盖完整逻辑句」。
+#: ★ **不带 ``$`` 锚点** —— 它要能在**句中**定位句界（找「前一句的结尾」/
+#:   「后一句的开头」），加了锚点就只能判「整段结尾是不是句末」，
+#:   那会让「合并折行」永远找不到边界（实测：锚点版把 118 条判成 12 条）。
+_SENT_TERMINATOR = re.compile(r"[.!?][\"'’”)\]]*")
+
+#: 「本段文字到此结束」的位置判定（用于判断候选是否覆盖到段落末尾的句号）。
+_SENT_TERMINATOR_AT_END = re.compile(r"[.!?][\"'’”)\]]*\s*$")
+
+#: **句界**：句末标点（可带收尾引号/括号）后跟空白。
+#: ★ 必须要求「标点后有空白」—— 否则 ``e.g.`` / ``Section 3.4`` / ``z9hG4bK``
+#:   这类**句内点**会被误判成句界，把一个逻辑句切碎。
+_SENT_BOUNDARY = re.compile(r"[.!?][\"'’”)\]]*(?=\s)")
+
+#: RFC 正文里的「结构性行」判据（表格行 / ABNF / 编号标题 / 报文字段行）。
+#: ★ 这些行**不是折行的散文** ⇒ 粒度修正（合并折行）**不会**改变它们，
+#:   区分出来才能算出「真正会失效」的条目数。
+_STRUCTURAL_LINE = re.compile(
+    r"^\s*\|"                      # 表格 / ABNF 竖线行
+    r"|^\s*[a-z][a-z0-9-]*\s*="     # ABNF 产生式
+    r"|^\s*\d+(\.\d+)*\s+\S"       # 编号标题
+    r"|^\s*[A-Za-z][A-Za-z0-9-]*:\s"  # 报文字段行（Content-Length: 332）
+)
+
+
+def _is_structural_line(line: str) -> bool:
+    """该行是否是结构性行（表格 / ABNF / 标题 / 报文字段）而非折行散文。"""
+    s = line.strip()
+    if not s:
+        return True
+    return bool(_STRUCTURAL_LINE.match(s))
+
+
+def _logical_sentence(raw: str, span_start: int, span_end: int) -> tuple[str, str, str]:
+    """求覆盖 ``[span_start, span_end)`` 的**逻辑句**（合并折行后的完整句）。
+
+    ★ 这是**独立于实现**的参考模型：它只依据 RFC 原文的行结构，
+      回答「这句话在规范里本来应该是什么样」，
+      **不依赖** ``core/fused/rfc_extractor.py`` 的任何内部实现
+      （那正是被改动的那一层 ⇒ 依赖它会让本工具与被评估对象耦合）。
+
+    返回 ``(merged_text, before_text, after_text)``：
+      · ``merged_text`` —— 合并折行后的完整逻辑句（粒度修正后该候选的**新文本**）
+      · ``before_text`` —— 候选之前、属于同一段落的文本（若不以句末标点结尾 ⇒ 句子从中途开始）
+      · ``after_text``  —— 候选之后、属于同一段落的文本（若非空 ⇒ 句子尚未结束）
+    """
+    lines = raw.split("\n")
+    # 候选所在行
+    offsets: list[int] = []
+    acc = 0
+    for ln in lines:
+        offsets.append(acc)
+        acc += len(ln) + 1
+    ls = max(k for k in range(len(lines)) if offsets[k] <= span_start)
+    le = max(k for k in range(len(lines)) if offsets[k] <= span_end)
+
+    # 同段落的行范围：向上/向下直到空行或页眉页脚/章节标题
+    def _is_block_break(idx: int) -> bool:
+        s = lines[idx].rstrip()
+        if not s.strip():
+            return True
+        if _RE_PAGE_MARK.search(s):
+            return True
+        if _RE_RFC_TITLE.match(s.strip()):
+            return True
+        if _RE_EMPTY_OR_DOTS.match(s.strip()):
+            return True
+        if re.fullmatch(r"[A-Za-z]+,\s*et\.?\s*al\.?", s.strip()):
+            return True
+        return False
+
+    i = ls
+    while i > 0 and not _is_block_break(i - 1):
+        i -= 1
+    j = le
+    while j + 1 < len(lines) and not _is_block_break(j + 1):
+        j += 1
+
+    block_lines = lines[i:j + 1]
+    before_text = raw[offsets[i]:span_start]
+    after_text = raw[span_end:offsets[j] + len(lines[j])]
+
+    # ★ **结构性行不跨行合并**：表格行 / ABNF 产生式 / 报文字段行**每一行各自成单元**
+    #   （RFC 里一整块表格是多行，合并成一句会得到「Accept | Accept-Encoding | ...」
+    #   这种无意义的串）。合并折行只适用于**折行的散文**。
+    if _is_structural_line(lines[ls]):
+        stripped = lines[ls].strip()
+        return stripped, "", ""
+
+    # 合并折行 → 逻辑句：在「段落文本」上按句末标点切，取覆盖候选的那一段
+    joined = " ".join(ln.strip() for ln in block_lines if ln.strip())
+    # 候选在 joined 中的位置（用块内累计长度近似定位）
+    pos_in_block = 0
+    for ln in lines[i:ls]:
+        pos_in_block += len(ln.strip()) + 1
+    # 候选文本在 joined 中的起点
+    cand = raw[span_start:span_end]
+    cand_start = joined.find(cand.strip(), max(0, pos_in_block - 200))
+    if cand_start < 0:
+        cand_start = max(0, pos_in_block)
+    cand_end = cand_start + len(cand.strip())
+
+    # 向前找句界：候选之前**最后一个**「句末标点 + 空白」的位置
+    head = 0
+    for m in _SENT_BOUNDARY.finditer(joined):
+        if m.end() <= cand_start:
+            head = m.end()
+        else:
+            break
+    # 向后找句界
+    # ★ **候选本身已以句末标点结尾 ⇒ 句界就在候选末尾**，不可再往后找
+    #   （否则会把**下一句**并进来 —— 实测踩到：``Session identifiers are opaque
+    #   strings of arbitrary length.`` 被错并成
+    #   ``...arbitrary length. Linear white space must be URL-escaped.``）
+    cand_text = cand.strip()
+    if _SENT_TERMINATOR_AT_END.search(cand_text):
+        tail = cand_end
+    else:
+        tail = len(joined)
+        m = _SENT_BOUNDARY.search(joined, cand_end)
+        if m:
+            tail = m.end()
+    merged = joined[head:tail].strip()
+    return merged, before_text, after_text
+
+
+def granularity_impact(frozen: list[dict], annotations: dict[str, dict]) -> list[dict]:
+    """分析「抽取粒度修正」会**失效**哪些已标注条目。
+
+    判据（两问）：
+      ① **候选文本会不会变** —— 合并折行后该候选的文本不同 ⇒ ``candidate_id``
+        变化 ⇒ 原标注记录**失联**（必须重新标注）。
+      ② **标注结论会不会变** —— 合并后原本看不见的信息（规范动词 / 被约束对象 /
+        操作数 / 响应码）进入视野 ⇒ 原结论**可能失效**。
+
+    ★ 本函数**只读** ``derived/`` 与 RFC 原文，**不写任何文件**、**不改任何标注**。
+    """
+    from core import paths
+
+    raw_cache: dict[Path, str] = {}
+
+    def _raw(r: dict) -> str:
+        fname = r["source"].split("#@")[0][len("file:"):]
+        path = paths.kb_source_dir(r["protocol"], "rfc") / fname
+        if path not in raw_cache:
+            raw_cache[path] = path.read_text(encoding="utf-8", errors="ignore")
+        return raw_cache[path]
+
+    rows: list[dict] = []
+    for r in frozen:
+        cid = r["candidate_id"]
+        ann = annotations.get(cid, {})
+        raw = _raw(r)
+        merged, before, after = _logical_sentence(raw, r["span_start"], r["span_end"])
+
+        text_changes = (merged.strip() != r["text"].strip())
+        head_open = (bool(before.strip())
+                     and not _SENT_TERMINATOR_AT_END.search(before.rstrip()))
+        tail_open = (bool(after.strip())
+                     and not _SENT_TERMINATOR_AT_END.search(r["text"].rstrip()))
+        structural = _is_structural_line(
+            raw[r["span_start"]:r["span_start"] + 200].split("\n")[0])
+
+        # 结论是否会变：合并后**新出现**的规范性关键词 ⇒ 原「否」要翻成「是」
+        kw_old = _NORMATIVE_KEYWORD.search(r["text"])
+        kw_new = _NORMATIVE_KEYWORD.search(merged)
+        verdict_flips = bool(kw_new) and not bool(kw_old)
+
+        rows.append({
+            "candidate_id": cid,
+            "protocol": r["protocol"],
+            "subject_type": r.get("subject_type"),
+            "split": r.get("split"),
+            "text": r["text"],
+            "merged_text": merged,
+            "text_changes": text_changes,
+            "head_open": head_open,
+            "tail_open": tail_open,
+            "structural": structural,
+            "verdict_may_flip": verdict_flips,
+            "modality": ann.get("modality"),
+            "operator": ann.get("operator"),
+            "uncertain": ann.get("uncertain") is True,
+            "uncertain_reason": ann.get("uncertain_reason"),
+        })
+    return rows
+
+
+#: RFC 2119 规范性关键词（用于判断「合并后是否新出现规范动词」）。
+_NORMATIVE_KEYWORD = re.compile(
+    r"\b(MUST NOT|MUST|SHALL NOT|SHALL|REQUIRED|SHOULD NOT|SHOULD|"
+    r"RECOMMENDED|NOT RECOMMENDED|MAY NOT|MAY|OPTIONAL)\b")
+
+
+def summarize_impact(rows: list[dict]) -> dict:
+    """把逐条影响行汇总成可汇报的统计。"""
+    prose = [r for r in rows if not r["structural"]]
+    return {
+        "total": len(rows),
+        "text_changes": sum(1 for r in rows if r["text_changes"]),
+        "text_stable": sum(1 for r in rows if not r["text_changes"]),
+        "structural": sum(1 for r in rows if r["structural"]),
+        "prose": len(prose),
+        "prose_text_changes": sum(1 for r in prose if r["text_changes"]),
+        "verdict_may_flip": sum(1 for r in rows if r["verdict_may_flip"]),
+        "uncertain_total": sum(1 for r in rows if r["uncertain"]),
+        "uncertain_text_changes": sum(
+            1 for r in rows if r["uncertain"] and r["text_changes"]),
+        "certain_text_changes": sum(
+            1 for r in rows if not r["uncertain"] and r["text_changes"]),
+    }
+
+
+# ---------------------------------------------------------------------------
 # 指南泄漏自检
 # ---------------------------------------------------------------------------
 def check_guide_leaks(guide_path: Path, frozen: list[dict],
@@ -439,6 +666,53 @@ def cmd_stats(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_impact(args: argparse.Namespace) -> int:
+    """分析「抽取粒度修正」会失效哪些已标注条目。"""
+    frozen = load_frozen(Path(args.frozen))
+    annotations: dict[str, dict] = {}
+    for p in (args.annotations or []):
+        for rec in load_annotations(Path(p)):
+            annotations[rec["candidate_id"]] = rec
+    rows = granularity_impact(frozen, annotations)
+    summary = summarize_impact(rows)
+
+    if args.json:
+        print(json.dumps({"summary": summary, "rows": rows},
+                         ensure_ascii=False, indent=2))
+        return 0
+
+    print("=" * 74)
+    print("抽取粒度修正对已标注条目的影响")
+    print("=" * 74)
+    print(f"  标注总数:                    {summary['total']}")
+    print(f"  候选文本会变（id 失联 ⇒ 必须重标）: {summary['text_changes']}")
+    print(f"    其中散文行:                 {summary['prose_text_changes']}"
+          f" / {summary['prose']}")
+    print(f"    其中结构性行（表格/ABNF/报文）: {summary['structural']}"
+          f"（合并折行不改变它们）")
+    print(f"  候选文本不变（标注可复用）:   {summary['text_stable']}")
+    print(f"  合并后新出现规范动词（原结论可能翻转）: {summary['verdict_may_flip']}")
+    print(f"  已标 uncertain 的条目:        {summary['uncertain_total']}"
+          f"（其中 {summary['uncertain_text_changes']} 条文本会变）")
+    print(f"  已标 confident 但文本会变:    {summary['certain_text_changes']}"
+          f"  ← ★ 重标成本的主要来源")
+    print()
+
+    changed = [r for r in rows if r["text_changes"]]
+    if changed and args.show:
+        print("-" * 74)
+        print("文本会变的条目（新旧文本对照）")
+        print("-" * 74)
+        for r in changed:
+            print(f"[{r['candidate_id']}] ({r['protocol']}/{r['split']})"
+                  f"{'  [structural]' if r['structural'] else ''}")
+            print(f"    旧: {r['text'][:88]}")
+            print(f"    新: {r['merged_text'][:88]}")
+            if r["verdict_may_flip"]:
+                print(f"    ★ 合并后新出现规范动词 ⇒ 原「{r['modality']}」结论可能翻转")
+    return 0
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="B 阶段人工标注集工具（模板 / 校验 / 指南泄漏自检）")
     ap.add_argument("--frozen", default=str(DEFAULT_FROZEN), help="冻结候选集路径")
@@ -473,6 +747,14 @@ def main(argv: Optional[list[str]] = None) -> int:
     p_st = sub.add_parser("stats", help="打印标注分布统计")
     p_st.add_argument("--annotations", required=True, help="标注文件路径")
     p_st.set_defaults(func=cmd_stats)
+
+    p_imp = sub.add_parser("impact",
+                           help="分析抽取粒度修正会失效哪些已标注条目")
+    p_imp.add_argument("--annotations", nargs="*", default=[],
+                       help="标注文件路径（可多个）")
+    p_imp.add_argument("--show", action="store_true", help="打印新旧文本对照")
+    p_imp.add_argument("--json", action="store_true", help="输出 JSON")
+    p_imp.set_defaults(func=cmd_impact)
 
     args = ap.parse_args(argv)
     return args.func(args)
