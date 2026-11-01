@@ -102,7 +102,7 @@ class EvidenceAnchor:
     source_anchor: str  # "file:rfc3261.txt#@10560"（行锚点，可读）
     span_text: str  # ★ verbatim 原文片段（空 → 不能判 explicit）
     span_start: Optional[int]  # 在源文件全文中的字符区间起点（供 B2 校验）
-    span_end: Optional[int]  # 同上终点（闭区间）
+    span_end: Optional[int]  # 同上终点（**半开区间** [start, end)）
     evidence_kind: str  # normative|abnf|table|prose
     explicitness: str  # explicit|quoted|paraphrased（由 B2/B6 计算写入）
     source_class: str  # 四类来源（评审 M1）
