@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local env
+.venv/
+venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Runtime / fuzz artefacts (not committed)
+kb/spec/<task_id>/spec_chunks.jsonl
+kb/vuln/<task_id>/vuln_samples.jsonl
+kb/runtime_evidence/*.jsonl
+*.log
+*.tmp
+
+# Generated artefacts (regenerable, do not commit)
+generated/
+
+# 临时目录（运行期产生，不入库）
+seeds_mutated/
+
+# 种子目录（与 Initial seeds/ 同源，体积大，不入 git）
+seeds/rtsp/test cases/
+
+# Derived artefacts (中间产物，可由 kb/ 重建)
+derived/
+
+# ── 以下为 2026-11-01 补充 ──
+
+# 第三方源码备份（kb 内嵌的 pjproject 备份，51MB / 2386 文件）
+#   这些是外部项目的快照，不是本项目的知识资产。
+kb/*/_bak_*/
+
+# 已下线协议的抓包归档（local/*.tar.gz，93MB）
+#   ftp / dns / dtls / ssh / tls 已裁剪出目标协议范围，这些归档是历史物证，
+#   保留在本地即可，不进版本库。
+local/*.tar.gz
+
+# 本地凭据与密钥（安全红线：绝不进版本库）
+*.pem
+*.key
+.github_token
+.env.*
+!.env.example
