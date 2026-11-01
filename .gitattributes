@@ -1,3 +1,38 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# ★ 全局行尾归一化（2026-11-02）
+#
+#   根因：本仓在 Windows 上 `core.autocrlf=true` ⇒ git 把 LF blob **物化成 CRLF**
+#   落盘（实测 208 个工作区文件是 CRLF，而**入库 blob 全部是 LF** —— `git ls-files --eol`
+#   的 i/crlf 计数为 0）。后果：
+#     ① **同一提交在不同机器上工作区字节不同** ⇒ 「按字节比对」类断言跨平台不可复现；
+#     ② Windows checkout 的失败集合与 Linux **不一致**（多出若干条行尾断言失败）；
+#     ③ `git diff` 因归一化显示干净，而字节其实变了 —— 「diff 干净 ≠ 字节一致」。
+#
+#   修法：`* text=auto eol=lf` —— 文本文件在**索引里存 LF**、**检出也是 LF**，
+#   **跨平台工作区字节一致**；二进制文件由 `auto` 自动识别、**不转换**。
+#   ★ 本条必须放在下面各 `*-text` 规则**之前**：.gitattributes 按行序匹配、
+#     **后匹配的属性覆盖先匹配的** ⇒ `*.dict -text` 等仍能覆盖本条。
+#
+#   实测：加本条后 `git ls-files --eol` 的 w/crlf 从 208 降到 173，
+#   剩下的 173 个**全部在 kb/**（研究素材，见下）；而 `git ls-files --eol` 的
+#   **i/ 列没有任何变化** ⇒ **入库 blob 一个字节都没变**
+#   （这正是「归一化只影响检出、不影响库内容」的证明）。
+#
+#   ⚠ **必须排除 kb/**（研究素材）：`kb/*/历史漏洞/*.json` 与 `kb/*/expert_note/*.json`
+#     是**五源之一（历史漏洞 / expert_note）的抽取输入** ⇒ 它们的字节会进入
+#     fact 的 `value` 与 `evidence_id`/`claim_id` 的摘要输入
+#     ⇒ **改行尾 ⇒ 改 fact_id ⇒ 整座知识中枢的指纹全变**
+#     （且 `kb/*/历史漏洞/*.json` 在本机带**只读属性**，是人为保护信号）。
+#     ⇒ kb/ 保持**平台默认**行尾（现状行为，Windows CRLF / Linux LF），不动。
+#
+#   ★ `kb/** text=auto -eol` 里那个 `-eol` 是**必须的**：
+#     .gitattributes 的属性是**逐个独立**的 —— 后一条规则没提 `eol`，
+#     **并不会清掉**前一条已经设好的 `eol=lf` ⇒ 只会写 `text=auto` 的话，
+#     kb/ 仍然被 `eol=lf` 覆盖（实测 `git check-attr eol` 仍返回 `lf`）。
+#     `-eol` = 显式**取消** eol 属性 ⇒ 回落到 `core.autocrlf` / 平台默认。
+* text=auto eol=lf
+kb/** text=auto -eol
+
 # ★ 字节契约文件：显式二进制，git 完全不做任何行尾转换
 #
 #   根因：core.autocrlf=true 且本文件缺失 ⇒ git 把 .dict 当**文本**文件，
@@ -20,9 +55,14 @@
 # 种子语料（.raw）：同样是按字节比对的数据文件，禁止行尾转换。
 *.raw -text
 
-# kb 里的 SIP 样例（kamailio/test/…/sg.sip，blob 含 18 处 CRLF）：
+# kb 里的 SIP 样例（kamailio/test/…/sg.sip 等 6 个 *.sip）：
 #   显式 -text ⇒ git 不做行尾转换，blob 原样落盘 ⇒ 不会在下次 `git add` 时
 #   被静默归一化成 LF（那会造成一次「整文件变化」的 blob 改写，而非行尾噪声）。
+#   ⚠ 2026-11-02 更正：本条原注释写「blob 含 18 处 CRLF」—— **实测 blob 其实是 LF**
+#     （`git cat-file blob` 计数 CRLF=0），工作区的 CRLF 是 `core.autocrlf=true`
+#     在 `-text` 规则加入**之前**物化出来的**残留**。
+#     ⇒ 已把这 6 个文件的工作区字节**恢复为 blob 字节**（实测全仓 76 个 `-text`
+#       文件的工作区字节与 blob 逐一相符，违约 0）—— 这正是「字节契约」的兑现。
 *.sip -text
 
 # ── B 阶段标注集的字节契约（2026-11-02 补充）──
