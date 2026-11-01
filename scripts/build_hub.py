@@ -121,7 +121,8 @@ def _remove_path(path: Path) -> None:
 
 
 def _clean_source_dir(source_dir: Path) -> None:
-    """清空某源的产物目录，但**保留** `facts/snapshots/`（历史幂等快照）。
+    """清空某源的产物目录，但**保留** `facts/snapshots/`（历史幂等快照）
+    **与 `semantic/`（B-7 语义四库）**。
 
     ★ A0.5 修复（2026-11-01）：原先直接 `shutil.rmtree(source_dir)`，把
       `facts/snapshots/<build_id>/` 里的历史快照一并删掉 ⇒ 文档承诺的
@@ -131,19 +132,29 @@ def _clean_source_dir(source_dir: Path) -> None:
         - **无快照**时行为不变（整目录删除）；
         - **有快照**时只删源目录下的其它全部内容，保留 `facts/snapshots/`。
 
+    ★ B-9 追加（2026-11-02）：`semantic/`（规则库/候选库等**四库**）与
+      facts 是**两套生命周期** —— facts 每次构建全量重写，四库由
+      `--rules-only` 单独产出。若 facts 清理把 `semantic/` 一并删掉，
+      语义规则库会在**任何一次**普通 rfc 构建后**静默消失** ⇒ 下游
+      `rag_seedgen` 读不到规则。故把 `semantic/` 与 `facts/snapshots/`
+      一并列为**保护区**。
+
     Args:
         source_dir: `derived/per_source/<protocol>/<source>/` 目录。
     """
     snap_dir = source_dir / "facts" / "snapshots"
-    if not snap_dir.is_dir():
+    protected = {"facts", "semantic"}
+    if not snap_dir.is_dir() and not (source_dir / "semantic").is_dir():
         shutil.rmtree(source_dir)
         return
-    # 有快照：保留 facts/snapshots/，其余内容全删
+    # 有快照/四库：保留 facts/ 与 semantic/，其余内容全删
     for child in source_dir.iterdir():
-        if child.name == "facts":
+        if child.name in protected:
             continue
         _remove_path(child)
     facts_dir = source_dir / "facts"
+    if not facts_dir.is_dir():
+        return
     for child in facts_dir.iterdir():
         if child.name == "snapshots":
             continue
@@ -322,6 +333,86 @@ def _build_source(source: str, norms: list[dict], registry,
     return facts, skipped
 
 
+def _print_semantic_gate(label: str, rep) -> None:
+    """打印 B-9 语义闸的**全部度量**（供人一眼核对，不做机器解析）。"""
+    totals = dict(rep.semantic_rules_total or {})
+    per = {k: v for k, v in totals.items() if k != "total"}
+    print(f"  [{label}] 语义规则总数: {totals.get('total', 0)} 条"
+          + (f"（分协议: {per}）" if per else ""))
+    print(f"  [{label}] 可执行率: {rep.executable_rate:.4f} "
+          f"（带 constraint 的规则 {rep.semantic_executable_rules} / "
+          f"规则总数 {totals.get('total', 0)}）")
+    print(f"  [{label}] 候选拒绝原因直方图: {rep.reject_reason_histogram}")
+    print(f"  [{label}] `constraint is None` 计数: {rep.constraint_none_count}")
+    print(f"  [{label}] `convertible=true` 计数: {rep.convertible_true_count}")
+    print(f"  [{label}] gate_exercised（闸口是否真的被检验）: "
+          f"{rep.gate_exercised}")
+    print(f"  [{label}] 闸口说明: {rep.gate_note}")
+    if rep.executable_rate_note:
+        print(f"  [{label}] 可执行率口径: {rep.executable_rate_note}")
+    for issue in rep.blocking_issues:
+        print(f"  [{label}][阻断] {issue}")
+
+
+def _run_rules_only(protocol: str, args) -> int:
+    """`rules_only` 模式：**只产出语义规则与知识候选**（不产常规 facts/norms）。
+
+    ★ 与 D-6 开关位（`PROTORAG_SEMANTIC_RULES`）**正交**（本模式**不改**它）：
+      · D-6 管「**已落库的**语义规则是否参与生成」（下游 bundle / 种子生成）；
+      · 本模式管「**是否产出**语义规则与候选」（构建侧）。
+      本模式显式开启**产出**，但**绝不置位** D-6 ⇒ 全局默认仍是
+      「语义规则不参与生成」，下游行为不变。
+
+    ★ 三个闸在 `rules_only` 模式**同样生效**：
+      ① 写盘**前**审内存产物（有违规 ⇒ 阻断，且**不落盘**）；
+      ② 落盘后审**真实文件**（强制机制 4 针对的就是文件内容）；
+      ③ 报告给出全部度量 + `gate_exercised` 自检。
+    """
+    from core.fused.rfc_extractor import (
+        SEMANTIC_ROOT_ENV_KEY, audit_semantic_library, audit_semantic_rows,
+        build_semantic_rules, save_semantic_library, semantic_candidate_row,
+        semantic_quality_report, semantic_rule_row,
+    )
+    if args.semantic_root:
+        os.environ[SEMANTIC_ROOT_ENV_KEY] = str(args.semantic_root)
+
+    bundle = build_semantic_rules(protocol)
+    print(f"  [rules-only] 约束候选 {bundle.candidate_total} 条 → "
+          f"语义规则 {len(bundle.rules)} 条 / 知识候选 {len(bundle.candidates)} 条")
+    print(f"  [rules-only] 已知字段集: {len(bundle.known_fields)} 个")
+
+    # ---- 闸①：写盘**前**审内存产物（违规 ⇒ 阻断，且**不落盘**）----
+    pre = audit_semantic_rows(
+        protocol,
+        [semantic_rule_row(r) for r in bundle.rules],
+        [semantic_candidate_row(c) for c in bundle.candidates])
+    pre_rep = semantic_quality_report(protocol, pre)
+    _print_semantic_gate("rules-only/写盘前", pre_rep)
+    if not pre_rep.passed:
+        raise SystemExit(
+            f"[rules-only] 语义规则闸未通过，构建中止（协议 {protocol}）："
+            f"{'; '.join(pre_rep.blocking_issues)}")
+
+    # ---- 落盘（**只写**语义四库，不写 facts/norms）----
+    written = save_semantic_library(protocol, bundle.rules, bundle.candidates)
+    print(f"  [rules-only] 规则库 -> {written['rules']}")
+    print(f"  [rules-only] 候选库 -> {written['candidates']}")
+
+    # ---- 闸②：审**落盘后的真实文件**（强制机制 4 的口径）----
+    post = audit_semantic_library(protocol)
+    post_rep = semantic_quality_report(protocol, post)
+    _print_semantic_gate("rules-only/落盘后", post_rep)
+    if not post_rep.passed:
+        raise SystemExit(
+            f"[rules-only] 语义规则闸未通过，构建中止（协议 {protocol}）："
+            f"{'; '.join(post_rep.blocking_issues)}")
+
+    print(f"[rules-only] 语义规则闸通过（协议 {protocol}）："
+          f"规则 {post_rep.semantic_rules_total.get('total', 0)} 条 / "
+          f"候选 {post_rep.semantic_candidates_total} 条")
+    return 0
+
+
 def _write_and_validate(source: str, facts, registry, protocol: str = "rtsp",
                          build_id: str | None = None) -> int:
     """落盘 get_fact_view jsonl + fail-closed 校验 (内存 + 落盘读回)。
@@ -410,10 +501,23 @@ def main(argv=None) -> int:
     parser.add_argument("--enable-semantic-rules", action="store_true",
                         help="开启「语义规则参与生成」（D-6 开关位；**默认关闭**——"
                              "关闭时 bundle 的 semantic_rules 不参与任何生成）")
+    # ★ B-9：rules_only 模式 —— **只产出语义规则与知识候选**。
+    parser.add_argument("--rules-only", action="store_true",
+                        help="**只产出语义规则与知识候选**（rules_only 模式）："
+                             "写 <四库>/<协议>/rfc/semantic/{rules,candidates}.jsonl，"
+                             "**不产出**常规 facts/norms；B-9 的三个闸同样生效。"
+                             "⚠ 本模式**不改变** D-6 开关位（PROTORAG_SEMANTIC_RULES "
+                             "保持默认关闭）")
+    parser.add_argument("--semantic-root", default=None,
+                        help="语义四库根目录覆盖（默认 "
+                             "derived/per_source/<协议>/rfc/semantic/）。"
+                             "用于把构建产物隔离到临时目录，避免污染 derived/")
     args = parser.parse_args(argv)
 
     # ★ D-6：开关置位（进程内 + 环境变量双保险）——默认**不置位**（保持关闭）。
-    if args.enable_semantic_rules:
+    #   ⚠ `--rules-only` 模式**不改**这个开关位（rules_only 只管「产出」，
+    #     D-6 管「已落库的规则是否参与生成」——两者正交）。
+    if args.enable_semantic_rules and not args.rules_only:
         os.environ[SEMANTIC_RULES_ENV_KEY] = "1"
         set_semantic_rules_enabled(True)
 
@@ -426,6 +530,20 @@ def main(argv=None) -> int:
         print(f"[错误] 协议 {protocol!r} 不在 kb/ 下（可用: "
               f"{', '.join(sorted(known))}）", file=sys.stderr)
         return 2
+
+    # ---- ★ B-9：rules_only 模式（**只产语义规则与候选**，独立分支）----
+    if args.rules_only:
+        print(f"仓库根: {REPO_ROOT}")
+        print(f"本次处理: 协议={protocol}  模式=rules_only"
+              f"（**只产**语义规则与知识候选，不产 facts/norms）")
+        print("语义规则参与生成(D-6): "
+              f"{'开启' if semantic_rules_enabled() else '关闭'}"
+              "（rules_only 模式**不改** D-6 开关位 PROTORAG_SEMANTIC_RULES）")
+        if args.enable_semantic_rules:
+            print("[提示] 本模式下 --enable-semantic-rules **不生效**"
+                  "（rules_only 只管产出，不管下游是否参与生成）")
+        print()
+        return _run_rules_only(protocol, args)
 
     norms = _load_norms(protocol)
     registry = load_registry()

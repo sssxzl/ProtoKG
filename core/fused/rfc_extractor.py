@@ -23,11 +23,12 @@ RFC xxxx 标题行）。
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Optional
 
 from core import paths
 from core.fused.norm import constraint_identity_digest
@@ -1463,6 +1464,33 @@ class QualityReport:
     offline_metrics: dict = field(default_factory=dict)      # 发布准入（可为空）
     warnings: list = field(default_factory=list)
 
+    # ── B-9：语义规则质量闸（强制机制 4）─────────────────────────────
+    #: 语义规则总数（**分协议 + 合计**）：{"rtsp": n, "sip": n, ..., "total": N}。
+    semantic_rules_total: dict = field(default_factory=dict)
+    #: 带可执行 constraint 的规则数（可执行率的分子）。
+    semantic_executable_rules: int = 0
+    #: 可执行率 = 有 constraint 的规则数 / 规则总数（分母 0 ⇒ 0.0）。
+    executable_rate: float = 0.0
+    #: 可执行率的口径说明（**分母为 0 时显式写明**，避免"空集伪装成 100%"）。
+    executable_rate_note: str = ""
+    #: 知识候选总数（候选库的条目数）。
+    semantic_candidates_total: int = 0
+    #: 候选拒绝原因直方图：{reject_reason: 条数}。
+    reject_reason_histogram: dict = field(default_factory=dict)
+    #: 权威规则里 `constraint is None` 的条数（**必须为 0**，否则阻断）。
+    constraint_none_count: int = 0
+    #: `constraint is None` 的可定位明细（rule_id / 协议 / 拒绝原因）。
+    constraint_none_details: list = field(default_factory=list)
+    #: 候选库里 `convertible=true` 的条数（**必须为 0**，否则阻断）。
+    convertible_true_count: int = 0
+    #: `convertible=true` 的可定位明细（candidate_id / 协议 / 拒绝原因）。
+    convertible_true_details: list = field(default_factory=list)
+    #: 本轮闸口是否**真的被检验**过（产出了规则/候选）。
+    #: ⚠ False ⇒ "0 违规"**不等于**"通过"（报告须显式说明，见 `gate_note`）。
+    gate_exercised: bool = False
+    #: 闸口检验状态的说明（空集 / 已检验，含子检查的被检对象数）。
+    gate_note: str = ""
+
     @property
     def passed(self) -> bool:
         """是否通过构建质量闸。"""
@@ -1481,6 +1509,19 @@ class QualityReport:
             "toc_only_norms": list(self.toc_only_norms),
             "toc_sourced_by_line": list(self.toc_sourced_by_line),
             "kinds": dict(self.kinds),
+            # ── B-9 语义规则闸 ──
+            "semantic_rules_total": dict(self.semantic_rules_total),
+            "semantic_executable_rules": self.semantic_executable_rules,
+            "executable_rate": self.executable_rate,
+            "executable_rate_note": self.executable_rate_note,
+            "semantic_candidates_total": self.semantic_candidates_total,
+            "reject_reason_histogram": dict(self.reject_reason_histogram),
+            "constraint_none_count": self.constraint_none_count,
+            "constraint_none_details": list(self.constraint_none_details),
+            "convertible_true_count": self.convertible_true_count,
+            "convertible_true_details": list(self.convertible_true_details),
+            "gate_exercised": self.gate_exercised,
+            "gate_note": self.gate_note,
             "blocking_issues": list(self.blocking_issues),
             "offline_metrics": dict(self.offline_metrics),
             "warnings": list(self.warnings),
@@ -1489,13 +1530,15 @@ class QualityReport:
 
 
 def rfc_quality_report(protocol: str, facts=None,
-                       norms=None) -> QualityReport:
-    """生成 rfc 源质量报告（A0.4）。
+                       norms=None, *, semantic=None) -> QualityReport:
+    """生成 rfc 源质量报告（A0.4 + B-9）。
 
     参数：
       protocol: 协议名
       facts:    映射后的 Fact 列表（可选；不传则内部计算）
       norms:    norm 列表（可选；不传则内部重算）
+      semantic: B-9 语义闸的审计结果（可选；不传则**自动审计**磁盘上的
+                语义四库）。传入可审计多协议（分协议 + 合计）。
 
     返回 QualityReport。调用方（build_hub）依据 `report.passed` 决定是否
     阻断构建；`report.offline_metrics` 仅用于发布准入。
@@ -1565,6 +1608,18 @@ def rfc_quality_report(protocol: str, facts=None,
         rep.blocking_issues.append(
             f"TOC 污染：{len(toc_by_line)} 个 norm 的**来源行**是目录行"
             f"（示例：{toc_by_line[:3]}）")
+
+    # ---- B-9：语义规则闸（强制机制 4）----
+    #   ① 报告新增语义度量；② `constraint is None` > 0 ⇒ 阻断；
+    #   ③ 候选 `convertible=true` > 0 ⇒ 阻断。
+    #   语义四库不存在时**不阻断**（D-6 默认关闭 ⇒ 语义规则本就不必存在），
+    #   但报告必须显式写明「闸口未被检验」。
+    audit = semantic if semantic is not None else audit_semantic_library(protocol)
+    _apply_semantic_gate(rep, audit)
+    if audit.malformed_lines:
+        rep.warnings.append(
+            f"语义四库有 {audit.malformed_lines} 行无法解析（已跳过；"
+            f"闸口按可解析行统计）")
 
     # ---- ② 离线评测（发布准入；缺真值集则跳过，不是失败）----
     truth_path = paths.kb_root() / protocol.lower() / "rfc_truth.json"
@@ -2372,6 +2427,415 @@ def extract_constraint_candidates(protocol: str, max_per_rfc: int = 80) -> list[
         candidates.extend(_constraint_candidates_from_file(
             f, protocol, numeric_re, max_per_rfc))
     return candidates
+
+
+# ===========================================================================
+# B-9　语义规则质量闸（强制机制 4）+ `rules_only` 产出
+# ===========================================================================
+#
+# ★ 本节的三个闸（对齐 `docs/rfc_source_bcd_roadmap.md` §强制机制 4）：
+#   ① 报告新增度量：**语义规则总数** / **可执行率** / **候选拒绝原因直方图**
+#      / **`constraint is None` 计数**；
+#   ② `constraint is None` 计数 > 0 ⇒ **阻断构建**；
+#   ③ 候选库中 `convertible=true` 计数 > 0 ⇒ **阻断构建**。
+#
+# ★ 与 D-6 开关位（`PROTORAG_SEMANTIC_RULES`）**正交**：
+#   · D-6 管「**已落库的**语义规则是否参与生成」（下游 bundle / 种子生成）；
+#   · B-9 管「**是否产出**语义规则与候选」（构建侧）。
+#   `rules_only` 显式开启**产出**，但**绝不置位** D-6 ⇒ 全局默认仍关闭。
+
+#: 语义四库根目录的**覆盖**环境变量（默认不设 ⇒ 落 `derived/per_source/...`）。
+#: 用途：把构建 / 测试产物隔离到临时目录，避免污染仓库 `derived/`。
+SEMANTIC_ROOT_ENV_KEY = "PROTORAG_SEMANTIC_ROOT"
+
+#: 期望响应词表（与 `docs/semantic_rules_coverage_matrix.md` §2 实测口径一致）。
+EXPECTED_VOCAB = ("success", "protocol_error", "application_error", "silence")
+
+#: 语义四库的文件名（与 `core/fused/downstream/rule_store.py` 的 LIBRARY_FILES 一致）。
+_RULES_FILE = "rules.jsonl"
+_CANDIDATES_FILE = "candidates.jsonl"
+
+#: JSONL 行的 kind 标签（与 `rule_store.KIND_RULE` / `KIND_CANDIDATE` 一致）。
+_KIND_RULE = "semantic_rule"
+_KIND_CANDIDATE = "knowledge_candidate"
+
+
+def semantic_library_dir(protocol: str, root=None) -> Path:
+    """语义四库目录 ``<root>/<协议>/rfc/semantic/``。
+
+    ★ 默认根目录 = `core.fused.downstream.rule_store.semantic_dir(protocol)`
+      （即 `derived/per_source/<协议>/rfc/semantic/`）—— **不改** rule_store
+      的行为，只是把「根」参数化，便于把构建 / 测试产物隔离到临时目录
+      （避免污染仓库 `derived/`）。
+    """
+    if root is None:
+        root = os.environ.get(SEMANTIC_ROOT_ENV_KEY) or ""
+    root = str(root).strip()
+    if root:
+        return Path(root) / protocol.lower() / "rfc" / "semantic"
+    from core.fused.downstream import rule_store
+    return rule_store.semantic_dir(protocol)
+
+
+def known_field_set(protocol: str) -> list[str]:
+    """协议已知字段集（`extract_rfc_norms` 的 `kind == "field"`）。
+
+    ★ 口径与 `docs/semantic_rules_coverage_matrix.md` §2 实测一致
+      （rtsp 45 / sip 46 / smtp 0 —— smtp 的 RFC 5322 字段章节标题是
+      「The Origination Date Field」这类**长标题**，抽不出裸字段名）。
+    """
+    return sorted({n["name"] for n in extract_rfc_norms(protocol)
+                   if n.get("kind") == "field"})
+
+
+@dataclass
+class SemanticBundle:
+    """一次「语义规则构建」的产物（**只含**语义规则与知识候选）。"""
+    protocol: str
+    rules: list = field(default_factory=list)
+    candidates: list = field(default_factory=list)
+    reject_reason_histogram: dict = field(default_factory=dict)
+    known_fields: list = field(default_factory=list)
+    candidate_total: int = 0
+
+
+def build_semantic_rules(protocol: str, *, known_fields=None,
+                         expected_vocab=None,
+                         max_per_rfc: int = 80) -> SemanticBundle:
+    """B-9 `rules_only` 的**唯一产出入口**：RFC 约束候选 → 规则 + 知识候选。
+
+    ★ 生产侧的**契约**（使强制机制 4 在产出端天然成立）：
+      · 转换成功 ⇒ 产 `SemanticRule`（**必带 constraint**）；
+      · 转换失败 ⇒ 产 `KnowledgeCandidate`（**必 convertible=False** 并带
+        `reject_reason`）——「不可转换者只作知识候选，不进自动生成链路」。
+
+    ★ 全程**零 LLM**：用 B-5 的模式表（`semantic_rules.make_resolver`）注入
+      `semantic.try_convert` ⇒ 结果**确定性可复现**（同输入同输出）。
+    """
+    from collections import Counter
+
+    from core.fused.semantic import (EvidenceAnchor, KnowledgeCandidate,
+                                     SemanticRule, compute_evidence_id,
+                                     compute_explicitness, compute_rule_id,
+                                     load_source_text, try_convert)
+    from core.fused.semantic_rules import (make_resolver, match_pattern,
+                                           resolve_evidence_kind)
+
+    fields = (list(known_fields) if known_fields is not None
+              else known_field_set(protocol))
+    vocab = (tuple(expected_vocab) if expected_vocab is not None
+             else EXPECTED_VOCAB)
+    resolver = make_resolver(known_fields=fields, expected_behavior="")
+
+    bundle = SemanticBundle(protocol=protocol, known_fields=list(fields))
+    hist: Counter = Counter()
+    raw = extract_constraint_candidates(protocol, max_per_rfc=max_per_rfc)
+    bundle.candidate_total = len(raw)
+    for c in raw:
+        text = c["text"]
+        m = match_pattern(text)
+        pattern_kind = ("abnf" if (m is not None and m.kind == "abnf")
+                        else "normative")
+        ev_kind = resolve_evidence_kind(text, pattern_kind)
+        source_text = load_source_text(protocol, c["source"])
+        span_start = c.get("span_start")
+        span_end = c.get("span_end")
+        verified = bool(
+            source_text is not None and span_start is not None
+            and span_end is not None
+            and source_text[span_start:span_end] == text)
+        ev = EvidenceAnchor(
+            evidence_id="e0",
+            spec_version=c.get("spec_version") or "",
+            section_path=tuple(c.get("section_path") or ()),
+            source_anchor=c["source"],
+            span_text=text,
+            span_start=span_start,
+            span_end=span_end,
+            evidence_kind=ev_kind,
+            explicitness=compute_explicitness(
+                text, verified=verified, evidence_kind=ev_kind),
+            source_class="normative_spec",
+        )
+        constraint, reason = try_convert(
+            ev, source_text=source_text, known_fields=fields,
+            expected_vocab=vocab, resolver=resolver)
+        if constraint is not None:
+            subject_type = "field" if constraint.target_field else "message"
+            # ★ rule_id 用**章节号链**（`section_no_path`）而不是标题链 ——
+            #   标题措辞微调不应让 rule_id 漂移（§3.2）。
+            rule_id = compute_rule_id(
+                protocol, ev.spec_version,
+                tuple(c.get("section_no_path") or ()),
+                subject_type, constraint.target_field,
+                constraint.operator, constraint.operand,
+                constraint.operand_ref, constraint.expected_behavior)
+            ev = replace(ev, evidence_id=compute_evidence_id(
+                rule_id, ev.source_anchor, ev.span_start))
+            bundle.rules.append(SemanticRule(
+                rule_id=rule_id, evidence=ev, constraint=constraint,
+                subject_type=subject_type,
+                subject_name=constraint.target_field,
+                rule_state="authoritative", supersedes=None,
+                model_confidence=1.0, validated=False))
+        else:
+            ev = replace(ev, evidence_id=compute_evidence_id(
+                f"candidate:{protocol}", ev.source_anchor, ev.span_start))
+            hist[reason or "unknown"] += 1
+            bundle.candidates.append(KnowledgeCandidate(
+                candidate_id="c" + ev.evidence_id, evidence=ev,
+                subject_type="", subject_name="", raw_text=text,
+                convertible=False, reject_reason=reason or "unknown"))
+    bundle.reject_reason_histogram = dict(sorted(hist.items()))
+    return bundle
+
+
+def semantic_rule_row(rule) -> dict:
+    """`SemanticRule` → JSONL 行（**与 `rule_store.save_rules` 同格式**）。"""
+    return {"kind": _KIND_RULE, "rule": asdict(rule)}
+
+
+def semantic_candidate_row(cand) -> dict:
+    """`KnowledgeCandidate` → JSONL 行（与 `rule_store.save_candidates` 同格式）。"""
+    return {"kind": _KIND_CANDIDATE, "candidate": asdict(cand)}
+
+
+def _write_jsonl(path: Path, rows: Iterable[dict]) -> Path:
+    """写 jsonl（覆盖写；父目录自动创建）。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as fh:
+        for row in rows:
+            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+    return path
+
+
+def save_semantic_library(protocol: str, rules=None, candidates=None,
+                          root=None) -> dict:
+    """落盘语义四库的**规则库 / 候选库**（行格式与 `rule_store` 兼容）。
+
+    ★ 自己写而不调 `rule_store.save_rules`：本函数要支持**根目录覆盖**
+      （把产物隔离到临时目录，避免污染仓库 `derived/`），而 `rule_store`
+      的落盘路径是写死的。行格式与 `rule_store._write_jsonl` 完全一致 ⇒
+      `rule_store.load_rules` / `load_candidates` 仍可读回（互操作不破）。
+    """
+    d = semantic_library_dir(protocol, root)
+    d.mkdir(parents=True, exist_ok=True)
+    out: dict = {}
+    if rules is not None:
+        out["rules"] = _write_jsonl(d / _RULES_FILE,
+                                    [semantic_rule_row(r) for r in rules])
+    if candidates is not None:
+        out["candidates"] = _write_jsonl(
+            d / _CANDIDATES_FILE,
+            [semantic_candidate_row(c) for c in candidates])
+    return out
+
+
+@dataclass
+class SemanticAudit:
+    """语义四库的**原始 JSONL**审计结果（强制机制 4 的计数来源）。"""
+    protocols: list = field(default_factory=list)
+    rules_total: int = 0
+    candidates_total: int = 0
+    rules_by_protocol: dict = field(default_factory=dict)
+    candidates_by_protocol: dict = field(default_factory=dict)
+    constraint_none_count: int = 0
+    constraint_none_details: list = field(default_factory=list)
+    convertible_true_count: int = 0
+    convertible_true_details: list = field(default_factory=list)
+    reject_reason_histogram: dict = field(default_factory=dict)
+    malformed_lines: int = 0
+    library_found: bool = False
+
+
+def _read_jsonl_rows(path: Path) -> tuple[list, int]:
+    """读原始 JSONL（**不做语义校验**）⇒ 返回 (行 dict 列表, 坏行数)。"""
+    rows: list = []
+    bad = 0
+    if not path.is_file():
+        return rows, bad
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            d = json.loads(line)
+        except json.JSONDecodeError:
+            bad += 1
+            continue
+        if isinstance(d, dict):
+            rows.append(d)
+        else:
+            bad += 1
+    return rows, bad
+
+
+def audit_semantic_rows(protocol: str, rule_rows: list,
+                        candidate_rows: list) -> SemanticAudit:
+    """对**行**做审计（内存路径与文件路径共用同一实现 ⇒ 口径一致）。
+
+    ★ 统计口径：
+      · `constraint is None`：规则行里 `rule.constraint` 为空即计 1 条，
+        并记下 `rule_id` / 协议 / `reject_reason` / 源锚点 ⇒ **可定位**；
+      · `convertible=true`：候选行里 `candidate.convertible` 为真即计 1 条，
+        并记下 `candidate_id` / 协议 / `reject_reason` / 源锚点。
+    """
+    from collections import Counter
+
+    audit = SemanticAudit(protocols=[protocol])
+    audit.rules_total = len(rule_rows)
+    audit.candidates_total = len(candidate_rows)
+    audit.rules_by_protocol[protocol] = len(rule_rows)
+    audit.candidates_by_protocol[protocol] = len(candidate_rows)
+    hist: Counter = Counter()
+    for row in rule_rows:
+        rule = row.get("rule") or {}
+        if rule.get("constraint") is not None:
+            continue
+        ev = rule.get("evidence") or {}
+        audit.constraint_none_count += 1
+        audit.constraint_none_details.append({
+            "protocol": protocol,
+            "rule_id": rule.get("rule_id") or "",
+            "reject_reason": (row.get("reject_reason")
+                              or rule.get("reject_reason")
+                              or "constraint_missing"),
+            "source_anchor": ev.get("source_anchor") or "",
+            "section_path": list(ev.get("section_path") or ()),
+            "span_text": (ev.get("span_text") or "")[:160],
+        })
+    for row in candidate_rows:
+        cand = row.get("candidate") or {}
+        ev = cand.get("evidence") or {}
+        if cand.get("convertible"):
+            audit.convertible_true_count += 1
+            audit.convertible_true_details.append({
+                "protocol": protocol,
+                "candidate_id": cand.get("candidate_id") or "",
+                "reject_reason": (row.get("reject_reason")
+                                  or cand.get("reject_reason")
+                                  or "convertible_flag_set"),
+                "source_anchor": ev.get("source_anchor") or "",
+                "raw_text": (cand.get("raw_text") or "")[:160],
+            })
+        reason = cand.get("reject_reason")
+        if reason:
+            hist[reason] += 1
+    audit.reject_reason_histogram = dict(sorted(hist.items()))
+    return audit
+
+
+def audit_semantic_library(protocol, root=None) -> SemanticAudit:
+    """**原始 JSONL**审计：统计 `constraint is None` / `convertible=true`。
+
+    ★ 为什么不走 `rule_store.load_rules` / `load_candidates`：那两个加载器在
+      **命中违规时直接抛 ValueError**（那正是它们的设计意图）⇒ **无法计数**。
+      闸口要回答「有多少条违规 + 违规在哪」，所以这里**直接读原始 JSONL**。
+
+    参数：
+      protocol: 单个协议名，或协议名列表（多协议 ⇒ 给出**分协议 + 合计**）。
+      root:     四库根目录覆盖（None ⇒ 取环境变量 / 默认 derived/）。
+    """
+    from collections import Counter
+
+    protos = [protocol] if isinstance(protocol, str) else list(protocol)
+    audit = SemanticAudit(protocols=list(protos))
+    hist: Counter = Counter()
+    for proto in protos:
+        d = semantic_library_dir(proto, root)
+        rule_rows, bad_r = _read_jsonl_rows(d / _RULES_FILE)
+        cand_rows, bad_c = _read_jsonl_rows(d / _CANDIDATES_FILE)
+        audit.malformed_lines += bad_r + bad_c
+        if (d / _RULES_FILE).is_file() or (d / _CANDIDATES_FILE).is_file():
+            audit.library_found = True
+        rules = [r for r in rule_rows if r.get("kind") == _KIND_RULE]
+        cands = [r for r in cand_rows if r.get("kind") == _KIND_CANDIDATE]
+        audit.rules_by_protocol[proto] = len(rules)
+        audit.candidates_by_protocol[proto] = len(cands)
+        audit.rules_total += len(rules)
+        audit.candidates_total += len(cands)
+        sub = audit_semantic_rows(proto, rules, cands)
+        audit.constraint_none_count += sub.constraint_none_count
+        audit.constraint_none_details.extend(sub.constraint_none_details)
+        audit.convertible_true_count += sub.convertible_true_count
+        audit.convertible_true_details.extend(sub.convertible_true_details)
+        hist.update(sub.reject_reason_histogram)
+    audit.reject_reason_histogram = dict(sorted(hist.items()))
+    return audit
+
+
+def _apply_semantic_gate(rep: QualityReport, audit: SemanticAudit) -> None:
+    """把 B-9 的度量写进质量报告，并按**强制机制 4**追加阻断项。"""
+    totals = dict(audit.rules_by_protocol)
+    totals["total"] = audit.rules_total
+    rep.semantic_rules_total = totals
+    rep.semantic_executable_rules = audit.rules_total - audit.constraint_none_count
+    rep.executable_rate = (rep.semantic_executable_rules / audit.rules_total) \
+        if audit.rules_total else 0.0
+    rep.executable_rate_note = (
+        f"可执行率 = 带 constraint 的规则数 / 规则总数 = "
+        f"{rep.semantic_executable_rules} / {audit.rules_total}"
+        if audit.rules_total else
+        "规则总数为 0 ⇒ 可执行率记 **0.0**（不是 1.0）："
+        "本轮没有任何语义规则，空集**不得**伪装成 100%"
+    )
+    rep.semantic_candidates_total = audit.candidates_total
+    rep.reject_reason_histogram = dict(audit.reject_reason_histogram)
+    rep.constraint_none_count = audit.constraint_none_count
+    rep.constraint_none_details = [dict(d) for d in audit.constraint_none_details]
+    rep.convertible_true_count = audit.convertible_true_count
+    rep.convertible_true_details = [dict(d)
+                                    for d in audit.convertible_true_details]
+
+    # ★ 自检：本轮闸口是否**真的**被检验过（产出了规则/候选）。
+    rep.gate_exercised = bool(audit.rules_total or audit.candidates_total)
+    conv_total = audit.rules_total + audit.candidates_total
+    conv = (audit.rules_total / conv_total) if conv_total else 0.0
+    if not rep.gate_exercised:
+        rep.gate_note = (
+            "本轮**无任何语义规则/候选**（规则 0 条、候选 0 条）⇒ "
+            "**闸口未被检验**：此时「0 违规」**不等于**「通过」。")
+    else:
+        rep.gate_note = (
+            f"闸口**已检验**：规则 {audit.rules_total} 条"
+            f"（其中 {rep.semantic_executable_rules} 条带 constraint）、"
+            f"候选 {audit.candidates_total} 条"
+            f"（候选→规则转化率 {conv:.2%}）；"
+            f"违规 `constraint is None` {audit.constraint_none_count} 条、"
+            f"`convertible=true` {audit.convertible_true_count} 条 ⇒ "
+            + ("**通过**。" if (audit.constraint_none_count == 0
+                              and audit.convertible_true_count == 0)
+               else "**存在阻断项**。"))
+
+    if audit.constraint_none_count:
+        rep.blocking_issues.append(
+            f"语义规则闸：rules.jsonl 中 `constraint is None` 的条数 = "
+            f"{audit.constraint_none_count}（**必须为 0**）；"
+            f"可定位明细（rule_id / 协议 / reject_reason / 源锚点）示例："
+            f"{audit.constraint_none_details[:3]}")
+    if audit.convertible_true_count:
+        rep.blocking_issues.append(
+            f"语义规则闸：candidates.jsonl 中 `convertible=true` 的条数 = "
+            f"{audit.convertible_true_count}（**必须为 0**）；"
+            f"可定位明细（candidate_id / 协议 / reject_reason / 源锚点）示例："
+            f"{audit.convertible_true_details[:3]}")
+
+
+def semantic_quality_report(protocol: str, audit=None) -> QualityReport:
+    """**只跑 B-9 语义闸**的质量报告（`rules_only` 模式用）。
+
+    ★ 为什么单独一个入口：`rules_only` **不产出常规 facts / norms** ⇒
+      A0.4 的「抽取结果为空（0 条 norm）」这类检查**不适用**（否则会把
+      「有意不产 facts」误判成失败）。本入口只跑 B-9 的三个闸。
+    """
+    rep = QualityReport(protocol=protocol)
+    audit = audit if audit is not None else audit_semantic_library(protocol)
+    _apply_semantic_gate(rep, audit)
+    if audit.malformed_lines:
+        rep.warnings.append(
+            f"语义四库有 {audit.malformed_lines} 行无法解析（已跳过；"
+            f"闸口按可解析行统计）")
+    return rep
 
 
 _PROMPT_CONSTRAINT = """你是 {protocol} 协议规范分析专家。下面是从 RFC 文档摘出的规范性约束句子。
