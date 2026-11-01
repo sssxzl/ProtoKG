@@ -19,3 +19,8 @@
 
 # 种子语料（.raw）：同样是按字节比对的数据文件，禁止行尾转换。
 *.raw -text
+
+# kb 里的 SIP 样例（kamailio/test/…/sg.sip，blob 含 18 处 CRLF）：
+#   显式 -text ⇒ git 不做行尾转换，blob 原样落盘 ⇒ 不会在下次 `git add` 时
+#   被静默归一化成 LF（那会造成一次「整文件变化」的 blob 改写，而非行尾噪声）。
+*.sip -text

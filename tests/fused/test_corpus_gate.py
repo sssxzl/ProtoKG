@@ -784,3 +784,105 @@ def test_sip_without_client_side_still_not_applicable(tmp_path):
     outcomes = run_gate("sip", seed_dir, profile)
     g1 = next(o for o in outcomes if o.gate == "G1")
     assert g1.status == STATUS_NA, g1.summary
+
+
+# ===========================================================================
+# P0：SIP 端点抽取的误报修复（2026-11-01）
+# ===========================================================================
+
+class TestSipEndpointExtraction:
+    """SIP 的 G1 曾对真实语料**假阻断**：6 个种子被误判为「含非合法 host」。
+
+    根因（实测定位，非推断）：
+      ① ``extract_client_side_hosts`` 判定请求行 R-URI 时**只检查「第二 token
+         以 ``sip:`` 开头」**⇒ 任意**头**里的 SIP URI 都被误当请求行
+         （实测 ``Refer-To: sip:transfer@host`` ⇒ 抽出 host='host'）。
+         Refer-To 是对话目标，**不承载回包地址**。
+      ② ``host`` 是 **RFC 2543 的 URI 模板占位符**，不是真实主机名。
+    """
+
+    def test_refer_to_header_is_not_a_request_line(self):
+        """Refer-To 里的 SIP URI 不得被当成请求行 R-URI。"""
+        from scripts.corpus_gate import extract_client_side_hosts
+        text = ("REGISTER sip:127.0.0.1:5060 SIP/2.0\r\n"
+                "Via: SIP/2.0/UDP 127.0.0.1:5061;branch=z9hG4bK-test\r\n"
+                "Refer-To: sip:transfer@host\r\n"
+                "Contact: <sip:127.0.0.1:5061>\r\n")
+        hosts = extract_client_side_hosts(text, ["Via", "Contact"])
+        assert "host" not in hosts, f"Refer-To 被误当请求行: {hosts}"
+        assert hosts, "真正的端点（Via/Contact）仍应被抽出"
+        assert all(h == "127.0.0.1" for h in hosts), hosts
+
+    def test_uri_template_placeholder_is_not_a_host(self):
+        """RFC 2543 的 URI 模板占位符（host/user/port）不得当作主机名。"""
+        from scripts.corpus_gate import _sip_uri_host
+        assert _sip_uri_host("sip:transfer@host") is None
+        assert _sip_uri_host("sip:user@host") is None
+        # 真实主机不受影响
+        assert _sip_uri_host("sip:alice@127.0.0.1:5060") == "127.0.0.1"
+
+    def test_real_request_line_still_extracted(self):
+        """真正的请求行 R-URI 仍必须被抽出（修复不能误伤）。"""
+        from scripts.corpus_gate import extract_client_side_hosts
+        text = "REGISTER sip:127.0.0.1:5060 SIP/2.0\r\n"
+        assert extract_client_side_hosts(text, ["Via", "Contact"]) == ["127.0.0.1"]
+
+    def test_call_id_and_branch_ip_still_excluded(self):
+        """Call-ID 的 IP 与 branch 随机串里的 IP 仍不得被当成端点。"""
+        from scripts.corpus_gate import extract_client_side_hosts
+        text = ("REGISTER sip:127.0.0.1:5060 SIP/2.0\r\n"
+                "Call-ID: 105090259-446faf7a@192.168.1.2\r\n"
+                "Via: SIP/2.0/UDP 127.0.0.1:5061;branch=z9hG4bK-44ce4a41192.168.1.2\r\n")
+        hosts = extract_client_side_hosts(text, ["Via", "Contact"])
+        assert "192.168.1.2" not in hosts, hosts
+
+
+# ===========================================================================
+# P0：SIP 端点抽取的误报修复（2026-11-01）
+# ===========================================================================
+
+class TestSipEndpointExtraction:
+    """SIP 的 G1 曾对真实语料**假阻断**：6 个种子被误判为「含非合法 host」。
+
+    根因（实测定位，非推断）：
+      ① ``extract_client_side_hosts`` 判定请求行 R-URI 时**只检查「第二 token
+         以 ``sip:`` 开头」**⇒ 任意**头**里的 SIP URI 都被误当请求行
+         （实测 ``Refer-To: sip:transfer@host`` ⇒ 抽出 host='host'）。
+         Refer-To 是对话目标，**不承载回包地址**。
+      ② ``host`` 是 **RFC 2543 的 URI 模板占位符**，不是真实主机名。
+    """
+
+    def test_refer_to_header_is_not_a_request_line(self):
+        """Refer-To 里的 SIP URI 不得被当成请求行 R-URI。"""
+        from scripts.corpus_gate import extract_client_side_hosts
+        text = ("REGISTER sip:127.0.0.1:5060 SIP/2.0\r\n"
+                "Via: SIP/2.0/UDP 127.0.0.1:5061;branch=z9hG4bK-test\r\n"
+                "Refer-To: sip:transfer@host\r\n"
+                "Contact: <sip:127.0.0.1:5061>\r\n")
+        hosts = extract_client_side_hosts(text, ["Via", "Contact"])
+        assert "host" not in hosts, f"Refer-To 被误当请求行: {hosts}"
+        assert hosts, "真正的端点（Via/Contact）仍应被抽出"
+        assert all(h == "127.0.0.1" for h in hosts), hosts
+
+    def test_uri_template_placeholder_is_not_a_host(self):
+        """RFC 2543 的 URI 模板占位符（host/user/port）不得当作主机名。"""
+        from scripts.corpus_gate import _sip_uri_host
+        assert _sip_uri_host("sip:transfer@host") is None
+        assert _sip_uri_host("sip:user@host") is None
+        # 真实主机不受影响
+        assert _sip_uri_host("sip:alice@127.0.0.1:5060") == "127.0.0.1"
+
+    def test_real_request_line_still_extracted(self):
+        """真正的请求行 R-URI 仍必须被抽出（修复不能误伤）。"""
+        from scripts.corpus_gate import extract_client_side_hosts
+        text = "REGISTER sip:127.0.0.1:5060 SIP/2.0\r\n"
+        assert extract_client_side_hosts(text, ["Via", "Contact"]) == ["127.0.0.1"]
+
+    def test_call_id_and_branch_ip_still_excluded(self):
+        """Call-ID 的 IP 与 branch 随机串里的 IP 仍不得被当成端点。"""
+        from scripts.corpus_gate import extract_client_side_hosts
+        text = ("REGISTER sip:127.0.0.1:5060 SIP/2.0\r\n"
+                "Call-ID: 105090259-446faf7a@192.168.1.2\r\n"
+                "Via: SIP/2.0/UDP 127.0.0.1:5061;branch=z9hG4bK-44ce4a41192.168.1.2\r\n")
+        hosts = extract_client_side_hosts(text, ["Via", "Contact"])
+        assert "192.168.1.2" not in hosts, hosts

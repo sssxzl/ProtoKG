@@ -321,6 +321,10 @@ def extract_request_urls(text: str, url_index: int) -> list[str]:
 
 
 #: 全文中**带 authority 的绝对 URL**（``scheme://host[:port]/...``）。
+#: RFC 2543 的 URI 模板占位符（不是真实主机名，判违规会**假阻断**）。
+#: 例：``Refer-To: sip:transfer@host``、``sip:user@host:port``。
+_URI_TEMPLATE_PLACEHOLDERS: frozenset[str] = frozenset({"host", "user", "port"})
+
 _ABSOLUTE_URL_RE = re.compile(r"[A-Za-z][A-Za-z0-9+.\-]*://[^\s<>\"']+")
 
 
@@ -408,7 +412,11 @@ def client_side_header_names(profile: dict) -> list[str]:
 
 
 def _sip_uri_host(uri: str) -> Optional[str]:
-    """从 ``sip:user@host:port;params`` 抽 host（小写）；非 SIP URI / 无法解析 → None。"""
+    """从 ``sip:user@host:port;params`` 抽 host（小写）；非 SIP URI / 无法解析 → None。
+
+    ★ 排除 **RFC 2543 的 URI 模板占位符** ``host``（如 ``sip:transfer@host``）——
+      它是「主机名占位」而非真实主机，判它违规会造成**假阻断**。
+    """
     u = str(uri or "").strip().strip("<>")
     if not u.startswith(("sip:", "sips:")):
         return None
@@ -416,7 +424,13 @@ def _sip_uri_host(uri: str) -> Optional[str]:
     u = u.split(";", 1)[0]           # 去参数（;transport=udp 等）
     u = u.rsplit("@", 1)[-1]         # 去 userinfo
     host, _port = hostport_parts(u)  # 去端口
-    return host.lower() if host else None
+    if not host:
+        return None
+    host = host.lower()
+    # RFC 2543 URI 模板占位符：'host' / 'user' 之类不是真实主机名
+    if host in _URI_TEMPLATE_PLACEHOLDERS:
+        return None
+    return host
 
 
 def extract_client_side_hosts(text: str, header_names: list[str]) -> list[str]:
@@ -426,7 +440,9 @@ def extract_client_side_hosts(text: str, header_names: list[str]) -> list[str]:
       · ``Call-ID`` 里的 IP（如 ``105090259-446faf7a@192.168.1.2`` 的 192.168.1.2）；
       · ``branch=`` 随机串里的 IP（``z9hG4bK...192.168.1.2``）；
       · ``From``/``To`` 的逻辑域名（``sip.cybercity.dk``，官方语料自带、不决定路由）。
-    这三类都不承载端点语义，纳入会误报。返回 host 列表（小写）。
+      · **其它头里的 SIP URI**（如 ``Refer-To: sip:transfer@host``）—— 见下方
+        「请求行判定」。
+    这几类都不承载端点语义，纳入会误报。返回 host 列表（小写）。
     """
     names = {n.lower() for n in header_names}
     hosts: list[str] = []
@@ -448,9 +464,15 @@ def extract_client_side_hosts(text: str, header_names: list[str]) -> list[str]:
             if host:
                 hosts.append(host)
             continue
-        # 请求行 R-URI：`METHOD sip:host SIP/2.0`（第二 token 是 R-URI）
+        # 请求行 R-URI：`METHOD sip:host SIP/2.0`
+        # ★ 必须是**真正的请求行**：三段形态 `<方法名> <R-URI> SIP/2.0`。
+        #   仅凭「第二 token 以 sip: 开头」会把**任意头里的 SIP URI**误当 R-URI
+        #   （实测 `Refer-To: sip:transfer@host` ⇒ 抽出 host='host' ⇒ 对 SIP 语料
+        #   假阻断）。Refer-To 是对话目标，**不承载回包地址** ⇒ 必须排除。
         parts = s.split()
-        if len(parts) >= 2 and parts[1].startswith(("sip:", "sips:")):
+        if (len(parts) >= 3
+                and parts[2].upper().startswith("SIP/")
+                and parts[1].startswith(("sip:", "sips:"))):
             host = _sip_uri_host(parts[1])
             if host:
                 hosts.append(host)
