@@ -1,0 +1,21 @@
+# ★ 字节契约文件：显式二进制，git 完全不做任何行尾转换
+#
+#   根因：core.autocrlf=true 且本文件缺失 ⇒ git 把 .dict 当**文本**文件，
+#   下一次 `git checkout --` / 切分支 / `git restore` 会把 LF blob
+#   **物化成 CRLF** ⇒ 字节变了，而 `git diff` 全程显示干净
+#   （autocrlf 归一化）⇒「git diff 干净 ≠ 字节一致」。
+#
+#   实测（用 git 自己的 smudge 过滤器 `git cat-file --filters`，零写盘）：
+#     fused_hub/targets/rtsp/rtsp_base.dict  464351f8…(LF,268B) → 32a8b29e…(CRLF,293B)
+#     fused_hub/targets/ftp/ftp_base.dict     87d1b84c…(LF,220B) → c03faed2…(CRLF,252B)
+#   ⇒ DICT_FROZEN.json 记录的 base_md5 与 A9.base 断言会在下一次 checkout 时**失败**。
+#
+#   `-text` 是**无条件**字节保护：git 完全不转换 ⇒「入库字节 == 工作区字节」永远成立。
+#   代价：这些文件不参与行级 diff（可接受 —— 它们本就该按字节比对）。
+#
+#   ⚠ 另：`derived/rq3/dict/*.dict` 与 `DICT_FROZEN.json` 是 gitignored，
+#     checkout 碰不到，但**完全暴露于 `git clean -xfd`** ⇒ 仓外备份仍是唯一防线。
+*.dict -text
+
+# 种子语料（.raw）：同样是按字节比对的数据文件，禁止行尾转换。
+*.raw -text
