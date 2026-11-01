@@ -24,3 +24,16 @@
 #   显式 -text ⇒ git 不做行尾转换，blob 原样落盘 ⇒ 不会在下次 `git add` 时
 #   被静默归一化成 LF（那会造成一次「整文件变化」的 blob 改写，而非行尾噪声）。
 *.sip -text
+
+# ── B 阶段标注集的字节契约（2026-11-02 补充）──
+#
+#   `docs/annotation_status.md` 把冻结候选集的 **md5 指纹**
+#   （当前 `6060457e78f253699fcf2da8dc343733`）写成验收项 ⇒ 指纹必须能跨机器复现。
+#   若按文本处理，Windows 上 `core.autocrlf=true` 会把 LF blob 物化成 CRLF
+#   ⇒ **同一个提交在不同机器上 md5 不同** ⇒ 指纹失效、可复现性无法证明。
+#   ⇒ 标注集与冻结候选集一律 -text（字节保护），代价是不参与行级 diff（可接受：
+#     它们按记录/按条比对，不按行）。
+derived/exp_semantic/candidates_frozen.jsonl -text
+derived/exp_semantic/candidates_train.jsonl -text
+derived/exp_semantic/candidates_holdout.jsonl -text
+derived/exp_semantic/truth/*.json -text

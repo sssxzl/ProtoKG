@@ -132,9 +132,19 @@ def load_annotations(path: Path) -> list[dict]:
 # 校验
 # ---------------------------------------------------------------------------
 def validate_one(rec: dict, known_ids: set[str]) -> list[str]:
-    """校验单条标注，返回问题列表（空 = 通过）。"""
+    """校验单条标注，返回问题列表（空 = 通过）。
+
+    ★ **待标条目（``pending: true``）直接跳过**：它们是「已分配但尚未标注」的
+      占位，字段为 ``None`` 是**预期状态**而非非法值。
+      抽取粒度修正（B-13）后候选池整体变化 ⇒ 大量条目需重标；
+      若把占位当非法值，校验器会报上百个**假错误**，掩盖真正的标注错误。
+      ⇒ 待标条目由**调用方**单独统计并报告（见 ``cmd_validate``）。
+    """
     problems: list[str] = []
     cid = rec.get("candidate_id")
+
+    if rec.get("pending") is True:
+        return problems          # 待标占位：不是「非法标注」，跳过
 
     # R1 字段齐全
     for field in REQUIRED_FIELDS:
@@ -615,6 +625,11 @@ def cmd_validate(args: argparse.Namespace) -> int:
     problems = validate_all(annotations, scoped,
                              require_complete=not args.allow_partial)
     label = ", ".join(p.name for p in paths)
+    n_pending = sum(1 for a in annotations if a.get("pending") is True)
+    n_done = len(annotations) - n_pending
+    if n_pending:
+        print(f"[INFO] {label}: {n_done} 条已标注 / {n_pending} 条**待标**"
+              f"（pending=True，占位不算错误）")
     if problems:
         print(f"[FAIL] {label}: {len(problems)} 个问题", file=sys.stderr)
         for p in problems[:args.max_problems]:
@@ -623,13 +638,19 @@ def cmd_validate(args: argparse.Namespace) -> int:
             print(f"  ... 还有 {len(problems) - args.max_problems} 个问题",
                   file=sys.stderr)
         return 1
-    dist = Counter((a["has_normative_requirement"], a["modality"],
-                    a["operator"], a["expected_response_class"]) for a in annotations)
+    dist = Counter((a.get("has_normative_requirement"), a.get("modality"),
+                    a.get("operator"), a.get("expected_response_class"))
+                   for a in annotations if a.get("pending") is not True)
     n_unc = sum(1 for a in annotations if a.get("uncertain") is True)
+    # ★ 待标占位的 annotator 为 None —— 不能直接 sorted()（None 与 str 不可比较 ⇒ TypeError）。
+    #   统计口径统一取「已标注记录」，与上面 dist 一致。
+    done_records = [a for a in annotations if a.get("pending") is not True]
+    annotators = sorted({str(a["annotator"]) for a in done_records
+                         if a.get("annotator") is not None})
     print(f"[OK] {label}: {len(annotations)} 条全部通过校验")
-    print(f"     含规范要求: {sum(1 for a in annotations if a['has_normative_requirement'])}"
-          f" / {len(annotations)}")
-    print(f"     标注者: {sorted({a['annotator'] for a in annotations})}")
+    print(f"     含规范要求: {sum(1 for a in done_records if a.get('has_normative_requirement'))}"
+          f" / {len(done_records)}")
+    print(f"     标注者: {annotators}")
     print(f"     uncertain: {n_unc}")
     print(f"     组合分布: {len(dist)} 种")
     return 0

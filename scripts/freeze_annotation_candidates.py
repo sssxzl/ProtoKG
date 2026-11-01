@@ -266,16 +266,76 @@ def _candidate_id(protocol: str, cand: dict) -> str:
     return f"{protocol}-{hashlib.sha256(raw.encode('utf-8')).hexdigest()[:12]}"
 
 
+# ★ 复用泄漏检查闸的判据（`annotate_candidates` 不引用本模块 ⇒ 无循环依赖）。
+#   两处必须**同口径**，否则「剔除逻辑」与「泄漏闸」会各判各的。
+#
+# ⚠ 导入必须兼容两种调用形态：
+#   ① 直接跑脚本：``python scripts/freeze_annotation_candidates.py`` ⇒ ``scripts/`` 在 sys.path 上
+#   ② 作为包模块被测试导入：``from scripts.freeze_annotation_candidates import ...``
+#      ⇒ 此时 ``scripts/`` **不在** sys.path 上，只写 `from annotate_candidates import ...`
+#      会抛 ModuleNotFoundError，直接把整个测试模块变成 collection error。
+try:  # pragma: no cover - 取决于调用形态
+    from annotate_candidates import (  # noqa: E402
+        _longest_common_substring as _lcs,
+        _normalize_ws as _normalize_ws,
+    )
+except ImportError:  # pragma: no cover - 包导入形态
+    from scripts.annotate_candidates import (  # noqa: E402
+        _longest_common_substring as _lcs,
+        _normalize_ws as _normalize_ws,
+    )
+
+#: L2 近似泄漏的阈值（与 `annotate_candidates.check_guide_leaks` 默认值一致）。
+LEAK_MIN_COVERAGE = 0.5
+LEAK_MIN_LENGTH = 45
+
+
 def freeze(protocols: tuple[str, ...], per_protocol: int,
            holdout_per_protocol: dict[str, int],
-           salt: str) -> list[dict]:
-    """执行抽样，返回 120 条（顺序确定：协议序 → 主体序 → 稳定哈希序）。"""
+           salt: str,
+           guide_path: Optional[Path] = None) -> list[dict]:
+    """执行抽样，返回 120 条（顺序确定：协议序 → 主体序 → 稳定哈希序）。
+
+    ★ **排除「指南已逐字用过」的候选**（`guide_path` 给出时生效）：
+      标注指南为了说明判定标准，会举真实句子作例子。若某条**候选**恰好与
+      指南里的例句逐字相同，该条的答案就**暴露在指南里** ⇒ 它作为评测项
+      已失去意义（roadmap §4.6 第 4 条的同类风险）。
+      ⇒ 这类候选直接从候选池剔除，**而不是**放宽泄漏判据（放宽会掩盖真泄漏）。
+      ⇒ 剔除后仍按原配额抽样，规模不变（120 条）。
+    """
+    guide_text = ""
+    if guide_path is not None and guide_path.exists():
+        guide_text = guide_path.read_text(encoding="utf-8")
+
+    guide_norm = _normalize_ws(guide_text)
+
+    def _leaked(text: str) -> bool:
+        """该候选文本是否已在指南里泄漏（**逐字 L1 或近似 L2**）。
+
+        ★ 与 `annotate_candidates.check_guide_leaks` **同判据**（复用其
+          `_normalize_ws` 与 `_longest_common_substring`，阈值同值）⇒
+          「剔除逻辑」与「泄漏闸」不会各判各的。
+        - L1 逐字：归一化后整句出现在指南里
+        - L2 近似：最长公共子串覆盖率 ≥ 0.5 且候选长度 ≥ 45
+        （L2 加长度下限的原因：短候选天然与指南共享词汇，如状态码表行）
+        """
+        if not guide_norm or not text:
+            return False
+        norm = _normalize_ws(text)
+        if norm in guide_norm:
+            return True
+        if len(norm) < LEAK_MIN_LENGTH:
+            return False
+        return _lcs(norm, guide_norm) / len(norm) >= LEAK_MIN_COVERAGE
+
     frozen: list[dict] = []
     for protocol in protocols:
         cfg = _load_rfc_cfg(protocol)
         raw = extract_constraint_candidates(protocol)
         buckets: dict[str, list[dict]] = {k: [] for k in SUBJECT_TYPES}
         for cand in raw:
+            if _leaked(str(cand.get("text") or "")):
+                continue          # 指南已暴露 ⇒ 剔除
             buckets[classify_subject(cand, cfg)].append(cand)
 
         sizes = {k: len(v) for k, v in buckets.items()}
@@ -338,6 +398,8 @@ def main(argv: Optional[list[str]] = None) -> int:
                     help=f"每协议条数（默认 {PER_PROTOCOL}）")
     ap.add_argument("--holdout-total", type=int, default=HOLDOUT_TOTAL,
                     help=f"holdout 总条数（默认 {HOLDOUT_TOTAL}）")
+    ap.add_argument("--guide", default=str(REPO_ROOT / "docs" / "annotation_guide.md"),
+                    help="标注指南路径；用于剔除『指南已逐字用过』的候选（默认启用）")
     ap.add_argument("--salt", default=DEFAULT_SALT,
                     help=f"稳定哈希盐（默认 {DEFAULT_SALT}）")
     ap.add_argument("--quiet", action="store_true", help="只写文件，不打印摘要")
@@ -361,7 +423,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         base[p] += 1
     holdout_per_protocol = {p: base[p] for p in protocols}
 
-    rows = freeze(protocols, per_protocol, holdout_per_protocol, args.salt)
+    guide = Path(args.guide) if args.guide else None
+    rows = freeze(protocols, per_protocol, holdout_per_protocol, args.salt,
+                 guide_path=guide)
 
     out = Path(args.out)
     train_out = Path(args.train_out) if args.train_out else out.parent / "candidates_train.jsonl"
