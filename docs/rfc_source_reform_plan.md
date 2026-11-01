@@ -386,10 +386,14 @@ class EvidenceAnchor:
     evidence_id: str                    # 本条证据自身的唯一 id（多条证据 → 多 id）
     spec_version: str                   # 规范版本，如 "RFC3261"
     section_path: tuple[str, ...]        # ("21", "1.1") 章节路径
-    source_anchor: str                  # "file:rfc3261.txt#@10560"
+    source_anchor: str                  # "file:rfc3261.txt#@10560"（★ 行锚点：行号按 splitlines() 口径，见下）
     span_text: str                      # ★ verbatim 原文片段（可为空 → 则不能定为 explicit）
-    span_start: int | None              # 在源文件中的字符区间（供 B2 校验真实性）
-    span_end: int | None
+    span_start: int | None              # 源文件**字符区间**起点（半开区间 [start, end)，供 B2 校验真实性）
+    span_end: int | None                # 源文件**字符区间**终点（**半开区间**：raw[start:end] == span_text）
+    # ★ 行锚点口径：RFC 原文含换页符 `\x0c`，`str.splitlines()` 会把它当行边界而
+    #   `text.count("\n")` 不会 ⇒ **两种口径的行号相差 9~11 行**。本项目的行锚点
+    #   一律采用 **splitlines() 口径**（与 core/fused/rfc_extractor.py 一致）；
+    #   按 `\n` 口径核对将**全部对不上**。
     evidence_kind: str                  # "normative" | "abnf" | "table" | "prose"
                                       #   ★ 区分约束强度：MUST/SHOULD/MAY/ABNF 各不相同
     explicitness: str                   # "explicit" | "quoted" | "paraphrased"
@@ -735,7 +739,7 @@ def close_loop(seed: SeedCorpus, result: ExecResult,
     #   ★ 问题⑦：EXITED 不能不加区分地当崩溃 —— 目标正常退出（如收到 QUIT 后退出）
     #   也是 EXITED。必须结合退出码 / 退出原因 / 目标生命周期判断。
     if health in (ProcessHealth.RESTARTED, ProcessHealth.SANITIZER_FAILURE):
-        repro = reproduce(seed, timeout=REPRO_TIMEOUT)   # 里程碑 C6：canary 健康探测
+        repro = reproduce(seed)   # 形参：注入式可调用对象（里程碑 C6：canary 健康探测）
         return Feedback(kind="crash", reproducible=repro.ok,
                         health=health, transport=trans,
                         violated=seed.violation_of, seed=seed)
@@ -743,7 +747,7 @@ def close_loop(seed: SeedCorpus, result: ExecResult,
         # 区分「异常退出」与「正常退出」：由 canary 探测目标生命周期
         abnormal = _is_abnormal_exit(result)   # 退出码非 0 / 有 sanitizer 报告 / 非请求收尾导致
         if abnormal:
-            repro = reproduce(seed, timeout=REPRO_TIMEOUT)
+            repro = reproduce(seed)
             return Feedback(kind="crash", reproducible=repro.ok,
                             health=health, transport=trans,
                             violated=seed.violation_of, seed=seed)
@@ -785,7 +789,9 @@ def reflow_rules(rules: list[SemanticRule],
     return sorted(rules, key=lambda r: (-priority(r), r.rule_id))
 ```
 
-**契约（`close_loop` 的 `expected`）**：`expected` 由**调用方显式传入**，是期望结果的**唯一来源**；`None` 表示「无处理期望」⇒ **跳过**语义偏离判定，只走传输层与进程健康判定（与 **convert-C7** 的特例一致，见 roadmap §3.4：`expected_behavior` 缺失**不阻断**转换，缺处理期望的规则只能用于「构造违规种子」，不能用于「判定 oracle 预期」）。
+**契约（`close_loop` 的 `expected`）**：`expected` 由**调用方显式传入**，是期望结果的**唯一来源**。★「无处理期望」有**两种等价表示**——`None`（调用方未提供）与 `""`（B 阶段 `try_convert` 的 **convert-C7** 特例产出：缺处理期望时 `ExecutableConstraint.expected_behavior == ""`，**不是 None、不猜一个**）；`close_loop` 内部**统一归一为 `None`**，两者都 ⇒ **跳过**语义偏离判定，只走传输层与进程健康判定（与 **convert-C7** 的特例一致，见 roadmap §3.4：`expected_behavior` 缺失**不阻断**转换，缺处理期望的规则只能用于「构造违规种子」，不能用于「判定 oracle 预期」）。
+
+**契约（`close_loop` 的 `reproduce`）**：`reproduce` 是**注入式可调用对象**（形参，**非全局函数**）；调用方传入 `reproduce(seed)` 即可。★ **未注入时 `reproducible` 记为 `None`（未探测）**，而**不是**「不可复现」——「未探测」与「不可复现」是两种不同的结论，这是评审 T4 关心的语义。
 
 ### 3.6 与现有代码的接口对接（关键：改造点在哪）
 

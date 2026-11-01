@@ -11,13 +11,27 @@ core/fused/protocol_patterns.py —— 协议状态机信号 pattern（协议 Pr
   - 本文件【不属于】结构化知识中枢（derived/per_source、derived/spec/rtsp/norms）；
   - 因此「清空结构化知识中枢」时，本文件不受影响，不会被清理。
 
+★ 协议范围（2026-10-31 kb 收敛至 3 协议后同步收敛）
+  本表只保留**存活协议** rtsp / sip / smtp 的 pattern；
+  已下线协议（dns / dtls / ftp / ssh / tls）的条目一并移除 ——
+  它们对应的 kb 源、目标环境与语料都已删除，pattern 留着就是**无人消费的僵尸知识**，
+  还会让读者误以为这些协议仍受支持（本项目的协议范围权威声明在 `kb/` 与
+  `fused_hub/targets/` 两处，不在本文件）。
+  ★ 移除是**安全的**：`get_pattern()` 用 `.get(key, DEFAULT_PATTERN)` 兜底，
+    传入已下线协议只会拿到通用兜底 pattern（**不抛异常**）；唯一 import 者
+    `source_fsm.py` 只取 `get_pattern` 函数（不依赖具体条目）→ import 不受影响；
+    且本表全仓库**零外部调用方、零测试引用**。
+  ⇒ 未来若要恢复某协议，加回对应条目即可，无需改引擎。
+  ⇒ 若将来做「配置层收敛」，正确做法是**整文件连同 `source_fsm.py` 退役**，
+    而不是留一个 DEPRECATED 孤岛再逐条削字典。
+
 设计（历史）: 协议无关的引擎（source_fsm.py）调用 get_pattern(protocol) 读取本配置，
 按协议提取状态机信号，替代 source_fsm.py 里写死的通用正则。
 换协议只改这里的 pattern，不改引擎。
 """
 from __future__ import annotations
 
-#: 协议 -> 状态机信号 pattern
+#: 协议 -> 状态机信号 pattern（存活协议：rtsp / sip / smtp）
 #:   method_handler : 消息处理函数名正则（捕获组 = 消息类型/方法名）
 #:   state_vars     : 状态变量名正则（状态线索）
 #:   fsm_marker     : 状态机相关文件标记（用于过滤文件，ProtocolGPT code_filter 思路）
@@ -32,13 +46,6 @@ PROTOCOL_PATTERNS: dict[str, dict] = {
         "state_vars": r"\bf(?:StreamStates|NumStreamStates|OurServerMediaSession|LastSessionId|OurSessionId|CurrentCSeq)\b",
         "fsm_marker": r"(?:handleCmd_|StreamStates|OurServerMediaSession)",
     },
-    # ---- FTP / LightFTP·Bftpd·PureFTPD·ProFTPD（通用约定）----
-    "ftp": {
-        "name": "LightFTP / Bftpd / PureFTPD / ProFTPD (FTP)",
-        "method_handler": r"(?:handle|process|do)_(\w+)",
-        "state_vars": r"\b\w*(?:state|State)\w*\b",
-        "fsm_marker": r"(?:state|session|ftp)",
-    },
     # ---- SIP / Kamailio（通用约定）----
     "sip": {
         "name": "Kamailio (SIP)",
@@ -52,34 +59,6 @@ PROTOCOL_PATTERNS: dict[str, dict] = {
         "method_handler": r"(?:smtp|handle|process)_(\w+)",
         "state_vars": r"\b(?:smtp_state|\w*state)\b",
         "fsm_marker": r"(?:smtp|state)",
-    },
-    # ---- DTLS / TinyDTLS（通用约定，binary）----
-    "dtls": {
-        "name": "TinyDTLS (DTLS)",
-        "method_handler": r"(?:handle|process|dtls)_(\w+)",
-        "state_vars": r"\b\w*(?:state|State)\w*\b",
-        "fsm_marker": r"(?:state|handshake)",
-    },
-    # ---- DNS / Dnsmasq（通用约定）----
-    "dns": {
-        "name": "Dnsmasq (DNS)",
-        "method_handler": r"(?:answer|handle|process)_(\w+)",
-        "state_vars": r"\b\w*(?:state|State)\w*\b",
-        "fsm_marker": r"(?:state|query|forward)",
-    },
-    # ---- SSH / OpenSSH（通用约定）----
-    "ssh": {
-        "name": "OpenSSH (SSH)",
-        "method_handler": r"(?:handle|process)_(\w+)",
-        "state_vars": r"\b\w*(?:state|State)\w*\b",
-        "fsm_marker": r"(?:state|serverstate|auth)",
-    },
-    # ---- TLS / OpenSSL（通用约定，binary）----
-    "tls": {
-        "name": "OpenSSL (TLS)",
-        "method_handler": r"(?:handle|process)_(\w+)",
-        "state_vars": r"\b\w*(?:state|State)\w*\b",
-        "fsm_marker": r"(?:state|handshake|ssl)",
     },
 }
 

@@ -294,7 +294,11 @@ class EvidenceAnchor:
     source_anchor: str                # "file:rfc3261.txt#@10560"（行锚点，可读）
     span_text: str                    # ★ verbatim 原文片段（空 → 不能判 explicit）
     span_start: Optional[int]         # 在源文件全文中的字符区间起点（供 B2 校验）
-    span_end: Optional[int]           # 同上终点（闭区间）
+    span_end: Optional[int]           # 同上终点（**半开区间** [start, end)）
+    # ★ 行锚点口径：RFC 原文含换页符 `\x0c`，`str.splitlines()` 会把它当行边界而
+    #   `text.count("\n")` 不会 ⇒ **两种口径的行号相差 9~11 行**。本项目的行锚点
+    #   一律采用 **splitlines() 口径**（与 core/fused/rfc_extractor.py 一致）；
+    #   按 `\n` 口径核对将**全部对不上**。
     evidence_kind: str                # normative|abnf|table|prose
     explicitness: str                 # explicit|quoted|paraphrased（由 B2/B6 计算写入）
     source_class: str                 # 四类来源（评审 M1）

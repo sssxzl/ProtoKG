@@ -618,6 +618,129 @@ class TestCompare:
 # ===========================================================================
 # 词表一致性（防止标注词表与 roadmap / semantic.py 漂移）
 # ===========================================================================
+class TestCRLFRobustness:
+    """★ 换行风格鲁棒性 —— 本仓 ``core.autocrlf=true``，git checkout 会把仓库里
+    存的 LF blob **物化成 CRLF 落盘**（实测：``scripts/build_hub.py`` 是
+    ``i/lf w/crlf``）。因此**任何按字节读文件的校验都可能看到与提交时不同的结果**。
+
+    本类断言：把交付物物化成 CRLF 后，**行为完全不变** —— 冻结产出字节一致、
+    校验器结论一致、κ 结论一致、泄漏闸结论一致。
+
+    ★ 这不是假设，是实测过的场景：2026-11-01 有一路执行了 ``git reset`` +
+    重新提交，导致他人文档的换行符在落盘时被静默物化。
+    """
+
+    @pytest.fixture(scope="class")
+    def crlf_probe(self, tmp_path_factory):
+        """把三个脚本 + 指南物化成 CRLF，放到**仓根的直接子目录**。
+
+        ★ 必须是仓根的直接子目录：脚本用 ``parents[1]`` 解析 REPO_ROOT，
+          多一层会让 ``import core`` 失败（那不是 CRLF 的问题，是路径的问题）。
+        """
+        probe = tmp_path_factory.mktemp("_crlf_probe")
+        for name in ("freeze_annotation_candidates.py", "annotate_candidates.py",
+                     "calc_cohen_kappa.py"):
+            src = (ROOT / "scripts" / name).read_bytes()
+            (probe / name).write_bytes(src.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        guide = (ROOT / "docs" / "annotation_guide.md").read_bytes()
+        (probe / "annotation_guide.md").write_bytes(
+            guide.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        return probe
+
+    @pytest.fixture(scope="class")
+    def repo_crlf_probe(self, tmp_path_factory):
+        """把 CRLF 版放进**仓内**的临时目录跑（需要能 import core/）。"""
+        probe = ROOT / "_crlf_probe_tmp"
+        probe.mkdir(exist_ok=True)
+        for name in ("freeze_annotation_candidates.py", "annotate_candidates.py",
+                     "calc_cohen_kappa.py"):
+            src = (ROOT / "scripts" / name).read_bytes()
+            (probe / name).write_bytes(src.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        yield probe
+        for f in probe.iterdir():
+            f.unlink()
+        probe.rmdir()
+
+    def test_crlf_probe_is_actually_crlf(self, crlf_probe):
+        """先确认探针真的物化成了 CRLF（否则下面的断言是空转）。"""
+        b = (crlf_probe / "freeze_annotation_candidates.py").read_bytes()
+        assert b.count(b"\r\n") > 0
+        assert b.count(b"\n") - b.count(b"\r\n") == 0
+
+    def test_freeze_output_identical_under_crlf(self, repo_crlf_probe, tmp_path):
+        """★ CRLF 化后冻结产出**字节一致** ⇒ md5 不变 ⇒ 实验基线不受换行影响。"""
+        out = tmp_path / "crlf.jsonl"
+        r = subprocess.run(
+            [sys.executable, str(repo_crlf_probe / "freeze_annotation_candidates.py"),
+             "--out", str(out), "--quiet"],
+            cwd=str(ROOT), capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr
+        lf_out = tmp_path / "lf.jsonl"
+        r2 = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "freeze_annotation_candidates.py"),
+             "--out", str(lf_out), "--quiet"],
+            cwd=str(ROOT), capture_output=True, text=True)
+        assert r2.returncode == 0, r2.stderr
+        assert hashlib.md5(out.read_bytes()).hexdigest() == \
+            hashlib.md5(lf_out.read_bytes()).hexdigest()
+
+    def test_guide_leak_check_same_under_crlf(self, repo_crlf_probe):
+        """★ CRLF 化后泄漏闸结论一致（不能因换行符而漏报或误报）。"""
+        frozen = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        if not frozen.is_file():
+            pytest.skip("冻结集尚未生成")
+        guide_crlf = repo_crlf_probe / "annotation_guide.md"
+        guide_src = (ROOT / "docs" / "annotation_guide.md").read_bytes()
+        (repo_crlf_probe / "annotation_guide.md").write_bytes(
+            guide_src.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        r = subprocess.run(
+            [sys.executable, str(repo_crlf_probe / "annotate_candidates.py"),
+             "--frozen", str(frozen), "check-guide", "--guide", str(guide_crlf)],
+            cwd=str(ROOT), capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr
+        assert "指南无泄漏" in r.stdout
+
+    def test_validator_same_under_crlf(self, repo_crlf_probe):
+        """★ CRLF 化后校验器结论一致。"""
+        frozen = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        truth = ROOT / "derived" / "exp_semantic" / "truth" / "rtsp.annotated.json"
+        hold = ROOT / "derived" / "exp_semantic" / "truth" / "rtsp.holdout.json"
+        if not (frozen.is_file() and truth.is_file() and hold.is_file()):
+            pytest.skip("标注集尚未生成")
+        r = subprocess.run(
+            [sys.executable, str(repo_crlf_probe / "annotate_candidates.py"),
+             "--frozen", str(frozen), "validate",
+             "--annotations", str(truth), "--include", str(hold)],
+            cwd=str(ROOT), capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr
+        assert "全部通过校验" in r.stdout
+
+    def test_kappa_same_under_crlf(self, repo_crlf_probe, tmp_path):
+        """★ CRLF 化后 κ 结论一致。"""
+        recs = [_good_rec(f"c{i}", operator="ge" if i % 2 == 0 else "le")
+                for i in range(20)]
+        pa = tmp_path / "a.json"
+        pb = tmp_path / "b.json"
+        pa.write_text(json.dumps(recs, ensure_ascii=False), encoding="utf-8")
+        pb.write_text(json.dumps(
+            [dict(r, operator="ge") for r in recs], ensure_ascii=False),
+            encoding="utf-8")
+        r = subprocess.run(
+            [sys.executable, str(repo_crlf_probe / "calc_cohen_kappa.py"),
+             "--a", str(pa), "--b", str(pb)],
+            cwd=str(ROOT), capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr
+        assert "operator" in r.stdout
+
+    def test_frozen_jsonl_is_lf_on_disk(self):
+        """★ 冻结产物按 **LF** 落盘（显式 newline="\\n"）⇒ 不随平台漂移。"""
+        p = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        if not p.is_file():
+            pytest.skip("冻结集尚未生成")
+        b = p.read_bytes()
+        assert b.count(b"\r\n") == 0, "冻结产物不应含 CRLF"
+
+
 class TestVocabulary:
     def test_operator_vocabulary_matches_roadmap(self):
         """★ OPERATORS 必须与 roadmap §3.1 逐项相等（10 个）。"""

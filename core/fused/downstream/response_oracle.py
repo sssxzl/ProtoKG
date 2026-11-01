@@ -23,7 +23,9 @@
 原因未知（丢包 / 负载 / 静默丢弃 / 状态不匹配 / 真死锁），**不能断言偏离**。
 
 **语义偏离比对依赖 B 阶段的 ``ExecutableConstraint.expected_behavior``**：本模块用
-``close_loop(..., expected=...)`` **显式传入**期望值；``expected=None`` ⇒ **跳过**
+``close_loop(..., expected=...)`` **显式传入**期望值；**「无期望」有两种等价表示**——
+``None``（调用方未提供）与 ``""``（B 阶段 ``try_convert`` 的 convert-C7 特例产出，
+缺处理期望时 ``expected_behavior == ""``，不是 None、不猜一个）—— 两者都 ⇒ **跳过**
 语义偏离判定（与 §3.4 的 C7 特例一致：``expected_behavior`` 缺失不阻断转换）。
 
 **职责边界（不要混淆）**：本模块是「执行结果 → 语义反馈」的 oracle；
@@ -210,24 +212,38 @@ def _coerce(value: Any, enum_cls: type[Enum], field: str) -> Enum:
 
 
 def _normalize_expected(expected: Any) -> Optional[str]:
-    """归一 ``expected`` 为协议层取值的**裸字符串**；``None`` 保持 ``None``。
+    """归一 ``expected`` 为协议层取值的**裸字符串**；「无期望」统一归一为 ``None``。
+
+    ★ **「无处理期望」有两种表示，语义完全等价**：
+
+      · ``None`` —— 调用方未提供期望；
+      · ``""``  —— B 阶段 ``try_convert`` 的 **convert-C7 特例**产出（缺处理期望时
+        ``ExecutableConstraint.expected_behavior == ""``，**不是 None、不猜一个**）。
+
+      两者都 ⇒ **跳过**语义偏离判定。若不归一，B-2 产出的 ``""`` 会落进
+      「非法取值」分支抛 ``ValueError``（跨路语义不对齐，B-8 消费 bundle 时必爆）。
 
     ★ 不用 ``str(枚举成员)``：``(str, Enum)`` 的 ``__str__`` 返回
       ``"ProtocolOutcome.SUCCESS"`` 而不是 ``"success"``（Python 3.11+ 行为），
       会静默破坏比对。统一取 ``.value``。
 
     Args:
-        expected: 期望的协议层结果（字符串或 ``ProtocolOutcome`` 成员）。
+        expected: 期望的协议层结果（字符串或 ``ProtocolOutcome`` 成员）；
+            ``None`` / ``""`` / 纯空白 ⇒ 「无期望」。
 
     Returns:
-        归一后的裸字符串，或 ``None``。
+        归一后的裸字符串，或 ``None``（无期望）。
 
     Raises:
-        ValueError: ``expected`` 不是合法的协议层取值（如 ``"timeout"``/``"crash"``）。
+        ValueError: ``expected`` 非空且不是合法的协议层取值
+            （如 ``"timeout"``/``"crash"``）—— **红线：这些不是协议层期望，必须报错**。
     """
     if expected is None:
         return None
     value = expected.value if isinstance(expected, Enum) else str(expected)
+    if not value.strip():
+        # ""（B-2 的 convert-C7 特例）/ 纯空白 ⇒ 「无处理期望」，与 None 等价
+        return None
     if value not in PROTOCOL_OUTCOME_VALUES:
         legal = sorted(PROTOCOL_OUTCOME_VALUES)
         raise ValueError(
@@ -411,7 +427,9 @@ def close_loop(
         seed: 种子对象（duck typed；读 ``violation_of`` 作为违规点标识）。
         result: 执行结果（``ExecResult`` 或同构对象 / dict）。
         expected: 期望的**协议层**结果（如 ``"success"``）。
-            ★ ``None`` ⇒ **跳过**语义偏离判定（只走传输层 / 进程健康判定）。
+            ★ **「无期望」有两种等价表示**：``None``（调用方未提供）与 ``""``
+            （B 阶段 ``try_convert`` 的 convert-C7 特例产出）—— 两者都 ⇒
+            **跳过**语义偏离判定（只走传输层 / 进程健康判定），内部统一归一为 ``None``。
             这与 §3.4 的 C7 特例一致：``expected_behavior`` 缺失**不阻断**转换，
             缺「处理期望」时该规则只能用于「构造违规种子」，不能用于「判定 oracle 预期」。
             **本参数是 expected 的唯一来源**（不回退去读 ``seed.expected_class``），

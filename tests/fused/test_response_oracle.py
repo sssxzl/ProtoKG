@@ -466,12 +466,60 @@ def test_expected_accepts_enum_member() -> None:
     assert feedback.expected == "success"
 
 
-@pytest.mark.parametrize("bad_expected", ["timeout", "crash", "reset", "nonsense"])
+@pytest.mark.parametrize("bad_expected",
+                         ["timeout", "crash", "reset", "nonsense", "bogus"])
 def test_expected_invalid_protocol_value_raises(bad_expected: str) -> None:
     """期望值只接受协议层取值；timeout/crash 属别的轴，必须显式报错。"""
     result = ExecResult(health_probe="alive", transport_event="response")
     with pytest.raises(ValueError, match="expected 非法取值"):
         close_loop(_seed(), result, expected=bad_expected)
+
+
+def test_expected_empty_string_equals_none() -> None:
+    """C 阶段 × B-2 对齐：``expected=""``（convert-C7 特例产出）与 ``expected=None`` 等价。
+
+    ★ B-2 的 ``try_convert`` 在缺处理期望时产出 ``expected_behavior == ""``（**不是 None**），
+      若 close_loop 只认 ``None``，B-8 消费 bundle 时必抛 ValueError。
+    """
+    result = ExecResult(
+        health_probe="alive",
+        transport_event="response",
+        protocol_outcome="success",
+    )
+    assert close_loop(_seed(), result, expected="") is None
+    assert close_loop(_seed(), result, expected=None) is None
+
+
+def test_expected_empty_string_skips_deviation_even_on_mismatch() -> None:
+    """★ 关键用例：``expected=""`` 且实际是 protocol_error ⇒ 仍返回 None（**不** semantic_deviation）。
+
+    证明空期望被**跳过**，而不是被当成「有一个空期望」去比对（否则会出现假匹配/假通过）。
+    """
+    result = ExecResult(
+        health_probe="alive",
+        transport_event="response",
+        protocol_outcome="protocol_error",
+    )
+    feedback = close_loop(_seed(), result, expected="")
+    assert feedback is None
+
+
+def test_expected_empty_string_still_reports_transport_and_health() -> None:
+    """``expected=""`` 只跳过**语义偏离**判定，传输层 / 进程健康判定照常。"""
+    result = ExecResult(health_probe="alive", transport_event="reset")
+    feedback = close_loop(_seed(), result, expected="")
+    assert feedback is not None
+    assert feedback.kind == "connection_aborted"
+
+
+def test_expected_whitespace_only_treated_as_no_expectation() -> None:
+    """纯空白也按「无期望」处理（不误判为非法取值，也不误判为语义偏离）。"""
+    result = ExecResult(
+        health_probe="alive",
+        transport_event="response",
+        protocol_outcome="protocol_error",
+    )
+    assert close_loop(_seed(), result, expected="   ") is None
 
 
 def test_matching_expectation_returns_none() -> None:
