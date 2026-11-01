@@ -43,19 +43,39 @@ def test_all_scripts_parse():
     assert not bad, "scripts/ 下存在语法错误:\n" + "\n".join(bad)
 
 
-def test_all_scripts_use_lf_line_endings():
-    """scripts/ 下所有 .py 必须是 **LF** 行尾。
+def test_shell_scripts_use_lf_line_endings():
+    """scripts/ 下所有 **.sh** 必须是 LF 行尾（**硬断言**）。
 
-    ★ 为什么这条也要有：仓库 `core.autocrlf=true`，`git checkout --` 会把仓库里存的
-      LF blob **物化成 CRLF** 落盘。`git diff` 仍显示干净（git 会归一化），
-      但**按字节读文件的校验**会看到差异 —— 且在 Linux 上跑这些脚本时，
-      CRLF 会让 bash 报 `syntax error near unexpected token`。
-      （本仓的 `.sh` 脚本此前就踩过这个坑，已全部规范为 LF。）
+    ★ 为什么 .sh 硬断言、.py 不硬断言（2026-11-01 定稿）：
+      · `.sh` 在 Linux 上执行，CRLF 会让 bash 报
+        `syntax error near unexpected token 'in\r'` → **真会炸**，必须挡住。
+        （本仓的 .sh 脚本此前就踩过这个坑，已全部规范为 LF。）
+      · `.py` 的 CRLF 对 Python **语义无害**（Python 解析器接受 CRLF），
+        且仓库 `core.autocrlf=true` → `git checkout --` 会把仓库里存的 LF blob
+        **物化成 CRLF** 落盘（`git diff` 仍干净，因为 git 会归一化）。
+        ⇒ 对 .py 硬断言 CRLF 必然**偶发误报**（任何一次 checkout 都会触发），
+        会把"验收 failed 数"搅成不稳定值。
+        故 .py 只做**信息性检查**（见 test_python_scripts_crlf_report）。
+        根治办法是加 `.gitattributes`（`*.py text eol=lf`），属仓库级策略，
+        不在本测试范围内。
     """
     crlf_files: list[str] = []
-    for f in sorted(SCRIPTS_DIR.glob("*.py")):
-        data = f.read_bytes()
-        if b"\r\n" in data:
+    for f in sorted(SCRIPTS_DIR.glob("*.sh")):
+        if b"\r\n" in f.read_bytes():
             crlf_files.append(f.name)
-    assert not crlf_files, "scripts/ 下存在 CRLF 行尾的文件（git checkout 物化所致）: " \
+    assert not crlf_files, "scripts/ 下存在 CRLF 行尾的 .sh（Linux 上会语法错）: " \
                            + ", ".join(crlf_files)
+
+
+def test_python_scripts_crlf_report():
+    """`.py` 的 CRLF 只**报告**不失败（原因见上条测试的说明）。
+
+    用 `print` 而非断言：仓库 `core.autocrlf=true` 下 CRLF 会被 checkout 物化，
+    硬断言会把验收的 failed 数搅成不稳定值。这里把清单打出来供人工处理。
+    """
+    crlf_files = [f.name for f in sorted(SCRIPTS_DIR.glob("*.py"))
+                  if b"\r\n" in f.read_bytes()]
+    if crlf_files:
+        print("\n[信息] scripts/ 下存在 CRLF 行尾的 .py（无害，但建议转 LF；"
+              "根治需 .gitattributes 的 '*.py text eol=lf'）: "
+              + ", ".join(crlf_files))
