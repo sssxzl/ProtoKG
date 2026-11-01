@@ -1838,7 +1838,9 @@ def compute_build_id(protocol: str, norms: list[dict], cfg: dict) -> str:
 #: ★ 2026-11-01 P1 批次：间隔点线 TOC 判据 + 目录块兜底（P0-1）、
 #:   真实源文件行号（P1-3）、首标题前内容不入章节（P1-2）
 #:   —— 三项均改变抽取结果 ⇒ 版本号必须变。
-_EXTRACTOR_VERSION = "a1-p1-2026-11-01"
+#: ★ 2026-11-02 B-13 批次：约束候选按**逻辑句**切句（原先按物理行 ⇒ 半句）
+#:   —— 候选池内容改变 ⇒ 版本号必须变。
+_EXTRACTOR_VERSION = "a1-b13-logical-sent-2026-11-02"
 
 
 # ===========================================================================
@@ -1896,6 +1898,14 @@ def _line_offsets(raw_text: str) -> dict[int, int]:
       本口径下的正确反查式：
       ``line_offsets[n] <= span_start < line_offsets[n + 1]``
       （实测对 430/430 候选全部成立）。
+
+    ⚠⚠ **同口径的独立实现（改一处必须同步另一处）**：
+      ``core/fused/semantic.py`` 的 ``_splitline_offsets`` 是**同口径的另一份
+      实现**（B-2 的 C2 区间校验用它）。这是**有意的重复** ——
+      ``semantic.py`` 不该依赖 ``rfc_extractor.py``（否则引入 import 环）。
+      ⇒ **任何一方改动切分口径（如换成 ``count("\n")`` 口径），
+      必须同步另一方**，否则两边的「行号」会静默错位
+      （实测差值 = 换页符处数，430/430 全中）。
     """
     offsets: dict[int, int] = {}
     pos = 0
@@ -1905,25 +1915,307 @@ def _line_offsets(raw_text: str) -> dict[int, int]:
     return offsets
 
 
-def _split_sentences_with_offsets(text: str) -> list[tuple[str, int, int]]:
-    """按句切分文本，返回每句的 (文本, 起偏移, 止偏移)（相对 `text`）。
+# ===========================================================================
+# B-13　逻辑句切分 —— 按**逻辑句**切句，而不是按物理行
+# ===========================================================================
+#
+# ★ **为什么改**：RFC 正文是**折行排版**（一个逻辑句跨多行）。按物理行切句
+#   ⇒ 抽出的约束候选经常是**半句**（实测三协议 430 条候选里 91.4% 命中半句
+#   判据；其中散文类候选有 77.2% 以「句中」状态结尾）。
+#   半句的直接后果：
+#     ① 标注者无法判断「M1 可执行率」的真实上界（半句里看不到规范动词/
+#        操作数 ⇒ 大量误判「不可执行」）；
+#     ② B-10 的 C0/E1/E2 三组对照会建立在**半句候选池**上 ⇒ 测的是
+#        **抽取粒度**，不是表达层升级的收益。
+#
+# ★ **判定口径（协议无关、确定性、无 LLM）**：
+#   ① **段落边界** = 源文件**行号不连续**（清洗会丢空行/页眉 ⇒ 行号有缺口）
+#      ⇒ **绝不跨段落合并**（段末即句界）。
+#   ② **行内句界** = `(?<=[.!?])` + 空白（**沿用历史口径**，只是不吃换行）。
+#   ③ **跨行合并** = 「上一段**未**以句末标点结束」且「下一行是**可续行**形态」。
+#
+# ⚠ **不用缩进判边界**：RFC 的缩进是**排版对齐**（同一段内各行缩进可以不同，
+#   如缩进定义条目），**不是**语义边界；用它判句会把定义块切碎。
+# ⚠ **不用 LLM 判句边界**：必须确定性、可复现、离线可跑。
+# ⚠ **不单独用「下一行以大写/数字开头」断句**：上一行若以句末标点结束，
+#   必是句界（规则 ③ 已覆盖）；上一行若**未**以句末标点结束 ⇒ 是**折行**
+#   ⇒ 合并（此时下一行即便以大写开头也是折行的继续，例如
+#   "…the following information should" + "be provided:"）。
 
-    ★ 切分口径与历史实现（按句末标点后的空白串 / 换行串切分）**一致**
-      （同一批分隔符、同样的先后顺序），差别只在**额外保留偏移**。
-    ★ 切分后每句**不含换行** ⇒ 每句必然落在 `text` 的单行内 ⇒ 偏移可
-      无歧义地映射回源文件（这是 span 能精确定位的前提）。
+#: 行内句界：**只**吃空白，**不吃换行**（换行由物理行结构单独判定）。
+#: ★ 与历史 `_SENT_SPLIT_RE` 的行内部分**同口径**（`(?<=[.!?])` + 空白）。
+_SENT_BOUNDARY_RE = re.compile(r"(?<=[.!?])[ \t]+")
+
+#: 句末标点（可带收尾引号/括号）—— 「这一段到此说完」的判据。
+#: ★ 与 `scripts/annotate_candidates.py::_SENT_TERMINATOR_AT_END` 同口径。
+_SENT_END_RE = re.compile(r"[.!?][\"'\u2019)\]]*$")
+
+#: 列举项起始标记（`1.` / `a)` / `-` / `*` / `+` / `\u2022`）。
+_RE_LIST_ITEM = re.compile(
+    r"^\s*(?:\d{1,3}[.)]|[A-Za-z][.)]|[-*+\u2022])\s+\S")
+
+#: 表格列间隔：「非空白 + 2 个以上空白 + 非空白」。出现 ≥2 处 ⇒ 表格行。
+_RE_COLUMN_GAP = re.compile(r"\S {2,}\S")
+
+#: 表格行（`|` 开头的竖线表格 / ABNF 竖线块）。
+_RE_PIPE_ROW = re.compile(r"^\s*\|")
+
+#: 纯分隔线（`----` / `====` / `~~~~`）。
+_RE_RULE_LINE = re.compile(r"^\s*[-=*+#~_]{3,}\s*$")
+
+#: ASCII 图示字符（制表符画的框线/块）。
+_ASCII_ART_CHARS = (
+    "\u2502\u250c\u2510\u2514\u2518\u251c\u2524\u252c\u2534\u253c"
+    "\u2500\u2550\u2554\u2557\u255a\u255d\u2551\u2560\u2563\u2566"
+    "\u2569\u256c\u2588\u2591\u2592\u2593"
+)
+_RE_ASCII_ART = re.compile("[" + re.escape(_ASCII_ART_CHARS) + "]")
+
+#: ABNF 产生式 —— 与 B-5 `semantic_rules.PATTERNS` 的 `abnf_rule` **同形**
+#: （判定口径必须一致：ABNF 行的 `^` 锚点一旦被并句破坏，B-5 就再也
+#:  抽不出 ABNF 约束）。
+_RE_ABNF_RULE = re.compile(
+    r"^[ \t]*(?P<ref>[A-Za-z][A-Za-z0-9-]*)[ \t]*(?::=|=)[ \t]*\S")
+
+#: 编号标题（`10.1 Basic Structure` / `10 Basic Structure`）。
+_RE_NUMBERED_HEADING = re.compile(r"^\s*\d+(?:\.\d+)*\s+\S")
+
+#: 报文字段行（`Content-Length: 376` / `CSeq: 312`）—— 报文样例行。
+_RE_HEADER_FIELD = re.compile(r"^\s*[A-Za-z][A-Za-z0-9-]*:\s")
+
+#: 引用块前缀（`>` 引用）。
+_RE_QUOTE_PREFIX = re.compile(r"^\s*>")
+
+
+def _line_structure(text: str) -> str:
+    """判定一行的**结构形态**（决定它能否与下一行合并成一个逻辑句）。
+
+    返回值（互斥，按判定顺序）：
+
+    ========== =====================================================
+    形态         含义
+    ========== =====================================================
+    ``blank``    空行（清洗后不应出现）
+    ``abnf``     ABNF 产生式（`Foo = bar`）—— **自成一句**
+    ``list``     列举项（`1.` / `a)` / `-` / `*` / `+` / `•`）
+    ``rule``     纯分隔线（`----`）
+    ``art``      ASCII 图示行（框线/块字符）
+    ``table``    表格行（≥2 处「2+ 空白」列间隔，或 `|` 开头）
+    ``quote``    引用块（`>` 前缀，或行首 `"` 且**引号未闭合**）
+    ``head``     编号标题 / 标题形态
+    ``field``    报文字段行（`Content-Length: 376`）
+    ``prose``    散文正文 —— **唯一可与相邻行合并的形态**
+    ========== =====================================================
+
+    ★ 判定**只用行文本形态**，**不用缩进**（缩进是排版对齐，不是语义边界）。
+    ★ 章节标题**结构上不可能**进正文（`_split_heads_bodies` 先把标题摘走）
+      ⇒ `head` 分支是**防御性**的（复用本模块自己的 `_parse_heading_shape`）。
     """
-    out: list[tuple[str, int, int]] = []
-    pos = 0
-    for m in _SENT_SPLIT_RE.finditer(text):
-        seg = text[pos:m.start()]
+    s = text or ""
+    if not s.strip():
+        return "blank"
+    if _RE_ABNF_RULE.match(s):
+        return "abnf"
+    if _RE_LIST_ITEM.match(s):
+        return "list"
+    if _RE_RULE_LINE.match(s):
+        return "rule"
+    if _RE_ASCII_ART.search(s):
+        return "art"
+    if len(_RE_COLUMN_GAP.findall(s)) >= 2 or _RE_PIPE_ROW.match(s):
+        return "table"
+    if _RE_QUOTE_PREFIX.match(s):
+        return "quote"
+    if _is_open_quote_line(s):
+        return "quote"
+    if _RE_NUMBERED_HEADING.match(s):
+        return "head"
+    if _RE_HEADER_FIELD.match(s):
+        return "field"
+    if _parse_heading_shape(s.strip()) is not None:
+        return "head"
+    return "prose"
+
+
+def _is_open_quote_line(text: str) -> bool:
+    """该行是否以 `"` 开头且**引号未闭合**（⇒ 跨行引用串的起点）。
+
+    ★ **不能**只看「以引号开头」：RFC 里有大量**以引号开头但不是引用块**的
+      散文行（如 RFC 2119 关键词说明行 `"SHOULD", "SHOULD NOT", ...`、
+      句中的 `"rtspu") packets ...`）—— 把它们当引用块会导致**该行不与
+      下一行合并** ⇒ 又变回半句。
+    ★ 判据 = 行首是 `"` **且**该行的引号数为**奇数**（引号没闭合 ⇒ 引用
+      跨行）。实测三协议只有 5 行真正跨行引用，其余 189 行都是散文。
+    """
+    s = (text or "").lstrip()
+    return s.startswith('"') and (text or "").count('"') % 2 == 1
+
+
+#: **可续行**形态（能与相邻行合并成一个逻辑句）。
+_CONTINUABLE_KINDS = frozenset({"prose"})
+
+#: **可被续写**的形态（这一行的内容还没说完，下一行可以接上去）。
+#: ★ 散文行可续写；列举项也可续写（`1. The registrar returns ...` 的
+#:   下一行是它的续行）；表格/ABNF/图示/引用/标题**不可**（它们自成单元）。
+_EXTENDABLE_KINDS = frozenset({"prose", "list"})
+
+
+def _split_sentences_with_offsets(
+    text: str,
+    refs: Optional[list[tuple[int, str]]] = None,
+) -> list[tuple[str, int, int]]:
+    """按**逻辑句**切分文本，返回每句的 (文本, 起偏移, 止偏移)（相对 `text`）。
+
+    Args:
+        text: 章节窗口正文（**物理行用 `\n` 连接**）。
+        refs: 该窗口正文的行引用 `[(源文件行号, 行文本)]`（即 `body_refs`）。
+            ★ 给了它才能识别 **段落边界**（清洗丢空行/页眉 ⇒ 行号有缺口）
+              与**每个物理行在 `text` 中的区间**。
+            缺省（``None``）⇒ 退化为**历史口径**（按物理行 / 行内句末标点
+            切分），保证旧调用方行为不变。
+
+    Returns:
+        ``[(句文本, 起偏移, 止偏移)]``；偏移相对 `text`，**半开区间**。
+
+    ★ **切句规则**（协议无关、确定性、**无 LLM**）：
+
+      ① **段落边界** —— 源文件行号不连续 ⇒ 段落结束（**不跨段落合并**）。
+      ② **行内句界** —— `(?<=[.!?])` + 空白（沿用历史口径）。
+      ③ **跨行合并** —— 当且仅当**同时**满足：
+         (a) 下一行是**可续行形态**（散文；非列举/表格/图示/ABNF/引用/标题）；
+         (b) 上一段的**末行形态**可被续写（散文 / 列举项）；
+         (c) 上一段**未以句末标点**（`.`/`!`/`?`，可带收尾引号括号）结束；
+         (d) 合并后长度 ≤ `_MAX_SENT`（避免无终止符的长段被吞成巨句）。
+
+    ⚠ 切分后一句**可能跨多行** ⇒ 其区间也跨多行 ⇒ 区间在源文件里
+      **仍然逐字可核对**（`_constraint_candidates_from_file` 用行号回查
+      首尾两行 ⇒ `raw[span_start:span_end] == text` 恒成立）。
+    """
+    if refs is None:
+        # ★ 历史口径兜底（按物理行 + 行内句末标点切分）
+        out: list[tuple[str, int, int]] = []
+        pos = 0
+        for m in _SENT_SPLIT_RE.finditer(text):
+            seg = text[pos:m.start()]
+            if seg.strip():
+                out.append((seg, pos, m.start()))
+            pos = m.end()
+        seg = text[pos:]
         if seg.strip():
-            out.append((seg, pos, m.start()))
-        pos = m.end()
-    seg = text[pos:]
-    if seg.strip():
-        out.append((seg, pos, len(text)))
-    return out
+            out.append((seg, pos, len(text)))
+        return out
+
+    # ① 每个物理行在 `text` 中的区间（与 `body_refs` 逐行对齐）
+    spans: list[tuple[int, int, int]] = []
+    cursor = 0
+    for lineno, line_text in refs:
+        spans.append((cursor, cursor + len(line_text), lineno))
+        cursor += len(line_text) + 1
+
+    # ② 段落分组（源行号不连续 ⇒ 段落边界）
+    paras: list[list[int]] = []
+    for i, (_a, _b, lineno) in enumerate(spans):
+        if i == 0 or lineno != spans[i - 1][2] + 1:
+            paras.append([i])
+        else:
+            paras[-1].append(i)
+
+    out2: list[tuple[str, int, int]] = []
+    for para in paras:
+        out2.extend(_split_paragraph_sentences(text, spans, para))
+    return out2
+
+
+def _split_paragraph_sentences(
+    text: str,
+    spans: list[tuple[int, int, int]],
+    para: list[int],
+) -> list[tuple[str, int, int]]:
+    """一个**段落** → 逻辑句列表 ``[(文本, 起偏移, 止偏移)]``。
+
+    ★ 段落内先按「行内句界」切成最小单元，再按「跨行合并」规则拼回逻辑句。
+    """
+    # ① 段内切「行内子句」
+    units: list[tuple[int, int, int]] = []      # (起, 止, 行下标)
+    idx = 0
+    n_para = len(para)
+    while idx < n_para:
+        li = para[idx]
+        a, b, _ = spans[li]
+        line_text = text[a:b]
+        # ★ **跨行引用块**（`"..."` 跨行）：行首是 `"` 且引号**未闭合** ⇒
+        #   把后续行一并吞进来，直到引号闭合 ⇒ 引用块**自成一句**
+        #   （既不与散文合并，也不会被散文吞掉）。
+        #   ⚠ 吞并**只跨散文行**：遇到表格/ABNF/图示等结构性行即停
+        #     （否则会把一整块 ABNF 吞进引号里）。
+        if _is_open_quote_line(line_text):
+            quotes = line_text.count('"')
+            last = li
+            j = idx + 1
+            while j < n_para and quotes % 2 == 1:
+                nxt = para[j]
+                nxt_text = text[spans[nxt][0]:spans[nxt][1]]
+                if _line_structure(nxt_text) != "prose":
+                    break
+                quotes += nxt_text.count('"')
+                last = nxt
+                j += 1
+            units.append((a, spans[last][1], li))
+            idx = j
+            continue
+        pos = 0
+        for m in _SENT_BOUNDARY_RE.finditer(line_text):
+            if m.start() > pos:
+                units.append((a + pos, a + m.start(), li))
+            pos = m.end()
+        if b > a + pos:
+            units.append((a + pos, b, li))
+        idx += 1
+
+    # ② 跨行合并
+    groups: list[list[tuple[int, int, int]]] = []
+    cur: list[tuple[int, int, int]] = []
+    for u in units:
+        if not cur:
+            cur = [u]
+            continue
+        if _can_merge_units(text, spans, cur, u):
+            cur.append(u)
+        else:
+            groups.append(cur)
+            cur = [u]
+    if cur:
+        groups.append(cur)
+
+    return [(text[g[0][0]:g[-1][1]], g[0][0], g[-1][1]) for g in groups]
+
+
+def _can_merge_units(
+    text: str,
+    spans: list[tuple[int, int, int]],
+    cur: list[tuple[int, int, int]],
+    u: tuple[int, int, int],
+) -> bool:
+    """当前已累积的句与下一个单元 `u` 能否合并成一个逻辑句。"""
+    prev = cur[-1]
+    if prev[2] == u[2]:
+        return False                     # 同一行内：行内句界已切开，不合并
+    prev_text = text[prev[0]:prev[1]]
+    next_kind = _line_structure(text[spans[u[2]][0]:spans[u[2]][1]])
+    prev_kind = _line_structure(text[spans[prev[2]][0]:spans[prev[2]][1]])
+    # ① 下一行必须是「可续行」形态（列举/表格/图示/ABNF/引用/标题 → 不合并）
+    if next_kind not in _CONTINUABLE_KINDS:
+        return False
+    # ② 上一段的末行必须「可被续写」（表格/ABNF/图示/引用/标题 → 不合并）
+    if prev_kind not in _EXTENDABLE_KINDS:
+        return False
+    # ③ 上一段若以句末标点结束 ⇒ 句界已到，不合并
+    if _SENT_END_RE.search(prev_text):
+        return False
+    # ④ 长度护栏：合并后不得超上限（避免无终止符的长段被吞成巨句）
+    if (u[1] - cur[0][0]) > _MAX_SENT:
+        return False
+    return True
 
 
 def _spec_version_from_rfc(lines: list[str], file_name: str) -> str:
@@ -1986,7 +2278,7 @@ def _constraint_candidates_from_file(f: Path, protocol: str,
         for lineno, line_text in refs:
             line_spans.append((cursor, len(line_text), lineno))
             cursor += len(line_text) + 1      # +1 = 行间换行符
-        for sent, s_start, _s_end in _split_sentences_with_offsets(text):
+        for sent, s_start, s_end in _split_sentences_with_offsets(text, refs):
             stripped = sent.strip()
             if not (_MIN_SENT <= len(stripped) <= _MAX_SENT):
                 continue
@@ -2011,7 +2303,26 @@ def _constraint_candidates_from_file(f: Path, protocol: str,
             if abs_start is None:
                 continue
             abs_start += offset_in_line
-            abs_end = abs_start + len(stripped)
+            # ★ 句尾（**可能跨行**）→ 回查**最后一行**的行内偏移
+            tail_pos = s_end - 1
+            loc_tail = None
+            for start, length, lineno_tail in line_spans:
+                if start <= tail_pos < start + length:
+                    loc_tail = (lineno_tail, tail_pos - start + 1)
+                    break
+            if loc_tail is None:
+                continue
+            lineno_tail, offset_tail = loc_tail
+            abs_end_base = line_offsets.get(lineno_tail)
+            if abs_end_base is None:
+                continue
+            abs_end = abs_end_base + offset_tail
+            # ★ **逐字自检**：区间必须与原文**逐字相等**（B-2 的 C2 前提）。
+            #   正常情况恒成立（窗口正文行 == 源文件行内容）；若源文件在
+            #   中间行留了行尾空白（实测三协议 0 行），偏移会错位 ⇒
+            #   **宁可不产出候选**，也不产出「核对不上」的证据。
+            if raw_text[abs_start:abs_end] != stripped:
+                continue
             out.append({
                 "text": stripped,
                 "source": f"file:{f.name}#@{lineno}",
