@@ -196,12 +196,19 @@ def test_toc_contamination_is_zero(candidates, spec_texts):
 
 def test_anchor_line_contains_the_span(candidates, spec_texts):
     """★ 锚点行号口径的回归护栏：``#@<行号>`` 必须是 **splitlines 口径**，
-    且该行**确实包含**这段 span。
+    且该行**确实包含这段 span 的起点**。
 
     ⚠ **换页符陷阱**（software-engineer-11 实测并同步）：RFC 正文含
     **换页符 `\x0c`**（rtsp 92 / sip 269 / smtp 95 处），`str.splitlines()`
     把它当行边界而 `text.count("\n")` 不当 ⇒ 两种口径的行号相差 9~11 行。
     本测试把口径钉死：若将来有人用 `count("\n")` 口径反查，会立刻红。
+
+    ★ **锚点语义 = 指向句子的**起点行**；句子**可以跨行** —— 粒度修正
+      （按**逻辑句**切分）后一句可由多个物理行合并而成 ⇒ 其 span 合法地
+      跨行。故这里只断言「**起点**落在锚点行内」，**不**断言「整段 span
+      不跨行」（那是「物理行即句子」的旧假设，已被粒度修正作废）。
+      这与 `core/fused/semantic.py::_verify_span_in_source` 的
+      `line_start <= span_start < line_end` 口径**天然一致**。
     """
     for p in PROTOCOLS:
         for c in candidates[p]:
@@ -213,12 +220,12 @@ def test_anchor_line_contains_the_span(candidates, spec_texts):
             start_off = offsets.get(lineno)
             end_off = offsets.get(lineno + 1)
             assert start_off is not None, f"{p}: 行号 {lineno} 不存在"
-            # 锚点行**包含**这段 span（splitlines 口径）
+            # ★ 锚点行**包含 span 的起点**（splitlines 口径）
             assert start_off <= c["span_start"], (
-                f"{p}: span 不在锚点行 {lineno} 内（口径漂移？）")
+                f"{p}: span 起点不在锚点行 {lineno} 内（口径漂移？）")
             if end_off is not None:
-                assert c["span_end"] <= end_off, (
-                    f"{p}: span 越过锚点行 {lineno}（口径漂移？）")
+                assert c["span_start"] < end_off, (
+                    f"{p}: span 起点越过锚点行 {lineno}（口径漂移？）")
             # 反证：`\n` 口径的行号**不等于**锚点行号（RFC 含换页符时）
             if "\x0c" in raw:
                 nl_lineno = raw.count("\n", 0, c["span_start"]) + 1

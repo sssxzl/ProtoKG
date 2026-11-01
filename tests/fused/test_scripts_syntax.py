@@ -72,6 +72,14 @@ def test_python_scripts_crlf_report():
 
     用 `print` 而非断言：仓库 `core.autocrlf=true` 下 CRLF 会被 checkout 物化，
     硬断言会把验收的 failed 数搅成不稳定值。这里把清单打出来供人工处理。
+
+    ★ 附还原方法（实测有效，engineer-12 提供）::
+
+        raw = p.read_bytes(); p.write_bytes(raw.replace(b"\\r\\n", b"\\n"))
+        # 校验：还原后应与 git show HEAD:<file> 逐字节相同
+
+      ⚠ 但**不要在别人正在改的文件上做**（还原会覆盖在飞改动）——
+      先确认该文件不在 `git status` 的 ` M` 列表里。
     """
     crlf_files = [f.name for f in sorted(SCRIPTS_DIR.glob("*.py"))
                   if b"\r\n" in f.read_bytes()]
@@ -79,3 +87,6 @@ def test_python_scripts_crlf_report():
         print("\n[信息] scripts/ 下存在 CRLF 行尾的 .py（无害，但建议转 LF；"
               "根治需 .gitattributes 的 '*.py text eol=lf'）: "
               + ", ".join(crlf_files))
+        print("       还原: raw = p.read_bytes(); "
+              "p.write_bytes(raw.replace(b'\\r\\n', b'\\n'))"
+              "   （先确认该文件不在 git status 的 ' M' 列表里）")

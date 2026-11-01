@@ -688,12 +688,20 @@ def test_try_convert_with_source_auto_loads_source_text():
 
 
 def test_real_candidates_pass_c2_verbatim_check():
-    """C2 的逐字判据对 **B-3 全部真实候选**成立（三协议实测 430/430）。"""
+    """C2 的逐字判据对 **B-3 全部真实候选 100% 成立**。
+
+    ★ 本用例锁的是**不变量**（每一条候选的区间都能在源文件里逐字核对），
+      **不是**某个具体条数 —— 候选集正在被 engineer-13 的粒度修正改动
+      （实测 430 → 421），硬编码条数会让本用例因**与 C2 无关**的原因变红。
+    ★ 下面的 `verified == total` 就是精确断言（比例必须为 100%），
+      只是不与语料规模绑定。
+    """
     from core.fused.rfc_extractor import extract_constraint_candidates
 
     from core import paths
 
     total = 0
+    verified = 0
     for proto in ("rtsp", "sip", "smtp"):
         spec = paths.kb_source_dir(proto, "rfc")
         for cand in extract_constraint_candidates(proto):
@@ -702,9 +710,12 @@ def test_real_candidates_pass_c2_verbatim_check():
             if not path.is_file():
                 continue
             raw = path.read_text(encoding="utf-8", errors="ignore")
-            assert raw[cand["span_start"] : cand["span_end"]] == cand["text"]
+            if raw[cand["span_start"] : cand["span_end"]] == cand["text"]:
+                verified += 1
             total += 1
-    assert total == 430
+    # ★ 逐字核对率必须为 **100%**（B-3 的 span 口径与 C2 完全一致）
+    assert verified == total, f"逐字核对失败 {total - verified}/{total}"
+    assert total >= 100, f"候选数异常偏少（抽取器可能异常）: {total}"
 
 
 # ============================================ explicitness 计算（§3.1 + §4 M4）

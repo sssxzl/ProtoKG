@@ -605,7 +605,8 @@ def test_length_units_and_non_length_units_are_disjoint():
 def test_real_candidates_produce_wellformed_results():
     """★ 真实候选上的**行为良好性**：命中必产出合法形状，绝不抛异常。
 
-    （B-3 的 430 条真实候选是模式表的真实输入面 —— 这里保证「不崩、
+    （B-3 的真实候选（数量随 engineer-13 的粒度修正变动，实测 430 → 421）
+    是模式表的真实输入面 —— 这里保证「不崩、
     不产出畸形结果」，不断言召回率。）
     """
     from core.fused.rfc_extractor import extract_constraint_candidates
