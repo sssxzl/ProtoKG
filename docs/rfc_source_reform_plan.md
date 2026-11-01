@@ -24,7 +24,7 @@ v3 已完成**全文件接口一致性清理**，逐条处置如下：
 | **①** A 阶段文档解析顺序仍写错（**阻塞**）| **成立**。§2.0 的顺序改对了，但 §3.2 伪代码仍是「清洗 → 章节树 → …TOC 过滤」，TOC 行**已经进了章节树**，事后过滤单个窗口无法恢复正确的树。另外 A1.3（章节树）在前、A1.4（标题放宽）在后，**实施依赖也是颠倒的**——章节树建在未放宽的标题正则上，仍只能匹配单词型标题 | §3.2 伪代码改为「清洗 → **TOC 识别与隔离** → **标题识别** → 章节树 → 块解析 → 类型判定」，TOC 行独立存入 `toc_lines` 不参与建树；**A1 任务表重编号**：A1.3 = 标题放宽、A1.4 = 章节树，依赖列同步对齐（A1.5/A1.6 依赖 A1.3+A1.4、A1.7 依赖 A1.4），正文 5 处交叉引用同步修正 |
 | **②** TOC 清除与证据保留矛盾（重要）| **成立**。若 TOC 版 claim 仍进 `all_claims`，只是让「重复 ID 归零」，**知识污染未除** | A0.3 改为「**正文 claim 进正式 Fact；TOC claim 只进审计/诊断信息，不进 `all_claims` 有效证据集合**」，并在验收标准里加「TOC 内容不污染规范证据」 |
 | **③** 质量闸缺可执行前提（重要）| **成立**。普通生产构建（尤其新增协议）**没有人工真值集**，要求每次 build 都算 P/R/F1 会导致新增协议**始终构建失败** | A0.4 **拆成两类**：① **构建质量闸**（schema / 重复 ID / TOC 残留 / 结构完整性）—— **阻断构建**，不依赖真值集；② **离线评测**（P/R/F1 / 层级准确率 / 人工真值）—— **发布准入**，缺真值集时**跳过而非失败** |
-| **④** 新数据模型与旧伪代码不匹配（**阻塞**）| **成立**，且是本次最明显的问题。§3.4 用 `r.confidence` / `r.constraint_kind` / `r.constraint_text` / `r.expectation_class`，§3.6 的 bundle 示例也全是旧字段 | §3.4 全面改用 v2 字段（`r.evidence.explicitness` / `r.validated` / `r.constraint.operator` / `r.constraint.expected_behavior` / `r.evidence.rule_id`）；§3.6 bundle 示例**按 §3.1 两层模型重写**（evidence 层 + constraint 层 + 规则级字段），并补 `bundle_schema_version` 版本化与「空即缺失」契约；R5 风险条目里的 `confidence="explicit"` 同步改为 `evidence.explicitness` |
+| **④** 新数据模型与旧伪代码不匹配（**阻塞**）| **成立**，且是本次最明显的问题。§3.4 用 `r.confidence` / `r.constraint_kind` / `r.constraint_text` / `r.expectation_class`，§3.6 的 bundle 示例也全是旧字段 | §3.4 全面改用 v2 字段（`r.evidence.explicitness` / `r.validated` / `r.constraint.operator` / `r.constraint.expected_behavior` / `r.rule_id`）；§3.6 bundle 示例**按 §3.1 两层模型重写**（evidence 层 + constraint 层 + 规则级字段），并补 `bundle_schema_version` 版本化与「空即缺失」契约；R5 风险条目里的 `confidence="explicit"` 同步改为 `evidence.explicitness` |
 | **⑤** 反馈仍在修改权威规则内容（**阻塞**）| **成立**。`reflow_rules()` 里的 `replace(r, constraint_text=...)` 与 B5「覆盖率只调选择优先级、不改规则内容」**直接冲突**，且会改变规则身份/哈希，把实验反馈写进 RFC 规范事实 | `reflow_rules()` 重写为**纯排序**：读独立反馈表 `feedback[rule_id]["priority_score"]`，**规则本身一字不改**，排序键 `(-priority, rule_id)` 保证确定性 |
 | **⑥** 投票仍有运行级错误（重要）| **成立**。`voting_models = {r.model_id for r in g}` 引用了 `SemanticRule` **并未定义**的 `model_id` | 引入投票输入层包装 `Candidate(rule, model_id, run_id)`——模型身份与 run_id 是**运行时信息**，不属于规范规则；`voting_models = {c.model_id for c in g}` 改为从 Candidate 取 |
 | **⑦** Oracle 判定顺序问题（重要）| **成立**。原顺序 `crash → reset/close → semantic_deviation → unknown timeout` 下，`health=UNKNOWN & trans=TIMEOUT` 会先命中 `semantic_deviation`（因 `proto != expected`）而非 `inconclusive`——而超时原因未知（丢包/负载/静默丢弃/状态不匹配/真死锁），**不能断言语义偏离**。且 `ProcessHealth.EXITED` 不能不加区分当崩溃（目标收到 QUIT 后正常退出也是 EXITED）；`timeout`/`crash` 也不该是普通 RFC 协议响应期望 | `close_loop()` 判定顺序改为「**① UNKNOWN+TIMEOUT → inconclusive（最先）** → ② crash（EXITED 须经 `_is_abnormal_exit` 判别退出码/退出原因/生命周期）→ ③ reset/close → `connection_aborted` → ④ 语义偏离」；bundle 的 `expected_response_classes` **去掉 timeout/crash**（它们属传输轴与进程健康轴） |
@@ -377,8 +377,13 @@ class SpecWindow:
 
 @dataclass(frozen=True)
 class EvidenceAnchor:
-    """证据层：这条规则从哪来。用于溯源、人工复核、投票对齐。"""
-    rule_id: str                        # 全局唯一（不依赖内容哈希）
+    """证据层：这条规则从哪来。用于溯源、人工复核、投票对齐。
+
+    ★ 本层**不含规则身份**（规则身份属规则层，见 `SemanticRule.rule_id`）——
+      本层只有 `evidence_id`：一条规则可有多条证据 → 多条 evidence_id。
+      见 §2.1 审计项 I-1。
+    """
+    evidence_id: str                    # 本条证据自身的唯一 id（多条证据 → 多 id）
     spec_version: str                   # 规范版本，如 "RFC3261"
     section_path: tuple[str, ...]        # ("21", "1.1") 章节路径
     source_anchor: str                  # "file:rfc3261.txt#@10560"
@@ -405,10 +410,16 @@ class ExecutableConstraint:
     sender_role: str                    # 构造约束的发送方："client" | "server"
     receiver_role: str                  # 处理期望的接收方
     # ★ 评审 T2：构造约束与处理期望的 role 分开，不合并成一个 role
+    precondition: Optional[str]         # 前置条件（可为空 = 无前置）
 
 @dataclass(frozen=True)
 class SemanticRule:
-    """完整语义规则 = 证据层 + 可执行层 + 生命周期状态。"""
+    """完整语义规则 = 证据层 + 可执行层 + 生命周期状态 + 规则身份。
+
+    ★ `rule_id` 属**规则层**顶层；`EvidenceAnchor` 内只有 `evidence_id`
+      （一条规则可有多条证据）—— 见 §2.1 审计项 I-1。
+    """
+    rule_id: str                        # 全局唯一，由结构化身份派生（§3.2）
     evidence: EvidenceAnchor
     constraint: ExecutableConstraint
     subject_type: str                   # "method" | "header" | "status" | "message_type"
@@ -417,6 +428,22 @@ class SemanticRule:
     supersedes: tuple[str, ...]         # 被本规则替代的 rule_id
     model_confidence: float | None      # ★ 评审 T6：与 explicitness / 证据有效性**分开记录**
     validated: bool                     # B2 证据区间校验是否通过
+
+@dataclass(frozen=True)
+class KnowledgeCandidate:
+    """知识候选：**不可转换为可执行规则**的内容。
+
+    ★ 这是「不可转换者只作知识候选、不进自动生成链路」的**载体类型**。
+      它**没有** constraint 字段 —— 结构上就装不下 operator/operand。
+      落盘到独立文件 candidates.jsonl，自动生成链路**读不到**它（§3.3 强制机制 3）。
+    """
+    candidate_id: str
+    evidence: EvidenceAnchor
+    subject_type: str
+    subject_name: str
+    raw_text: str                       # 原始自由文本（仅供人工复核/检索）
+    convertible: bool = False           # 恒为 False；显式保留以表达「曾尝试转换」
+    reject_reason: Optional[str] = None # 为何不可转换（可观测性，评审 M4）
 
 # ---------- 字段路径树（任务 C2，供变异引擎使用） ----------
 @dataclass(frozen=True)
@@ -633,13 +660,23 @@ def generate_semantic_violation_seeds(
         if mutated is None: continue                       # 违反后语法不可编码 → 丢弃
 
         # 4) 标注违规点 + 期望响应类别 → 供 oracle 用
-        mutated.violation_of = r.evidence.rule_id      # ★ 问题④/M7：必须用唯一 rule_id
+        mutated.violation_of = r.rule_id                 # ★ 问题④/M7：必须用唯一 rule_id
         mutated.expected_class = r.constraint.expected_behavior
         seeds.append(mutated)
     return seeds
 ```
 
 ### 3.5 反馈闭环（里程碑 C5~C7）
+
+> ★ **编号说明**：本文件里的「C」有**三种**，互不相关，引用时请带前缀以免混淆：
+>  · **oracle-C** = 三轴判定（本节 §3.5；对应 roadmap §5.1 的 C-1~C-7）——
+>    判定顺序（UNKNOWN+TIMEOUT 最先）、EXITED 判别、reset/close 不算 crash 等。
+>  · **convert-C** = 规则可转换性判定（roadmap §3.4 的 C1~C7；`try_convert` 的七步）——
+>    no_span / span_unverified / non_normative_kind / operator_unresolved /
+>    operand_unresolved / field_unbound / expectation_not_in_vocab。
+>  · **milestone-C** = 里程碑 C 的任务号（本文件 §2.0 任务表的 C1~C7：
+>    选协议 / 字段模型 / 编码 / 定向变异 / 三轴 oracle / 独立复现 / 归因记录）。
+> 下文提到「C7 特例」等一律指 **convert-C**；「C5~C7」这类里程碑提法一律指 **milestone-C**。
 
 ```python
 # ---------- 三轴执行结果模型（评审 T4：reset ≠ crash） ----------
@@ -666,7 +703,8 @@ class ProcessHealth(str, Enum):
     UNKNOWN = "unknown"
 
 
-def close_loop(seed: SeedCorpus, result: ExecResult) -> Feedback | None:
+def close_loop(seed: SeedCorpus, result: ExecResult,
+               expected: str | None = None) -> Feedback | None:
     """把执行结果回流成可用的反馈信号。
 
     ★ 已按评审 T4 重写：原写法把 `reset` 与 `crash` 并列判定，这是错的 ——
@@ -675,11 +713,14 @@ def close_loop(seed: SeedCorpus, result: ExecResult) -> Feedback | None:
       timeout 同理：可能来自丢包、负载、静默丢弃、状态不匹配或真死锁。
 
     三轴分离后，**只有独立的进程健康证据**才进 crash 路径。
+
+    ★ `expected` 由**调用方显式传入**；`None` = 「无处理期望」⇒ **跳过**语义偏离判定
+      （**不回退**读 `seed.expected_class` —— 否则该契约会被种子的属性破坏）。
     """
     proto = classify_protocol_outcome(result)   # → ProtocolOutcome
     trans = classify_transport_outcome(result)   # → TransportOutcome
     health = probe_process_health(result)        # → ProcessHealth（canary 探测）
-    expected = seed.expected_class
+    # ★ expected 直接取形参（见签名），不再从 seed 回退读 seed.expected_class。
 
     # ---- ① 进程健康未知 + 传输超时 → **最先判定为不确定** ----
     #   ★ 改进v2 问题⑦：原顺序里 `proto != expected` 在 inconclusive 之前，
@@ -738,11 +779,13 @@ def reflow_rules(rules: list[SemanticRule],
       不写回 SemanticRule。规范事实与实验反馈严格分离（B5 四库分离）。
     """
     def priority(r: SemanticRule) -> float:
-        fb = feedback.get(r.evidence.rule_id) or {}
+        fb = feedback.get(r.rule_id) or {}
         return float(fb.get("priority_score", 0.0))
     # 排序稳定：同优先级保持原顺序（按 rule_id 兜底，保证确定性）
-    return sorted(rules, key=lambda r: (-priority(r), r.evidence.rule_id))
+    return sorted(rules, key=lambda r: (-priority(r), r.rule_id))
 ```
+
+**契约（`close_loop` 的 `expected`）**：`expected` 由**调用方显式传入**，是期望结果的**唯一来源**；`None` 表示「无处理期望」⇒ **跳过**语义偏离判定，只走传输层与进程健康判定（与 **convert-C7** 的特例一致，见 roadmap §3.4：`expected_behavior` 缺失**不阻断**转换，缺处理期望的规则只能用于「构造违规种子」，不能用于「判定 oracle 预期」）。
 
 ### 3.6 与现有代码的接口对接（关键：改造点在哪）
 
@@ -755,7 +798,7 @@ def reflow_rules(rules: list[SemanticRule],
 | 投票层 | 新建 `core/fused/llm_ensemble.py` | 复用 `core/llm.py` 的 `chat_json` |
 | 字段路径树 | 新建 `core/fused/downstream/field_mutation.py` | 复用 traffic 源已抽出的真实字段值（P4 成果）|
 | 变异引擎 | 同上 | 复用 `core/fused/downstream/edge_cover.py` 的 `build_message` |
-| 语义 oracle | 扩展 `scripts/seed_oracle_filter.py` | 复用其现有 SIP 响应码正则 |
+| 语义 oracle | 新建 `core/fused/downstream/response_oracle.py` | 复用其现有 SIP 响应码正则 |
 | bundle 契约 | `core/fused/downstream/rag_seedgen.py:assemble_bundle` | **新增 `semantic_rules` 键**（下游三层的输入）|
 
 **bundle 契约扩展（唯一的破坏性改动）**：

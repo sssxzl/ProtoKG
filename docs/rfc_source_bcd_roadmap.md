@@ -1125,6 +1125,8 @@ derived/exp_semantic/<实验ID>/
 
 ### 5.1　C 阶段：Oracle 判定顺序（改进v2 问题⑦）
 
+> ★ 编号说明：本节的 C-1~C-7 是 **oracle 三轴判定**；§3.4 的 C1~C7 是 **规则可转换性判定**。两套编号互不相关，引用时请写「oracle-C2」「convert-C1」以免混淆。
+
 **当前代码现状**：`scripts/seed_oracle_filter.py`（198 行）是**唯一**的 oracle 候选物，但它**只判响应码**（`_SIP_RESPONSE_RE`，`:44`），**没有进程健康维度、没有传输维度**。评审 T4 已实测确认这一点。
 
 **最小修正清单**：
