@@ -63,7 +63,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
       - name: Install ruff
         run: python -m pip install --upgrade "ruff==0.12.0"
@@ -175,10 +175,18 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
+      # ★ 依赖版本**不要钉死到具体小版本**：
+      #   首版写死 `numpy==2.5.4`，而 numpy 2.5.0~2.5.4 都要求 Python >= 3.12
+      #   ⇒ 在 python-version=3.11 的 runner 上 pip 直接报
+      #     "No matching distribution found for numpy==2.5.4" ⇒ **两个 pytest job 全红**
+      #     （实测：2026-11-01 首次真机运行即因此失败，日志见 CI run 41355877501）
+      #   ⇒ 改用 `numpy>=2.1`（下界随 Python 版本自动选可用的最新版）
+      #   ⇒ ★ 且 Python 版本必须与**基线采集时一致**（本仓基线在 Python 3.13.9 采集）
+      #     ⇒ 统一用 3.13，否则失败集合会随解释器版本漂移 ⇒ 闸门误报。
       - name: Install test dependencies
-        run: python -m pip install --upgrade "pytest==8.4.2" "numpy==2.5.4"
+        run: python -m pip install --upgrade "pytest==8.4.2" "numpy>=2.1"
 
       # ★ 跑护栏脚本本体。它自己负责：解释器回退、mtime 快照、summary 行断言、
       #   FAILED/ERROR 抽取口径自检、与基线逐行比对、产物落盘。
@@ -251,10 +259,18 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
+      # ★ 依赖版本**不要钉死到具体小版本**：
+      #   首版写死 `numpy==2.5.4`，而 numpy 2.5.0~2.5.4 都要求 Python >= 3.12
+      #   ⇒ 在 python-version=3.11 的 runner 上 pip 直接报
+      #     "No matching distribution found for numpy==2.5.4" ⇒ **两个 pytest job 全红**
+      #     （实测：2026-11-01 首次真机运行即因此失败，日志见 CI run 41355877501）
+      #   ⇒ 改用 `numpy>=2.1`（下界随 Python 版本自动选可用的最新版）
+      #   ⇒ ★ 且 Python 版本必须与**基线采集时一致**（本仓基线在 Python 3.13.9 采集）
+      #     ⇒ 统一用 3.13，否则失败集合会随解释器版本漂移 ⇒ 闸门误报。
       - name: Install test dependencies
-        run: python -m pip install --upgrade "pytest==8.4.2" "numpy==2.5.4"
+        run: python -m pip install --upgrade "pytest==8.4.2" "numpy>=2.1"
 
       - name: Run guarded pytest (drift gate)
         run: |
@@ -299,7 +315,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
       # ★ 不装任何第三方包 —— corpus_gate 只依赖标准库 + 本仓 core/。
       #   这也是「它能被 CI 执行」的证明（无需 pip install）。
