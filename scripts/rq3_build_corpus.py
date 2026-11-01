@@ -12,18 +12,23 @@
 用法:
     E:/app/Anaconda3/python.exe scripts/rq3_build_corpus.py
     E:/app/Anaconda3/python.exe scripts/rq3_build_corpus.py --check-only
+    E:/app/Anaconda3/python.exe scripts/rq3_build_corpus.py --continue-on-error
+
+退出码:
+    0 = 全部通过（语料已发布）
+    4 = 某组生成失败且**已中止**（默认行为：首组失败即中止，其余组不重建）
+    5 = 一致性断言失败（不发布语料）
+    6 = 某组生成失败但其余组已构建完成（仅 `--continue-on-error`；不发布语料）
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
-import json
 import shutil
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -100,6 +105,72 @@ def _run_seedgen(group: str, out_dir: Path, manifest: bool = True) -> int:
         print(proc.stdout or "")
         print(proc.stderr or "", file=sys.stderr)
     return proc.returncode
+
+
+def _snapshot_seed_dirs(groups_dir: dict) -> dict:
+    """快照各组语料目录 `derived/rq3/<g>/seeds` 的 mtime（构建前/后各取一次）。
+
+    快照含两层，缺一不可：
+      · **目录 mtime** —— 增删文件即变（QA 复扫用的就是这一层）；
+      · **文件 mtime + size** —— 原地覆写同名种子时目录 mtime **不会**变，
+        只有文件级 mtime 能反映「产物被重写」。
+
+    Args:
+        groups_dir: `{组名: 语料目录}`。
+
+    Returns:
+        `{组名: {"dir_mtime_ns": int|None, "files": {文件名: [mtime_ns, size]}}}`。
+    """
+    snap: dict = {}
+    for g, d in groups_dir.items():
+        entry: dict = {"dir_mtime_ns": None, "files": {}}
+        try:
+            entry["dir_mtime_ns"] = Path(d).stat().st_mtime_ns
+        except OSError:
+            entry["dir_mtime_ns"] = None
+        for f in sorted(Path(d).glob("*.raw")):
+            try:
+                st = f.stat()
+            except OSError:
+                continue
+            entry["files"][f.name] = [st.st_mtime_ns, st.st_size]
+        snap[g] = entry
+    return snap
+
+
+def _changed_seed_groups(before: dict, after: dict) -> list[str]:
+    """比对两份 mtime 快照，返回语料目录发生变化的组名（按组序）。
+
+    Args:
+        before: 构建前的快照。
+        after: 构建后的快照。
+
+    Returns:
+        发生变化的组名列表（未变化的组不在其中）。
+    """
+    return [g for g in GROUPS if before.get(g) != after.get(g)]
+
+
+def _report_rebuild_signal(before: dict, after: dict) -> list[str]:
+    """护栏：比对构建前后的 mtime 快照，打印「语料已被重建」信号。
+
+    ★ 信号走 **stderr** 而非 stdout：默认路径（不加 `--continue-on-error`）的
+    stdout 必须逐字节不变（既有调用方可能拿 stdout 做黄金比对），stderr 只
+    承载诊断信息，不参与 stdout 比对。
+
+    Args:
+        before: 构建前的快照。
+        after: 构建后的快照。
+
+    Returns:
+        发生变化的组名列表（无变化时为空列表）。
+    """
+    changed = _changed_seed_groups(before, after)
+    if changed:
+        print("!! 语料已被重建: 组 " + ", ".join(changed) +
+              " 的 seeds 目录 mtime 发生变化（磁盘产物已更新，"
+              "此前基于旧语料的分析结论需重新评估）", file=sys.stderr)
+    return changed
 
 
 def _generate_dicts(cfg: dict) -> dict:
@@ -299,14 +370,18 @@ def _assert_corpus(cfg: dict, groups: dict, dict_files: dict) -> Assertions:
     return a
 
 
-def build(check_only: bool = False) -> int:
+def build(check_only: bool = False, continue_on_error: bool = False) -> int:
     """构建四组语料 + 字典 + 断言 + groups.json。
 
     Args:
         check_only: True 时只跑断言与报告，不重新生成语料。
+        continue_on_error: True 时，某组生成失败**不中止**，继续构建其余组；
+            全部组跑完后若存在失败组则返回非 0 并列出失败组清单。
+            默认 False —— 历史行为：首组失败即中止（退出码 4），其余组不重建。
 
     Returns:
-        0 = 全部通过；非 0 = 有断言失败或生成失败。
+        0 = 全部通过；4 = 生成失败且已中止；5 = 断言失败；
+        6 = 有组生成失败但其余组已构建完成（不发布语料）。
     """
     cfg = C.load_config()
     print(f"配置: protocol={cfg['protocol']} image={cfg['image']}")
@@ -317,14 +392,26 @@ def build(check_only: bool = False) -> int:
         d = C.group_seed_dir(g, create=True)
         groups_dir[g] = d
 
+    failed_groups: list[str] = []
     if not check_only:
         # 1) 逐组生成（每组一次 seedgen 调用，保证组间互不影响）
+        #    护栏：构建前记录各组 seeds 目录的 mtime 快照，构建后比对 ——
+        #    快照变了即说明本次构建改动了产物目录（提示后续流程「语料已重建」）。
+        snapshot_before = _snapshot_seed_dirs(groups_dir)
         for g in GROUPS:
             print(f"\n=== 生成组 {g}（{cfg['groups'][g]['label']}）===")
             rc = _run_seedgen(g, groups_dir[g])
             if rc != 0:
                 print(f"!! 组 {g} 生成失败（退出码 {rc}）", file=sys.stderr)
-                return 4
+                if not continue_on_error:
+                    # 默认行为：首组失败即中止（退出码 4），其余组不重建。
+                    _report_rebuild_signal(snapshot_before,
+                                           _snapshot_seed_dirs(groups_dir))
+                    return 4
+                # --continue-on-error：记录失败组并**继续**构建其余组 ——
+                # 否则本组失败会让后续组永远得不到重建（磁盘上留着旧污染产物）。
+                failed_groups.append(g)
+                continue
             # seedgen 会把字典写在语料目录里；统一挪到 derived/rq3/dict/
             stray = groups_dir[g] / f"{cfg['protocol']}.dict"
             if stray.exists():
@@ -335,6 +422,17 @@ def build(check_only: bool = False) -> int:
             m_dst = C.group_manifest_path(g)
             if m_src.exists():
                 shutil.move(str(m_src), str(m_dst))
+        # 护栏：比对构建前后的 mtime 快照
+        _report_rebuild_signal(snapshot_before, _snapshot_seed_dirs(groups_dir))
+        if failed_groups:
+            # 有组失败 ⇒ 语料不完整 ⇒ 不发布（与断言失败同款纪律：不出 groups.json）
+            print(f"!! {len(failed_groups)} 组生成失败: {', '.join(failed_groups)}",
+                  file=sys.stderr)
+            for g in failed_groups:
+                print(f"   FAIL 组 {g} 生成失败（该组语料不可用）", file=sys.stderr)
+            print("!! 语料不完整 → 不发布 groups.json（禁止用于实验）",
+                  file=sys.stderr)
+            return 6
 
     # 2) 字典生成 + 冻结
     print("\n=== 生成冻结字典 ===")
@@ -410,8 +508,13 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="RQ3 四组语料组装 + 一致性断言")
     ap.add_argument("--check-only", action="store_true",
                     help="只跑断言与报告，不重新生成语料")
+    ap.add_argument("--continue-on-error", action="store_true",
+                    help="某组生成失败时不中止，继续构建其余组；"
+                         "全部组跑完后若有失败组则返回非 0 并列出失败组"
+                         "（默认：首组失败即中止，返回 4）")
     args = ap.parse_args()
-    return build(check_only=args.check_only)
+    return build(check_only=args.check_only,
+                 continue_on_error=args.continue_on_error)
 
 
 if __name__ == "__main__":
