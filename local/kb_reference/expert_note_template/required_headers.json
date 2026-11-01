@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "rules": {},
+  "_comment": "rules dict: key=method.name (must exist in methods.json), value=list[header_name]. Each method declares which headers are required."
+}

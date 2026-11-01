@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-013",
+  "avd_id": "AVD-2025-65408",
+  "scope": "insufficient_source",
+  "confidence": "n/a",
+  "title_avd": "LIVE555 Streaming Media 安全漏洞(CVE-2025-65408)",
+  "description_raw": "LIVE555 Streaming Media 是美国 LIVE555 公司的一个应用软件。一个基于标准的 RTP/RTCP/RTSP/SIP 多媒体流的源代码库,适用于嵌入式和/或低成本流应用。LIVE555 Streaming Media v2018.09.02 版本存在安全漏洞,该漏洞源于 ADTSAudioFileServerMediaSubsession::createNewRTPSink 函数存在空指针取消引用,可能导致拒绝服务攻击。",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": "CWE-476 (空指针解引用)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

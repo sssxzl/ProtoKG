@@ -1,0 +1,60 @@
+# Layer 2 五源知识抽取方法借鉴 —— 参考最新研究进展
+
+> 日期：2026-10-08。为 Layer 2 五源（rfc / expert_note / vuln / traffic / source）
+> 单源抽取方法提供「借鉴最新研究」的方法论参考。本文档是方法设计真源，
+> 具体落地在各 Step（C3b/C3c 及后续源）逐个实施。
+
+---
+
+## 一、参考的最新研究进展（2025 为主）
+
+| 工作 | 出处 | 方法核心 | 与本项目的关系 |
+|---|---|---|---|
+| **FlowFSM** | arXiv 2507.11222 (2025) | 从 RFC 抽 FSM：prompt chaining + CoT + agent 链，逐步分解「状态→转移→rule-book」 | 直接对应 **rfc 源**（RTSP 即其评估协议之一） |
+| **SpecGPT** | arXiv 2510.14348 (2025) | 从 3GPP 规范抽状态机：领域知识提示 + CoT + **多模型 ensemble 投票**降低幻觉 | 对应 **rfc 源**（大规模规范） |
+| **ProtocolGPT** | IWQoS 2025 / arXiv 2405.00393 | 从**协议实现源码**推断 FSM：RAG（embedding 过滤 FSM 相关代码 + 向量检索）+ CoT；**RTSP 是其 6 个评估协议之一** | 直接对应 **source 源**（live555 源码） |
+| **LLM-Boofuzz** | Electronics 2025 | 用 LLM **解析真实流量**提取协议信息（字段含义/交互逻辑/状态转移），再生成 fuzz 脚本 | 对应 **traffic 源** |
+| **PromeFuzz** | ACM CCS 2025（中科院软件所） | 知识驱动：代码元数据 + API 文档 + 调用信息 → **结构化知识库** → RAG 推理 | 印证 v2 中枢「结构化知识库 + RAG」的定位 |
+| **Semantic-Aware Fuzzing** | arXiv 2509.19533 (2025) | reasoning LLM 做语义感知变异（理解字段依赖/协议语义） | 对应后续 seedgen 阶段 |
+
+---
+
+## 二、可借鉴的核心方法论（提炼）
+
+1. **RAG 检索增强**：原始语料（RFC 全文/源码/流量）太大，先用 embedding 检索出相关片段再喂 LLM，克服上下文限制、抑制幻觉。
+2. **Prompt chaining + CoT**：把「抽取知识」拆成多步（先定位对象 → 再抽字段/语义 → 再判规范等级），逐步推理，每步输出可审计。
+3. **Ensemble 集成**：对同一输入多次采样 / 多模型投票，取一致性结果，降低单次幻觉。
+4. **知识结构化**：抽取结果组织成结构化、可检索的知识库（这正是 v2 中枢 + fail-closed 的定位）。
+
+---
+
+## 三、五源方法映射（借鉴方案）
+
+| 源 | 语料形态 | 借鉴的方法 | 落地形态（rule + LLM 混合） |
+|---|---|---|---|
+| **rfc** | 半结构化规范文本 | FlowFSM / SpecGPT：分段 + prompt chaining（语法→语义→规范等级）+ CoT + ensemble | rule 解析固定格式（如 transition 的 key=value）；field/outcome 的语义抽取走 LLM chaining |
+| **expert_note** | 已结构化专家条目 | 结构化 schema + LLM 语义归一化 | 多为确定性映射；LLM 做跨条目语义归一/去歧义 |
+| **vuln** | CVE 描述（半结构化） | LLM 结构化抽取：受影响组件 / 触发条件 / 后果 / 关联状态 | rule 抽固定字段；LLM 抽「后果语义」归入 security_property |
+| **traffic** | pcap / 消息流（非结构化） | LLM-Boofuzz：LLM 解析流量抽字段含义 + 状态转移 | 已有统计型 PRE（字段熵/边界）；LLM 增强字段语义标注 |
+| **source** | 协议实现源码（C++，如 live555） | ProtocolGPT：RAG（embedding 过滤协议相关代码 + 向量检索）+ CoT 推断状态机/消息类型 | 已有静态分析入口；LLM 侧用 RAG 推断状态机（RTSP 是其验证协议） |
+
+---
+
+## 四、与当前实现的差距 + 落地路径
+
+**当前状态**：norm 抽取已用 `rule_based_5_heuristic + llm` 混合（norms.jsonl 的 `extraction_method` 字段可见）。
+**借鉴后要增强的**：
+
+1. **LLM 侧加 prompt chaining + CoT**：现在 LLM 抽取是一次性 prompt；改为多步链（定位→抽字段→判等级），每步落结构化中间产物。
+2. **Ensemble**：关键语义字段（如 field 的「规范等级」）多次采样投票，减少幻觉。
+3. **source 源加 RAG**：live555 源码大，先用 embedding 过滤 FSM 相关代码再喂 LLM（ProtocolGPT 已验证 RTSP 场景 90%+ 精度）。
+4. **traffic 源 LLM 字段语义标注**：统计 PRE 负责字段边界，LLM 负责字段「含义」标注。
+
+**落地节奏**（与 roadmap 对齐，不改变 C3b/C3c 顺序）：
+- C3b（rfc field）/ C3c（rfc outcome）：rule 解析确定性部分 + LLM chaining 补语义，落 definition/syntax aspect。
+- 后续各源：source 源上 RAG、traffic 源上 LLM 语义标注、vuln 源上结构化后果抽取。
+- LLM 增强部分一律走 `-m llm` 标记，不进常规 pytest（需 DEEPSEEK_API_KEY）。
+
+---
+
+*本文件是方法层参考，具体实现细节在各 Step 的 audit 中记录。*

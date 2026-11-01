@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-014",
+  "avd_id": "AVD-2017-11633",
+  "scope": "not_rtsp_client_side",
+  "confidence": "n/a",
+  "title_avd": "360 Wireless IP Camera 信息泄露漏洞",
+  "description_raw": "360 Wireless IP Camera 是中国奇虎 360(Qihu 360)公司的一款网络摄像机产品。360 Wireless IP Camera 中存在安全漏洞。远程攻击者可通过连接 TCP 9527 端口并读取 InsertConnect 字段利用该漏洞获取 RTSP 凭证。",
+  "risk_level_avd": "(AVD 标签 NVD,硬件设备类)",
+  "cwe_avd": "NVD-CWE-noinfo",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

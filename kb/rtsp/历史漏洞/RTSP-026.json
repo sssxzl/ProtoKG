@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-026",
+  "avd_id": "AVD-2008-0296",
+  "scope": "not_rtsp_protocol",
+  "confidence": "n/a",
+  "title_avd": "vlc_media_player 缓冲区溢出拒绝服务代码执行漏洞",
+  "description_raw": "Windows 上的 VideoLAN VLC Media Player 0.8.6d 及更低版本中的 libaccess_realrtsp 插件中基于堆的缓冲区溢出可能使远程 RTSP 服务器导致拒绝服务(应用程序崩溃)或通过长字符串执行任意代码。",
+  "risk_level_avd": "低危",
+  "cwe_avd": "CWE-119 (内存缓冲区边界内操作的限制不恰当)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

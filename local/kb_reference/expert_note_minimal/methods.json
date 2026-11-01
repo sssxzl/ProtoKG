@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "methods": [
+    {"name": "PING", "type": "request", "state_changing": false},
+    {"name": "RESET", "type": "request", "state_changing": true}
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "case_id": "RTSP-047",
+  "avd_id": "CVE-2025-65406",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Live555 MatroskaFile::createRTPSinkForTrackNumber 堆溢出(CVE-2025-65406)",
+  "description_raw": "Live555 2018.09.02 版本的 MatroskaFile::createRTPSinkForTrackNumber 函数存在堆溢出,攻击者提供特制 MKV 文件可触发拒绝服务。",
+  "risk_level_avd": "中危",
+  "cwe_avd": "CWE-122 (堆缓冲区溢出)",
+  "trigger": {
+    "method": {
+      "value": [
+        "SETUP"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": [
+        "track"
+      ],
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "Matroska 流 SETUP 触发 createRTPSinkForTrackNumber 堆溢出",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "CVE 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

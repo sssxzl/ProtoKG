@@ -1,0 +1,49 @@
+{
+  "case_id": "RTSP-001",
+  "avd_id": "AVD-2021-39283",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "Live555 安全漏洞",
+  "description_raw": "Live555 是一个为流媒体提供解决方案的跨平台的 C++ 开源项目,它实现了对标准流媒体传输协议如 RTP/RTCP、RTSP、SIP 等的支持。Live555 存在安全漏洞,该漏洞源于 liveMedia/FramedSource.cpp 允许断言失败和应用程序通过多个 SETUP 和 PLAY 命令退出。",
+  "risk_level_avd": "中危",
+  "cwe_avd": "CWE-617 (可达断言)",
+  "trigger": {
+    "method": {
+      "value": [
+        "SETUP",
+        "PLAY"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": "多个 SETUP 和 PLAY 命令",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "missing",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-031",
+  "avd_id": "AVD-2011-3318",
+  "scope": "insufficient_source",
+  "confidence": "n/a",
+  "title_avd": "Cisco Video Surveillance Software up to 2.3.0 拒绝服务漏洞",
+  "description_raw": "Cisco Video Surveillance 是一款思科公司开发的视频监控应用解决方案。Cisco Video Surveillance IP Cameras 2421、2500 series 和 2600 系列设备存在安全漏洞,允许未验证远程攻击者向受影响设备发送 RTSP TCP 报文,使摄像头停止发送视频流,后续可导致重启。",
+  "risk_level_avd": "(AVD 标签 NVD,硬件设备类)",
+  "cwe_avd": "CWE-399 (资源管理错误)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

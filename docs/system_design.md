@@ -1,0 +1,182 @@
+# RQ3 种子聚焦 —— 系统设计（摘要）
+
+> 完整版见 **[`local/RQ3_技术方案_20261024.md`](../local/RQ3_技术方案_20261024.md)**（含全部实测依据、任务分解、风险对策）。
+> 本文件是按架构师输出规范整理的**设计摘要**，图表为独立可渲染文件。
+> **版本 v2（2026-10-24 晚）**：并入主理人 4 条补充意见 + 5 处新实测修正（血缘结构、线格式、崩溃数、磁盘口径、字典 token 数）。**v2 推翻了 v1 的两个关键结论**，见 §5。
+
+---
+
+## 1. 实现方案
+
+### 1.1 核心技术难点与选型
+
+| 难点 | 方案 | 依据 |
+|---|---|---|
+| ① 四组（A/B/C/D）需由同一份语料表达「层 / 顺序 / 字典」三个维度 | `seedgen.py` 新增 `--focus-group {A,B,C,D}` 单一入口 + 底层原子开关，**互斥校验**，默认行为逐字节不变 | 代码事实 + 本机复跑 |
+| ② 定向字典缺触发 token，H3 机制链断在最后一环 | 新增 `generate_targeted_dict()`，**两档**：档 1 = **122 token**（严格超集 base24，6/6 关键）、档 2 = **41 token**（关键密度 0.146）；数据源用 `extract_session_candidates()`（协议无关）+ profile 的 `version_string`/`transport_params` | 实测：base24 已含 `000022B8`、102 缺 7 个基础 token |
+| ③ ChatAFL 启动期 LLM 增强污染语料（无 getenv 开关） | `docker run --network none` + **四层运行时断言** | 实测：chatafl/aflnet 均 0 增强、fuzzing 正常 |
+| ④ 排序机制依赖 AFL `scandir(alphasort)` → 文件名前缀宽度 | `plan_seed_filenames()` 宽度自适应（>99 条自动加宽），n≤99 时与历史逐字节一致 | 代码事实 `afl-fuzz.c:2287/2814` |
+| ⑤ 早期窗口指标需 T+1h/T+2h 队列快照 | 独立快照器，**按各容器 `fuzzer_stats.start_time` 为 T0** | PM §1.4.2 L1–L3 |
+| ⑥ `docx` 表格定位 | **运行时三重定位**（index + 表头签名 + 前置段落） | 实测：`table_id` 三次会话各不相同 |
+| ⑦ ★ **变异命中率归因**（v2 推翻 v1） | **按命名形式**分类（`orig:`=初始 / `src:`=派生）+ **沿 `src:` 链上溯**（splice 多父 / 防环 / 深度上限 64）+ **格式自适应切分**（纯文本 vs 4 字节长度前缀帧）+ **宽松匹配**（去噪 + 容忍字段名被变异） | 实测：3 容器 `orig:` 数 == 初始种子数（50/7/1344）；链深 max 18、**unresolved=0**；严格规则在真实崩溃上命中 0 |
+| ⑧ ★ **主判定口径**（主理人 P0 要求） | **配对 win rate（wins/n）+ 配对差值 mean±std + `consistent_sign` + 离群稳健性**；`edges/paths` 降为内部诊断；`n_edges` 必须带 ±std 并注明不稳健 | 主理人自我更正 + 本方案复算确认 |
+| ⑨ ★ **磁盘口径**（v2 澄清） | `du -sh`（无权限）= 17 M 是**假象**；`sudo du` = 3.0 G、`docker exec du` = **2630 MB** → **磁盘仍是约束**，单波 8 GB、两波不可叠加 | 三口径交叉验证 |
+| ⑩ ★ **RQ1.2 崩溃非全 0**（v2 修正） | `seed_reuse_aflnet_r1` 有 **7 个 unique_crashes**（ASAN = heap-use-after-free，oracle 可复现，源于基线种子）→ **RQ1.2 有「基线侧发现崩溃」的反向结果，必须诚实披露** | `fuzzer_stats` + ASAN 日志 + 重放 + 血缘链 |
+
+**框架与库**：
+- Python 3（`E:/app/Anaconda3/python.exe`，**含 pytest**；managed python 无 pytest，禁用）
+- `pytest` 回归测试（`tests/fused/test_rq3_*.py`）
+- `hashlib`（MD5 归因主键）、`csv`（CSV/TSV）、`statistics`（mean/std ddof=1）
+- `python-docx`（回填校验 + 表格定位）
+- `edsdk.py`（`doc_set_table_cells` / `doc_list_tables` / `open_file` / `save_file`）
+- Shell（Bash，`set -euo pipefail`）— VM 编排 / 采集 / 快照
+- Docker（`rq2-live555:latest`，`--network none --cpus=1 --memory=1.5g`）
+
+### 1.2 架构模式
+
+```
+数据流式管道 + 分层职责分离：
+
+  [配置层]  rq3_config.json（唯一配置源）+ rq3_common.py（唯一命名/表头来源）
+      ↓
+  [生成层]  seedgen.py（CLI/编排） → boundary_probe（字典/③层） → selector（打分/分层）
+            → rag_seedgen（落盘/命名） → seed_manifest（溯源）
+      ↓
+  [组装层]  rq3_build_corpus.py（四组语料 + 字典冻结 + 不变量断言 A1–A10）
+      ↓
+  [执行层]  rq3_preflight.sh（H1–H12） → rq3_orchestrate.sh（20 容器 --network none）
+            → rq3_snapshot.sh（T+1h/T+2h）
+      ↓
+  [采集层]  rq3_collect_live555.sh（幂等；plot_data 全时序 + queue 索引 + 增强审计）
+      ↓
+  [分析层]  rq3_mhr_patterns（判定） → rq3_metrics（M1–M9 + MHR 三口径） → rq3_stats
+      ↓
+  [出稿层]  _fill_rq3_docx.py（运行时三重定位 → 幂等回填 → 回读校验）
+```
+
+**关键设计原则**
+1. **单一事实源**：配置只在 `rq3_config.json`；命名/表头只在 `rq3_common.py`；字典权威在 `DICT_FROZEN.json`。
+2. **不可变量前置断言**：语料（10 条）、字典（MD5/token）、端口、磁盘、容器名 → 全部在启动前断言。
+3. **幂等**：所有采集/回填产物可重复生成得到最终值。
+4. **可审计**：增强审计 CSV、字典冻结 JSON、manifest、验证报告随论文归档。
+
+---
+
+## 2. 文件清单
+
+见主文档 §11.1（目录布局）与 §8（每个任务的文件级清单）。核心新增：
+
+| 文件 | 职责 |
+|---|---|
+| `core/fused/downstream/seed_manifest.py` | manifest 构建/读写、层判定、模式标签 |
+| `core/fused/downstream/boundary_probe.py`（改） | `generate_targeted_dict()`（123/32 token） |
+| `core/fused/downstream/rag_seedgen.py`（改） | `plan_seed_filenames()`（宽度自适应） |
+| `core/fused/downstream/selector.py`（改） | `seed_layer()` |
+| `scripts/seedgen.py`（改） | 新 CLI + `FOCUS_GROUP_CONFIG` |
+| `scripts/rq3_build_corpus.py` | 四组组装 + 不变量断言 A1–A10 |
+| `scripts/rq3_mhr_patterns.py` | P1–P4 判定 + 血缘解析 |
+| `scripts/rq3_metrics.py` | M1–M9 + MHR 三口径 |
+| `scripts/rq3_stats.py` | KW / M-W 精确 / Holm / Cliff's δ / bootstrap |
+| `local/rq3_common.py` / `local/rq3_config.json` | 共享常量与唯一配置 |
+| `local/rq3_preflight.sh` / `rq3_orchestrate.sh` / `rq3_snapshot.sh` / `rq3_collect_live555.sh` | VM 侧编排与采集 |
+| `local/_fill_rq3_docx.py` | 幂等回填表 18 + 表注 |
+| `local/RQ1_2_实验记录_污染说明.md` | RQ1.2 污染的诚实处置记录 |
+
+---
+
+## 3. 数据结构与接口
+
+见 **[`docs/class-diagram.mermaid`](class-diagram.mermaid)**（22 个类，含属性与方法、关系标注）。
+
+**最核心的两个数据结构**
+
+```python
+# manifest 条目 —— 变异命中率归因与论文可溯源的数据基础
+{
+  "index": 1, "rank": 1,                    # rank = 组内排序位置（排序变量本身）
+  "filename": "01_DESCRIBE+SETUP.raw",
+  "md5": "88a9e4cb...",                     # ★ 跨组归因主键（A/B/C/D 同种子 md5 相同）
+  "bytes": 207,
+  "layer": "L3", "layer_name": "vuln_boundary",
+  "generated_by": "rule-based:boundary-probe",
+  "score": 100,                             # 漏洞接近度（排序依据）
+  "description": "boundary-candidate interleave_seq legal(不切换)",
+  "legal_illegal": "legal",                 # ★ 先判 illegal（"illegal" 含子串 "legal"）
+  "pattern_tags": ["P3"],                   # 该种子瞄准的漏洞模式
+  "stream": "matroskaFileTest", "methods": ["DESCRIBE","SETUP"]
+}
+
+# 队列条目索引 —— 变异命中率三口径的共同输入
+{
+  "container": "rq3_C_chatafl_r1", "group": "C", "fuzzer": "chatafl", "rep": 1,
+  "snapshot_tag": "T3600s",
+  "entry_name": "id:000050,orig:01_DESCRIBE+SETUP.raw",
+  "entry_md5": "…",
+  "root_seed": "01_DESCRIBE+SETUP.raw",     # ★ 扁平血缘：直接指向根种子（实测 98 字符未截断）
+  "kind": "derived",                        # initial_copy（MD5 ∈ seed_md5_set）| derived
+  "hit_P1": 0, "hit_P2": 0, "hit_P3": 1, "hit_P4": 0,
+  "layer": "L3"
+}
+```
+
+**层 → `generated_by` 映射**
+
+| `layer` | `generated_by` | 层语义 |
+|---|---|---|
+| `L1` | `rule-based:edge-cover` | ① 结构覆盖 |
+| `L2` | `rule-based:generic-danger` | ② 通用危险 |
+| `L3` | `rule-based:boundary-probe*`（含 `-vuln-field`/`-semantic`/`-constraint`） | ③ 漏洞边界候选 |
+| `L4` | `rule-based:canonical-session` | ④ 黄金路径（多流） |
+
+---
+
+## 4. 程序调用流程
+
+见 **[`docs/sequence-diagram.mermaid`](sequence-diagram.mermaid)**（七阶段：语料生成 → 组装+干跑 → 预检 → 正式运行 → 采集 → 指标统计 → 回填）。
+
+**关键调用序列（4 条主线）**
+
+| # | 主线 | 核心调用链 |
+|---|---|---|
+| 1 | 语料生成 | `seedgen.main` → `edge_cover` / `generic_danger(minimal=False)` / `derive_vuln_pattern_candidates` / `_build_canonical_seed` → `dedupe_seeds` → `_apply_url_placeholders` → [`prioritize_seeds`（仅 C/D）] → `plan_seed_filenames` → `write_seeds` → `build_manifest` → `generate_targeted_dict`（仅 C） |
+| 2 | 容器启动 | `orchestrator.launch` → `docker run --network none` → `cp -r /seeds_ro /seeds_work` → `afl-fuzz -i /seeds_work -x /dict_rw/<组字典> -o /out -N tcp://127.0.0.1/8560` → watcher（`fuzzer_stats` 出现 → T0 → sleep DUR → pkill）→ **断言 A/B** |
+| 3 | 指标计算 | `collector`（plot_data 首/末行 + fuzzer_stats + queue 索引）→ `mhr.classify`（MD5）→ `mhr.match_P1_P4`（内容）→ `mhr.parse_root_seed`（血缘）→ `metrics.compute_MHR_A/B/C` + `compute_early_metrics` → `stats.mannwhitney_exact` / `holm_correction` |
+| 4 | docx 回填 | `docx.open_file` → `doc_list_tables` → `locate_rq3_table`（index 18 + 表头 + 前置段落）→ `doc_set_table_cells`（条件写）→ `save_file` → `close_file` → python-docx 回读校验 → `upsert_note`（幂等） |
+
+---
+
+## 5. 不明确事项与本方案假设
+
+| # | 不明确点 | 本方案的假设 | 待确认 |
+|---|---|---|---|
+| 1 | 定向字典中 4 个 RTSP 固定串如何保持协议无关 | 采用**方案 α**：`profile.json` 增 `boundary_probe.{version_string, transport_params, transport_param_values, session_header}`（**`RTSP/1.0` 无法从 bundle 通用推导 → 必须由 profile 提供**），并从 bundle 校验参数名存在性做双保险 | #4 |
+| 2 | D 组数据在 docx 的落点 | 默认写**表注段落 + `appendix_r3_1.md`**；新建附录表超出 `doc_set_table_cells` 能力 | #7 |
+| 3 | 是否补跑独立的「关掉增强的 RQ1.2 复验组」 | **不补跑** —— D 组配置已等价于干净复验组（§9.1.3.6 给出资源冲突量化） | #9 |
+| 4 | 是否做 A′ 补齐组 | **不做**（PM 方案②）；但实现规格已写好，编排侧支持零成本 | #8 |
+| 5 | Wave 2（aflnet）是否执行 | 待拍板；须在 Wave 1 归档删除后 | #2 |
+| 6 | `chat_times` 恒为 0 是否可接受 | 可接受 —— runtime stall-chat 属**第二个不可控变量**，关闭是期望行为；但须在论文声明 RQ3 与 RQ1.2 的 chatafl 行不可直接横向比较 | — |
+| 7 | 磁盘清理是否可删除非本实验镜像 | 默认**不删**；如需删除须逐个确认 | #11 |
+| 8 | ★ **RQ1.2 的 7 个基线侧崩溃如何进论文** | 如实呈现 + 表注说明「唯一观测到可复现崩溃的是 seed_reuse+AFLNet 组合；不解读为 ProtoRAG 的优势，也不解读为 ProtoRAG 无效」 | — |
+
+---
+
+## 6. ★ v2/v3 推翻的 v1 结论（供评审重点核对）
+
+| # | v1 的结论 | 实测结论 | 影响的章节 |
+|---|---|---|---|
+| **1** | 「AFL 队列血缘是**扁平**的，`orig:` 直指根种子，**无需递归**」 | ★ **错**。AFL 队列有**两种命名形式**：`orig:<种子名>` **仅用于初始队列条目**（数量 == 初始种子数，实测 3/3 精确相等：50/7/1344）；**派生条目用 `src:%06u[,+%06u],op:*,rep:*`**（AFLNet `describe_op()`，`afl-fuzz.c:3907-3911`）→ **必须沿 `src:` 链上溯**（实测 max 深度 18 / 中位 2 / **unresolved=0** / splice 多父 ~66%） | §5.2.2、§5.3.3 |
+| **2** | 「`.raw` 按 `\r\n\r\n` 切分」 | ★ **不完整**。种子文件与 `/out/queue/*` = 纯文本；**`/out/replayable-crashes/*` = 4 字节长度前缀帧**（`crash_0.raw` 15441 B → 13 帧**精确消费**）→ oracle 与 MHR_A 必须**格式自适应** | §4.1.1、§5.3.0 |
+| **3**（v3） | — | ★★★ **P0 缺陷（已修复）**：`MHR_C` 崩溃归因**用错 id 空间** —— 崩溃名的 `id:` 是**崩溃目录内**编号，非队列 id；旧实现拿它查队列映射 → **归因到错误种子**。实测 C 组队列 id 0..6 全是 L3 → 任何 7 个崩溃都会被虚报成「100% 来自③层」。**已修复**（改为沿 `src:` 父上溯）+ 10 个回归用例锁定 | §5.3.4 |
+
+**由发现 1 派生的两个正向收益**
+
+| # | 收益 | 说明 |
+|---|---|---|
+| **R1** | ★ **更强的污染探针** | `count(orig: 形式条目) == 初始种子数`（实测 3/3 成立）→ 比 `grep orig:enriched` 更强：连「污染后恰好叫原名」也能抓到 → 已加入断言 A 与 V11 |
+| **R2** | ★ **MHR_B/C 无需降级口径** | 链上溯实测 **unresolved = 0** → v1 预留的「近似口径」分支不会触发 |
+
+**收尾复核（v3）**：已实现字典的不变量全部成立 —— `targeted`(123) ⊇ `protocol`(102) ⊇ `base24`(24)，关键 token 覆盖 **6/6**；`compact`(32) ⊇ base24，关键覆盖 **6/6**（密度 0.188）。全量 `pytest tests/ -q` → **440 passed**。
+
+---
+
+*编写：高见远（Gao）· 架构师　|　2026-10-24（v3）*

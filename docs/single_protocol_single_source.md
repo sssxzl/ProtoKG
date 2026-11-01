@@ -1,0 +1,141 @@
+# 契约：一次一个协议 × 一个知识源
+
+> 确立时间：2026-10-31
+> 来源：用户明确约束
+> 原文：「我这个模型，一次只对一个知识库进行处理，目标是一个知识源，不是一批把所有知识库都解决。对 rfc 的识别上面，利用 `--<目标协议>` 单次对一个协议进行处理。」
+
+---
+
+## 一、契约内容
+
+**ProtoRAG 的一次运行，只处理「一个协议 × 一个知识源」。**
+
+| 维度 | 约束 | 落地方式 |
+|---|---|---|
+| 协议 | 单次**一个**目标协议 | `--protocol` **必填**（不再有 `default="rtsp"`）；协议不存在 → 报错 exit 2 |
+| 知识源 | 单次**一个**知识源 | `--sources` 改为**单值**（原 `nargs="+"`）；传多个被 argparse 拒绝 |
+| 清理范围 | 只清**本次指定的那个源** | `_clean_per_source(protocol, sources=[source])` |
+| 产物范围 | 只写 `derived/per_source/<protocol>/<source>/` | 单源单目录 |
+| 跨协议批量 | **必须显式开启** | 工具脚本的 `--all-protocols` |
+
+---
+
+## 二、为什么这条约束重要（实测教训）
+
+### 2.1 清理范围不收窄会连带破坏其他源
+
+**曾经的实现**：`_clean_per_source(protocol)` 清空该协议的**五源**。
+
+**后果（实测）**：
+```
+$ python scripts/build_hub.py --sources rfc --protocol rtsp
+[清理] 已清空 rtsp 上次实验的 5 个源 facts: rfc, source, expert_note, vuln, traffic
+```
+→ rtsp 的 source/expert_note/vuln/traffic **全部被删**，导致：
+- **22 个**依赖这些源的下游测试连带失败
+- `seedgen.py --protocol rtsp` 无法生成种子
+- 知识库需要全部重建才能恢复
+
+**现在**：
+```
+$ python scripts/build_hub.py --sources rfc --protocol rtsp
+[清理] 已清空 rtsp 的 1 个源 facts: rfc        ← 只清这一个
+```
+
+### 2.2 隐式默认协议会误跑
+
+`--protocol` 原本 `default="rtsp"` —— 不传参数就跑 RTSP。在「一次一个协议」的语义下，
+**协议必须由调用方显式指定**，否则无法区分「我要跑 RTSP」和「我忘了传参数」。
+
+### 2.3 工具脚本同样要收窄
+
+新增的 `rfc_baseline_probe.py` / `rfc_config_verify.py` 原本默认遍历 kb/ 下全部协议 ——
+即使只是**测量**，也违背了「一次一个协议」的工作方式（且会让输出难以判读）。
+现改为：默认必须 `--protocol <单个>`；跨协议对比用**显式** `--all-protocols`。
+
+---
+
+## 三、标准用法
+
+### 3.1 构建（每个源单独跑一次）
+
+```bash
+# 一个协议的一个源
+python scripts/build_hub.py --sources rfc      --protocol sip
+python scripts/build_hub.py --sources traffic  --protocol sip
+python scripts/build_hub.py --sources source   --protocol sip
+python scripts/build_hub.py --sources expert_note --protocol sip
+python scripts/build_hub.py --sources vuln     --protocol sip
+```
+
+**换协议**时重新指定 `--protocol`；**换源**时重新指定 `--sources`。
+每次运行只影响 `derived/per_source/<protocol>/<source>/`，其余不受影响。
+
+### 3.2 rfc 识别 / 测量（单协议）
+
+```bash
+python scripts/rfc_baseline_probe.py --protocol sip     # 该协议的抽取质量
+python scripts/rfc_config_verify.py  --protocol sip     # 该协议 rfc_config 的章节号真实性
+```
+
+跨协议回归对比（**显式批量**，仅用于验收）：
+
+```bash
+python scripts/rfc_baseline_probe.py --all-protocols
+python scripts/rfc_config_verify.py  --all-protocols
+```
+
+### 3.3 增量抽取（不清空）
+
+```bash
+python scripts/build_hub.py --sources rfc --protocol sip --no-clean
+```
+
+---
+
+## 四、自动化保障
+
+`tests/fused/test_single_protocol_single_source.py`（13 个用例）把契约固化为测试：
+
+| 分组 | 断言 |
+|---|---|
+| CLI 契约 | 多源被拒 / `--protocol` 必填 / 未知协议 exit 2 / 非法源被拒 |
+| 清理范围 | 只清指定源；其他源的文件**必须仍在** |
+| 产物范围 | 只写目标协议目标源目录 |
+| 工具脚本 | 默认必须单协议；单协议模式输出不含其他协议 |
+| rfc 隔离 | SIP 配置判 RTSP §12 ≠ field；RTSP 配置判 SIP §20 ≠ field；两协议 norm_id 不相交 |
+
+```bash
+python -m pytest tests/fused/test_single_protocol_single_source.py -q   # 13 passed
+```
+
+---
+
+## 五、边界说明：什么**不**受此约束
+
+### 5.1 跨协议漏洞迁移（保留）
+`core/fused/vuln_vector.py` 的 `migrate_vuln_patterns()` / `retrieve_cross_protocol()`
+提供**跨协议漏洞模式迁移**（新协议无漏洞库时从其他协议迁移相似漏洞模式）。
+
+- 调用者**必须显式传入** protocols 列表，不会隐式扩散
+- 主路径（`build_hub.py` / `seedgen.py`）**不触及**
+- 独立入口 `scripts/migrate_vuln_knowledge.py`
+
+这是**知识检索**（消费侧、可选），与「知识抽取」的单协议单源约束不冲突。
+
+### 5.2 实验侧的多协议批量
+`scripts/rq3_*.py` / `scripts/rq4_*.py` 是**实验分析**脚本（对已产出的多协议结果做对比统计），
+它们读的是 `derived/` 下的既有产物，不做知识抽取，不受本约束约束。
+
+---
+
+## 六、相关文件
+
+| 文件 | 作用 |
+|---|---|
+| `scripts/build_hub.py` | 主构建入口（契约落点） |
+| `scripts/rfc_baseline_probe.py` | rfc 抽取质量测量（单协议） |
+| `scripts/rfc_config_verify.py` | rfc_config 章节号真实性校验（单协议） |
+| `tests/fused/test_single_protocol_single_source.py` | 契约的自动化保障 |
+| `core/paths.py` | `target_rfc_config(protocol)` —— 协议 → 配置的唯一解析入口 |
+| `core/fused/rfc_extractor.py` | rfc 抽取器（`_load_rfc_config(protocol)` 按目标协议取配置） |

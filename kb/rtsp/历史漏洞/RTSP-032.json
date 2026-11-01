@@ -1,0 +1,47 @@
+{
+  "case_id": "RTSP-032",
+  "avd_id": "AVD-2021-910110",
+  "scope": "not_rtsp_protocol",
+  "confidence": "n/a",
+  "title_avd": "Advantech WebAccess RtspVapgDecoderNew2 PMSettingData3D 高度堆栈缓冲区溢出远程代码执行漏洞(CNVD-2017-19443)",
+  "description_raw": "Advantech WebAccess 是研华(Advantech)公司的一套基于浏览器架构的 HMI/SCADA 软件。该软件支持动态图形显示和实时数据控制,并提供远程控制和管理自动化设备的功能。Advantech WebAccess RtspVapgDecoderNew2 PMSettingData3D 存在高度堆栈缓冲区溢出远程代码执行漏洞。由于未对用户提供的数据长度进行验证。攻击者可利用漏洞在进程的上下文下执行任意代码。",
+  "risk_level_avd": "(AVD 标签 安全社区,N/A)",
+  "cwe_avd": null,
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "missing",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source",
+    "unmatched_avd_reason": "cve=CNVD-2017-19443 是 CNVD 编号, AVD 库按 CNVD 收录"
+  },
+  "unmatched_avd": true,
+  "avd_id_equivalent": "AVD-2021-910110"
+}

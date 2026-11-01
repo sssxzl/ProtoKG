@@ -1,0 +1,30 @@
+{
+  "schema_version": 3,
+  "protocol": "rtsp",
+  "hotspots": [
+    {
+      "id": "transport_parse",
+      "target_type": "field",
+      "subject": "Transport",
+      "why": "SETUP 的 Transport 头（RTP/AVP;unicast;client_port=...）解析是 live555 最易出错的点",
+      "priority": "high",
+      "mutation_hint": "空 Transport / 畸形参数 / 端口越界"
+    },
+    {
+      "id": "session_parse",
+      "target_type": "field",
+      "subject": "Session",
+      "why": "Session 头解析与会话查找易出 NULL 解引用（无效 session id）",
+      "priority": "high",
+      "mutation_hint": "空 Session / 超长 session id / 未知 id"
+    },
+    {
+      "id": "track_setup",
+      "target_type": "method",
+      "subject": "SETUP",
+      "why": "多轨流的同一 track 连续 SETUP 会触发 UAF（Matroska CVE 的根子）",
+      "priority": "high",
+      "mutation_hint": "同 track 双 SETUP / 越界 track 号"
+    }
+  ]
+}

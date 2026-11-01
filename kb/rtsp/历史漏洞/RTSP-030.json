@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-030",
+  "avd_id": "AVD-2022-41325",
+  "scope": "not_rtsp_protocol",
+  "confidence": "n/a",
+  "title_avd": "VideoLAN VLC media player 安全漏洞",
+  "description_raw": "VideoLAN VLC media player 是法国 VideoLAN 组织的一款免费、开源的跨平台多媒体播放器(也是一个多媒体框架)。该产品支持播放多种介质(文件、光盘等)、多种音视频格式(WMV,MP3 等)等。VideoLAN VLC media player 3.0.18 之前版本存在安全漏洞,该漏洞源于如果故意播放恶意 vnc URL,vnc 模块中潜在的缓冲区溢出可能会触发远程代码执行,允许远程攻击者在目标系统上执行任意代码。",
+  "risk_level_avd": "中危",
+  "cwe_avd": "CWE-190 (整数溢出或超界折返)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

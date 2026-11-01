@@ -1,0 +1,2 @@
+RUN_ID=public_dtmfsipinfo_0001 CID=NONE TCPDUMP_PID=0 WORK=/tmp/captures/public_dtmfsipinfo_0001 PORT=0
+SRC=/tmp/sip_public/DTMFsipinfo.pcap SIZE=25429

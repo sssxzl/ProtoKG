@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-008",
+  "avd_id": "AVD-2018-4013",
+  "scope": "not_rtsp_protocol",
+  "confidence": "n/a",
+  "title_avd": "缓冲区溢出代码执行",
+  "description_raw": "LIVE555 RTSP server library version 0.92 的 HTTP 数据包解析功能中存在可利用的代码执行漏洞。特制的数据包可能导致基于堆栈的缓冲区溢出,从而导致代码执行。攻击者可以发送数据包来触发此漏洞。",
+  "risk_level_avd": "低危",
+  "cwe_avd": "CWE-787 (跨界内存写)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

@@ -1,0 +1,49 @@
+{
+  "case_id": "RTSP-035",
+  "avd_id": "AVD-2026-1871",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "Tapo C200 的 RTSP 身份验证中经过身份验证的基于堆栈的缓冲区溢出(CVE-2026-1871)",
+  "description_raw": "TP-Link Tapo C200 v5 contains a stack-based buffer overflow flaw in RTSP authentication handling due to improper validation of Authorization header field lengths, which can be triggered by a crafted authentication request.",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": "CWE-121 (栈缓冲区溢出)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": [
+        "Authorization",
+        "header"
+      ],
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "due to improper validation of Authorization header field lengths",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

@@ -1,0 +1,4 @@
+run_id,transport,stream,url,duration,pcap,rtsp_packets,rtp_packets,rtcp_packets
+mp3AudioTest_0001,udp,mp3AudioTest,rtsp://127.0.0.1:8554/mp3AudioTest,5,/home/zxy/数据流量/mp3AudioTest/mp3AudioTest_0001/capture.pcapng,20,29,0
+somasexy_Jasmine_0001,tcp,somasexy_Jasmine,rtsp://stream.zoovision.com/soma/somasexy/somasexy_Jasmine.3gp,8,/home/zxy/数据流量/somasexy_Jasmine/somasexy_Jasmine_0001/capture.pcapng,12,277,6
+hikvision_ch101_0001,udp,hikvision_ch101,rtsp://10.11.26.98:554/isapi/streaming/channels/101,3,/home/zxy/数据流量/hikvision_ch101/hikvision_ch101_0001/capture.pcapng,12,770,2

@@ -1,0 +1,20 @@
+{
+  "schema_version": 3,
+  "protocol": "sip",
+  "design_weaknesses": [
+    {
+      "id": "text_parse_complexity",
+      "name": "文本头解析复杂",
+      "root_cause": "SIP 头是自由文本，重复/折叠/大小写变体多，解析器易漏边界",
+      "exploitable": true,
+      "exploit_hint": "重复头 / 折叠头 / 大小写混淆"
+    },
+    {
+      "id": "transaction_forking",
+      "name": "事务分叉状态复杂",
+      "root_cause": "forking 下同一请求多个响应，dialog 状态机复杂易错",
+      "exploitable": false,
+      "exploit_hint": ""
+    }
+  ]
+}

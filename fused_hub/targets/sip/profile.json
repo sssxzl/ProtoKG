@@ -1,0 +1,249 @@
+{
+  "protocol": "sip",
+  "transport": "udp",
+  "encoding": "text",
+  "default_url": "sip:127.0.0.1:5060",
+  "raw_format": {
+    "line_ending": "\r\n",
+    "request_line": "{method} {url} {version}",
+    "version": "SIP/2.0",
+    "header_line": "{key}: {value}",
+    "trailing_blank_line": true
+  },
+  "message_schema": {
+    "hint": "消息实例必须含 \"url\" 字段（请求 URI，如 sip:bob@127.0.0.1 或 sip:alice@127.0.0.1，REGISTER 的 url 用 sip:127.0.0.1）。关键头部字段请给：Via、From、To、Call-ID、CSeq、Contact、Max-Forwards、Content-Type、Content-Length。From/To 用 <sip:user@host>;tag=xxx 格式；Via 用 SIP/2.0/UDP host:port;branch=z9hG4bK-xxx 格式；CSeq 为「序号 + 方法」；Call-ID 为唯一标识。不要臆造 url 之外的结构。"
+  },
+  "allowed_methods": [
+    "INVITE",
+    "ACK",
+    "BYE",
+    "CANCEL",
+    "OPTIONS",
+    "REGISTER",
+    "SUBSCRIBE",
+    "NOTIFY",
+    "PUBLISH",
+    "INFO",
+    "REFER",
+    "MESSAGE",
+    "PRACK",
+    "UPDATE"
+  ],
+  "url_placeholders": {
+    "<server>": "127.0.0.1:5060",
+    "<user>": "alice"
+  },
+  "seedgen": {
+    "canonical_flow": [
+      "REGISTER",
+      "INVITE",
+      "ACK",
+      "BYE"
+    ],
+    "session_prologue": [
+      "REGISTER"
+    ],
+    "message_boundary_methods": [
+      "REGISTER",
+      "INVITE",
+      "ACK",
+      "BYE"
+    ],
+    "environments": {
+      "rq2-kamailio": {
+        "description": "目标环境 rq2-kamailio:latest + AFLNet SIP 分区器。★ 关键约束：AFLNet 的 extract_requests_sip 只把 REGISTER/INVITE/ACK/BYE 识别为『新消息起点』（aflnet.c 第 600-603 行），其余方法（OPTIONS/SUBSCRIBE/PUBLISH/NOTIFY/REFER/MESSAGE/UPDATE/INFO/PRACK/CANCEL）开头的消息会被并入前一条消息 → 消息边界被破坏、变异预算浪费在无法识别的方法上。该约束是 harness 级不变量（协议级 seedgen.message_boundary_methods 声明），故本环境不重复声明；此处只标注环境说明。"
+      }
+    },
+    "danger": false,
+    "state_changing": [
+      "REGISTER",
+      "INVITE",
+      "BYE",
+      "CANCEL",
+      "SUBSCRIBE"
+    ],
+    "required_headers": {
+      "INVITE": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "ACK": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "BYE": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "CANCEL": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "OPTIONS": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "REGISTER": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards",
+        "Contact"
+      ],
+      "SUBSCRIBE": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards",
+        "Event"
+      ],
+      "NOTIFY": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "MESSAGE": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "INFO": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "UPDATE": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "PRACK": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "PUBLISH": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ],
+      "REFER": [
+        "Via",
+        "From",
+        "To",
+        "Call-ID",
+        "CSeq",
+        "Max-Forwards"
+      ]
+    },
+    "precondition": {
+      "ACK": [
+        "INVITE"
+      ],
+      "BYE": [
+        "INVITE"
+      ],
+      "CANCEL": [
+        "INVITE"
+      ],
+      "NOTIFY": [
+        "SUBSCRIBE"
+      ]
+    },
+    "session_header": {
+      "INVITE": [
+        {
+          "header": "Call-ID",
+          "from_occurrence": 1
+        }
+      ],
+      "ACK": [
+        {
+          "header": "Call-ID",
+          "from_occurrence": 1
+        }
+      ],
+      "BYE": [
+        {
+          "header": "Call-ID",
+          "from_occurrence": 1
+        }
+      ],
+      "CANCEL": [
+        {
+          "header": "Call-ID",
+          "from_occurrence": 1
+        }
+      ]
+    },
+    "focus_group": {
+      "A": {"dict": "protocol", "seeds": 15, "dict_tokens": 163},
+      "B": {"dict": "protocol", "seeds": 25, "dict_tokens": 163},
+      "C": {"dict": "targeted", "seeds": 25, "dict_tokens": 167},
+      "D": {"dict": "protocol", "seeds": 25, "dict_tokens": 163}
+    },
+    "client_side": {
+      "server_addr": "127.0.0.1:5060",
+      "client_addr": "127.0.0.1:5061",
+      "headers": ["Via", "Contact"]
+    },
+    "default_headers": {
+      "Via": "SIP/2.0/UDP 127.0.0.1:5060;branch=z9hG4bK-{seq}",
+      "From": "<sip:alice@127.0.0.1>;tag={seq}",
+      "To": "<sip:bob@127.0.0.1>",
+      "Call-ID": "{seq}@127.0.0.1",
+      "Contact": "<sip:alice@127.0.0.1:5060>",
+      "Max-Forwards": "70"
+    }
+  },
+  "note": "SIP 协议 Profile（RFC 3261）：文本头部协议（请求行 + 头部 + 空行 + 可选 body）。raw_format.request_line=\"{method} {url} {version}\"（version=SIP/2.0）；header_line=\"{key}: {value}\"；trailing_blank_line=true（消息间空行分隔）。seedgen.canonical_flow=REGISTER→INVITE→ACK→BYE 黄金路径。state_changing=会改变 dialog/会话状态的方法（REGISTER 注册、INVITE 建 dialog、BYE 结束、CANCEL 取消、SUBSCRIBE 订阅）。required_headers=SIP 每个方法必需头部（Via/From/To/Call-ID/CSeq/Max-Forwards）。precondition=ACK/BYE/CANCEL 需先 INVITE（dialog 内方法依赖）。session_header=Call-ID 标识同一 dialog（跨消息复用）。",
+  "traffic_schema": {
+    "log_files": [
+      "client.log"
+    ],
+    "request_pattern": "^\\d+\\s+\\S+\\s+\\S+\\s+([A-Z]+)\\s+\\1\\s",
+    "response_pattern": "^\\d+\\s+\\S+\\s+\\S+\\s+SIP/2\\.0\\s+(\\d{3})"
+  }
+}

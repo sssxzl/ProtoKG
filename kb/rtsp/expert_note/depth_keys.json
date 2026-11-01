@@ -1,0 +1,26 @@
+{
+  "schema_version": 3,
+  "protocol": "rtsp",
+  "depth_keys": [
+    {
+      "id": "playing_state",
+      "target_state": "Playing",
+      "path": [
+        "SETUP",
+        "PLAY"
+      ],
+      "why": "要进入播放态必须 SETUP 建立会话再 PLAY，漏 SETUP 直接 PLAY 会 404"
+    },
+    {
+      "id": "multi_track",
+      "target_state": "多轨流播放",
+      "path": [
+        "DESCRIBE",
+        "SETUP(track1)",
+        "SETUP(track2)",
+        "PLAY"
+      ],
+      "why": "多轨流需对每个 track 分别 SETUP，这是触发 UAF 的关键路径"
+    }
+  ]
+}

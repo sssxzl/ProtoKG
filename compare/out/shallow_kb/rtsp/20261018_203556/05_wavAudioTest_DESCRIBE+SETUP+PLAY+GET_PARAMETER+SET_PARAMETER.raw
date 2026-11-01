@@ -1,0 +1,38 @@
+DESCRIBE rtsp://127.0.0.1:8554/wavAudioTest RTSP/1.0
+CSeq: 1
+User-Agent: Live555StreamingMedia (LIVE555 Streaming Media v2023.11.30)
+Accept: application/sdp
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="cafebabecafebabecafebabecafebabe", uri="rtsp://127.0.0.1:8554/wavAudioTest", response="098f6bcd4621d373cade4e832627b4f6"
+
+SETUP rtsp://127.0.0.1:8554/wavAudioTest/track1 RTSP/1.0
+CSeq: 2
+User-Agent: Live555StreamingMedia (LIVE555 Streaming Media v2023.11.30)
+Transport: RTP/AVP;unicast;client_port=40000-40001
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="cafebabecafebabecafebabecafebabe", uri="rtsp://127.0.0.1:8554/wavAudioTest/track1", response="098f6bcd4621d373cade4e832627b4f6"
+
+PLAY rtsp://127.0.0.1:8554/wavAudioTest/ RTSP/1.0
+CSeq: 3
+User-Agent: Live555StreamingMedia (LIVE555 Streaming Media v2023.11.30)
+Session: 000022B8
+Range: npt=0.000-
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="cafebabecafebabecafebabecafebabe", uri="rtsp://127.0.0.1:8554/wavAudioTest/", response="098f6bcd4621d373cade4e832627b4f6"
+
+GET_PARAMETER rtsp://127.0.0.1:8554/wavAudioTest/ RTSP/1.0
+CSeq: 4
+User-Agent: Live555StreamingMedia (LIVE555 Streaming Media v2023.11.30)
+Session: 000022B8
+
+SET_PARAMETER rtsp://127.0.0.1:8554/wavAudioTest/ RTSP/1.0
+CSeq: 5
+User-Agent: Live555StreamingMedia (LIVE555 Streaming Media v2023.11.30)
+Session: 000022B8
+Content-Type: text/parameters
+
+volume: 50
+
+
+TEARDOWN rtsp://127.0.0.1:8554/wavAudioTest/ RTSP/1.0
+CSeq: 6
+User-Agent: Live555StreamingMedia (LIVE555 Streaming Media v2023.11.30)
+Session: 000022B8
+

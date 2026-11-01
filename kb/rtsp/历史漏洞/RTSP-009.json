@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-009",
+  "avd_id": "AVD-2019-7314",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "Live555 liblivemedia 资源管理错误漏洞",
+  "description_raw": "2019.02.03 之前的 Live555 中的 liblivemedia 在设置 RTP/RTCP-over-RTSP 之后错误处理 RTSP 流的终止,这可能导致导致 RTSP 服务器崩溃的\"释放后使用\"错误(分段错误)或可能还有未指明的其他影响。",
+  "risk_level_avd": "低危",
+  "cwe_avd": "CWE-416 (释放后使用)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": "导致导致 RTSP 服务器崩溃的\"释放后使用\"错误(分段错误)或可能还有未指明的其他影响",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

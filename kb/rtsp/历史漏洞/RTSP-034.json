@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-034",
+  "avd_id": "AVD-2026-12935",
+  "scope": "not_rtsp_protocol",
+  "confidence": "n/a",
+  "title_avd": "TP-Link TL-WR940N RTSP Conntrack 功能中未经身份验证的远程代码执行(CVE-2026-12935)",
+  "description_raw": "The TL-WR940N v6 router contains a vulnerability in its RTSP connection tracking module that can lead to a stack-based buffer overflow. The issue occurs when a LAN client initiates a connection to a malicious RTSP server controlled by an attacker. A specially crafted RTSP message may trigger improper memory handling within the kernel module.",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": "CWE-121 (栈缓冲区溢出)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

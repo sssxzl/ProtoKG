@@ -1,0 +1,48 @@
+{
+  "case_id": "SIP-008",
+  "avd_id": "CVE-2022-21722",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "pjproject RTP/RTCP 报文越界读",
+  "description_raw": "PJSIP 2.11.1 及之前处理某些传入 RTP/RTCP 包时可能越界读，影响所有使用 PJMEDIA 接受 RTP/RTCP 的用户。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-125 (越界读)",
+  "trigger": {
+    "method": {
+      "value": [
+        "RTP",
+        "RTCP"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "RTP/RTCP 包",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "特制 RTP/RTCP 报文",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

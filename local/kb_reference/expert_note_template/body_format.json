@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "body_formats": [],
+  "_comment": "body_formats array: each entry = {method, mime, schema_ref?, evidence?, notes?}. method must exist in methods.json. mime is MIME type (e.g. 'application/sdp'). Add 1 entry per method that has a body."
+}

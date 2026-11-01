@@ -1,0 +1,48 @@
+{
+  "case_id": "SIP-012",
+  "avd_id": "CVE-2022-24754",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "pjproject hashed digest 凭据栈溢出",
+  "description_raw": "PJSIP 存在栈缓冲区溢出，仅影响接受 hashed digest 凭据（PJSIP_CRED_DATA_DIGEST）的 PJSIP 用户。",
+  "risk_level_avd": "高危",
+  "cwe_avd": "CWE-121 (栈溢出)",
+  "trigger": {
+    "method": {
+      "value": [
+        "REGISTER",
+        "Authorization"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "digest credentials",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "hashed digest 凭据",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

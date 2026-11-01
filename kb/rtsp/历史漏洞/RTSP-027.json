@@ -1,0 +1,48 @@
+{
+  "case_id": "RTSP-027",
+  "avd_id": "AVD-2011-4254",
+  "scope": "not_rtsp_protocol",
+  "confidence": "n/a",
+  "title_avd": "Real Networks RealPlayer 存在未明漏洞(CNVD-2011-4981)",
+  "description_raw": "Real Networks RealPlayer 是一款流行的媒体播放程序。Real Networks RealPlayer 处理 RTSP SETUP 请求存在未明错误。",
+  "risk_level_avd": "(AVD 标签 NVD,应用程序类)",
+  "cwe_avd": "CWE-94 (对生成代码的控制不恰当 / 代码注入)",
+  "trigger": {
+    "method": {
+      "value": [
+        "SETUP"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

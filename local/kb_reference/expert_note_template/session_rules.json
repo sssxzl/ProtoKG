@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "session_rules": {},
+  "_comment": "session_rules dict: arbitrary keys describing session lifecycle (e.g. 'lifecycle', 'identifier_format', 'timeout_default_seconds', 'scope', 'reuse', 'evidence'). For sessionless protocols, leave {} or omit file."
+}

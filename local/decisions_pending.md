@@ -1,0 +1,77 @@
+local/decisions_pending.md
+
+定位：本文件记录待用户拍板项。agent 遇到决策点时追加一条，用户批复后移到 local/decisions_resolved.md。
+格式：一条目编号 D<数字>。提出时间。提出 agent 与 Step。问题描述。候选方案（至少两个：甲、agent 倾向与理由、当前阻塞的后续动作）。
+
+D4 / D5 / D6 / D7 / D8 / P8 / D10 / D11 / D12 / D13 全部已拍板并移入 local/decisions_resolved.md。
+D9（traffic 观测口径）**已定案**：traffic D9 设计 §0–§13 Final Frozen
+（`local/traffic_d9_design.md`，§6.5 BLOCKED 等 M3 外部输入，§6.6-C1.x PENDING）。
+实测数据存档在 resolved。后续 D14–D19 为 Lane A 判定链，同样已全部落盘。
+
+当前无待拍板项。
+
+阶段 4.8a / 4.8b / 4.8c / 4.8d / 4.8e 检查点（**历史快照**，2026-10-04 标注）：
+  专项 tests/fused/  1920 passed / 3 skipped / 0 failed
+  全量               2531 passed / 8 skipped / 0 failed
+  kb/ 指纹           6061 files，SHA256 A86C71E0…DEDE24，与基线逐字节一致 → UNCHANGED
+  derived/           per_source/rfc 13 + per_source/expert_note 13 + fused 13 文件
+                     verify_layout(.) = 0 violation
+  ruff               本轮改动文件全清；scripts/ 整目录全清
+
+  ⚠ 本块为**当时口径**的历史记录，不是当前值。当前 canonical 值见
+    `local/project_handoff.md` §6 / §7。其中 kb 指纹 `A86C71E0…DEDE24`
+    经后续复核**无已知可复现方法，不适用于 aggregate 对比**，已被 aggregate v1
+    口径（`sha256:bcc1bd3f…`，6061 files）取代。
+
+五源进度（逐源单源处理，融合留到五源全完之后；**2026-10-04 复核**）：
+  rfc          ✅ 11 norm  → 11 Facts   derived/per_source/rfc/
+  expert_note  ✅ 89 norm  → 49 Facts   derived/per_source/expert_note/
+                          （规则集消费 50/89；39 条按设计文档 §8「刻意不实现」）
+  vuln         ✅ 37 norm  → 14 Claims → 5 Facts   derived/per_source/vuln/
+                          （37 个 RTSP-xxx.json 中 7 个产出 claim，
+                            claim 合并为 5 个 fact；其余 30 个计数为 0。
+                            ⚠ 原写「规则集未覆盖，需先设计规则」已过时——vuln 已入 Hub）
+  traffic      ⏳ 25998 norm；D9 §0–§13 已 Final Frozen（§6.5 BLOCKED）、
+                          Traffic Metadata Recon + Q1 已 PASS；
+                          Lane A **三份设计文档全部 Final Frozen**
+                          （Rule Set / Provenance Interface / Implementation Proposal）；
+                          **阶段 I / II / III 已完成**，Lane A 代码实现落地：
+                          core/lane_a/ 10 个模块 + tests/lane_a/ 68 项测试，
+                          derived/lane_a/ 500 unit × 25000 observation
+                          （insufficient 11000 / no_target 14000），
+                          全量 pytest 2752 passed / 8 skipped / 0 failed。
+                          （⚠ 原写「★ 等 D9 口径（3000 个 capture 是否互相独立）」
+                            已过时：口径已裁定为 **1000 nominal / 500 effective**，
+                            「3000」这一数字在任何冻结文档中均无对应）
+  source       ⏳ 无 source extractor（待阶段 5）
+
+★ derived/fused/ 当前含 **三源**：rfc + expert_note + vuln
+  （**65 Facts / 75 Claims**；rfc 11 + expert_note 49 + vuln 5；
+   build_fingerprint `sha256:5017304a833d3f6c7d111c53c2288c5b83f2de2c9d2993b5149cb69270550b7b`；
+   最后构建 2026-10-01 19:38:59）。
+  ⚠ 原写「两源 60 Facts / 54 entities / 473 returns_code / 61 lineage，
+  build_fingerprint sha256:b2f70f0c…」已过时——那是一个已被后续构建替换的中间态。
+  源归属须按 `claims[].evidence[].source_type` 统计（`fact_key` 内无 source 字段）。
+  这仍不是五源最终产物 —— traffic / source 未入，五源全跑完后需重跑一次。
+
+下一步候选（2026-10-04 更新）：
+  a) traffic 源：**Lane A 阶段 IV** —— G5 / G7（当前 NO_TARGET_PENDING_EXTRACTION，
+     缺口在 Hub Contract 侧）；以及 Lane A 产出接入下游读出口的真实消费方验证
+  b) traffic 源：Traffic Single-source Hub Build
+     （⚠ 注意 §3.2 裁定不做 validator invariant，故 traffic 入 Hub 不受阻）
+  c) source 源：待阶段 5 设计 extractor
+  d) 五源跑完后：统一做融合与冲突检测
+  e) 其他
+
+已裁定但需用户知悉（2026-10-04，非待拍板项）：
+  · proposal §3.2 validator invariant = **不做**（ERRATA-1 已闭合与
+    provenance_interface §5.5 的冲突）。
+  · 阶段 III 契约矛盾裁定 = **丙-a + 组粒度精确化**：
+    Lane A 纯 json 读 derived/fused/facts/ 建 target index（不 import Hub 代码）；
+    「组」精确到 (group, header) 级。**§2.4 与 §3.4 原文均未改写**
+    （见 provenance_interface §3.5 + ERRATA-2）。
+  · 接口文档 §2 / §3 / §4 已转 Final Frozen；**§5 / §6 保留 Frozen Candidate**
+    （ERRATA-2 授权范围只含前三节）。
+  · `derived/fused_status.txt` 的 vuln status 描述已过时（实测
+    3 resolved + 2 unresolved/peer_conflict，非「全部 unresolved」）。
+    因位于 derived/、未获授权写该目录，仅登记未修。

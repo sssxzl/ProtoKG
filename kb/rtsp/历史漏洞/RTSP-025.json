@@ -1,0 +1,48 @@
+{
+  "case_id": "RTSP-025",
+  "avd_id": "AVD-2007-6684",
+  "scope": "not_rtsp_protocol",
+  "confidence": "n/a",
+  "title_avd": "vlc 拒绝服务漏洞",
+  "description_raw": "VideoLAN VLC 0.8.6d 中的 RTSP 模块允许远程攻击者通过不带传输参数的请求而导致服务拒绝(崩溃),从而触发 NULL 指针取消引用。",
+  "risk_level_avd": "低危",
+  "cwe_avd": "CWE-20 (输入验证不恰当)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": [
+        "传输参数"
+      ],
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "confirmed",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

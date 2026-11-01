@@ -1,0 +1,30 @@
+{
+  "schema_version": 3,
+  "protocol": "sip",
+  "hotspots": [
+    {
+      "id": "via_parse",
+      "target_type": "field",
+      "subject": "Via",
+      "why": "Via 头（尤其 branch 参数）解析是 SIP 越界/崩溃高发点，多级 Via 更复杂",
+      "priority": "high",
+      "mutation_hint": "超长 branch / 畸形 Via / 多级 Via"
+    },
+    {
+      "id": "tag_parse",
+      "target_type": "field",
+      "subject": "From/To tag",
+      "why": "From/To 的 tag 参数解析缺校验是段错误高发点（重复字段+超长 tag）",
+      "priority": "high",
+      "mutation_hint": "超长 tag / 重复 To 头 / 空 tag"
+    },
+    {
+      "id": "multipart",
+      "target_type": "field",
+      "subject": "multipart body",
+      "why": "multipart 边界解析易越界读，边界与包大小不一致是经典坑",
+      "priority": "high",
+      "mutation_hint": "畸形 multipart 边界"
+    }
+  ]
+}

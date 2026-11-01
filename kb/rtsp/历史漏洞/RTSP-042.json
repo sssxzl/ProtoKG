@@ -1,0 +1,51 @@
+{
+  "case_id": "RTSP-042",
+  "avd_id": "CVE-2026-41470",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Live555 RTSP Session token 重放授权绕过(CVE-2026-41470)",
+  "description_raw": "Live555 2026.04.22 之前版本,RTSP 会话命令处理存在授权绕过:攻击者获取有效 Session token 后,可从第二个未认证 TCP 连接发送 PLAY/TEARDOWN 命令,导致虚拟函数调用错误崩溃或中断合法流。",
+  "risk_level_avd": "高危",
+  "cwe_avd": "CWE-306 (关键功能缺失认证)",
+  "trigger": {
+    "method": {
+      "value": [
+        "PLAY",
+        "TEARDOWN"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": [
+        "Session"
+      ],
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "用有效 Session token 从第二连接发 PLAY/TEARDOWN",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "CVE 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-007",
+  "avd_id": "AVD-2013-6934",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "Live Networks Live555 Streaming Media RTSP 消息处理拒绝服务漏洞(CNVD-2014-00607)",
+  "description_raw": "Live Networks Live555 Streaming Media 是一款流媒体应用。VideoLAN VLC Media Player 所使用的 Live Networks Live555 Streaming Media 2013.11.26 中的 parseRTSPRequestString 函数解析特制的 RTSP 消息存在消息处理拒绝服务漏洞,提交开头包含空格字符的 RTSP 消息可触发整数下溢出、死循环和缓冲区溢出,导致服务程序崩溃。",
+  "risk_level_avd": "中危",
+  "cwe_avd": "CWE-189 (数值错误)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": "触发整数下溢出、死循环和缓冲区溢出",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

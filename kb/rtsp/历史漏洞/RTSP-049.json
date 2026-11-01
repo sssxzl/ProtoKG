@@ -1,0 +1,51 @@
+{
+  "case_id": "RTSP-049",
+  "avd_id": "CVE-2019-7314",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Live555 RTP/RTCP-over-RTSP 释放后使用(CVE-2019-7314)",
+  "description_raw": "Live555 的 liblivemedia 库在 RTP/RTCP-over-RTSP(interleaved)建立后终止 RTSP 流时存在释放后使用,可导致 RTSP 服务器崩溃。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-416 (释放后使用)",
+  "trigger": {
+    "method": {
+      "value": [
+        "SETUP",
+        "TEARDOWN"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": [
+        "Transport"
+      ],
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "RTP/RTCP-over-RTSP(interleaved)setup 后终止流",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "CVE 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

@@ -1,0 +1,76 @@
+# 会话语义规则沉淀进知识中枢（Session Semantics into Hub）
+
+> 定位：解决「协议会话语义规则散落在 LLM prompt 硬编码字符串里，规则生成路径无法复用」
+> 这一架构缺陷。把「会话语义规则」建模为知识原子的一等公民，让 LLM 路径与规则路径
+> 共享同一份知识。
+>
+> 落盘日期：2026-10-13
+
+---
+
+## 一、问题
+
+对比实验暴露出规则生成种子（②通用危险层）缺「会话上下文」两处：
+1. 缺 DESCRIBE 前缀（SETUP 前应先 DESCRIBE 初始化会话）；
+2. 第二个 SETUP 缺 Session 头（同会话重复 SETUP 才成立）。
+
+追查根因，发现这类「会话语义规则」目前**只硬编码在 `render_seed_prompt` /
+`render_attack_prompt` 的 prompt 模板字符串里**（如「第一个 SETUP 之后所有消息带
+Session」「SETUP 用 /track{N}」），而非知识中枢的 facts。后果：
+
+- LLM 路径能读到（写在 prompt 里），但 prompt 写不全（漏了「DESCRIBE 初始化」）；
+- 规则路径（edge_cover / generic_danger）**读不到**（不经过 prompt，只从 bundle 取
+  transitions/headers），只能靠硬编码兜底（`_prepend_describe`/`_ensure_session_context`）。
+
+## 二、方案：三类会话语义规则建模为知识原子
+
+在 Layer 0 六元组 `⟨Subject, Aspect, Condition, Value, Epistemic, Evidence⟩` 框架下，
+新增三个 Aspect，用 method 类 Subject 承载：
+
+| 新 Aspect | 含义 | value 结构 | 例 |
+|---|---|---|---|
+| `precondition` | 方法的前置方法（会话初始化） | `ref` → 前置 method 名 | SETUP 前置 DESCRIBE |
+| `session_header` | 方法第 N 次出现起需携带的会话头 | `struct {header, from_occurrence}` | SETUP 第 2 次起带 Session |
+| `url_template` | 方法消息的 URL 结构 | `pattern` | SETUP → `{stream}/track{N}` |
+
+这三类规则**协议无关**：任何状态化协议都有「前置方法」「会话头」「URL 模板」这类语义。
+
+## 三、数据流（共享同一份知识）
+
+```
+Layer 1 aspect_registry（新增 3 个 aspect）
+        ↓
+facts（derived/per_source/semantic/facts/semantic.jsonl，新增协议语义源）
+        ↓ load_fact_views + assemble_bundle
+bundle.precondition / bundle.session_header / bundle.url_template
+        ↓ 两条路径共享
+   ┌─────────────────┬──────────────────────┐
+   │ render_*_prompt │ edge_cover / generic_danger │
+   │ （渲染成 prompt 区段，│ （规则生成时复用，不再硬编码）│
+   │  替代硬编码硬性规则）  │                          │
+   └─────────────────┴──────────────────────┘
+```
+
+## 四、实现清单
+
+1. `fused_hub/schema/aspect_registry.json`：新增 `precondition` / `session_header` /
+   `url_template` 三个 aspect（applicable_subject_types=method）。
+2. 新建 `derived/per_source/semantic/facts/semantic.jsonl`：rtsp 会话语义规则 facts
+   （precondition：SETUP→DESCRIBE、PLAY→SETUP、PAUSE→PLAY、TEARDOWN→SETUP；
+   session_header：SETUP from_occurrence=2 带 Session、PLAY/PAUSE/TEARDOWN 带 Session；
+   url_template：SETUP /track{N}、PLAY/PAUSE/TEARDOWN 尾斜杠、DESCRIBE/OPTIONS 裸流名）。
+3. `assemble_bundle`：提取三类 aspect → `bundle["precondition"]`、
+   `bundle["session_header"]`、`bundle["url_template"]`。
+4. `render_seed_prompt` / `render_attack_prompt`：用 bundle 的这三类知识渲染「会话语义」
+   区段，替代硬编码的硬性规则 5/6 条。
+5. `generic_danger` / `edge_cover`：从 bundle 复用（`prepend_describe` 读 precondition、
+   `ensure_session_context` 读 session_header），删除硬编码函数。
+6. 测试：验证 prompt 区段来自 bundle、规则路径与 LLM 路径共享同一份语义知识。
+
+## 五、验收标准
+
+1. `assemble_bundle` 产出 `precondition`/`session_header`/`url_template` 三个键；
+2. 删除 prompt 模板里的硬编码硬性规则 5/6，改为从 bundle 渲染；
+3. `generic_danger` 的 DESCRIBE 前缀 / Session 补全由 bundle 知识驱动（不再硬编码）；
+4. 全量 pytest 不回归；
+5. 用 RTSP 实测：规则种子与 LLM 种子都含 DESCRIBE 前缀 + 重复 SETUP 带 Session。

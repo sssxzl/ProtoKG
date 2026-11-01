@@ -1,0 +1,145 @@
+{
+  "protocol": "ftp",
+  "transport": "tcp",
+  "encoding": "text",
+  "default_url": "",
+  "raw_format": {
+    "line_ending": "\r\n",
+    "request_line": "{method} {argument}",
+    "version": "",
+    "header_line": "",
+    "trailing_blank_line": false
+  },
+  "message_schema": {
+    "hint": "FTP 是命令行文本协议：客户端发「命令动词 + 参数」行，服务器回 3 位数字响应码。消息实例字段请给：command（命令动词）+ argument（参数）。argument 取值示例：USER 的用户名（如 anonymous）、PASS 的密码、CWD 的目录路径（如 / 或 /pub）、RETR/STOR/DELE 的文件名（如 readme.txt）、TYPE 的传输类型（A=ASCII / I=Binary）、PORT 的 6 元组（h1,h2,h3,h4,p1,p2）。不要生成 url 字段。"
+  },
+  "allowed_methods": [
+    "USER",
+    "PASS",
+    "CWD",
+    "CDUP",
+    "QUIT",
+    "PORT",
+    "PASV",
+    "EPSV",
+    "EPRT",
+    "TYPE",
+    "RETR",
+    "STOR",
+    "APPE",
+    "ALLO",
+    "REST",
+    "RNFR",
+    "RNTO",
+    "DELE",
+    "RMD",
+    "MKD",
+    "PWD",
+    "LIST",
+    "NLST",
+    "SYST",
+    "STAT",
+    "HELP",
+    "NOOP",
+    "FEAT",
+    "OPTS",
+    "MDTM",
+    "SIZE"
+  ],
+  "seedgen": {
+    "canonical_flow": [
+      "USER",
+      "PASS",
+      "SYST",
+      "PWD",
+      "TYPE",
+      "PASV",
+      "LIST",
+      "QUIT"
+    ],
+    "danger": false,
+    "state_changing": [
+      "USER",
+      "PASS",
+      "CWD",
+      "CDUP",
+      "TYPE",
+      "PORT",
+      "PASV"
+    ],
+    "precondition": {
+      "PASS": [
+        "USER"
+      ],
+      "CWD": [
+        "PASS"
+      ],
+      "CDUP": [
+        "PASS"
+      ],
+      "PWD": [
+        "PASS"
+      ],
+      "TYPE": [
+        "PASS"
+      ],
+      "PORT": [
+        "PASS"
+      ],
+      "PASV": [
+        "PASS"
+      ],
+      "EPSV": [
+        "PASS"
+      ],
+      "EPRT": [
+        "PASS"
+      ],
+      "LIST": [
+        "PASS"
+      ],
+      "NLST": [
+        "PASS"
+      ],
+      "RETR": [
+        "PASS"
+      ],
+      "STOR": [
+        "PASS"
+      ],
+      "DELE": [
+        "PASS"
+      ],
+      "RMD": [
+        "PASS"
+      ],
+      "MKD": [
+        "PASS"
+      ],
+      "REST": [
+        "PASS"
+      ],
+      "SIZE": [
+        "PASS"
+      ],
+      "MDTM": [
+        "PASS"
+      ]
+    },
+    "required_headers": {},
+    "focus_group": {
+      "A": {"dict": "base", "seeds": 29, "dict_tokens": 32},
+      "B": {"dict": "base", "seeds": 29, "dict_tokens": 32},
+      "C": {"dict": "targeted", "seeds": 29, "dict_tokens": 49},
+      "D": {"dict": "base", "seeds": 29, "dict_tokens": 32}
+    }
+  },
+  "note": "FTP 协议 Profile（RFC 959 + RFC 2389/2428/3659 扩展）：行命令协议（命令+参数，无 URL/版本/头部）。raw_format.request_line=\"{method} {argument}\"（argument 空时自动去尾空格）；header_line 为空串表示协议无头部行；trailing_blank_line=false 表示命令间不分隔空行。seedgen.canonical_flow 定义匿名登录+列目录黄金路径。seedgen.state_changing=会改变会话状态的方法（USER 进入 need-password、PASS 登录、CWD/CDUP 改目录、TYPE 改传输模式、PORT/PASV 建数据连接）。seedgen.precondition=前置方法依赖（几乎所有操作都要求先 USER+PASS 登录，这是 FTP 的核心会话语义）。FTP 无 session header（会话状态靠控制连接维护，数据连接靠 PORT/PASV 临时建立）。",
+  "traffic_schema": {
+    "log_files": [
+      "client.log"
+    ],
+    "request_pattern": "^C>\\s+(\\w+)",
+    "response_pattern": "^S>\\s+(\\d{3})"
+  }
+}

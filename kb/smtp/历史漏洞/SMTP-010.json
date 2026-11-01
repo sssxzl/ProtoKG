@@ -1,0 +1,52 @@
+{
+  "avd_id": "CVE-2010-4345",
+  "scope": "seedgen",
+  "confidence": "low",
+  "title_avd": "Exim 权限提升（配置文件指令）",
+  "description_raw": "Exim 4.72 及更早允许本地用户利用 exim 账号指定备用配置文件，其中的指令（如 spool_directory）可包含任意命令导致权限提升。",
+  "risk_level_avd": "高危",
+  "cwe_avd": "CWE-264 (权限控制不当)",
+  "trigger": {
+    "method": {
+      "value": [
+        "MAIL FROM",
+        "RCPT TO"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "配置文件指令（本地向量）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "本地利用，通过备用配置文件指令执行命令（远程价值有限）",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [
+      "配置文件 spool_directory 指令注入",
+      "local 向量组合"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "CISA KEV 收录，本地权限提升",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-010"
+}

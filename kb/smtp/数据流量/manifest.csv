@@ -1,0 +1,7 @@
+﻿run_id,transport,server,endpoint,duration,pcap,smtp_commands,smtp_responses,data_bytes
+smtp_exim_0001,tcp,exim4.69,smtp://74.53.140.153:25,9.198,/home/zxy/数据流量/smtp_exim_0001/capture.pcapng,6,17,19093
+smtp_submission_0001,tcp,smtp-submission,smtp://217.12.11.66:587,3.685,/home/zxy/数据流量/smtp_submission_0001/capture.pcapng,6,13,45068
+smtp_tnef_0001,tcp,smtp-submission-tnef,smtp://217.12.11.66:587,3.361,/home/zxy/数据流量/smtp_tnef_0001/capture.pcapng,6,13,15292
+smtp_plaintext_0001,tcp,postfix-domex,smtp://192.168.1.1:25,0.439,/home/zxy/数据流量/smtp_plaintext_0001/capture.pcapng,5,16,1019
+smtp_plaintext_0002,tcp,postfix-domex,smtp://192.168.1.1:25,0.279,/home/zxy/数据流量/smtp_plaintext_0002/capture.pcapng,5,16,765
+smtp_plaintext_0003,tcp,postfix-domex,smtp://192.168.1.1:25,0.255,/home/zxy/数据流量/smtp_plaintext_0003/capture.pcapng,5,16,570

@@ -1,0 +1,8 @@
+{
+  "schema_version": 3,
+  "protocol": "smtp",
+  "display_name": "SMTP",
+  "last_updated": "2026-10-20",
+  "positioning": "专家判断视角（主观、有立场）：风险预判/深层钥匙/设计弱点/隐含约束，不重复 rfc/source/traffic/vuln 的客观事实",
+  "maintainer": "discovery"
+}

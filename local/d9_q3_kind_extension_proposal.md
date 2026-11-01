@@ -1,0 +1,189 @@
+# D9 Q3 kind 枚举扩展立项
+
+> 状态：Proposal（未冻结）
+> 来源：§6-Pre17 阶段 B（fact_key 约束 recon）
+> 触发：§6.6 observed_temporal_relation 需要 fact_key 承载
+>       `packet_role_pair`，现有 5 kind 无对应类目
+> 本文件仅登记问题与路径，**不做技术裁定**。
+
+---
+
+## 0. 背景
+
+§6.6-C1 裁定两端主体为 **Packet role classes**（§14 E14）。
+
+`fact_key.kind` 是**封闭枚举**（5 值）：
+
+| kind | 语义域 |
+|---|---|
+| `method` | 协议语义单位（§4.2） |
+| `header` | 协议语义单位 |
+| `constraint` | 协议语义单位 |
+| `state` | 协议语义单位 |
+| `transition` | 协议语义单位 |
+
+5 个 **全部**是 Protocol Semantic Units。而 **Packet 是 §4.3 Transport Unit**，
+与前者是**不同 domain**（§4.1 原则 2：三分 domain）。
+
+⟹ Packet 在 fact_key 层级**无对应类目**。
+
+实测依据（§6-Pre17 阶段 B1）：
+
+- `fact.schema.json` → `fact_key.additionalProperties` = `false`
+- `fact_key.kind.enum` = `[method, header, constraint, state, transition]`
+- `fact_key.kind.description` = "Fact kind, one of the 5 fixed kinds (v1)."
+- `subject` 无 `pattern` 约束（仅 `minLength: 1`）
+
+⟹ 方案 (b)（复用既有 kind）**不可行**：用 method/state/header 表达
+Packet role pair 属**语义挪用**（Packet ≠ Message / State / Transition）。
+
+---
+
+## 1. 问题陈述
+
+需扩展 `fact_key.kind` 枚举以容纳传输层类目（`packet_role_pair` 或等价形态）。
+
+**该需求是既定事实**——「Packet 需一个 fact_key kind」这一点不依赖
+role class 的具体枚举（见 §5）。
+
+---
+
+## 2. 扩展方案（候选，**不裁定**）
+
+| 方案 | 形态 | 改动面 | 风险 |
+|---|---|---|---|
+| **α** | 在现有 enum 追加传输层类目（如 `packet` / `packet_pair`） | `fact.schema.json` 的 `fact_key.kind.enum` + `fused_schema_v1.md` 的 5-kind 语义边界 | 最小；但需界定该 kind 的 allowed_kinds 类比语义（现有 kind 同时是 fact kind 与 property allowed_kinds 的取值域） |
+| **β** | 新增独立维度（如 `fact_key.unit_layer`）而非扩展 kind | `fact_key` 增字段（需解除 `additionalProperties: false`）+ 全部消费者同步 | 改动面最大；但语义上更清晰（domain 正交于 kind） |
+| **γ** | 复用 `condition` 承载 Packet 身份，kind 保持协议语义 | 无 schema 变更 | 但 §6.6-C1 已裁定 Packet 是**两端主体**（属 fact identity），非 condition |
+
+**agent 倾向 α**（未裁定），理由：
+
+- 与现有模型最小相容（β 需解除 `additionalProperties: false`，波及面最大）
+- §4.1 原则 2 的三分 domain 已在契约层存在，α 只是把 Transport Unit
+  补进 fact_key 的 kind 取值域
+
+⚠ 但 α 有个**未解问题**：`kind` 同时是 `property_registry` 的
+`allowed_kinds` 取值域。新增传输层 kind 后，
+`observed_temporal_relation` 的 `allowed_kinds`
+（当前 `[method, header, state, transition]`）是否需同步扩展？
+此问题属 Schema 变更范围，**留待裁定**。
+
+---
+
+## 3. schema_version bump 判定
+
+### 3.1 §11.3 核查结论
+
+`fused_pipeline_v1.md` §11.3 对 `schema_version` 的绑定是**一句概括**，
+**无逐条清单**（与 `normalization_version` / `fusion_version` 不同）：
+
+> L862: `schema_version`：**Storage Contract 语义变化。**
+
+逐条核查四个问题：
+
+| 核查项 | 结论 |
+|---|---|
+| schema_version 是否有绑定清单？ | **无**，仅 L862 一句定义 |
+| 是否明含 `fact.schema.json` kind 枚举？ | **未明含**（无清单可对照） |
+| 是否明含 schemas 目录全部内容？ | **未明含** |
+| 无明含时如何判定？ | 见 §3.2 |
+
+### 3.2 判定依据（用 §11.3 的两条通则反推）
+
+`schema_version` 无逐条清单，但 §11.3 有两条**通用通则**约束全部三个 version：
+
+- **L889**：「**不得**：修改实现侧 frozen rules 但保持 version 不变。」
+- **L891**：「同一个 version value 必须唯一对应一套 immutable
+  deterministic semantics。」
+
+扩展 `fact_key.kind` 枚举的后果：
+
+1. `fact.schema.json` 是 **Storage Contract**（§7.3 fact model 的 schema 源）
+2. 扩展 kind 会改变「哪些 Fact 是合法的」⟹ **Storage Contract 语义变化**
+   ⟹ 命中 L862 的定义
+3. 扩展前后的两套 kind 枚举**不是同一套 immutable semantics**
+   ⟹ 若保持 `schema_version = "v1"`，直接违反 **L891**
+4. 且属对 frozen contract 的修改而未动 version ⟹ 直接违反 **L889**
+
+### 3.3 结论
+
+**判定：扩展 `fact_key.kind` 必须 bump `schema_version`。**
+
+- 理由不是「清单明含」（清单不存在），而是 **L889 + L891 两条通则**
+- 当前 `schema_version` = `"v1"` ⟹ 目标值 `"v2"`
+- **本步不实施 bump**（禁止项），仅登记判定
+
+⚠ 该 bump 落在 `core/fused/pipeline/rules/build_inputs.py:250`
+与 `core/fused/pipeline/synthetic.py:99`（`SYNTHETIC_SCHEMA_VERSION`），
+**均属 `core/`**（本步禁止修改）⟹ 需单独授权。
+
+---
+
+## 4. 与 GAP-PAIR-IDENTITY 的关系
+
+**独立，两者不同源**（§6-Pre17 阶段 B 结论）。
+
+| | Q2 / PAIR-IDENTITY | Q3 / kind 扩展 |
+|---|---|---|
+| 两端主体 | Header（协议语义单位） | Packet（传输层单位） |
+| `kind` 需要扩展？ | **否**（`header` 已在枚举内） | **是** |
+| 复合性落在哪层？ | 仅 `subject` 内部（无 pattern 约束） | `kind` 枚举本身 |
+| 触发 Schema Gap Review？ | **不触发** | **触发** |
+| 承载机制 | subject 复合编码（§6.4 已提供归一与排序规则） | 新 kind 类目 |
+
+⟹ Q2 走 subject 编码，Q3 走 kind 扩展，**不可合并处置**。
+
+---
+
+## 5. 与 role class 枚举的关系
+
+**解耦，可并行。**
+
+- `§6.6-C1.x` 的 **role class 枚举**（request/response/data/control/…）
+  依赖 **Metadata Recon**（3000 captures 可用字段），见 §15.1 #22
+- `kind 扩展` 是**既定事实**——Packet 需要一个 fact_key kind，
+  这一点**不依赖** role class 的具体取值
+
+⟹ **Schema Gap Review 无需等 Metadata Recon**，两者可并行推进。
+
+role class 枚举只影响：
+- 新 kind 的 `allowed_kinds` 关联
+- `subject` 内部 role class 的具体编码
+
+---
+
+## 6. 待裁定问题
+
+1. **扩展方案**：α / β / γ
+2. **新 kind 的名称**：`packet` / `packet_pair` / 其他
+3. **新 kind 的语义边界**：与 §4.3.1 Packet identity 的对应关系；
+   是否需要 Packet ↔ Message 的 `contributes_to` 在 fact_key 层可见
+4. **`property_registry.allowed_kinds` 是否同步扩展**：
+   `observed_temporal_relation` 的 `allowed_kinds`
+   （当前 `[method, header, state, transition]`）是否需加入新 kind
+5. **`schema_version` bump 实施**：`v1` → `v2`，
+   改动点 `build_inputs.py:250` + `synthetic.py:99`（均属 `core/`，需授权）
+6. **`fused_schema_v1.md` 的同步修改**：该文档的 5-kind 语义边界描述
+   （属冻结文档，需单独授权）
+
+---
+
+## 7. 建议路径
+
+**（建议，不裁定。）**
+
+1. **先裁定方案（§6.1）**：α / β / γ 三选一。
+   建议优先评估 **α**（改动面最小），但需一并解决 §6.4
+   （`allowed_kids` 是否同步）。
+2. **与 Metadata Recon 并行**：kind 扩展不依赖 role class 枚举
+   （§5 已论证），无需串行等待。
+3. **bump 实施单独授权**：`schema_version` 的两个承载点都在 `core/`，
+   属本 Proposal 范围之外。
+4. **冻结文档同步另议**：`fused_schema_v1.md` 的 5-kind 描述需同步，
+   但它属 Hub 冻结文档，不在本 D9 设计的授权范围内。
+5. **§9 的 Q3 部分可先标 PENDING**（§9.3 已如此），
+   待本 Proposal 结论回填。
+
+---
+
+> 本文件为 Proposal，**未冻结**。任何扩展方案裁定需另行授权。

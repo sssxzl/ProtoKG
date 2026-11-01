@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-015",
+  "avd_id": "AVD-2019-5284",
+  "scope": "insufficient_source",
+  "confidence": "n/a",
+  "title_avd": "Huawei Leland-AL00A RTSP 模块输入验证错误漏洞",
+  "description_raw": "Huawei Leland-AL00A 是中国华为(Huawei)公司的一款智能手机。RTSP module 是其中的一个 RTSP(实时串流协议)模块。Huawei Leland-AL00A 9.1.0.111(C00E111R2P10T8)之前版本中的 RTSP 模块存在拒绝服务漏洞。攻击者可通过诱骗用户打开特制的 RTSP 媒体流利用该漏洞造成受影响手机异常,导致拒绝服务。",
+  "risk_level_avd": "(AVD 标签 NVD,操作系统类)",
+  "cwe_avd": "CWE-20 (输入验证不恰当); NVD-CWE-noinfo",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

@@ -1,0 +1,10 @@
+{
+  "core_version": "1.0",
+  "notes": "Epistemic Type Registry —— rtsp Profile v1（甲方案最小可用）。Layer 0 协议无关；本表登记 rtsp 实测出现的 4 个 epistemic_type，各含 4 元属性。",
+  "registered_types": [
+    {"name": "must", "authority_rank": 100, "can_be_canonical": true, "scope_required": false, "llm_interpretation": "协议规范中的强制要求（RFC 2119 MUST 语义）"},
+    {"name": "normative_unspecified", "authority_rank": 80, "can_be_canonical": true, "scope_required": false, "llm_interpretation": "协议规范中的要求（未明确强制等级）"},
+    {"name": "descriptive", "authority_rank": 50, "can_be_canonical": false, "scope_required": false, "llm_interpretation": "对协议对象的描述性陈述"},
+    {"name": "observed", "authority_rank": 20, "can_be_canonical": false, "scope_required": true, "llm_interpretation": "来自实测流量的观测（样本证据，非规范结论）"}
+  ]
+}

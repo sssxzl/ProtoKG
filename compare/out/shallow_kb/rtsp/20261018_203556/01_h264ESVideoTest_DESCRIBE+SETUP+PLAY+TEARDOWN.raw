@@ -1,0 +1,25 @@
+DESCRIBE rtsp://127.0.0.1:8554/h264ESVideoTest RTSP/1.0
+CSeq: 1
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Accept: application/sdp
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="a1b2c3d4e5f60718293a4b5c6d7e8f90", uri="rtsp://127.0.0.1:8554/h264ESVideoTest", response="d41d8cd98f00b204e9800998ecf8427e"
+
+SETUP rtsp://127.0.0.1:8554/h264ESVideoTest/track1 RTSP/1.0
+CSeq: 2
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Transport: RTP/AVP;unicast;client_port=50000-50001
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="a1b2c3d4e5f60718293a4b5c6d7e8f90", uri="rtsp://127.0.0.1:8554/h264ESVideoTest/track1", response="d41d8cd98f00b204e9800998ecf8427e"
+
+PLAY rtsp://127.0.0.1:8554/h264ESVideoTest/ RTSP/1.0
+CSeq: 3
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Session: 000022B8
+Range: npt=0.000-
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="a1b2c3d4e5f60718293a4b5c6d7e8f90", uri="rtsp://127.0.0.1:8554/h264ESVideoTest/", response="d41d8cd98f00b204e9800998ecf8427e"
+
+TEARDOWN rtsp://127.0.0.1:8554/h264ESVideoTest/ RTSP/1.0
+CSeq: 4
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Session: 000022B8
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="a1b2c3d4e5f60718293a4b5c6d7e8f90", uri="rtsp://127.0.0.1:8554/h264ESVideoTest/", response="d41d8cd98f00b204e9800998ecf8427e"
+

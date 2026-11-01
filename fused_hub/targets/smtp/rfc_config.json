@@ -1,0 +1,31 @@
+{
+  "protocol": "smtp",
+  "method_sections": [
+    "4.1.1",
+    "3",
+    "4.1",
+    "4.2",
+    "4.3"
+  ],
+  "field_sections": [
+    "2.2",
+    "3.6",
+    "4.4"
+  ],
+  "status_sections": [
+    "4.2",
+    "4.2.1",
+    "4.2.2",
+    "4.2.3"
+  ],
+  "method_excludes": [],
+  "numeric_bounds": [],
+  "expected_response_classes": [
+    "success",
+    "protocol_error",
+    "application_error",
+    "silence"
+  ],
+  "_source": "章节号实测自 kb/smtp/spec/rfc5321.txt（RFC 5321）与 kb/smtp/spec/rfc5322.txt（RFC 5322）正文标题：RFC 5321 §4 The SMTP Specifications → §4.1 SMTP Commands → §4.1.1 Command Semantics and Syntax（4.1.1.1 Extended HELLO (EHLO) or HELLO (HELO) / 4.1.1.2 MAIL (MAIL) / 4.1.1.3 RECIPIENT (RCPT) / 4.1.1.4 DATA (DATA) / 4.1.1.5 RESET (RSET) / 4.1.1.6 VERIFY (VRFY) / 4.1.1.7 EXPAND (EXPN) / 4.1.1.8 HELP (HELP) / 4.1.1.9 NOOP (NOOP) / 4.1.1.10 QUIT (QUIT)）；§4.2 SMTP Replies（4.2.1 Reply Code Severities and Theory / 4.2.2 Reply Codes by Function Groups / 4.2.3 Reply Codes in Numeric Order）。RFC 5322 §3 Syntax → §3.6 Field Definitions（3.6.1 The Origination Date Field / 3.6.2 Originator Fields / 3.6.3 Destination Address Fields / 3.6.4 Identification Fields / 3.6.5 Informational Fields / 3.6.6 Resent Fields / 3.6.7 Trace Fields / 3.6.8 Optional Fields）。",
+  "_notes": "method_sections 收录 §4.1.1：SMTP 的命令以 '描述名 (VERB)' 形式作为编号子标题出现（4.1.1.1 Extended HELLO (EHLO) or HELLO (HELO) … 4.1.1.10 QUIT (QUIT)），前缀 '4.1.1' 可覆盖全部 10 个命令子节。★跨 RFC 编号撞车消歧：SMTP 有 4 份 RFC（3207 STARTTLS / 4954 AUTH / 5321 传输 / 5322 消息），章节号大面积重号——§3 在 rfc3207 是 'The STARTTLS Keyword'、在 rfc4954 是 'The Authentication Service Extension'、在 rfc5322 是 'Syntax'；§4 在 rfc3207 是 'The STARTTLS Command'、在 rfc5321 是 'The SMTP Specifications'。故 method_sections 额外收录 '3' 与 '4' 以覆盖 STARTTLS（rfc3207 §3/§4）与 AUTH（rfc4954 §3）这两条扩展命令的规范章节；这两处是同名但异义的章节，按最长前缀匹配时 '3'/'4' 会同时命中 rfc5322 §3 Syntax 与 rfc5321 §4 The SMTP Specifications——rfc5322 §3 的更具体子节 '3.6' 归 field_sections（更长前缀优先），rfc5321 §4 的更具体子节 '4.1.1' 归 method_sections，故实际判定不受影响。field_sections = ['2.2', '3.6']：SMTP 的头部字段定义在 RFC 5322 §3.6 Field Definitions（3.6.1 The Origination Date Field / 3.6.2 Originator Fields / 3.6.3 Destination Address Fields / 3.6.4 Identification Fields / 3.6.5 Informational Fields / 3.6.6 Resent Fields / 3.6.7 Trace Fields / 3.6.8 Optional Fields），§2.2 Header Fields 是字段体语法（Unstructured / Structured / Long Header Fields）。status_sections 收录 §4.2 及其三个子节：RFC 5321 §4.2.3 'Reply Codes in Numeric Order' 是标准回复码表（三位数字回复码），故 SMTP **有**回复码章节（与任务描述中'SMTP 无标准状态码表'的预设有出入，以 RFC 实测为准）。"
+}

@@ -1,0 +1,23 @@
+{
+  "protocol": "rtsp",
+  "target": "rq2-live555:latest",
+  "note": "目标环境可播会话清单（环境级事实，与 rtsp_streams.json 的源码级实例知识正交）。rq2-live555:latest 镜像的 live/testProgs/ 下只有 7 个媒体文件（test.aac test.ac3 test.mkv test.mp3 test.mpg test.wav test.webm），因此服务端只能播这 7 个会话名；引用其余 11 个会话名的请求服务端一律返 404（实测：47.9% 的状态变更请求打空）。rtsp_streams.json 保留全部 18 个（从 testOnDemandRTSPServer.cpp 提取的实例级知识，对其他环境仍有价值），两者取交集后才是本环境实际可用的会话集合。",
+  "media_files": {
+    "aacAudioTest": "test.aac",
+    "ac3AudioTest": "test.ac3",
+    "matroskaFileTest": "test.mkv",
+    "mp3AudioTest": "test.mp3",
+    "mpeg1or2AudioVideoTest": "test.mpg",
+    "wavAudioTest": "test.wav",
+    "webmFileTest": "test.webm"
+  },
+  "streams": [
+    {"name": "mpeg1or2AudioVideoTest", "tracks": 2, "format": "MPEG-1/2 音视频"},
+    {"name": "matroskaFileTest", "tracks": 2, "format": "Matroska 容器"},
+    {"name": "webmFileTest", "tracks": 2, "format": "WebM 容器"},
+    {"name": "mp3AudioTest", "tracks": 1, "format": "MP3 音频"},
+    {"name": "wavAudioTest", "tracks": 1, "format": "WAV 音频"},
+    {"name": "aacAudioTest", "tracks": 1, "format": "AAC 音频"},
+    {"name": "ac3AudioTest", "tracks": 1, "format": "AC-3 音频"}
+  ]
+}

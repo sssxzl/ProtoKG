@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-023",
+  "avd_id": "AVD-2025-2348",
+  "scope": "not_rtsp_protocol",
+  "confidence": "n/a",
+  "title_avd": "IROAD DASH CAM FX2 HTTP/RTSP 事件信息披露(CVE-2025-2348)",
+  "description_raw": "在 IROAD Dash Cam FX2(版本至 2025 年 3 月 8 日)中发现了一个漏洞,该漏洞已被归类为问题性漏洞。受影响的是组件 HTTP/RTSP 中的文件 /mnt/extsd/event/ 的一个未知功能。通过操纵该功能会导致信息泄露。攻击需要在本地网络内发起。该漏洞已被公开披露,可能会被利用。",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": "CWE-200 (信息暴露); CWE-284 (访问控制不恰当); NVD-CWE-noinfo",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

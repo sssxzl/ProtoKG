@@ -1,0 +1,1 @@
+{"model":"gpt-3.5-turbo","messages":[{"role":"system","content":"You are a helpful assistant."},{"role":"user","content":"The following is one sequence of client requests:\nDESCRIBE rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0\nCSeq: 1\nAccept: application/sdp\n\nPlease add the SETUP client requests in the proper locations, and the modified sequence of client requests is:"}]}

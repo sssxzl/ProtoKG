@@ -1,0 +1,27 @@
+{
+  "protocol": "rtsp",
+  "target": "testOnDemandRTSPServer",
+  "host": "127.0.0.1",
+  "port": 8554,
+  "note": "目标服务资源清单（实例级知识，提取自 testOnDemandRTSPServer.cpp 的 streamName 定义）。URL 必须用 stream name，不能用磁盘文件名。",
+  "streams": [
+    {"name": "h264ESVideoTest", "tracks": 1, "format": "H.264 视频"},
+    {"name": "h265ESVideoTest", "tracks": 1, "format": "H.265 视频"},
+    {"name": "mpeg4ESVideoTest", "tracks": 1, "format": "MPEG-4 视频"},
+    {"name": "mpeg1or2ESVideoTest", "tracks": 1, "format": "MPEG-1/2 视频"},
+    {"name": "mp3AudioTest", "tracks": 1, "format": "MP3 音频"},
+    {"name": "wavAudioTest", "tracks": 1, "format": "WAV 音频"},
+    {"name": "amrAudioTest", "tracks": 1, "format": "AMR 音频"},
+    {"name": "mpeg2TransportStreamTest", "tracks": 1, "format": "MPEG2-TS 流"},
+    {"name": "aacAudioTest", "tracks": 1, "format": "AAC 音频"},
+    {"name": "dvVideoTest", "tracks": 1, "format": "DV 视频"},
+    {"name": "ac3AudioTest", "tracks": 1, "format": "AC-3 音频"},
+    {"name": "opusFileTest", "tracks": 1, "format": "Opus 音频"},
+    {"name": "mpeg2TransportStreamFromUDPSourceTest", "tracks": 1, "format": "MPEG2-TS(UDP)"},
+    {"name": "mpeg1or2AudioVideoTest", "tracks": 2, "format": "MPEG-1/2 音视频"},
+    {"name": "vobTest", "tracks": 2, "format": "VOB 视频(视频+AC3)"},
+    {"name": "matroskaFileTest", "tracks": 2, "format": "Matroska 容器"},
+    {"name": "webmFileTest", "tracks": 2, "format": "WebM 容器"},
+    {"name": "oggFileTest", "tracks": 2, "format": "Ogg 容器"}
+  ]
+}

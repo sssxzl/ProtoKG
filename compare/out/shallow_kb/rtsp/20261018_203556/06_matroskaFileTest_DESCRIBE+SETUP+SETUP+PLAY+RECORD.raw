@@ -1,0 +1,41 @@
+DESCRIBE rtsp://127.0.0.1:8554/matroskaFileTest RTSP/1.0
+CSeq: 1
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Accept: application/sdp
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="11223344556677889900aabbccddeeff", uri="rtsp://127.0.0.1:8554/matroskaFileTest", response="7c6a180b36896a0a8c02787eeafb0e4c"
+
+SETUP rtsp://127.0.0.1:8554/matroskaFileTest/track1 RTSP/1.0
+CSeq: 2
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Transport: RTP/AVP;unicast;client_port=50000-50001
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="11223344556677889900aabbccddeeff", uri="rtsp://127.0.0.1:8554/matroskaFileTest/track1", response="7c6a180b36896a0a8c02787eeafb0e4c"
+
+SETUP rtsp://127.0.0.1:8554/matroskaFileTest/track2 RTSP/1.0
+CSeq: 3
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Transport: RTP/AVP;unicast;client_port=50002-50003
+Session: 000022B8
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="11223344556677889900aabbccddeeff", uri="rtsp://127.0.0.1:8554/matroskaFileTest/track2", response="7c6a180b36896a0a8c02787eeafb0e4c"
+
+PLAY rtsp://127.0.0.1:8554/matroskaFileTest/ RTSP/1.0
+CSeq: 4
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Session: 000022B8
+Range: npt=0.000-
+Authorization: Digest username="admin", realm="LIVE555 Streaming Media", nonce="11223344556677889900aabbccddeeff", uri="rtsp://127.0.0.1:8554/matroskaFileTest/", response="7c6a180b36896a0a8c02787eeafb0e4c"
+
+RECORD rtsp://127.0.0.1:8554/matroskaFileTest/ RTSP/1.0
+CSeq: 5
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Session: 000022B8
+
+PAUSE rtsp://127.0.0.1:8554/matroskaFileTest/ RTSP/1.0
+CSeq: 6
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Session: 000022B8
+
+TEARDOWN rtsp://127.0.0.1:8554/matroskaFileTest/ RTSP/1.0
+CSeq: 7
+User-Agent: LibVLC/3.0.18 (LIVE555 Streaming Media v2023.06.20)
+Session: 000022B8
+

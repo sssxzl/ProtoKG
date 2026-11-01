@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-021",
+  "avd_id": "AVD-2025-66049",
+  "scope": "not_trigger_vulnerability",
+  "confidence": "n/a",
+  "title_avd": "Vivotek IP7137 摄像头中不受保护的 RTSP 流(CVE-2025-66049)",
+  "description_raw": "Vivotek IP7137 摄像头(固件版本为 0200a)存在一个信息披露漏洞。未经认证的用户可以通过 8554 端口上的 RTSP 协议访问实时摄像头画面。这允许具有网络访问权限的未经授权用户查看摄像头的画面,可能会危及用户的隐私和安全。供应商尚未回复通告方(CNA)。可能所有固件版本都受到影响。由于产品已进入生命周期结束阶段,因此预计不会发布修复程序。",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": "CWE-306 (关键功能的认证机制缺失)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

@@ -1,0 +1,124 @@
+sequenceDiagram
+    autonumber
+    participant PM as 主理人/工程师
+    participant SG as seedgen.py
+    participant BP as boundary_probe.py
+    participant SL as selector.py
+    participant RM as rag_seedgen.py
+    participant MF as seed_manifest.py
+    participant BC as rq3_build_corpus.py
+    participant OR as _batch_oracle.py
+    participant VM as VM 192.168.37.130
+    participant PF as rq3_preflight.sh
+    participant OC as rq3_orchestrate.sh
+    participant DK as Docker(afl-fuzz)
+    participant CL as rq3_collect_live555.sh
+    participant MT as rq3_metrics.py
+    participant ST as rq3_stats.py
+    participant DX as _fill_rq3_docx.py
+
+    Note over PM,SG: 阶段一 · 语料与字典生成（Windows 本机）
+
+    PM->>SG: python scripts/seedgen.py --protocol rtsp --focus-group C --out derived/rq3/C/seeds --manifest
+    SG->>SG: 校验 --focus-group 与原子开关互斥（冲突则 exit 2）
+    SG->>SL: edge_cover() / generic_danger(minimal=False)
+    SL-->>SG: ①5 条 + ②15 条
+    SG->>BP: derive_vuln_pattern_candidates(bundle, profile)
+    BP-->>SG: ③18 条候选
+    SG->>SG: _build_canonical_seed() → ④1 条
+    SG->>SL: dedupe_seeds() → 33 条
+    SG->>SG: _apply_url_placeholders() → 50 条（多流展开）
+    alt group ∈ {C,D} 排序
+        SG->>SL: prioritize_seeds(seeds)  %% 漏洞接近度降序
+        SL-->>SG: 50 条（score 100/95/85/60/40/20/10）
+    else group ∈ {A,B} 自然序
+        SG->>SG: 保持生成序（不排序）
+    end
+    SG->>BP: generate_targeted_dict(bundle, protocol, resources)  %% 仅 C
+    BP->>BP: 5 源并集 + _is_dict_token 过滤 → 档1=122 token（档2 compact=41）
+    BP->>BP: extract_session_candidates() + profile.boundary_probe.version_string/transport_params
+    BP-->>SG: 字典文本
+    SG->>RM: plan_seed_filenames(seeds)  %% NN_ 前缀 = 变异优先级载体
+    RM-->>SG: 50 个文件名
+    SG->>RM: write_seeds(seeds, out)  %% 复用 plan_seed_filenames
+    RM-->>SG: 50 个 .raw 落盘
+    SG->>MF: build_manifest(seeds, filenames, group)
+    MF->>SL: seed_layer() / vuln_proximity_score()
+    SL-->>MF: 层标签 + 分数
+    MF-->>SG: manifest.json（22 字段/条）
+    SG->>SG: 断言 len(written) == expect_seeds
+
+    Note over PM,DX: 阶段二 · 语料组装 + 干跑校验
+
+    PM->>BC: python scripts/rq3_build_corpus.py
+    BC->>SG: 对 A/B/C/D 各跑一次
+    SG-->>BC: 4 组 seeds + manifest + 字典
+    BC->>BC: 断言 A1–A10（A⊂B 前缀 / B≡C≡D 集合 / C≡RQ1.2 / 前60唯一 / MD5 唯一）
+    BC-->>PM: derived/rq3/groups.json + DICT_FROZEN.json（token 数 + MD5）
+    PM->>OR: bash local/rq3_oracle_batch.sh（VM 串行，端口 8571+）
+    OR->>VM: 启动 ASAN testOnDemandRTSPServer（宿主，与容器 8560 隔离）
+    loop 每条种子（串行，重试 3 次，LEGAL 早退）
+        OR->>VM: TCP 重放 → 判定 LEGAL/ILLEGAL/ERROR
+        VM-->>OR: 服务器存活/崩溃
+    end
+    OR-->>PM: 4 × dryrun.tsv + dryrun_summary.json
+
+    Note over PM,DX: 阶段三 · 启动前预检（VM）
+
+    PM->>PF: bash local/rq3_preflight.sh
+    PF->>VM: H1 镜像 / H2 条数 / H3-H4 字典 MD5 / H5 out 为空
+    PF->>PF: H6 ★ LLM 端点不可达断言
+    PF->>VM: H7 磁盘 ≥12GB / H8 容器名不冲突 / H9-H12
+    PF-->>PM: 8 项全 PASS 才放行（否则 exit≠0）
+
+    Note over PM,DX: 阶段四 · 正式运行（--network none 关闭 LLM 增强）
+
+    PM->>OC: bash /home/zxy/rq3_live555_abc.sh chatafl 1 5 24
+    loop group A,B,C,D × rep 1..5（错峰 10s）
+        OC->>DK: docker run -d --network none --cpus=1 --memory=1.5g -v seeds:/seeds_ro -v dict:/dict_rw -v out:/out
+        Note over DK: -i /seeds_work  -x /dict_rw/<按组字典>  -N tcp://127.0.0.1/8560
+        DK->>DK: enrich_testcases() → LLM 不可达 → 不写 enriched_*（afl-fuzz.c:2726 continue）
+        DK->>DK: read_testcases() → 初始队列 = 语料条数（50/38）
+    end
+    OC-->>PM: 20 容器启动完成
+    OC->>DK: 断言 A（T+90s）：enriched_* == 0 且 orig:enriched* == 0
+    Note over DK: ★ v2 新增：orig: 形式条目数 == 初始种子数（更强污染探针）
+    DK-->>OC: 0 / 0 / 50 ✅
+    OC->>OC: 断言 B（全波复查总数 == 0）
+
+    Note over DK: watcher：探测 /out/fuzzer_stats 出现 → T0 → sleep DUR → pkill afl-fuzz
+    Note over DK: 期间 T+1h / T+2h 快照器导出 queue_index.tsv（只读，md5 + orig 血缘）
+
+    Note over PM,DX: 阶段五 · 采集（实验停后，幂等）
+
+    PM->>CL: bash /home/zxy/rq3_collect.sh <ts>
+    CL->>VM: plot_data 首行/末行 + fuzzer_stats + queue 索引 + crashes
+    VM-->>CL: 数据
+    CL->>CL: 断言 C5 首行 paths_total ≈ 语料条数（污染指纹）
+    CL->>CL: 断言 C6 chat_times 最大值 == 0
+    CL-->>PM: rq3_p1/p2/summary/timeseries/queue_index/crashes_index/enrichment_audit + rq3_validation.md
+
+    Note over PM,DX: 阶段六 · 指标与统计（Windows）
+
+    PM->>MT: python scripts/rq3_metrics.py --collect derived/rq3/collect/<ts>
+    MT->>MT: 格式自适应切分（纯文本 vs 4 字节长度前缀帧）
+    MT->>MT: 按命名形式分类（orig:=初始 / src:=派生）
+    MT->>MT: P1–P4 宽松判定（去噪 + 容忍字段名被变异）→ MHR_A（主口径）
+    MT->>MT: 沿 src: 链上溯（splice 多父 / 防环 / 深度≤64）→ MHR_B / MHR_C
+    MT->>MT: M9 早期窗口（T+1h/T+2h）
+    MT->>MT: paired_win_rate(diffs) → win rate + 配对差值 + consistent_sign
+    MT-->>PM: metrics_<g>.json + table18_draft.md + rq3_paired.csv + rq3_winrate.csv
+    PM->>ST: python scripts/rq3_stats.py
+    ST-->>PM: stats_report.md（KW / M-W 精确 / Holm / Cliff's δ / HL / bootstrap CI / win-rate）
+
+    Note over PM,DX: 阶段七 · 回填 docx
+
+    PM->>DX: python local/_fill_rq3_docx.py
+    DX->>DX: 备份（仅首次）
+    DX->>VM: open_file → doc_list_tables
+    VM-->>DX: 22 张表（index 18 = Live555 RQ3）
+    DX->>DX: 三重定位：index 18 + 表头签名 + 前置段落「Live555（RTSP，text）」
+    DX->>VM: doc_set_table_cells（条件写：现值 ≠ 目标才写）
+    DX->>VM: save_file → close_file
+    DX->>DX: python-docx 回读逐单元格校验 + 表 19/20/21 与表 4 未变断言
+    DX-->>PM: 表 18（A/B/C 三行）+ 【RQ3 表 18 注】段落（幂等替换）

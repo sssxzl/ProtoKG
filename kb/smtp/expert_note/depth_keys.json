@@ -1,0 +1,17 @@
+{
+  "schema_version": 3,
+  "protocol": "smtp",
+  "depth_keys": [
+    {
+      "id": "data_entry",
+      "target_state": "DATA 数据输入",
+      "path": [
+        "EHLO",
+        "MAIL",
+        "RCPT",
+        "DATA"
+      ],
+      "why": "要触发邮件头/正文解析必须完整走到 DATA，少一步都在信封层"
+    }
+  ]
+}

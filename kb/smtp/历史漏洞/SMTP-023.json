@@ -1,0 +1,54 @@
+{
+  "avd_id": "CVE-2020-8794",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "OpenSMTPD mta_io 越界读远程代码执行（多行回复）",
+  "description_raw": "OpenSMTPD 6.6.4 之前客户端代码 mta_io（mta_session.c）处理多行回复存在越界读，可远程代码执行；因服务器 bounce 处理会启动客户端代码，故可攻击服务器。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-125 (越界读)",
+  "trigger": {
+    "method": {
+      "value": [
+        "EHLO",
+        "MAIL FROM"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "多行回复（服务器→客户端方向）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "构造多行 SMTP 回复触发 mta_io 越界读",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": [
+      "（客户端连接恶意服务器）EHLO x\r\n<恶意多行回复>\r\n"
+    ],
+    "confidence": "confirmed"
+  },
+  "mutation_hints": {
+    "value": [
+      "多行回复结构 fuzz",
+      "回复行长度 fuzz"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "confirmed",
+    "trigger_requests_note": "客户端侧漏洞，经 bounce 转发攻击服务器",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-023"
+}

@@ -1,0 +1,48 @@
+{
+  "case_id": "RTSP-016",
+  "avd_id": "AVD-2026-35901",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Mercury 摄像头 RTSP 拒绝服务(CVE-2026-35901)",
+  "description_raw": "Mercury MIPC252W 是一款面向家庭和小型商业场景的物联网 IP 摄像头,其 RTSP 服务用于实现实时视频流传输。受影响版本中,RTSP 服务在处理同一会话中针对同一媒体轨道的重复 SETUP 请求时,协议状态机未正确处理该异常序列,导致会话被强制终止,造成视频流中断。",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": "CWE-400 (未加控制的资源消耗)",
+  "trigger": {
+    "method": {
+      "value": [
+        "SETUP"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": "导致会话被强制终止",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "missing",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

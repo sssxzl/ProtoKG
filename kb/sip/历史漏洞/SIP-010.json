@@ -1,0 +1,47 @@
+{
+  "case_id": "SIP-010",
+  "avd_id": "CVE-2021-37706",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "pjproject STUN ERROR-CODE 整数下溢远程代码执行",
+  "description_raw": "传入 STUN 消息含 ERROR-CODE 属性时，头长度未在减法前校验，可导致整数下溢；网络内攻击者可伪造特制 UDP(STUN) 消息远程执行任意代码。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-191 (整数下溢)",
+  "trigger": {
+    "method": {
+      "value": [
+        "STUN"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "ERROR-CODE 属性",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "STUN 消息头长度未校验",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

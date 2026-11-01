@@ -1,0 +1,48 @@
+{
+  "case_id": "SIP-007",
+  "avd_id": "CVE-2022-21723",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "pjproject 畸形 SIP multipart 越界读",
+  "description_raw": "PJSIP 2.11.1 及之前解析含畸形 multipart 的 SIP 消息时可能越界读，影响所有接受 SIP multipart 的 PJSIP 用户。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-125 (越界读)",
+  "trigger": {
+    "method": {
+      "value": [
+        "INVITE",
+        "MESSAGE"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "multipart body",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "畸形 multipart",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

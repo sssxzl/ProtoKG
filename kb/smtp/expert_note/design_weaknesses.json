@@ -1,0 +1,13 @@
+{
+  "schema_version": 3,
+  "protocol": "smtp",
+  "design_weaknesses": [
+    {
+      "id": "addr_string_expand",
+      "name": "地址字符串扩展",
+      "root_cause": "SMTP 允许地址里的字符串扩展（Exim 的 ${run}），设计上给命令注入留了门",
+      "exploitable": true,
+      "exploit_hint": "${run{/bin/sh -c ...}} 注入"
+    }
+  ]
+}

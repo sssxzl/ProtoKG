@@ -1,0 +1,309 @@
+#!/bin/bash
+# version: 2026-10-26-v3
+# ↑ 版本标记：编排前用 `grep '^# version:'` 校验 VM 副本与本地一致（防版本漂移）
+# ★ RQ3 种子聚焦消融：A/B/C/D × <fuzzer> × N rep
+#
+# 用法（VM 上）：./rq3_live555_abc.sh <fuzzer> <rep_start> <rep_end> <hours>
+#   默认: chatafl 1 5 24
+#   --dry-run：只打印将要执行的容器命令，**不实际启动**（E2E 自检用）
+#
+# ★v3（代理内嵌）：--network bridge + 容器内嵌代理 127.0.0.1:18080，启动期 LLM 增强**开启**且必走代理改写层
+# ★v1：字典按组挂载（A/B/D = base24，C = targeted123）
+# ★v1：watcher 从「正式 fuzzing 起」计时（探测到 fuzzer_stats 后才 sleep DUR）
+# ★v1：容器名唯一性检查（同名存在直接失败，不静默复用旧 /out）
+# ★v3：断言语义反转 —— 断言 A/B/B2 从「增强关闭」改为「增强合规」
+set -euo pipefail
+
+# ★ 默认走内嵌代理镜像（可被环境变量 IMG 覆盖）；旧 latest 仍被 RQ3 归档数据引用，勿覆盖
+IMG="${IMG:-rq2-live555:proxy}"
+SEED_ROOT=/home/zxy/rq3_seeds          # 语料根目录（scp 上传）
+DICT_ROOT=/home/zxy/rq3_dict            # 冻结字典目录
+OUT_ROOT=/home/zxy/rq3_out
+SNAP_ROOT=/home/zxy/rq3_snap
+
+# ★ v3：dry-run 触发方式（两个都认，避免误启动容器）
+#   ① 参数 --dry-run
+#   ② 环境变量 DRY_RUN=1
+# ⚠️ v2 只认参数，导致 `DRY_RUN=1 bash rq3_live555_abc.sh ...` 仍**真的启动了容器**
+#    （主理人实测踩过，起了 7 个容器后清理）。现两种方式都生效。
+DRY_RUN="${DRY_RUN:-0}"
+if [ "${1:-}" = "--dry-run" ]; then
+  DRY_RUN=1
+  shift
+fi
+case "$DRY_RUN" in 0|1) ;; *) echo "!! DRY_RUN 只能是 0/1，收到 '$DRY_RUN'" >&2; exit 2 ;; esac
+
+FUZZER=${1:-chatafl}; R1=${2:-1}; R2=${3:-5}; DUR_H=${4:-24}
+DUR=$((DUR_H * 3600))
+BOOTSTRAP_BUDGET=$((6 * 3600))          # 启动 + 干跑余量
+TIMEOUT=$((DUR + BOOTSTRAP_BUDGET))
+
+declare -A FUZZER_BIN
+FUZZER_BIN[chatafl]=/home/ubuntu/chatafl/afl-fuzz
+FUZZER_BIN[aflnet]=/home/ubuntu/aflnet/afl-fuzz
+
+# ★ 组的字典映射：字典是 RQ3 的被测变量
+declare -A GROUP_DICT
+GROUP_DICT[A]=$DICT_ROOT/rtsp_base.dict        # 24 token
+GROUP_DICT[B]=$DICT_ROOT/rtsp_base.dict        # 24 token
+GROUP_DICT[D]=$DICT_ROOT/rtsp_base.dict        # 24 token
+GROUP_DICT[C]=$DICT_ROOT/c_targeted.dict       # 123 token
+
+# ★ 期望种子条数（用于断言 A 的种子数核对）
+declare -A GROUP_SEEDS
+GROUP_SEEDS[A]=38
+GROUP_SEEDS[B]=50
+GROUP_SEEDS[C]=50
+GROUP_SEEDS[D]=50
+
+PORT_BASE=8560     # 容器内 SUT 端口（每容器独立 netns，容器间不冲突）
+
+# ★ v2 修复（QA-1 P0）：FUZZER_BIN 是**镜像内路径**，宿主上不存在
+#   （宿主没有 /home/ubuntu），原先用 `[ ! -x <宿主路径> ]` 判定会导致 100% 启动失败。
+#   正确做法：① 校验镜像在宿主存在；② 进容器内校验 fuzzer 二进制存在（只探一次并缓存）。
+if [ "$DRY_RUN" != "1" ]; then
+  case "$FUZZER" in
+    chatafl|aflnet) ;;
+    *)
+      echo "!! 未知 fuzzer: $FUZZER（可选：chatafl | aflnet）" >&2
+      exit 2
+      ;;
+  esac
+  if ! docker image inspect "$IMG" >/dev/null 2>&1; then
+    echo "!! 镜像不存在: $IMG（宿主 docker images 里查）" >&2
+    exit 2
+  fi
+  # 进容器内探测 fuzzer 二进制（镜像内路径）；只探一次，结果缓存
+  if [ -z "${_FUZZER_OK:-}" ]; then
+    if docker run --rm --network none --entrypoint test "$IMG" -x "${FUZZER_BIN[$FUZZER]}" >/dev/null 2>&1; then
+      _FUZZER_OK=1
+    else
+      echo "!! 镜像内未找到 fuzzer: ${FUZZER_BIN[$FUZZER]}（$IMG）" >&2
+      exit 2
+    fi
+  fi
+  echo "  [检查] 镜像 $IMG 就绪；fuzzer ${FUZZER_BIN[$FUZZER]} 已在镜像内确认"
+  # ★ 硬约束（v3）：RQ3 必须在 RQ1.2 完全停止后启动，否则两侧抢 16 核 CPU + 磁盘
+  #   → 数据都不可信。预检 H9/H10 也查这一项，但编排脚本**自己再查一次**（纵深防御：
+  #   万一有人绕过预检直接跑编排，这里仍然拦住）。
+  RQ2_RUNNING=$(docker ps --format '{{.Names}}' 2>/dev/null | grep -c '^rq2_' || true)
+  if [ "$RQ2_RUNNING" != "0" ]; then
+    echo "!! FATAL: 仍有 $RQ2_RUNNING 个 rq2_ 容器在跑 —— RQ1.2 未停，禁止启动 RQ3" >&2
+    echo "     → RQ3 必须在 RQ1.2 完全停止（2026-10-25 11:09）后启动" >&2
+    exit 3
+  fi
+  echo "  [检查] 无 rq2_ 容器在跑（RQ1.2 已停）"
+fi
+
+launch() {
+  local group=$1 rep=$2
+  local name="rq3_${group}_${FUZZER}_r${rep}"
+  # ★ 语料目录结构与仓库一致：<group>/seeds/*.raw
+  #   （挂载点必须直接含 .raw，否则 fuzzer 找不到种子）
+  local seeds="$SEED_ROOT/$group/seeds"
+  local out="$OUT_ROOT/${group}_${FUZZER}/r${rep}"
+  local dict="/dict_rw/$(basename "${GROUP_DICT[$group]}")"
+
+  if [ "$DRY_RUN" = "1" ]; then
+    # dry 模式：只打印命令拼装结果（不启动容器、不检查宿主路径）
+    echo "  [dry] 容器名: $name"
+    echo "  [dry]   语料:   $seeds → /seeds_ro:ro"
+    echo "  [dry]   字典:   ${GROUP_DICT[$group]} → /dict_rw:ro（容器内 $dict）"
+    echo "  [dry]   输出:   $out → /out"
+    echo "  [dry]   网络:   --network bridge"
+    echo "  [dry]   命令:   docker run -d --name $name --user root --cpus=1 --memory=1.5g --network bridge -v $seeds:/seeds_ro:ro -v $out:/out -v $DICT_ROOT:/dict_rw:ro $IMG bash -c 'cp -r /seeds_ro /seeds_work && (LLM_PROXY_HOST=127.0.0.1 python3 /proxy/llm_proxy.py > /proxy/proxy.log 2>&1 &) && sleep 2 && cd /home/ubuntu/experiments/live/testProgs && ... ${FUZZER_BIN[$FUZZER]} -d -i /seeds_work -x $dict -o /out -N tcp://127.0.0.1/$PORT_BASE -P RTSP ...'"
+    return 0
+  fi
+
+  mkdir -p "$out"
+  # ★ 容器名唯一性检查：同名存在直接失败（不静默复用旧输出）
+  if docker ps -a --format '{{.Names}}' | grep -qx "$name"; then
+    echo "!! 容器名已存在: $name —— 先清理再启动" >&2
+    exit 2
+  fi
+  # ★ 语料目录必须存在且非空（防止挂载空目录导致 fuzzer 无种子可用）
+  if [ ! -d "$seeds" ] || [ -z "$(ls "$seeds"/*.raw 2>/dev/null)" ]; then
+    echo "!! 语料目录缺失或为空: $seeds" >&2
+    exit 2
+  fi
+  # ★ 字典必须存在（防止 -x 指向空路径导致 fuzzer 静默不用字典）
+  if [ ! -f "${GROUP_DICT[$group]}" ]; then
+    echo "!! 字典不存在: ${GROUP_DICT[$group]}" >&2
+    exit 2
+  fi
+  docker run -d --name "$name" --user root --cpus=1 --memory=1.5g \
+    --network bridge \
+    -v "$seeds:/seeds_ro:ro" -v "$out:/out" -v "$DICT_ROOT:/dict_rw:ro" \
+    "$IMG" bash -c "
+      cp -r /seeds_ro /seeds_work &&
+      (LLM_PROXY_HOST=127.0.0.1 python3 /proxy/llm_proxy.py > /proxy/proxy.log 2>&1 &) &&
+      sleep 2 &&
+      cd /home/ubuntu/experiments/live/testProgs &&
+      { ( while [ ! -s /out/fuzzer_stats ]; do sleep 5; done;
+          sleep $DUR;
+          pkill -TERM afl-fuzz 2>/dev/null; sleep 5; pkill -KILL afl-fuzz 2>/dev/null || true ) &
+        timeout -k 2s --preserve-status $TIMEOUT ${FUZZER_BIN[$FUZZER]} \
+          -d -i /seeds_work -x $dict -o /out \
+          -N tcp://127.0.0.1/$PORT_BASE -P RTSP -D 10000 -q 3 -s 3 \
+          -E -K -R -m none -t 1000 -- ./testOnDemandRTSPServer $PORT_BASE; }"
+  echo "  [启动] $name (group=$group dict=$(basename "$dict"))"
+}
+
+# ★ v4 修复（QA-8）：整波熔断 —— 断言失败时必须 kill **本波所有** rq3_ 容器，
+#   不能只 kill 出问题的那一个（否则脚本 exit 3 后其余容器继续 fuzz 到 24h，
+#   形成「半波运行 + 半数容器状态未知」的脏状态）。
+abort_wave() {
+  local reason="$1" marker="$2"
+  echo "!! FATAL: $reason —— 中止本波：kill 所有 rq3_ 容器" >&2
+  for n in $(docker ps --format '{{.Names}}' 2>/dev/null | grep '^rq3_'); do
+    echo "   [熔断] kill $n" >&2
+    docker kill "$n" >/dev/null 2>&1 || true
+  done
+  [ -n "$marker" ] && touch "$OUT_ROOT/$marker"
+  exit 3
+}
+
+# ---- 断言 A：启动后 T+90s 逐容器检查「增强合规」----
+# 语义（增强已开启，走容器内代理改写层）：
+#   1) 原始种子数不变：seed_count == expect_seeds
+#   2) 增强产物合规：/seeds_work/enriched_* 每个文件首行必须是合法 RTSP 请求行
+# 返回 0 = 通过；返回 1 = 本容器失败（由调用方汇总后统一熔断）
+assert_enrichment_compliant() {
+  local name=$1 expect_seeds=$2
+  local seed_count enriched_count polluted
+  seed_count=$(docker exec "$name" bash -c \
+    'ls /seeds_work 2>/dev/null | grep -v "^enriched_" | grep -c "\.raw$" || true' 2>/dev/null || echo 0)
+  enriched_count=$(docker exec "$name" bash -c \
+    'ls /seeds_work 2>/dev/null | grep -c "^enriched_" || true' 2>/dev/null || echo 0)
+
+  # 原始种子数核对（确认原始语料没被破坏）
+  if [ "$seed_count" != "$expect_seeds" ]; then
+    echo "!! 断言失败 $name: 原始种子数 $seed_count != $expect_seeds" >&2
+    echo "SEED_COUNT_MISMATCH" >> "$OUT_ROOT/.assert_failures"
+    return 1
+  fi
+
+  # 逐文件校验 enriched_* 首行：合法 RTSP 请求行（存在才校验；不存在产物视为通过，由断言 B 查代理链路）
+  polluted=$(docker exec "$name" bash -c '
+    for f in /seeds_work/enriched_*; do
+      [ -e "$f" ] || continue
+      if ! head -n 1 "$f" | grep -Eq "^(OPTIONS|DESCRIBE|SETUP|PLAY|PAUSE|TEARDOWN|GET_PARAMETER|SET_PARAMETER|ANNOUNCE|RECORD|REDIRECT)[[:space:]]+[^[:space:]]+[[:space:]]+RTSP/1\.0"; then
+        echo "$f"
+      fi
+    done' 2>/dev/null || true)
+
+  if [ -n "$polluted" ]; then
+    echo "!! 断言失败 $name: 以下 enriched_* 首行非合法 RTSP 请求行（污染）：" >&2
+    echo "$polluted" | sed 's/^/     - /' >&2
+    echo "ENRICH_POLLUTED" >> "$OUT_ROOT/.assert_failures"
+    return 1
+  fi
+
+  echo "  [断言A] $name 通过（原始种子=$seed_count，enriched=$enriched_count，首行合规）"
+  return 0
+}
+
+echo "=== RQ3 启动：A/B/C/D × $FUZZER × rep $R1..$R2，时长 ${DUR_H}h ==="
+echo "镜像: $IMG   种子根: $SEED_ROOT   字典根: $DICT_ROOT"
+echo
+
+for g in A B C D; do
+  for rep in $(seq $R1 $R2); do
+    launch "$g" "$rep"
+    sleep 10                       # ★ 错峰启动，避免校准期 IO 争抢（沿用 RQ1.2 做法）
+  done
+done
+
+echo
+if [ "$DRY_RUN" = "1" ]; then
+  echo "=== dry 模式：跳过断言 A/B/B2（未实际启动容器）==="
+  echo "=== 命令拼装完成（未启动任何容器）==="
+  exit 0
+fi
+
+echo "=== 全部容器已启动，等待 90 s 后执行断言 A ==="
+sleep 90
+# ★ v4 修复（QA-8）：先跑完全部容器、汇总所有失败项，再统一整波熔断
+#   （原实现遇到第一个失败就 exit 3 → 后续容器从未被断言，状态未知）
+rm -f "$OUT_ROOT/.assert_failures"
+ASSERT_FAILED=0
+for g in A B C D; do
+  for rep in $(seq $R1 $R2); do
+    name="rq3_${g}_${FUZZER}_r${rep}"
+    if docker ps --format '{{.Names}}' | grep -qx "$name"; then
+      if ! assert_enrichment_compliant "$name" "${GROUP_SEEDS[$g]}"; then
+        ASSERT_FAILED=$((ASSERT_FAILED+1))
+      fi
+    fi
+  done
+done
+if [ "$ASSERT_FAILED" -gt 0 ]; then
+  echo
+  echo "!! 断言 A 失败容器数: $ASSERT_FAILED"
+  echo "!! 失败类型汇总:" >&2
+  sort -u "$OUT_ROOT/.assert_failures" 2>/dev/null | sed 's/^/   - /' >&2
+  MARK=$(sort -u "$OUT_ROOT/.assert_failures" 2>/dev/null | head -1)
+  abort_wave "断言 A 有 $ASSERT_FAILED 个容器不通过（类型: $MARK）" "$MARK"
+fi
+echo
+echo "=== 断言 A 全部通过 ==="
+
+# ---- 断言 B：全波代理改写生效复查，启动后 +10 min 执行 ----
+#   统计各容器 /proxy/proxy.log 中「改写[enrich] 成功」命中数与 enriched_* 产物数。
+#   两种情形都熔断（增强合规/生效不得静默放行）：
+#   1) enriched_* 产物 == 0 → 增强根本没发生（DeepSeek 不可达 / 代理没起来 / 增强被关）= 部署失败
+#   2) 有产物但改写命中 == 0 → 增强绕过改写层 = 污染风险
+echo
+echo "=== 等待 10 min 后执行断言 B（全波代理改写生效复查）==="
+sleep 600
+total_rewrite=$(for n in $(docker ps --format '{{.Names}}' | grep '^rq3_'); do
+                  docker exec "$n" bash -c \
+                    'grep -c "改写\[enrich\] 成功" /proxy/proxy.log 2>/dev/null || true'
+                done | awk '{s+=$1} END{print s+0}')
+total_enriched=$(for n in $(docker ps --format '{{.Names}}' | grep '^rq3_'); do
+                  docker exec "$n" bash -c \
+                    'ls /seeds_work 2>/dev/null | grep -c "^enriched_" || true'
+                done | awk '{s+=$1} END{print s+0}')
+if [ "$total_enriched" = "0" ]; then
+  abort_wave "全波 enriched_* 产物 = 0（增强零产物 = 部署失败）" "ENRICH_ZERO_PRODUCT"
+fi
+if [ "$total_rewrite" = "0" ]; then
+  abort_wave "有 $total_enriched 个 enriched_* 但代理改写命中=0（增强绕过改写层）" "ENRICH_NOT_REWRITTEN"
+fi
+echo "[断言B] 全波代理改写命中 = $total_rewrite，enriched 产物 = $total_enriched ✓"
+
+# ---- 断言 B2：★ enriched_* 全量合规探针（全波）----
+#   每个 enriched_* 文件：首行必须是合法 RTSP 请求行，且全文不含散文标记。
+#   这是「增强种子合规」的最终闸门：任一文件不合法 → 整波作废。
+echo
+echo "[断言B2] enriched_* 全量合规探针（首行合法请求行 + 无散文标记）"
+B2_FAIL=0
+for g in A B C D; do
+  for rep in $(seq $R1 $R2); do
+    name="rq3_${g}_${FUZZER}_r${rep}"
+    if ! docker ps --format '{{.Names}}' | grep -qx "$name"; then continue; fi
+    bad=$(docker exec "$name" bash -c '
+      BT=$(printf "\140")
+      bad=0
+      for f in /seeds_work/enriched_*; do
+        [ -e "$f" ] || continue
+        head -n 1 "$f" | grep -Eq "^(OPTIONS|DESCRIBE|SETUP|PLAY|PAUSE|TEARDOWN|GET_PARAMETER|SET_PARAMETER|ANNOUNCE|RECORD|REDIRECT)[[:space:]]+[^[:space:]]+[[:space:]]+RTSP/1\.0" || bad=$((bad+1))
+        if grep -Eiq "here is|note:|explanation|sure|below" "$f" || grep -Fq "$BT" "$f"; then bad=$((bad+1)); fi
+      done
+      echo "$bad"' 2>/dev/null || echo 0)
+    if [ "$bad" = "0" ]; then
+      echo "  [B2] $name: enriched_* 首行合法 + 无散文 ✓"
+    else
+      echo "!! 断言失败 $name: $bad 个 enriched_* 不合规（首行非请求行或含散文）" >&2
+      B2_FAIL=$((B2_FAIL+1))
+    fi
+  done
+done
+if [ "$B2_FAIL" -gt 0 ]; then
+  abort_wave "全波 enriched_* 合规探针失败（$B2_FAIL 个容器）" "ENRICH_POLLUTED"
+fi
+echo "[断言B2] 全波 enriched_* 合规探针通过 ✓"
+
+COUNT=$(docker ps --format '{{.Names}}' | grep -c '^rq3_' || true)
+echo "=== 启动完成：$COUNT 个容器在跑 ==="
+echo "=== 提醒：队列快照器请用 nohup bash /home/zxy/rq3_snapshot.sh & 启动 ==="

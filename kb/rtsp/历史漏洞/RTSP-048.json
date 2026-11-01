@@ -1,0 +1,49 @@
+{
+  "case_id": "RTSP-048",
+  "avd_id": "CVE-2025-65404",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "Live555 getSideInfo2 缓冲区溢出(CVE-2025-65404)",
+  "description_raw": "Live555 2018.09.02 版本的 getSideInfo2 函数存在缓冲区溢出,攻击者发送特制 MP3 流可触发拒绝服务。",
+  "risk_level_avd": "中危",
+  "cwe_avd": "CWE-120 (缓冲区溢出)",
+  "trigger": {
+    "method": {
+      "value": [
+        "SETUP",
+        "PLAY"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": "MP3 流触发 getSideInfo2 缓冲区溢出",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "missing",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "CVE 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

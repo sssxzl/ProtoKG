@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-022",
+  "avd_id": "AVD-2025-65857",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "CVE-2025-65857 漏洞",
+  "description_raw": "关于固件版本为 V5.00.R02.000807D8.10010.346624.S 的 Xiongmai XM530 IP 摄像头,存在一个漏洞。该漏洞位于 ONVIF 21.06 的 GetStreamUri 功能中,该功能暴露的 RTSP URIs 包含硬编码凭据,使得未经授权的用户可以直接访问视频流。",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": "CWE-359 (侵犯隐私)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

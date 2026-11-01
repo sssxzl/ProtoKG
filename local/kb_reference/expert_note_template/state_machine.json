@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "states": [],
+  "initial_state": "",
+  "transitions": [],
+  "_comment": "states: list[str] of all state names. initial_state: must be in states. transitions: list[{from, method, code, to}]. from/to can use '*' (any) or '$current' (stay). method must exist in methods.json."
+}

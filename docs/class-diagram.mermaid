@@ -1,0 +1,246 @@
+classDiagram
+    direction LR
+
+    class FocusGroupConfig {
+        +str group
+        +list~str~ layers
+        +str order
+        +str dict_kind
+        +int expect_seeds
+        +int expect_dict_tokens
+        +from_dict() FocusGroupConfig
+    }
+
+    class SeedCorpus {
+        +str protocol
+        +str description
+        +str generated_by
+        +list~str~ target_methods
+        +list~SeedMessage~ messages
+        +str selected_url
+        +to_dict() dict
+        +from_dict() SeedCorpus
+    }
+
+    class SeedMessage {
+        +str method
+        +str url
+        +dict headers
+        +str body
+        +str argument
+    }
+
+    class Selector {
+        +dedupe_seeds(seeds) list
+        +prioritize_seeds(seeds, max_seeds) list
+        +vuln_proximity_score(seed) int
+        +seed_layer(seed) str
+    }
+
+    class BoundaryProbe {
+        +derive_vuln_pattern_candidates(bundle) list
+        +generate_protocol_dict(bundle, protocol, resources) str
+        +generate_targeted_dict(bundle, protocol, resources, base_tokens, include_trigger_fields, compact) str
+        +extract_session_candidates(protocol) list
+        +_is_dict_token(t) bool
+    }
+
+    class RagSeedgen {
+        +plan_seed_filenames(seeds) list~str~
+        +write_seeds(seeds, out_dir) list~str~
+        +load_fact_views(protocol) list
+        +assemble_bundle(views) dict
+    }
+
+    class SeedManifest {
+        +str schema_version
+        +str group
+        +int seed_count
+        +dict dictionary
+        +list~SeedEntry~ seeds
+        +build_manifest(seeds, filenames, group, protocol) SeedManifest
+        +write_manifest(manifest, path) Path
+        +seed_layer(seed) str
+        +pattern_tags(seed) list~str~
+        +legal_illegal(seed) str
+    }
+
+    class SeedEntry {
+        +int index
+        +int rank
+        +str filename
+        +str md5
+        +int bytes
+        +str layer
+        +str layer_name
+        +str generated_by
+        +int score
+        +str description
+        +str legal_illegal
+        +list~str~ pattern_tags
+        +str stream
+        +list~str~ methods
+    }
+
+    class CorpusBuilder {
+        +run(groups) CorpusBundle
+        +assert_invariants(bundle) bool
+        +freeze_dictionary(path) dict
+    }
+
+    class CorpusBundle {
+        +dict groups_json
+        +dict dict_frozen
+        +dict manifests
+        +dict md5_sets
+    }
+
+    class DryRunOracle {
+        +oracle(seed_path, port, retries) str
+        +_run_once(seed_path, port) str
+        +split_messages(data) list
+        +wait_port(port, timeout) bool
+    }
+
+    class BatchOracle {
+        +main(dir, port, retries) int
+        +watchdog_limit_sec
+        +emit_tsv(rows) Path
+    }
+
+    class Preflight {
+        +check_H1_image() bool
+        +check_H2_seed_counts() bool
+        +check_H3_H4_dict_md5() bool
+        +check_H5_out_empty() bool
+        +check_H6_llm_unreachable() bool
+        +check_H7_disk() bool
+        +check_H8_container_names() bool
+    }
+
+    class Orchestrator {
+        +IMG
+        +PORT_BASE
+        +DUR
+        +TIMEOUT
+        +launch(group, rep) str
+        +assert_enrichment_disabled(name, expect_seeds) bool
+        +assert_wave_enrichment_total() bool
+    }
+
+    class ContainerSpec {
+        +str name
+        +str group
+        +str fuzzer
+        +int rep
+        +str seeds_path
+        +str out_path
+        +str dict_path
+        +int port
+        +str network_mode
+    }
+
+    class Snapshotter {
+        +snapshot_at(seconds) Path
+        +export_queue_index(container, dest) Path
+        +read_t0(container) int
+    }
+
+    class Collector {
+        +plot_first(container) str
+        +plot_last(container) str
+        +fs_field(container, key) str
+        +export_queue_index(container, dest) Path
+        +export_crashes(container, dest) Path
+        +validate_C1_C8() dict
+    }
+
+    class MhrPatterns {
+        +split_messages(data) list~bytes~
+        +detect_wire_format(data) str
+        +classify(entry_name, entry_md5, seed_md5_set) str
+        +match_P1_P4(messages, session_candidates) list~str~
+        +resolve_root_seeds(queue_id, orig_map, src_map) set
+        +build_lineage_maps(queue_names) tuple
+        +attribute_layer(entry, manifest) str
+    }
+
+    class LineageMaps {
+        +dict orig_map
+        +dict src_map
+        +int max_depth
+        +int unresolved
+    }
+
+    class PairedStats {
+        +paired_win_rate(diffs) dict
+        +wins
+        +ties
+        +losses
+        +win_rate
+        +mean_diff
+        +std_diff
+        +consistent_sign
+        +all_diffs
+    }
+
+    class MetricsComputer {
+        +compute(group, collect_dir) dict
+        +compute_MHR_A(entries) dict
+        +compute_MHR_B(entries, manifest) dict
+        +compute_MHR_C(crashes, manifest) dict
+        +compute_early_metrics(timeseries, snapshots) dict
+    }
+
+    class StatsRunner {
+        +mannwhitney_exact(a, b) dict
+        +kruskal_wallis(groups) dict
+        +holm_correction(p_values) list
+        +cliffs_delta(a, b) float
+        +bootstrap_ci(a, b, n) tuple
+    }
+
+    class DocxFiller {
+        +FILE
+        +EDSDK
+        +locate_rq3_table(tables) str
+        +build_cells(metrics) list~dict~
+        +fill(cells, table_id) None
+        +verify(backup) bool
+        +upsert_note(marker, text) None
+    }
+
+    FocusGroupConfig ..> SeedCorpus : 配置层组合
+    Selector ..> SeedCorpus : 打分/排序/分层
+    BoundaryProbe ..> SeedCorpus : 产出③层候选
+    RagSeedgen ..> SeedCorpus : 落盘
+    RagSeedgen ..> BoundaryProbe : 字典生成
+    RagSeedgen ..> Selector : 去重+排序
+    RagSeedgen ..> SeedManifest : 产出 manifest
+    SeedManifest o-- SeedEntry : 1..N
+    SeedEntry ..> SeedCorpus : 描述单条种子
+    CorpusBuilder ..> FocusGroupConfig : 读取四组配置
+    CorpusBuilder ..> RagSeedgen : 调用生成
+    CorpusBuilder ..> SeedManifest : 收集 manifest
+    CorpusBuilder ..> BoundaryProbe : 生成/冻结字典
+    CorpusBuilder ..> CorpusBundle : 产出
+    CorpusBundle o-- SeedManifest : 4 组
+    CorpusBundle ..> DryRunOracle : 语料输入
+    BatchOracle ..> DryRunOracle : 复用
+    BatchOracle ..> CorpusBundle : 逐组处理
+    Preflight ..> CorpusBundle : 校验语料/字典
+    Orchestrator ..> ContainerSpec : 逐个构建
+    Orchestrator ..> Preflight : 前置校验
+    Snapshotter ..> ContainerSpec : 读取容器
+    Collector ..> ContainerSpec : 读取容器
+    Collector ..> DryRunOracle : 复用切分逻辑
+    MetricsComputer ..> MhrPatterns : 判定规则
+    MetricsComputer ..> LineageMaps : 血缘上溯
+    MetricsComputer ..> PairedStats : 配对统计
+    MetricsComputer ..> SeedManifest : 层归属
+    MetricsComputer ..> CorpusBundle : 期望条数
+    MetricsComputer ..> Collector : 采集产物
+    StatsRunner ..> MetricsComputer : 指标输入
+    StatsRunner ..> PairedStats : win-rate 口径
+    DocxFiller ..> MetricsComputer : 表格数据
+    DocxFiller ..> StatsRunner : 表注引用

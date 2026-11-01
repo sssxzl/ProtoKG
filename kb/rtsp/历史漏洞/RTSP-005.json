@@ -1,0 +1,50 @@
+{
+  "case_id": "RTSP-005",
+  "avd_id": "AVD-2026-38998",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "LIVE555 堆释放后使用漏洞(CVE-2026-38998)",
+  "description_raw": "LIVE555 Streaming Media 是 Live Networks 公司开源的 C++ 流媒体开发库,提供 RTSP 服务器、RTSP 客户端与 RTP/RTCP 传输能力,被广泛集成于网络摄像头、NVR 和流媒体服务器等设备与软件中。受影响版本中,RTSP 服务器在会话已通过 interleaved 方式(RTP/RTCP-over-TCP)完成 SETUP 后,再次收到同一会话的非 interleaved SETUP 时处理不当:SETUP 流程沿用上一次 TCP 传输遗留的 tcpSocketNum,以 0xFF 通道号传入 OnDemandServerMediaSubsession::getStreamParameters 并生成被判定为 TCP 模式的 Destinations;StreamState::startPlaying 未校验通道号,调用 addStreamSocket 把 RTP/RTCP 挂到 RTSP 连接的 TCP 套接字上,并登记指向 RTSPClientConnection 内嵌 TLSState 的指针。由此产生的套接字处理权与状态不一致,使连接对象在 handleRequestBytes 处理后续请求时被删除,而 SocketDescriptor::tcpReadHandler1 与 RTPInterface::sendDataOverTCP 仍持有指向该已释放对象的指针,攻击者发送一系列 RTSP 与 HTTP 请求可远程触发堆释放后使用,导致服务器进程崩溃,造成拒绝服务。",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": "CWE-416 (释放后使用)",
+  "trigger": {
+    "method": {
+      "value": [
+        "SETUP"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": [
+        "interleaved"
+      ],
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "当:SETUP 流程沿用上一次 TCP 传输遗留的 tcpSocketNum",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "description": "RQ3 种子聚焦消融实验的唯一配置源（约定 C1）。所有脚本必须从本文件读取配置，禁止散落硬编码。",
+  "protocol": "rtsp",
+  "image": "rq2-live555:latest",
+  "base_dict_md5": "464351f88db6c3f0bdac0de01859316b",
+  "groups": {
+    "A": {
+      "label": "A 守正",
+      "layers": ["edge_cover", "generic_danger", "canonical"],
+      "order": "natural",
+      "dict_kind": "base",
+      "dict_file": "rtsp_base.dict",
+      "expect_seeds": 38,
+      "expect_dict_tokens": 24,
+      "in_paper_table18": true
+    },
+    "B": {
+      "label": "B 漏洞导向",
+      "layers": ["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
+      "order": "natural",
+      "dict_kind": "base",
+      "dict_file": "rtsp_base.dict",
+      "expect_seeds": 50,
+      "expect_dict_tokens": 24,
+      "in_paper_table18": true
+    },
+    "C": {
+      "label": "C 完整聚焦",
+      "layers": ["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
+      "order": "vuln-proximity",
+      "dict_kind": "targeted",
+      "dict_file": "c_targeted.dict",
+      "expect_seeds": 50,
+      "expect_dict_tokens": 123,
+      "in_paper_table18": true
+    },
+    "D": {
+      "label": "D 解耦（附录）",
+      "layers": ["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
+      "order": "vuln-proximity",
+      "dict_kind": "base",
+      "dict_file": "rtsp_base.dict",
+      "expect_seeds": 50,
+      "expect_dict_tokens": 24,
+      "in_paper_table18": false
+    }
+  },
+  "dict_kinds": {
+    "none": {
+      "writes_file": false,
+      "token_count": 0,
+      "description": "不产出字典（编排时由调用方指定 -x）"
+    },
+    "base": {
+      "writes_file": true,
+      "token_count": 24,
+      "md5": "464351f88db6c3f0bdac0de01859316b",
+      "description": "复制 fused_hub/targets/rtsp/rtsp_base.dict（镜像内基础字典的仓库内逐字节副本）"
+    },
+    "protocol": {
+      "writes_file": true,
+      "token_count": 102,
+      "md5": "77d47b7b76139212c86a84ae771c4784",
+      "description": "generate_protocol_dict(...)（现状 102 token，不作 RQ3 变量）"
+    },
+    "targeted": {
+      "writes_file": true,
+      "token_count": 123,
+      "description": "generate_targeted_dict(...)（C 组定向字典，必须是 base24 的严格超集）"
+    },
+    "targeted-compact": {
+      "writes_file": true,
+      "token_count": 32,
+      "description": "generate_targeted_dict(..., compact=True)（C' 预案：基础字典 + 关键 token）"
+    }
+  },
+  "fuzzers": {
+    "chatafl": {
+      "bin": "/home/ubuntu/chatafl/afl-fuzz",
+      "has_llm_enrichment": true,
+      "note": "ChatAFL 启动期无条件调用 enrich_testcases()（afl-fuzz.c:10687），必须以 --network none 关闭"
+    },
+    "aflnet": {
+      "bin": "/home/ubuntu/aflnet/afl-fuzz",
+      "has_llm_enrichment": false,
+      "note": "AFLNet 无 enrich_* 逻辑（镜像内 grep 命中 0）；仍用 --network none 以保持网络拓扑为控制变量"
+    }
+  },
+  "reps": [1, 2, 3, 4, 5],
+  "duration_hours": 24,
+  "bootstrap_budget_hours": 6,
+  "ports": {
+    "container_sut": 8560,
+    "oracle_base": 8571,
+    "oracle_note": "容器内 SUT 端口 8560（各容器独立 netns）；oracle 跑在宿主，用 8571+ 递增，物理上不可能抢端口"
+  },
+  "container": {
+    "user": "root",
+    "cpus": "1",
+    "memory": "1.5g",
+    "network": "none",
+    "network_note": "--network none 是关闭 ChatAFL 启动期 LLM 增强的唯一机制性手段"
+  },
+  "container_template": "rq3_{group}_{fuzzer}_r{rep}",
+  "fuzzer_args": [
+    "-d", "-i", "/seeds_work", "-x", "{DICT}", "-o", "/out",
+    "-N", "tcp://127.0.0.1/8560", "-P", "RTSP", "-D", "10000",
+    "-q", "3", "-s", "3", "-E", "-K", "-R", "-m", "none", "-t", "1000",
+    "--", "./testOnDemandRTSPServer", "8560"
+  ],
+  "vm": {
+    "host": "192.168.37.130",
+    "user": "zxy",
+    "seed_root": "/home/zxy/rq3_seeds",
+    "dict_root": "/home/zxy/rq3_dict",
+    "out_root": "/home/zxy/rq3_out",
+    "snap_root": "/home/zxy/rq3_snap",
+    "oracle_dir": "/home/zxy/live555-asan/testProgs",
+    "oracle_server": "/home/zxy/live555-asan/testProgs/testOnDemandRTSPServer",
+    "collect_dir": "/home/zxy/rq3_collect"
+  },
+  "preflight": {
+    "min_free_bytes": 12884901888,
+    "min_free_gb": 12,
+    "llm_endpoint": "192.168.37.1:18080",
+    "llm_endpoint_note": "预检记录宿主可达性；真正的阻断性断言是容器内 --network none 的队列级断言",
+    "assert_enriched_seeds_zero": true,
+    "assert_enriched_queue_zero": true,
+    "assert_chat_times_zero": true,
+    "snapshot_seconds": [3600, 7200]
+  },
+  "docx": {
+    "file": "local/实验方案_详细版.docx",
+    "table_index": 18,
+    "table_header": ["聚焦组", "种子数", "dry-run 通过率%", "分支覆盖%", "崩溃数", "变异命中率"],
+    "table_rows": 4,
+    "table_cols": 6,
+    "preceding_paragraph": "Live555（RTSP，text）",
+    "note_marker": "【RQ3 表 18 注】",
+    "table_id_note": "table_id 跨会话不稳定（实测三次各不相同），必须运行时三重定位，严禁硬编码"
+  },
+  "stats": {
+    "mann_whitney": "exact",
+    "holm_correction": true,
+    "bootstrap_iterations": 10000,
+    "bootstrap_ci": 0.95,
+    "min_reachable_p_n5v5": 0.0079
+  }
+}

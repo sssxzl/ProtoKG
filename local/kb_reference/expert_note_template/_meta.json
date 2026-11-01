@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "display_name": "Display Name (e.g. RTSP / HTTP / SIP)",
+  "last_updated": "YYYY-MM-DD",
+  "sources": [
+    {"name": "RFC XXXX", "url": "https://datatracker.ietf.org/doc/html/rfcXXXX"}
+  ],
+  "maintainer": "your-name",
+  "notes": "Replace PROTOCOL_PLACEHOLDER with lowercase protocol name (e.g. 'sip', 'mqtt'). display_name is human-readable. last_updated is ISO date."
+}

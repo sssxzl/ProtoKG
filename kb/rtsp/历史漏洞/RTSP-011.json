@@ -1,0 +1,49 @@
+{
+  "case_id": "RTSP-011",
+  "avd_id": "AVD-2019-7733",
+  "scope": "insufficient_source",
+  "scope_reason": "AVD 原文攻击路径是 'HTTP 报头中带有较大整数的 Content-Length',这要求 RTSP 客户端先发 HTTP 隧道请求把 RTSP 包起来再附 Content-Length。纯 RTSP 客户端(直接 RTSP/1.0 over TCP)不会主动构造 HTTP Content-Length,无法在 protocol 层 seedgen 触发该漏洞。trigger_methods.value=null, AVD 未给具体 RTSP method。",
+  "confidence": "medium",
+  "title_avd": "LIVE555 Media Server 输入验证错误漏洞",
+  "description_raw": "LIVE555 Media Server 是一款 RTSP 服务器程序。该程序可提供各种媒体文件流服务。Live555 Media Server 0.95 版本中存在输入验证错误漏洞,该漏洞源于程序没有检查 content-length 字段并将它用于 memmove 函数中。攻击者可借助 HTTP 报头中带有较大整数的 Content-Length 字段利用该漏洞造成拒绝服务。",
+  "risk_level_avd": "低危",
+  "cwe_avd": "CWE-190 (整数溢出或超界折返)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": [
+        "Content-Length"
+      ],
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "Content-Length 字段为较大整数",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

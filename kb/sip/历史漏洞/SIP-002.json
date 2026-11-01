@@ -1,0 +1,47 @@
+{
+  "case_id": "SIP-002",
+  "avd_id": "CVE-2018-8828",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Kamailio REGISTER 畸形 branch/From tag 堆溢出",
+  "description_raw": "Kamailio 4.4.7/5.0.6/5.1.2 之前，特制 REGISTER 消息带畸形 branch 或 From tag，在 modules/tmx/tmx_pretran.c 的 tmx_check_pretran 触发 off-by-one 堆溢出。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-122 (堆溢出)",
+  "trigger": {
+    "method": {
+      "value": [
+        "REGISTER"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "branch / From tag",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "畸形 branch 或 From tag",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

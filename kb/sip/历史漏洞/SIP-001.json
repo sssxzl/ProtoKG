@@ -1,0 +1,47 @@
+{
+  "case_id": "SIP-001",
+  "avd_id": "CVE-2020-27507",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Kamailio INVITE 重复字段+超长 tag 缓冲区溢出",
+  "description_raw": "Kamailio 5.5.0 之前处理含重复字段和超长 tag 的 INVITE 请求不当，导致缓冲区溢出，崩溃服务器或造成其他未指明影响。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-120 (缓冲区溢出)",
+  "trigger": {
+    "method": {
+      "value": [
+        "INVITE"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "tag / 重复字段",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "INVITE 携带重复字段与超长 tag",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

@@ -1,0 +1,47 @@
+{
+  "case_id": "RTSP-029",
+  "avd_id": "AVD-2021-903197",
+  "scope": "not_rtsp_protocol",
+  "confidence": "n/a",
+  "title_avd": "VLC ty*** 文件存在内存破坏漏洞(CNVD-2020-12897)",
+  "description_raw": "VLC 是一款自由、开源的跨平台多媒体播放器及框架,可播放大多数多媒体文件,以及 DVD、音频 CD、VCD 及各类流媒体协议。VLC ty*** 文件存在内存破坏漏洞。攻击者可利用漏洞执行恶意代码或可使进程崩溃。",
+  "risk_level_avd": "(AVD 标签 安全社区,N/A)",
+  "cwe_avd": null,
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "missing",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source",
+    "unmatched_avd_reason": "cve=CNVD-2020-12897 是 CNVD 编号, AVD 库按 CNVD 收录"
+  },
+  "unmatched_avd": true,
+  "avd_id_equivalent": "AVD-2021-903197"
+}

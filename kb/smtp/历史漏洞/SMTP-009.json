@@ -1,0 +1,56 @@
+{
+  "avd_id": "CVE-2023-42117",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Exim SMTP 服务内存破坏远程代码执行",
+  "description_raw": "Exim smtp 服务（默认 TCP 25）对用户数据校验不足导致内存破坏，无需认证即可远程代码执行（ZDI-CAN-17554）。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-119 (内存破坏)",
+  "trigger": {
+    "method": {
+      "value": [
+        "EHLO",
+        "MAIL FROM",
+        "RCPT TO"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "SMTP 命令参数（未指定字段）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "向 smtp 服务发送特定格式数据触发内存破坏",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": [
+      "EHLO x\r\nMAIL FROM:<a@b>\r\nRCPT TO:<c@d>\r\nDATA\r\n.\r\n"
+    ],
+    "confidence": "confirmed"
+  },
+  "mutation_hints": {
+    "value": [
+      "各命令参数边界 fuzz",
+      "异常状态机序列",
+      "结合 PIPELINING 的并发命令"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "confirmed",
+    "trigger_requests_note": "ZDI-CAN-17554",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-009"
+}

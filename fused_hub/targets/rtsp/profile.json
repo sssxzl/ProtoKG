@@ -1,0 +1,427 @@
+{
+  "protocol": "rtsp",
+  "transport": "tcp",
+  "encoding": "text",
+  "default_url": "rtsp://127.0.0.1:8554/",
+  "resources_file": "rtsp_streams.json",
+  "templates_file": "rtsp_request_templates.json",
+  "raw_format": {
+    "line_ending": "\r\n",
+    "request_line": "{method} {url} {version}",
+    "version": "RTSP/1.0",
+    "header_line": "{key}: {value}",
+    "trailing_blank_line": true
+  },
+  "message_schema": {
+    "hint": "消息实例必须含 \"url\" 字段（完整请求 URL，用 <server> 占位服务器地址、<stream> 占位流名；SETUP 的 url 用 /track{N}（N 从 1 递增）；PLAY/PAUSE/TEARDOWN 等尾斜杠方法的 url 以 / 结尾；其余方法用裸 <stream>）。url 结构是你对协议会话语义的理解，请如实生成。其余关键头部字段（如 Transport/Session/CSeq）也作为字段给出。"
+  },
+  "allowed_methods": [
+    "OPTIONS",
+    "DESCRIBE",
+    "SETUP",
+    "TEARDOWN",
+    "PLAY",
+    "PAUSE",
+    "GET_PARAMETER",
+    "SET_PARAMETER"
+  ],
+  "url_placeholders": {
+    "<server>": "127.0.0.1:8554",
+    "<stream>": "mp3AudioTest"
+  },
+  "boundary_probe": {
+    "transport_tokens": [
+      "interleaved=0-1",
+      "client_port=50000-50001",
+      "RTP/AVP;unicast;client_port=50000-50001",
+      "RTP/AVP/TCP;unicast;interleaved=0-1"
+    ],
+    "note": "定向变异字典里协议特有的 Transport 组合串（RTSP 语义）。下沉到 profile 是为了保持 boundary_probe.py 协议无关——换协议 = 加一份 profile.json。生成逻辑见 core/fused/downstream/boundary_probe.py::generate_targeted_dict。"
+  },
+  "seedgen": {
+    "canonical_flow": [
+      "OPTIONS",
+      "DESCRIBE",
+      "SETUP",
+      "PLAY",
+      "TEARDOWN"
+    ],
+    "danger": false,
+    "state_changing": [
+      "SETUP",
+      "PLAY",
+      "PAUSE",
+      "TEARDOWN"
+    ],
+    "environments": {
+      "rq2-live555": {
+        "description": "目标环境 rq2-live555:latest（live/testProgs/ 仅 7 个媒体文件 → 仅这 7 个会话可播；其余 11 个会话服务端返 404，实测 47.9% 的状态变更请求打空）。playable_resources_file 声明该环境实际可播的会话子集，与源码级清单 rtsp_streams.json（18 个，实例级知识）取交集后生效 —— 源码清单不删改，对其他环境仍有价值。",
+        "playable_resources_file": "rtsp_playable_streams.json",
+        "focus_group": {
+          "A": {
+            "dict": "base",
+            "seeds": 27,
+            "dict_tokens": 24
+          },
+          "B": {
+            "dict": "base",
+            "seeds": 39,
+            "dict_tokens": 24
+          },
+          "C": {
+            "dict": "targeted",
+            "seeds": 39,
+            "dict_tokens": 114
+          },
+          "D": {
+            "dict": "base",
+            "seeds": 39,
+            "dict_tokens": 24
+          }
+        }
+      }
+    },
+    "required_headers": {
+      "OPTIONS": [
+        "CSeq"
+      ],
+      "DESCRIBE": [
+        "CSeq"
+      ],
+      "SETUP": [
+        "CSeq",
+        "Transport"
+      ],
+      "PLAY": [
+        "CSeq",
+        "Session"
+      ],
+      "PAUSE": [
+        "CSeq",
+        "Session"
+      ],
+      "TEARDOWN": [
+        "CSeq",
+        "Session"
+      ],
+      "GET_PARAMETER": [
+        "CSeq",
+        "Session"
+      ],
+      "SET_PARAMETER": [
+        "CSeq",
+        "Session"
+      ]
+    },
+    "precondition": {
+      "SETUP": [
+        "DESCRIBE"
+      ],
+      "PLAY": [
+        "SETUP"
+      ],
+      "PAUSE": [
+        "PLAY"
+      ],
+      "TEARDOWN": [
+        "SETUP"
+      ],
+      "GET_PARAMETER": [
+        "SETUP"
+      ],
+      "SET_PARAMETER": [
+        "SETUP"
+      ]
+    },
+    "session_header": {
+      "SETUP": [
+        {
+          "header": "Session",
+          "from_occurrence": 2
+        }
+      ],
+      "PLAY": [
+        {
+          "header": "Session",
+          "from_occurrence": 1
+        }
+      ],
+      "PAUSE": [
+        {
+          "header": "Session",
+          "from_occurrence": 1
+        }
+      ],
+      "TEARDOWN": [
+        {
+          "header": "Session",
+          "from_occurrence": 1
+        }
+      ],
+      "GET_PARAMETER": [
+        {
+          "header": "Session",
+          "from_occurrence": 1
+        }
+      ],
+      "SET_PARAMETER": [
+        {
+          "header": "Session",
+          "from_occurrence": 1
+        }
+      ]
+    },
+    "url_template": {
+      "OPTIONS": "{stream}",
+      "DESCRIBE": "{stream}",
+      "SETUP": "{stream}/track{N}",
+      "PLAY": "{stream}/",
+      "PAUSE": "{stream}/",
+      "TEARDOWN": "{stream}/",
+      "GET_PARAMETER": "{stream}/",
+      "SET_PARAMETER": "{stream}/"
+    },
+    "target_endpoint_normalization": true,
+    "focus_group": {
+      "A": {
+        "dict": "base",
+        "seeds": 38,
+        "dict_tokens": 24
+      },
+      "B": {
+        "dict": "base",
+        "seeds": 50,
+        "dict_tokens": 24
+      },
+      "C": {
+        "dict": "targeted",
+        "seeds": 50,
+        "dict_tokens": 123
+      },
+      "D": {
+        "dict": "base",
+        "seeds": 50,
+        "dict_tokens": 24
+      }
+    }
+  },
+  "rfc": {
+    "method_excludes": [
+      "EMBEDDED"
+    ]
+  },
+  "traffic_schema": {
+    "log_files": [
+      "client.log",
+      "rtsp.csv"
+    ],
+    "request_pattern": "^Sending request:\\s+(\\w+)\\s+(\\S+)",
+    "public_pattern": "^Public:\\s*(.+)$",
+    "response_pattern": "^RTSP/1\\.0\\s+(\\d+)",
+    "csv_fields": {
+      "method": "rtsp.method",
+      "status": "rtsp.status"
+    }
+  },
+  "vuln": {
+    "stream_hints": [
+      [
+        "mpeg-2 transport stream",
+        [
+          "mpeg2TransportStreamTest"
+        ]
+      ],
+      [
+        "mpeg2 transport stream",
+        [
+          "mpeg2TransportStreamTest"
+        ]
+      ],
+      [
+        "transport stream",
+        [
+          "mpeg2TransportStreamTest"
+        ]
+      ],
+      [
+        "mpeg-1/2",
+        [
+          "mpeg1or2AudioVideoTest",
+          "mpeg1or2ESVideoTest"
+        ]
+      ],
+      [
+        "mpeg1or2",
+        [
+          "mpeg1or2AudioVideoTest",
+          "mpeg1or2ESVideoTest"
+        ]
+      ],
+      [
+        "mpeg-4",
+        [
+          "mpeg4ESVideoTest"
+        ]
+      ],
+      [
+        "mpeg4",
+        [
+          "mpeg4ESVideoTest"
+        ]
+      ],
+      [
+        "matroska",
+        [
+          "matroskaFileTest"
+        ]
+      ],
+      [
+        "h.264",
+        [
+          "h264ESVideoTest"
+        ]
+      ],
+      [
+        "h264",
+        [
+          "h264ESVideoTest"
+        ]
+      ],
+      [
+        "h.265",
+        [
+          "h265ESVideoTest"
+        ]
+      ],
+      [
+        "h265",
+        [
+          "h265ESVideoTest"
+        ]
+      ],
+      [
+        "webm",
+        [
+          "webmFileTest"
+        ]
+      ],
+      [
+        "opus",
+        [
+          "opusFileTest"
+        ]
+      ],
+      [
+        "vob",
+        [
+          "vobTest"
+        ]
+      ],
+      [
+        "amr",
+        [
+          "amrAudioTest"
+        ]
+      ],
+      [
+        "aac",
+        [
+          "aacAudioTest"
+        ]
+      ],
+      [
+        "adts",
+        [
+          "aacAudioTest"
+        ]
+      ],
+      [
+        "ac-3",
+        [
+          "ac3AudioTest"
+        ]
+      ],
+      [
+        "ac3",
+        [
+          "ac3AudioTest"
+        ]
+      ],
+      [
+        "wav",
+        [
+          "wavAudioTest"
+        ]
+      ],
+      [
+        "mp3",
+        [
+          "mp3AudioTest"
+        ]
+      ],
+      [
+        "ogg",
+        [
+          "oggFileTest"
+        ]
+      ],
+      [
+        "mkv",
+        [
+          "matroskaFileTest"
+        ]
+      ],
+      [
+        "dv ",
+        [
+          "dvVideoTest"
+        ]
+      ],
+      [
+        "mpeg",
+        [
+          "mpeg1or2AudioVideoTest",
+          "mpeg1or2ESVideoTest"
+        ]
+      ]
+    ],
+    "crash_streams": [
+      "amrAudioTest",
+      "aacAudioTest",
+      "ac3AudioTest"
+    ],
+    "action_boundary": {
+      "double_setup": {
+        "dim": "track_number",
+        "legal": "对不同 track 分别 SETUP（track1≠track2，多轨会话）",
+        "illegal": "对同一 track 连续两次 SETUP（track1==track1，触发 Matroska UAF）"
+      },
+      "interleave_seq": {
+        "dim": "transport_switch",
+        "legal": "会话内传输方式保持一致（全 interleaved 或全普通）",
+        "illegal": "interleaved 与普通 SETUP 之间切换（触发 UAF）"
+      },
+      "uaf_seq": {
+        "dim": "re_setup_after_teardown",
+        "legal": "SETUP → TEARDOWN（终止会话，不重建）",
+        "illegal": "TEARDOWN 后再 SETUP（重建引用已释放资源，触发 UAF）"
+      },
+      "lifecycle_seq": {
+        "dim": "session_rebuild",
+        "legal": "建立会话 → 终止会话（不重建）",
+        "illegal": "终止会话后重建（触发 UAF）"
+      },
+      "assert_seq": {
+        "dim": "repeated_setup_play",
+        "legal": "单次 SETUP + PLAY",
+        "illegal": "多次重复 SETUP/PLAY（触发断言）"
+      },
+      "replay_seq": {
+        "dim": "cseq_dup",
+        "legal": "CSeq 递增",
+        "illegal": "连续相同 CSeq（触发重放）"
+      }
+    }
+  },
+  "note": "协议 Profile：换协议时只需新增一份 <protocol>/profile.json + 对应资源清单/请求模板，raw_writer 与 prompt 渲染代码零改动。raw_format 定义报文格式：request_line=请求行模板(占位符 method/url/version/argument)，header_line=头部行模板(占位符 key/value)，trailing_blank_line=每条消息后是否追加空行(消息分隔)。allowed_methods=目标程序 testOnDemandRTSPServer 实际实现的方法子集（8 个），用于过滤 LLM 从完整 live555 库推断出的协议方法全集（REGISTER/DEREGISTER/RECORD/ANNOUNCE/REDIRECT 会 405）。url_placeholders 把 LLM 生成的 <server>/<stream> 占位符替换成真实地址。seedgen.canonical_flow 定义 RTSP 黄金路径（规范完整会话）。seedgen.state_changing/required_headers/precondition/session_header/url_template = 协议客观结构知识（原 expert_note v2 客观维度 + 会话语义），迁移到 profile（不再由主观 expert_note 承载，也不被 build_hub 清理）。"
+}

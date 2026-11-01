@@ -1,0 +1,29 @@
+{
+  "protocol": "rtsp",
+  "method_sections": [
+    "10"
+  ],
+  "field_sections": [
+    "5",
+    "6.2",
+    "7.1",
+    "8.1",
+    "12"
+  ],
+  "status_sections": [
+    "11"
+  ],
+  "method_excludes": [
+    "EMBEDDED"
+  ],
+  "numeric_bounds": [],
+  "expected_response_classes": [
+    "success",
+    "protocol_error",
+    "application_error",
+    "silence"
+  ],
+  "_source": "章节号实测自 kb/rtsp/spec/rfc2326.txt（RFC 2326）正文标题：§10 Method Definitions（10.1 OPTIONS / 10.2 DESCRIBE / 10.3 ANNOUNCE / 10.4 SETUP / 10.5 PLAY / 10.6 PAUSE / 10.7 TEARDOWN / 10.8 GET_PARAMETER / 10.9 SET_PARAMETER / 10.10 REDIRECT / 10.11 RECORD / 10.12 Embedded (Interleaved) Binary Data）、§11 Status Code Definitions（11.1 Success 2xx / 11.2 Redirection 3xx / 11.3 Client Error 4xx）、§12 Header Field Definitions（12.1 Accept … 12.44 WWW-Authentica）、§5 General Header Fields、§6.2 Request Header Fields、§7.1 Status-Line、§8.1 Entity Header Fields。",
+  "_notes": "method_sections = ['10']，因为 RTSP 的方法以二级标题形式出现在 §10（10.1 OPTIONS …），前缀 '10' 覆盖全部 12 个方法子节。method_excludes 保留 profile.json 的 rfc 段值 'EMBEDDED'——§10.12 标题为 'Embedded (Interleaved) Binary Data'，是 RFC 的通用章节词而非 RTSP 方法，需排除以免被当作方法抽取（与既有 profile.json 的 rfc.method_excludes 一致，保持向后兼容）。status_sections = ['11']（RFC 2326 只定义到 4xx，§11 无 5xx 子节）。A1 改造补充：field_sections 加 '7.1'（Status-Line）——§7.1 定义的 'Status-Line = RTSP-Version SP Status-Code SP Reason-Phrase CRLF' 是 Response 的第一行，属头部级要素；A1 改造前的旧抽取器靠「单词正则 + 全文档扫描」碰巧抓到它，改用 rfc_config 语义判定后若不显式声明就会丢。§14.6 'Recording' **不**加入——它是状态机章节（讲 ANNOUNCE 如何录制），不是字段，旧抽取器抽到它是误抽。"
+
+}

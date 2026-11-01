@@ -1,0 +1,47 @@
+{
+  "case_id": "SIP-009",
+  "avd_id": "CVE-2021-43804",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "pjproject RTCP BYE 无效 reason 长度越界读",
+  "description_raw": "传入 RTCP BYE 消息的 reason 声明长度未与实际包大小校验，可导致越界读，攻击者可发送无效 reason 长度的 RTCP BYE。",
+  "risk_level_avd": "高危",
+  "cwe_avd": "CWE-125 (越界读)",
+  "trigger": {
+    "method": {
+      "value": [
+        "BYE"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "reason length",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "RTCP BYE 无效 reason 长度",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

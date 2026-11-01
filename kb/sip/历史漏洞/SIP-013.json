@@ -1,0 +1,48 @@
+{
+  "case_id": "SIP-013",
+  "avd_id": "CVE-2017-16872",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "pjproject SIP 数字头字段解析溢出",
+  "description_raw": "PJSIP 2.7.1 之前解析 SIP 消息中的数字头字段（cseq/ttl/port 等）可能溢出，可导致捕获意外值或缓冲区越界，利用特制无效值可能被利用。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-787 (越界写)",
+  "trigger": {
+    "method": {
+      "value": [
+        "INVITE",
+        "REGISTER"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "CSeq / ttl / port 等数字头",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "特制无效数字头值",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

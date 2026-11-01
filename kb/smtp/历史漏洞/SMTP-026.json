@@ -1,0 +1,54 @@
+{
+  "avd_id": "CVE-2016-10033",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "PHPMailer mail() 参数注入远程代码执行",
+  "description_raw": "PHPMailer 5.2.18 之前 isMail()（PHP mail()）传输中，From 地址未严格过滤，可构造合法邮箱地址同时构成 shell 命令，通过 -X 等 sendmail 参数写入文件实现 RCE。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-77 (命令注入)",
+  "trigger": {
+    "method": {
+      "value": [
+        "MAIL FROM"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "From 地址（sendmail 参数）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "From 地址含引号/空格构造额外 sendmail 参数（如 -X 日志写入）",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": [
+      "From: \"a\\\" -OQueueDirectory=/tmp -X/var/www/x.php \\\"@b\" <a@b>"
+    ],
+    "confidence": "confirmed"
+  },
+  "mutation_hints": {
+    "value": [
+      "From 地址注入 -X/-O sendmail 参数",
+      "双引号/反斜杠转义组合",
+      "RFC 3696 引号地址变形"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "confirmed",
+    "trigger_requests_note": "Dawid Golunski 发现",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-026"
+}

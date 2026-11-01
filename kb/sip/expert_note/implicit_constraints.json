@@ -1,0 +1,18 @@
+{
+  "schema_version": 3,
+  "protocol": "sip",
+  "implicit_constraints": [
+    {
+      "id": "branch_format",
+      "field": "Via branch",
+      "constraint": "branch 必须以 z9hG4bK 开头（RFC 3261）",
+      "violation_mutation": "branch 缺 z9hG4bK 前缀"
+    },
+    {
+      "id": "cseq_format",
+      "field": "CSeq",
+      "constraint": "CSeq = 数字 + 方法名，数字单调递增",
+      "violation_mutation": "CSeq 方法名与请求不符 / 数字回退"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+RUN_ID=public_aaa_0001 CID=NONE TCPDUMP_PID=0 WORK=/tmp/captures/public_aaa_0001 PORT=0
+SRC=/tmp/sip_public/aaa.pcap SIZE=111077

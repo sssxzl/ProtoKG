@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "methods": [],
+  "_comment": "methods array: each entry = {name: str, type: 'request'|'response', state_changing: bool}. Add 1 method per protocol verb (e.g. INVITE/ACK/BYE for SIP). Dispatcher keys: name."
+}

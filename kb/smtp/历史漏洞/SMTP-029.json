@@ -1,0 +1,53 @@
+{
+  "avd_id": "CVE-2016-10034",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Zend Framework Zend\\Mail Sendmail 传输参数注入",
+  "description_raw": "Zend Framework zend-mail 组件 Sendmail 传输，恶意用户可在地址中注入额外引号字符，被解释为额外命令行参数，通过 sendmail 程序实现 RCE。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-77 (命令注入)",
+  "trigger": {
+    "method": {
+      "value": [
+        "MAIL FROM"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "From 地址（引号注入）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "地址中注入引号字符构成额外 sendmail 参数",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": [
+      "From: \"a\\\" -X/var/www/x.php \\\"@b\" <a@b>"
+    ],
+    "confidence": "confirmed"
+  },
+  "mutation_hints": {
+    "value": [
+      "From 地址引号注入 fuzz",
+      "sendmail 参数组合"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "confirmed",
+    "trigger_requests_note": "依据 CVE/NVD 与公开 PoC 描述推导触发序列",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-029"
+}

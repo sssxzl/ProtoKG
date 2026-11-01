@@ -1,0 +1,30 @@
+{
+  "schema_version": 3,
+  "protocol": "smtp",
+  "hotspots": [
+    {
+      "id": "addr_parse",
+      "target_type": "field",
+      "subject": "FROM/TO 地址",
+      "why": "MAIL FROM/RCPT TO 地址解析最危险，Exim 的字符串扩展（${run}）曾导致命令注入 RCE",
+      "priority": "high",
+      "mutation_hint": "地址注入 ${run{...}} / 超长 local part"
+    },
+    {
+      "id": "string_expand",
+      "target_type": "field",
+      "subject": "字符串扩展",
+      "why": "SMTP 地址允许字符串扩展是设计过度，是命令注入的根子",
+      "priority": "high",
+      "mutation_hint": "${run} / ${expand} / ${if} 注入"
+    },
+    {
+      "id": "data_body",
+      "target_type": "method",
+      "subject": "DATA",
+      "why": "DATA 正文（尤其头部解析）长度/行尾处理易出内存问题",
+      "priority": "medium",
+      "mutation_hint": "超长正文 / 无结束符 / 畸形头"
+    }
+  ]
+}

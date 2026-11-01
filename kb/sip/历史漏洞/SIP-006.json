@@ -1,0 +1,47 @@
+{
+  "case_id": "SIP-006",
+  "avd_id": "CVE-2020-28361",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Kamailio remove_hf 头删除保护绕过",
+  "description_raw": "Kamailio 5.4.0 之前 textops 模块 remove_hf 函数可通过空白字符绕过头部删除保护机制。",
+  "risk_level_avd": "中危",
+  "cwe_avd": "CWE-693 (保护机制失效)",
+  "trigger": {
+    "method": {
+      "value": [
+        "头删除"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "whitespace 字符",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "remove_hf 用空白字符绕过",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

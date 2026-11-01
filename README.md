@@ -1,0 +1,136 @@
+# ProtoRAG
+
+> **Protocol-aware fuzzing with Retrieval-Augmented Generation.**
+> 基于动态 RAG 的协议模糊测试用例生成器。
+
+## 设计原则
+
+1. **协议级隔离,跨实验共享** — `kb/<协议>/<源>/` 在所有 fuzzing 实验间共享（源维度 5 档：`spec` / `协议实现源码` / `数据流量` / `历史漏洞` / `expert_note`）
+2. **协议无关主程序 + per-protocol Profile** — 协议特定配置集中在 `fused_hub/targets/<协议>/profile.json`（`allowed_methods` / `transport` / `message_schema`），主程序 `core/fused/` 不含协议分支
+3. **五源解耦 + 三层检索** — 五源（spec / 协议实现源码 / 数据流量 / 历史漏洞 / expert_note）各自抽取为独立 v2 Fact，下游按 ①结构覆盖 ②通用危险 ③漏洞导向边界探针 三层组织语料
+4. **fail-closed 校验** — LLM 写出的种子必须通过 `core/fused/validation.py` 七级校验，未注册引用（subject.type / aspect / epistemic_type）直接硬错误
+5. **流程到"生成高价值初始种子"结束** — 种子产出 `.raw` + `<协议>.dict` 定向字典，由 `scripts/seedgen.py` 落盘
+
+## 命名约定
+
+| 概念 | ProtoRAG v2 命名 |
+|---|---|
+| 中枢核心 | `core/fused/`（Layer 0）|
+| 知识原子 | `Fact`（六元组 fact_key + claims + resolution）|
+| 协议 Profile | `fused_hub/targets/<协议>/profile.json` |
+| 注册表 | `subject_type_registry` / `aspect_registry` / `epistemic_type_registry` |
+| 规范化序列化 | `canonical_serialize` + 确定性 ID（`compute_fact_id` / `compute_claim_id` / `compute_evidence_id`）|
+| 语料选择器 | `core/fused/downstream/selector.py`（`select_seeds` / `prioritize_seeds` / `vuln_proximity_score`）|
+| 知识维度 | **Subject.type(7) × Aspect(19) 开放注册**|
+
+## 当前阶段（v2 结构化知识中枢 + 多源种子生成）
+
+- **五源知识抽取**：`kb/<协议>/<源>/` → `derived/per_source/<协议>/<源>/facts/`，覆盖 ftp / rtsp / sip / smtp 四协议 × 五源
+- **三层检索**：`edge_cover`（结构覆盖）/ `generic_danger`（通用危险）/ `boundary_probe`（漏洞导向边界探针）
+- **协议无关主程序**：`core/fused/`（Layer 0 核心 + Layer 2 源映射）+ `core/fused/downstream/`（11 个下游消费模块）
+- **全量回归**：**560 passed / 0 skipped / 0 failed**（2026-10-30 实测）
+
+## 代码结构（按功能编排）
+
+```
+rag-chatafl/
+├── core/                      # 协议无关核心
+│   ├── llm.py                 # LLM 客户端（DeepSeek + Stub）+ 传输层
+│   ├── models.py              # 数据模型（SeedMessage / SeedCorpus / ...）
+│   ├── paths.py               # 路径常量 + SOURCE_DIRS 五源→kb 子目录映射
+│   ├── raw_writers.py         # ProFuzzBench 兼容 .raw writer
+│   └── fused/                 # v2 结构化知识中枢（33 个 .py）
+│       ├── models.py          # Layer 0 数据结构（26 dataclass）
+│       ├── canonical.py       # canonical 序列化 + 确定性 ID
+│       ├── registry.py        # 加载 3 个注册表（fail-closed）
+│       ├── validation.py      # 7 个 validate_* 函数
+│       ├── export.py          # LLM 安全接口（P10）
+│       ├── norm.py / expert_note.py / vuln.py / source.py / traffic.py   # Layer 2 五源→Fact
+│       ├── compat.py          # v1 fact → v2 Fact 双轨映射
+│       ├── traffic_extractor.py     # traffic 源抽取（含 packets.ndjson 真实字段）
+│       ├── source_autoseeder.py     # AutoSeeder 状态机分析（source 源）
+│       └── downstream/        # 11 个下游消费模块
+│           ├── edge_cover.py         # ① 结构覆盖层
+│           ├── generic_danger.py     # ② 通用危险层
+│           ├── boundary_probe.py     # ③ 漏洞导向边界探针 + 定向字典
+│           ├── rag_seedgen.py        # 中枢 → RAG → LLM → 种子
+│           ├── selector.py           # 三层语料选择器 + 降级
+│           ├── resolver.py           # claim 冲突消解
+│           ├── source_availability.py / source_retrieval.py
+│           └── seed_manifest.py / strategy.py / target_env.py
+├── scripts/                   # 构建与分析脚本
+│   ├── build_hub.py           # v2 中枢构建入口
+│   ├── seedgen.py             # 种子生成 CLI（--focus-group / --focused / --max-seeds）
+│   ├── seed_oracle_filter.py  # SIP 响应码 oracle 过滤
+│   └── rq4_*.py|rq4_*.sh      # 三协议对照实验的编排 / 采集 / 分析
+├── kb/<协议>/<源>/             # 五源知识库（read-only）
+│   └── spec/协议实现源码/数据流量/历史漏洞/expert_note
+├── fused_hub/                 # 中枢文档与配置
+│   ├── schema/                # 3 个注册表 JSON
+│   ├── docs/                  # 4 份设计文档
+│   └── targets/<协议>/        # 4 协议 profile.json + 字典
+├── derived/                   # 派生数据
+│   ├── per_source/<协议>/<源>/facts/<源>.jsonl   # v2 单源事实
+│   ├── fused/                 # v1 遗留融合产物
+│   ├── seeds/                 # 生成的种子
+│   ├── source_blocks/         # 检索缓存 + source 状态机缓存
+│   └── rq4/                   # RQ4 实验的分析产物
+├── tests/                     # 44 个测试文件，全量 560 passed
+└── local/                     # 临时调试脚本与实验记录
+```
+
+## 协议无关架构
+
+中枢核心（`core/fused/`）协议无关，**所有协议特定配置放 `fused_hub/targets/<协议>/profile.json`**。
+
+新加协议只需：
+
+1. 准备 kb 数据：`kb/<新协议>/{spec,协议实现源码,数据流量,历史漏洞,expert_note}/`
+2. 建 Profile：`fused_hub/targets/<新协议>/profile.json`（含 `allowed_methods` / `transport` / `message_schema`）
+3. 抽取 + 生成：
+
+```bash
+python scripts/build_hub.py --sources rfc expert_note source traffic vuln --protocol <新协议>
+python scripts/seedgen.py --protocol <新协议>
+```
+
+## 快速开始
+
+```bash
+cd E:\科研\想法idea\rag-chatafl
+
+# 1. 查看 kb 中实际存在的知识源
+python scripts/build_hub.py --list-sources
+
+# 2. 五源抽取 → derived/per_source/<协议>/<源>/facts/<源>.jsonl
+python scripts/build_hub.py --sources rfc expert_note source traffic vuln --protocol rtsp
+
+# 3. 生成种子（--focus-group B 含漏洞边界层；--focused 启用漏洞接近度排序）
+python scripts/seedgen.py --protocol rtsp --focus-group B
+```
+
+> 提示：`source` 源走 AutoSeeder（LLM 分析源码状态机），首次构建较慢且结果已按 code_blocks hash 缓存到
+> `derived/source_blocks/<协议>.state.json`，后续构建直接命中缓存。
+
+## 测试
+
+```
+============================= 560 passed in 28.7s =============================
+```
+
+无 skipped 用例。
+
+## 协议 fuzzing 完整架构
+
+| 层 | 负责 | 关键文件 |
+|---|---|---|
+| LLM | 协议 prompt + JSON 输出 | `core/llm.py` + Stub/DeepSeek |
+| 协议层 | per-protocol Profile 配置 | `fused_hub/targets/<协议>/profile.json` |
+| 抽取层 | 五源 → v2 Fact（六元组）| `core/fused/norm.py` + `expert_note.py` + `vuln.py` + `source.py` + `traffic.py` |
+| 校验层 | fail-closed 校验 + 注册表治理 | `core/fused/validation.py` + `core/fused/registry.py` |
+| 生成层 | 三层检索 + LLM 写 + 落盘 | `core/fused/downstream/selector.py` + `rag_seedgen.py` + `scripts/seedgen.py` |
+| 导出层 | LLM 安全接口（P10）| `core/fused/export.py` |
+
+## License
+
+Apache 2.0

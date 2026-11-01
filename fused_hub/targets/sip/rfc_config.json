@@ -1,0 +1,33 @@
+{
+  "protocol": "sip",
+  "method_sections": [
+    "7.1",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "25"
+  ],
+  "field_sections": [
+    "7.3",
+    "19",
+    "20"
+  ],
+  "status_sections": [
+    "7.2",
+    "21"
+  ],
+  "method_excludes": [],
+  "numeric_bounds": [],
+  "expected_response_classes": [
+    "success",
+    "protocol_error",
+    "application_error",
+    "silence"
+  ],
+  "_source": "章节号实测自 kb/sip/spec/rfc3261.txt（RFC 3261）正文标题：§7 SIP Messages（7.1 Requests / 7.2 Responses / 7.3 Header Fields）、§9 Canceling a Request、§10 Registrations、§11 Querying for Capabilities、§12 Dialogs、§13 Initiating a Session、§14 Modifying an Existing Session、§15 Terminating a Session、§19 Common Message Components、§20 Header Fields（20.1 Accept … 20.44 WWW-Authenticate）、§21 Response Codes（21.1 Provisional 1xx / 21.2 Successful 2xx / 21.3 Redirection 3xx / 21.4 Request Failure 4xx / 21.5 Server Failure 5xx / 21.6 Global Failures 6xx）、§25 Augmented BNF for the SIP Protocol。",
+  "_notes": "method_sections 收录 §7.1（Request-Line 的 Method 定义处，'This specification defines six methods: REGISTER, INVITE, ACK, CANCEL, BYE, OPTIONS'）以及各方法的专门章节（§9 CANCEL / §10 REGISTER / §11 OPTIONS / §13 INVITE / §14 re-INVITE / §15 BYE）与 §25 增强 BNF。field_sections 收录 §20（44 个头部字段定义）与 §7.3（头部字段格式与分类）、§19（公共消息组件：Request-URI/To/From/Call-ID/CSeq/Via 等）。status_sections 收录 §21（1xx–6xx 响应码表，21.1.1 100 Trying … 21.6.4 606 Not Acceptable）与 §7.2。§21 是三级编号（21.1.1），按最长前缀匹配 '21' 即可覆盖。"
+}

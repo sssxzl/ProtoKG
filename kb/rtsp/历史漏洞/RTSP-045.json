@@ -1,0 +1,49 @@
+{
+  "case_id": "RTSP-045",
+  "avd_id": "CVE-2021-38380",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "Live555 大量 MP3 请求递归栈溢出(CVE-2021-38380)",
+  "description_raw": "Live555 1.08 及之前版本对同一 MP3 流的巨量请求处理不当,导致递归和栈缓冲区越界读取,攻击者可借此发起拒绝服务。",
+  "risk_level_avd": "高危",
+  "cwe_avd": "CWE-125 (越界读取)",
+  "trigger": {
+    "method": {
+      "value": [
+        "SETUP",
+        "PLAY"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": "对同一 MP3 流发送大量请求",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "missing",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "CVE 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

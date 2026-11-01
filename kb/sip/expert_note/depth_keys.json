@@ -1,0 +1,16 @@
+{
+  "schema_version": 3,
+  "protocol": "sip",
+  "depth_keys": [
+    {
+      "id": "dialog_confirmed",
+      "target_state": "Confirmed dialog",
+      "path": [
+        "REGISTER",
+        "INVITE",
+        "ACK"
+      ],
+      "why": "确认 dialog 要 INVITE 收到 2xx 再 ACK，漏 ACK 只到 Inviting"
+    }
+  ]
+}

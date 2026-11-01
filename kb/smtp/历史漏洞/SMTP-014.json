@@ -1,0 +1,54 @@
+{
+  "avd_id": "CVE-2006-0058",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "Sendmail 信号处理器竞态条件远程代码执行",
+  "description_raw": "Sendmail 8.13.x 8.13.6 之前存在信号处理器竞态条件，触发超时使 setjmp/longjmp 中断并修改意外内存位置，可远程执行任意代码。",
+  "risk_level_avd": "高危",
+  "cwe_avd": "CWE-362 (竞态条件)",
+  "trigger": {
+    "method": {
+      "value": [
+        "EHLO",
+        "MAIL FROM"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "连接超时（时序）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "触发超时使 setjmp/longjmp 被中断",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": [
+      "（时序触发，无固定序列）"
+    ],
+    "confidence": "confirmed"
+  },
+  "mutation_hints": {
+    "value": [
+      "超时/慢速发送时序 fuzz",
+      "连接中断时序"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "confirmed",
+    "trigger_requests_note": "竞态条件，触发依赖时序",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-014"
+}

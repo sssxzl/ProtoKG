@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "value_pools": {},
+  "_comment": "value_pools dict: key=field_name (header or URL), value=list[str] of finite candidate values. e.g. {'Transport': ['RTP/AVP', 'RTP/AVP/TCP'], 'URL': ['rtsp://...']}. Each field gets 1 entry."
+}

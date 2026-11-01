@@ -1,0 +1,161 @@
+{
+  "protocol": "rtsp",
+  "source": "kb/数据流量 pcap 真实流量",
+  "note": "从真实抓包提取的请求模板：URL 结构与完整 header 集合（含可选头如 Range/Accept）。种子生成必须参照此模板，保证请求真实性以触达深层路径。",
+  "methods": {
+    "DESCRIBE": {
+      "url_patterns": [
+        "/{stream}"
+      ],
+      "headers": [
+        "CSeq",
+        "User-Agent",
+        "Accept",
+        "Authorization"
+      ],
+      "examples": {
+        "CSeq": [
+          "2",
+          "3",
+          "4"
+        ],
+        "User-Agent": [
+          "/home/zxy/target programs/live555/testProgs/openRTSP (LIVE555 Streaming Media v2026.04.01)",
+          "CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213",
+          "LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)"
+        ],
+        "Accept": [
+          "application/sdp"
+        ],
+        "Authorization": [
+          "Digest username=\"admin\", realm=\"IP Camera(C1052)\", nonce=\"0004cf6473583f06834f2a63455ef0b7\", uri=\"rtsp://10.11.26.98:554/isapi/streaming/channels/101\", response=\"c976ae83ce45f4281a45ae03876982db\""
+        ]
+      },
+      "captures": 915
+    },
+    "OPTIONS": {
+      "url_patterns": [
+        "/{stream}"
+      ],
+      "headers": [
+        "CSeq",
+        "User-Agent"
+      ],
+      "examples": {
+        "CSeq": [
+          "1",
+          "2"
+        ],
+        "User-Agent": [
+          "/home/zxy/target programs/live555/testProgs/openRTSP (LIVE555 Streaming Media v2026.04.01)",
+          "CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213",
+          "LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)"
+        ]
+      },
+      "captures": 918
+    },
+    "PLAY": {
+      "url_patterns": [
+        "/{stream}/"
+      ],
+      "headers": [
+        "CSeq",
+        "User-Agent",
+        "Session",
+        "Range",
+        "Authorization"
+      ],
+      "examples": {
+        "CSeq": [
+          "5",
+          "6"
+        ],
+        "User-Agent": [
+          "/home/zxy/target programs/live555/testProgs/openRTSP (LIVE555 Streaming Media v2026.04.01)",
+          "CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213",
+          "LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)"
+        ],
+        "Session": [
+          "000022B8",
+          "107518505",
+          "7477886380351771441"
+        ],
+        "Range": [
+          "npt=0.000-",
+          "npt=0.000-5.000"
+        ],
+        "Authorization": [
+          "Digest username=\"admin\", realm=\"IP Camera(C1052)\", nonce=\"0004cf6473583f06834f2a63455ef0b7\", uri=\"rtsp://10.11.26.98:554/isapi/streaming/channels/101/\", response=\"aca31dc4a621f852b46902398a333a40\""
+        ]
+      },
+      "captures": 904
+    },
+    "SETUP": {
+      "url_patterns": [
+        "/{stream}/track{N}"
+      ],
+      "headers": [
+        "CSeq",
+        "User-Agent",
+        "Transport",
+        "Authorization",
+        "Session"
+      ],
+      "examples": {
+        "CSeq": [
+          "3",
+          "4",
+          "5"
+        ],
+        "User-Agent": [
+          "/home/zxy/target programs/live555/testProgs/openRTSP (LIVE555 Streaming Media v2026.04.01)",
+          "CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213",
+          "LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)"
+        ],
+        "Transport": [
+          "RTP/AVP/TCP;unicast;interleaved=0-1",
+          "RTP/AVP/TCP;unicast;interleaved=2-3",
+          "RTP/AVP;unicast;client_port=32788-32789"
+        ],
+        "Authorization": [
+          "Digest username=\"admin\", realm=\"IP Camera(C1052)\", nonce=\"0004cf6473583f06834f2a63455ef0b7\", uri=\"rtsp://10.11.26.98:554/isapi/streaming/channels/101/\", response=\"6da4f4c77269802109b94c494d57d259\""
+        ],
+        "Session": [
+          "7477886380351771441"
+        ]
+      },
+      "captures": 913
+    },
+    "TEARDOWN": {
+      "url_patterns": [
+        "/{stream}/"
+      ],
+      "headers": [
+        "CSeq",
+        "User-Agent",
+        "Session",
+        "Authorization"
+      ],
+      "examples": {
+        "CSeq": [
+          "6",
+          "7"
+        ],
+        "User-Agent": [
+          "/home/zxy/target programs/live555/testProgs/openRTSP (LIVE555 Streaming Media v2026.04.01)",
+          "CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213",
+          "LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)"
+        ],
+        "Session": [
+          "000022B8",
+          "107518505",
+          "7477886380351771441"
+        ],
+        "Authorization": [
+          "Digest username=\"admin\", realm=\"IP Camera(C1052)\", nonce=\"0004cf6473583f06834f2a63455ef0b7\", uri=\"rtsp://10.11.26.98:554/isapi/streaming/channels/101/\", response=\"8d4d6b5cee9459840a2433cd206fc849\""
+        ]
+      },
+      "captures": 910
+    }
+  }
+}

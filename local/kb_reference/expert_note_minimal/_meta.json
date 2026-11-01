@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "protocol": "minimalproto",
+  "display_name": "MinimalProto",
+  "last_updated": "2026-09-28",
+  "sources": [
+    {"name": "synthetic", "note": "minimal KB fixture for compatibility testing"}
+  ],
+  "maintainer": "test-fixture",
+  "notes": "Minimal 3-file KB fixture: only _meta + methods + state_machine. Used for compatibility testing (陌生 KB 兼容性). See kb/expert_note_minimal/ for full minimal example."
+}

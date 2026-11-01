@@ -1,0 +1,13 @@
+{
+  "schema_version": 3,
+  "protocol": "rtsp",
+  "design_weaknesses": [
+    {
+      "id": "session_state",
+      "name": "会话状态机复杂",
+      "root_cause": "RTSP 状态机（Init/Ready/Playing）与会话/流/track 三层耦合，状态协调易出 UAF",
+      "exploitable": true,
+      "exploit_hint": "同 track 双 SETUP 触发 UAF"
+    }
+  ]
+}

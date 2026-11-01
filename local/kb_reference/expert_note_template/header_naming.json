@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "case_insensitive_full": [],
+  "standard_set": [],
+  "special_map": {},
+  "split_token": "-",
+  "_comment": "case_insensitive_full: header names that are fully case-insensitive (e.g. ['URL', 'UA', 'IP']). standard_set: all canonical header names. special_map: spelling-fix dict (e.g. {'cseq': 'CSeq'}). split_token: usually '-'."
+}

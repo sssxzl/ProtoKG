@@ -1,0 +1,50 @@
+{
+  "case_id": "RTSP-037",
+  "avd_id": "AVD-2026-49420",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "libalias RTSP 栈溢出(CVE-2026-49420)",
+  "description_raw": "FreeBSD 是开源操作系统,其核心组件 libalias 用于对进出 IP 报文做网络地址转换,并被 ipfw(4) 内核 NAT 与 natd(8) 调用以改写 RTSP 等应用层协议中的地址和端口。受影响版本中,alias_smedia 模块的 alias_rtsp_out 将出站 RTSP 报文改写入固定长度栈缓冲 newdata[2048],既不检查改写后数据是否超出该缓冲,也不检查结果能否装回原始报文。NAT 内侧主机向 554 或 7070 端口发送包含大量 client_port 字段的 SETUP 请求时,可溢出该栈缓冲,并在 ipfw(4) NAT 的内核路径或以 root 运行的 natd(8) 进程中造成远程代码执行。",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": "CWE-121 (栈缓冲区溢出)",
+  "trigger": {
+    "method": {
+      "value": [
+        "SETUP"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": [
+        "client_port"
+      ],
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "包含大量 client_port 字段的 SETUP 请求时,可溢出 newdata[2048] 栈缓冲",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

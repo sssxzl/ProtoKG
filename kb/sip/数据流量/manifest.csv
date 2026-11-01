@@ -1,0 +1,5 @@
+﻿run_id,transport,server,endpoint,duration,pcap,sip_methods,sip_responses,data_bytes
+public_aaa_0001,udp,public/Wireshark-SampleCaptures,sip://127.0.0.1:5060,~5,/home/zxy/captures/public_aaa_0001/capture.pcapng,~10,~10,111077
+public_asterisk_zfone_xlite_0001,udp,public/Wireshark-SampleCaptures,sip://127.0.0.1:5060,~5,/home/zxy/captures/public_asterisk_zfone_xlite_0001/capture.pcapng,~10,~10,255581
+public_dtmfsipinfo_0001,udp,public/Wireshark-SampleCaptures,sip://127.0.0.1:5060,~5,/home/zxy/captures/public_dtmfsipinfo_0001/capture.pcapng,~10,~10,25429
+public_magicjack_short_call_0001,udp,public/Wireshark-SampleCaptures,sip://127.0.0.1:5060,~5,/home/zxy/captures/public_magicjack_short_call_0001/capture.pcapng,~10,~10,315435

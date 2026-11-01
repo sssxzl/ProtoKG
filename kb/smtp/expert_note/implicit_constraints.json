@@ -1,0 +1,18 @@
+{
+  "schema_version": 3,
+  "protocol": "smtp",
+  "implicit_constraints": [
+    {
+      "id": "cmd_line_len",
+      "field": "命令行",
+      "constraint": "SMTP 命令行有长度上限（RFC 5321 512 字节，扩展后更长）",
+      "violation_mutation": "超长命令行"
+    },
+    {
+      "id": "addr_len",
+      "field": "FROM/TO 地址",
+      "constraint": "邮箱地址 local part ≤ 64，domain ≤ 255",
+      "violation_mutation": "超长 local part / domain"
+    }
+  ]
+}

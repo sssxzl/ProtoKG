@@ -1,0 +1,25 @@
+<book>
+<title>&kamailio; Database Tables</title>
+<bookinfo>
+	<productname class="trade">&kamailio;</productname>
+	<authorgroup>
+		<author>
+			<firstname>&kamailio;</firstname>
+			<surname>Development Team</surname>
+			<affiliation><orgname>&kamailiohomelink;</orgname></affiliation>
+			<address>&kamailiodevmail;</address>
+		</author>
+		<editor>
+			<firstname>Henning</firstname>
+			<surname>Westerholt</surname>
+		</editor>
+		<editor>
+			<firstname>Norman</firstname>
+			<surname>Brandinger</surname>
+		</editor>
+	</authorgroup>
+	<copyright>
+		<year>2008-2020</year>
+		<holder>&kamailio; Project</holder>
+	</copyright>
+</bookinfo>

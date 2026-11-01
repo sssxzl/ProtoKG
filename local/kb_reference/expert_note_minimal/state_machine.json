@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "states": ["Init", "Ready"],
+  "initial_state": "Init",
+  "transitions": [
+    {"from": "Init", "method": "RESET", "code": 200, "to": "Ready"},
+    {"from": "Ready", "method": "RESET", "code": 200, "to": "Init"},
+    {"from": "*", "method": "PING", "code": 200, "to": "$current"}
+  ]
+}

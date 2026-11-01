@@ -1,0 +1,25 @@
+{
+  "core_version": "1.0",
+  "notes": "Aspect Registry —— rtsp Profile v1 + expert_note 扩展。Layer 0 协议无关；本表登记 rtsp 实测 + expert_note 维度用到的 aspect。",
+  "registered_aspects": [
+    {"name": "case_sensitivity", "value_type": "scalar", "applicable_subject_types": ["header"], "resolution_semantics": "consensus", "cardinality": "one", "description": "头字段是否大小写敏感（bool）"},
+    {"name": "existence", "value_type": "scalar", "applicable_subject_types": ["method", "state"], "resolution_semantics": "consensus", "cardinality": "one", "description": "对象是否存在（bool）"},
+    {"name": "occurrence", "value_type": "scalar", "applicable_subject_types": ["header", "method", "status"], "resolution_semantics": "consensus", "cardinality": "one", "description": "出现次数（int）"},
+    {"name": "relation_to_other", "value_type": "struct", "applicable_subject_types": ["method"], "resolution_semantics": "consensus", "cardinality": "many", "description": "字段间关系（{relation, target} 结构）"},
+    {"name": "security_property", "value_type": "text", "applicable_subject_types": ["header", "method"], "resolution_semantics": "consensus", "cardinality": "many", "description": "安全属性描述（自由文本）"},
+    {"name": "target_state", "value_type": "text", "applicable_subject_types": ["relation"], "resolution_semantics": "consensus", "cardinality": "one", "description": "状态转移的目标状态名"},
+    {"name": "method_sequence", "value_type": "text", "applicable_subject_types": ["relation"], "resolution_semantics": "consensus", "cardinality": "one", "description": "方法序列相邻对的目标方法名（traffic 观测的方法调用顺序，区别于状态机边 target_state）"},
+    {"name": "value_type", "value_type": "enum", "applicable_subject_types": ["status"], "resolution_semantics": "consensus", "cardinality": "one", "description": "状态码类别（1xx/2xx/3xx/4xx/5xx）"},
+    {"name": "syntax", "value_type": "pattern", "applicable_subject_types": ["header"], "resolution_semantics": "consensus", "cardinality": "one", "description": "语法定义（ABNF/模式/占位符）"},
+    {"name": "definition", "value_type": "text", "applicable_subject_types": ["header", "status"], "resolution_semantics": "consensus", "cardinality": "one", "description": "语义定义/含义（自由文本）"},
+    {"name": "state_changing", "value_type": "scalar", "applicable_subject_types": ["method"], "resolution_semantics": "consensus", "cardinality": "one", "description": "方法是否改变服务器状态（bool）"},
+    {"name": "value_enum", "value_type": "set", "applicable_subject_types": ["header", "protocol", "actor"], "resolution_semantics": "consensus", "cardinality": "one", "description": "对象的实测枚举取值集合"},
+    {"name": "precondition", "value_type": "ref", "applicable_subject_types": ["method"], "resolution_semantics": "consensus", "cardinality": "many", "description": "方法的前置方法（会话初始化，如 SETUP 前置 DESCRIBE）"},
+    {"name": "session_header", "value_type": "struct", "applicable_subject_types": ["method"], "resolution_semantics": "consensus", "cardinality": "many", "description": "方法第 N 次出现起需携带的会话头（{header, from_occurrence}，如 SETUP 第 2 次起带 Session）"},
+    {"name": "url_template", "value_type": "pattern", "applicable_subject_types": ["method"], "resolution_semantics": "consensus", "cardinality": "one", "description": "方法消息的 URL 结构模板（如 SETUP → {stream}/track{N}）"},
+    {"name": "legal_boundary", "value_type": "struct", "applicable_subject_types": ["method", "header"], "resolution_semantics": "consensus", "cardinality": "many", "description": "方法/字段的合法边界（oracle 探测或 RFC 约束所得：{dim, legal, illegal, trigger}，如 SETUP 的 track_number 维度 legal=不同track illegal=同track；或 header 字段的约束边界 legal=满足约束 illegal=违反约束）"},
+    {"name": "response_expectation", "value_type": "struct", "applicable_subject_types": ["method", "header"], "resolution_semantics": "consensus", "cardinality": "many", "description": "违反某约束后接收方应给出的响应（SemFuzz 的处理期望 P：{violation, expected_code, expected_behavior}，如超长 label 应返回 RCODE=1 FORMERR）"},
+    {"name": "message_instance", "value_type": "struct", "applicable_subject_types": ["relation"], "resolution_semantics": "consensus", "cardinality": "one", "description": "状态转移的字段级消息实例（AutoSeeder 式：{fields:[{name,value}]}，能触发该转移的具体消息字段模板）"},
+    {"name": "vuln_pattern", "value_type": "struct", "applicable_subject_types": ["method", "header"], "resolution_semantics": "consensus", "cardinality": "many", "description": "结构化漏洞模式（借鉴 GLMFuzz：{action, trigger_sequence, trigger_field, boundary{legal,illegal,dim}, cwe, streams, mutation_hint}，从历史漏洞抽取，供边界种子生成 + 定向变异 + 跨协议漏洞知识迁移）"}
+  ]
+}

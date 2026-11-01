@@ -1,0 +1,18 @@
+{
+  "schema_version": 3,
+  "protocol": "rtsp",
+  "implicit_constraints": [
+    {
+      "id": "cseq_monotonic",
+      "field": "CSeq",
+      "constraint": "同一会话内 CSeq 单调递增",
+      "violation_mutation": "CSeq 回退 / 重复 / 跳变"
+    },
+    {
+      "id": "session_lifecycle",
+      "field": "Session",
+      "constraint": "Session 由 SETUP 响应分配，TEARDOWN 销毁，中间方法必须携带",
+      "violation_mutation": "未 SETUP 就带 Session / TEARDOWN 后仍用"
+    }
+  ]
+}

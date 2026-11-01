@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "field_constraints": [],
+  "_comment": "field_constraints array: each entry = {field_name, scope: 'request_line'|'header'|'body', source: 'rfc'|'traffic'|'expert_note', constraint_raw: str, evidence: str}. scope is REQUIRED since Step 1b-1. Version/URL should have scope='request_line'."
+}

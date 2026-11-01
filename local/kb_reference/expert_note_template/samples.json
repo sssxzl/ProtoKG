@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "samples": [],
+  "_comment": "samples array: each entry = {name, from, description?, request, response?, request_followup?}. 'name' is unique identifier (e.g. 'OPTIONS_handshake'). 'request' and 'response' use \\r\\n line endings. Add 1-3 real-capture samples from RFC or traffic dumps."
+}

@@ -1,0 +1,50 @@
+{
+  "case_id": "RTSP-039",
+  "avd_id": "CVE-2021-38382",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "Live555 Matroska/Ogg 两次 SETUP 同 track 释放后使用(CVE-2021-38382)",
+  "description_raw": "Live555 1.08 及之前版本对 Matroska 和 Ogg 文件处理不当,对同一 track 连续发送两次 RTSP SETUP 命令会触发 use-after-free 导致服务崩溃。",
+  "risk_level_avd": "中危",
+  "cwe_avd": "CWE-416 (释放后使用)",
+  "trigger": {
+    "method": {
+      "value": [
+        "SETUP"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": [
+        "track"
+      ],
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "对 Matroska/Ogg 同一 track 连续两次 SETUP",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "CVE 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

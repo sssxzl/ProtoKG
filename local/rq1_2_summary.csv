@@ -1,0 +1,5 @@
+docx_row,seed_source,fuzzer,n_states_P1,n_states_P2,n_edges_P1,n_edges_P2,bitmap_cvg_P2,unique_crashes_P2,paths_total_P2
+2,AFLNet 原始种子（in-rtsp）,Chatafl,11.4,14.0,42.4,124.4,9.91%,0.00,1219
+3,AFLNet 原始种子（in-rtsp）,aflnet,6.6,11.6,8.8,96.0,9.82%,0.00,1358
+4,ProtoRAG（实验组）,Chatafl,13.0,14.0,76.4,132.6,10.36%,0.00,2249
+5,ProtoRAG（实验组）,aflnet,8.4,13.0,22.4,101.0,10.38%,0.00,1241

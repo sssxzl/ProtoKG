@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-024",
+  "avd_id": "AVD-2007-6683",
+  "scope": "not_rtsp_protocol",
+  "confidence": "n/a",
+  "title_avd": "vlc 任意文件写入漏洞",
+  "description_raw": "VideoLAN VLC 0.8.6d 中的浏览器插件使远程攻击者可以通过(1)播放列表中文件名中的 `:demuxdump-file` 选项或(2)MP3 文件中的 EXTVLCOPT 语句来覆盖任意文件,这可能是参数注入漏洞。",
+  "risk_level_avd": "低危",
+  "cwe_avd": "NVD-CWE-Other",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

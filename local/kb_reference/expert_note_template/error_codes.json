@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "error_codes": {},
+  "_comment": "error_codes dict: outer key=class (e.g. '1xx', '2xx', '3xx', '4xx', '5xx'), inner key=code (str), value=reason (str). e.g. {'4xx': {'454': 'Session Not Found'}}. For protocols without class-based codes, use single 'errors' key."
+}

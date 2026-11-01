@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-012",
+  "avd_id": "AVD-2019-15232",
+  "scope": "insufficient_source",
+  "confidence": "n/a",
+  "title_avd": "LIVE555 Media Server 资源管理错误漏洞",
+  "description_raw": "LIVE555 Media Server 是一款 RTSP 服务器程序。该程序可提供各种媒体文件流服务。Live555 2019.08.16 之前版本中存在资源管理错误漏洞。该漏洞源于网络系统或产品对系统资源(如内存、磁盘空间、文件等)的管理不当。",
+  "risk_level_avd": "中危",
+  "cwe_avd": "CWE-416 (释放后使用)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

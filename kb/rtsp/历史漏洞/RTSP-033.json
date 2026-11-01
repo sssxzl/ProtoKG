@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-033",
+  "avd_id": "AVD-2026-1109",
+  "scope": "insufficient_source",
+  "confidence": "n/a",
+  "title_avd": "librtsp 安全漏洞(CVE-2026-1109)",
+  "description_raw": "librtsp 是 cijliu 个人开发者的一个 RTSP 协议库。librtsp 存在安全漏洞,该漏洞源于函数 rtsp_parse_request 存在缓冲区溢出,可能导致本地攻击。",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": "CWE-119 (内存缓冲区边界内操作的限制不恰当); CWE-120 (未进行输入大小检查的缓冲区拷贝)",
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": null,
+      "confidence": "missing"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "missing",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

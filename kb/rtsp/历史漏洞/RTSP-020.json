@@ -1,0 +1,46 @@
+{
+  "case_id": "RTSP-020",
+  "avd_id": "AVD-2024-44331",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "GStreamer 安全漏洞(CVE-2024-44331)",
+  "description_raw": "GStreamer 是一套用于处理流媒体的框架。gst-rtsp-server 是一款基于 GStreamer 的 RTSP(Real-Time Stream Protocol)服务器。GStreamer 1.25.0 版本存在安全漏洞,该漏洞源于访问控制不当,允许远程攻击者通过一系列特制的 hexstream 请求导致拒绝服务。",
+  "risk_level_avd": "(AVD 标签 NVD,N/A)",
+  "cwe_avd": null,
+  "trigger": {
+    "method": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "field": {
+      "value": null,
+      "confidence": "missing"
+    },
+    "condition": {
+      "value": "导致拒绝服务",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": null,
+    "confidence": "missing"
+  },
+  "mutation_hints": {
+    "value": [],
+    "confidence": "missing_from_source"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "missing",
+    "trigger_method": "missing",
+    "trigger_field": "missing",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "missing",
+    "trigger_requests_note": "AVD 原文不含完整 RTSP request 序列",
+    "mutation_hints": "missing_from_source"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null
+}

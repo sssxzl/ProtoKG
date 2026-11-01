@@ -1,0 +1,2 @@
+RUN_ID=public_magicjack_short_call_0001 CID=NONE TCPDUMP_PID=0 WORK=/tmp/captures/public_magicjack_short_call_0001 PORT=0
+SRC=/tmp/sip_public/MagicJack_short_call.pcap SIZE=315435

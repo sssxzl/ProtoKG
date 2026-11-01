@@ -1,0 +1,54 @@
+{
+  "avd_id": "CVE-2023-51766",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "Exim SMTP Smuggling（PIPELINING/CHUNKING 配置）",
+  "description_raw": "Exim 4.97.1 之前在某些 PIPELINING/CHUNKING 配置下允许 SMTP smuggling，攻击者可注入伪造 MAIL FROM 的邮件绕过 SPF。",
+  "risk_level_avd": "中危",
+  "cwe_avd": "CWE-436 (解析不一致)",
+  "trigger": {
+    "method": {
+      "value": [
+        "DATA",
+        "BDAT"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "end-of-data 序列（含 CHUNKING）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "PIPELINING/CHUNKING 配置下发送非标准 end-of-data 序列",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": [
+      "MAIL FROM:<a@b>\r\nRCPT TO:<c@d>\r\nDATA\r\nbody\n.\nMAIL FROM:<spoof@victim>\r\nRCPT TO:<v2>\r\n"
+    ],
+    "confidence": "confirmed"
+  },
+  "mutation_hints": {
+    "value": [
+      "PIPELINING 下 end-of-data fuzz",
+      "BDAT chunk 边界与 . 组合"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "confirmed",
+    "trigger_requests_note": "依据 CVE/NVD 与公开 PoC 描述推导触发序列",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-020"
+}

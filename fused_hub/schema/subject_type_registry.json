@@ -1,0 +1,13 @@
+{
+  "core_version": "1.0",
+  "notes": "Subject Type Registry —— rtsp Profile v1（通用 Profile 机制第一个实例，甲方案最小可用）。Layer 0 协议无关；本表登记 rtsp 实测出现的 subject.type。traffic 源新增 protocol/actor（2026-10-09）。",
+  "registered_types": [
+    {"type": "method", "description": "协议操作方法。name 形如 METHOD（如 SETUP）或 METHOD.Header（如 SETUP.CSeq）"},
+    {"type": "header", "description": "协议头字段（如 CSeq / Session / Authorization）"},
+    {"type": "state", "description": "协议状态机状态（如 Init / Ready / Playing / Recording）"},
+    {"type": "status", "description": "响应状态码，name 为数字串（v1 status.NNN 去前缀）"},
+    {"type": "relation", "description": "关系型 Subject。name=transitions_to（qualifiers.source/target 均为 state，状态机边）或 method_sequence（qualifiers.source/target 均为 method，方法序列边）"},
+    {"type": "protocol", "description": "协议级观测对象（如 rtsp_transport 传输分布、rtsp_public_methods 方法集）"},
+    {"type": "actor", "description": "协议参与者（如 rtsp_server 的监听端口观测）"}
+  ]
+}

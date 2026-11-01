@@ -1,0 +1,153 @@
+# D9 Q3 α 扩展方案规范草案
+
+> 状态：**Frozen（规范冻结，实施待授权）**
+> 冻结时间：2026-10-01
+> 上游：`local/d9_q3_kind_extension_proposal.md`
+> 裁定：**α 方案**（在现有 enum 追加传输层类目）
+> 本文件为**草案**，不含最终裁定权；`allowed_kinds` 是否同步扩展**只列不裁**。
+
+---
+
+## 0. 背景
+
+§6.6 `observed_temporal_relation` 需要 fact_key 承载 `packet_role_pair`。
+现有 5 kind（`method` / `header` / `constraint` / `state` / `transition`）
+**全部是 Protocol Semantic Units**（§4.2），而 **Packet 是 §4.3 Transport Unit**
+——不同 domain（§4.1 原则 2），无对应类目。
+
+⟹ 需扩展 `fact_key.kind` 枚举。
+
+---
+
+## 1. 新增 kind
+
+**名称**：`packet_role_pair`
+
+**语义**：fact_key 讨论「**两个 Packet role classes 之间的 temporal
+relation**」。
+
+**不是**：
+
+- Packet **具体实例**之间的关系（实例由 Evidence 承载）
+- `contributes_to` 等 relation 类型（关系拓扑不进 fact_key）
+
+---
+
+## 2. fact_key 承载形态
+
+```
+kind      = packet_role_pair
+subject   = "<role_class_A>::<role_class_B>"
+property  = temporal_relation
+condition = <semantic applicability scope>
+```
+
+- 两端 role class 由 **deterministic normalizer** 判定
+- 分隔符 `::` 已裁定（§9.2.x），与 Q2 的 header pair 编码**同形**
+- 具体 role class 枚举留 **Metadata Recon**（见 §6.6-C1.x / §15.1 #22）
+
+---
+
+## 3. allowed_kinds 连带处置（**只列候选，不裁定**）
+
+`kind` **同时**是 `property_registry.allowed_kinds` 的取值域。
+新增 `packet_role_pair` 后，逐条列出需评估的 property：
+
+| property | 当前 allowed_kinds | 是否需扩展 | 理由 |
+|---|---|---|---|
+| `observed_temporal_relation` | `[method, header, state, transition]` | **必扩展** | 其 value 是 temporal AST，语义主体是 Packet role pair；不扩展则该 property **无任何合法 fact_key** |
+| `occurrence` | `[header, method]` | 否 | §6.3-A 定为 Message-level presence rate，kind 应为 header/method；不涉 Packet |
+| `existence` | `[method, header, state, transition]` | 否 | 协议存在性，不涉传输层 |
+| `value_type` / `value_range` / `default_value` / `case_sensitivity` | `[header, constraint]` / `[header]` | 否 | header 属性语义 |
+| `relation_to_other_field` | `[header, state, method]` | 否 | 协议字段关系 |
+| `security_condition` / `security_consequence` | `[method, header, state, transition]` | 否 | 安全语义 |
+| `security_boundary` | `[header]` | 否 | 头字段边界 |
+| `observed_occurrence_rate` / `observed_co_occurrence` | `[method, header, state]` / `[header]` | **待评估** | 二者 v1 适用域为 Header subject（§6.3-B / §6.4-B）⟹ 当前 kind 已足；但若未来泛化到 Packet，需同步 |
+| `observed_packet_position` | `[method, state]` | **待评估** | §6.5 仍 BLOCKED；其语义主体是 Packet position（§6.5-Pre 判定乙 Transport Packet placement 最贴近）⟹ **与 Q3 同族，扩展后需一并评估** |
+| `observed_presence_rate` | `[header]` | 否 | §6.3 定义为 Message-level presence rate |
+| 其余 P0/P1（`trigger_event` / `guard_condition` / `action` / `target_state`） | 协议语义 | 否 | 不涉传输层 |
+
+**结论（只列）**：必扩展 1 个（`observed_temporal_relation`），
+待评估 3 个（`observed_occurrence_rate` / `observed_co_occurrence` /
+`observed_packet_position`），其余 14 个无影响。
+
+⚠ `observed_packet_position` 与 Q3 **同源**（都是 Packet 语义进 fact_key），
+但它属 §6.5，**仍 BLOCKED**（等 M3 provenance）⟹ 不在本规范范围内裁定。
+
+---
+
+## 4. schema_version bump
+
+**判定：需 bump（`v1` `→` `v2`）**
+
+依据（`fused_pipeline_v1.md` §11.3）：
+
+- **L862**：`schema_version`：Storage Contract 语义变化。
+  `fact.schema.json` 是 Storage Contract；扩展 kind 改变「哪些 Fact 合法」
+  ⟹ 命中该定义
+- **L889**：不得：修改实现侧 frozen rules 但保持 version 不变。
+- **L891**：同一个 version value 必须唯一对应一套 immutable
+  deterministic semantics。扩展前后**不是同一套** ⟹ 保持 `v1` 违反该条
+
+落点（**均属 `core/`，本步禁改**）：
+
+- `core/fused/pipeline/rules/build_inputs.py:250`
+- `core/fused/pipeline/synthetic.py:99`（`SYNTHETIC_SCHEMA_VERSION`）
+
+---
+
+## 5. 影响面
+
+| 层 | 影响 | 风险 |
+|---|---|---|
+| `fact.schema.json` | `fact_key.kind.enum` 追加 `packet_role_pair` | 闭合枚举变更 |
+| `property_registry.json` | `observed_temporal_relation.allowed_kinds` 需扩展（见 §3） | Registry fingerprint 变化 |
+| `models.py` | `FactKey.kind` 若有 enum 校验需同步 | 需实测确认 |
+| 现有 Fact 兼容性 | **理论无影响** —— 现有 65 Facts 的 kind 均属原 5 值，扩展不使其非法 | 需验证 |
+| 测试 | `test_fact_key` / Registry 域断言 / e2e 可能涉及 kind 取值域 | 需评估 |
+| `derived/` | Registry + schema 变更 ⟹ **全部 fingerprint 变化**，需重跑 | 重跑后 `meta.json` / `profile.json` 变 |
+| `fused_schema_v1.md` | 5-kind 语义边界描述需同步 | **属 Hub 冻结文档，需单独授权** |
+
+---
+
+## 6. 裁定状态
+
+**已裁定（2026-10-01）**：
+
+1. **kind 名称** = **`packet_role_pair`**
+2. **`allowed_kinds` 必扩展** = **`observed_temporal_relation`**
+   （不扩展则该 property 无任何合法 fact_key）
+3. **`schema_version`** = **`v1` `→` `v2`**
+   依据 §11.3 L862（Storage Contract 语义变化）+ L889 + L891
+   落点：`core/fused/pipeline/rules/build_inputs.py:250`、
+   `core/fused/pipeline/synthetic.py:99`（**均属 `core/`**）
+
+**待裁定（下一轮）**：
+
+4. **§3 的 3 个「待评估」property**
+   见 `local/backup/step_d9_6_pre20/stage_b_pending_properties/detail.txt`：
+   - `observed_occurrence_rate` / `observed_co_occurrence`
+     ⟹ §6.3-B / §6.4-B 已明确排除 packet 语义
+     ⟹ **原列「待评估」属过度保守**，建议裁定为**保持原状**
+   - `observed_packet_position` ⟹ 依赖 **§6.5 解封（M3 provenance）**
+     ⟹ 本轮**不可裁定**
+
+## 7. 实施顺序
+
+1. **3 个待评估 property 裁定**（下一轮；见阶段 B 勘察结论）
+2. `fact.schema.json` 加新 kind `packet_role_pair`（**需 Schema 变更授权**）
+3. `property_registry` `allowed_kinds` 评估与扩展（**需 Registry 授权**）
+4. `build_inputs.py` + `synthetic.py` bump `schema_version` `v1` `→` `v2`
+   （**需 core/ 授权**）
+5. 重跑 `derived/` 同步（fused + per_source）（**需 build 授权**）
+6. 验证（pytest 全量 + fingerprint 对齐）
+
+⚠ 步骤 2–5 **均超出本规范本身的授权范围**，需逐项单独授权。
+⚠ 步骤 1 与步骤 2 **可解耦**：§3 勘察已证 `observed_packet_position`
+   依赖 §6.5 解封，而 kind 扩展不依赖它 ⟹ 可先做步骤 2–6，
+   待 §6.5 解封后再补 `observed_packet_position` 的处置。
+
+---
+
+> 本文件为 **Frozen 规范**。规范冻结 ≠ 实施授权；
+> 步骤 2–6 仍需逐项单独授权。

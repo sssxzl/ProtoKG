@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "timing_constraints": {},
+  "_comment": "timing_constraints dict: arbitrary keys (e.g. 'request_timeout_ms', 'session_timeout_seconds', 'retransmit_rule', 'keepalive_method', 'evidence'). Use null for fields with no known constraint (e.g. 'inter_request_gap_ms: null')."
+}

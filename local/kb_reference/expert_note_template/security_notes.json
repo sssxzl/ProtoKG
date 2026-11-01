@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "protocol": "PROTOCOL_PLACEHOLDER",
+  "security_notes": [],
+  "_comment": "security_notes array: each entry = {note_id, category, note, trigger_method?, trigger_field?, mitigation, evidence}. note_id is snake_case unique (e.g. 'transport_empty_nullptr'). evidence points to CVE / RFC / bug tracker."
+}

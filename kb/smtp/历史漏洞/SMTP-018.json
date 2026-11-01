@@ -1,0 +1,54 @@
+{
+  "avd_id": "CVE-2023-51764",
+  "scope": "seedgen",
+  "confidence": "medium",
+  "title_avd": "Postfix SMTP Smuggling（邮件伪造绕过 SPF）",
+  "description_raw": "Postfix 3.8.5 及之前允许 SMTP smuggling，除非配置 smtpd_data_restrictions=reject_unauth_pipelining 与 smtpd_discard_ehlo_keywords=chunking。攻击者利用 end-of-data 序列（如 <LF>.<LF>）与下一跳服务器解析不一致，注入伪造 MAIL FROM 的邮件绕过 SPF。",
+  "risk_level_avd": "中危",
+  "cwe_avd": "CWE-436 (解析不一致)",
+  "trigger": {
+    "method": {
+      "value": [
+        "DATA"
+      ],
+      "confidence": "confirmed"
+    },
+    "field": {
+      "value": "end-of-data 序列（<LF>.<LF> / <CRLF>.<CRLF>）",
+      "confidence": "confirmed"
+    },
+    "condition": {
+      "value": "发送非标准 end-of-data 序列使网关与下游解析不一致",
+      "confidence": "confirmed"
+    }
+  },
+  "trigger_requests": {
+    "value": [
+      "MAIL FROM:<a@b>\r\nRCPT TO:<c@d>\r\nDATA\r\nFrom: x\r\n\r\nbody\n.\nMAIL FROM:<spoofed@victim>\r\nRCPT TO:<victim2>\r\nDATA\r\n.\r\n"
+    ],
+    "confidence": "confirmed"
+  },
+  "mutation_hints": {
+    "value": [
+      "end-of-data 序列 fuzz（\\n.\\n / \\r.\\r / \\n.\\r\\n）",
+      "pipelining 下 DATA 结束符变异",
+      "裸换行 smtpd_forbid_bare_newline 测试"
+    ],
+    "confidence": "confirmed"
+  },
+  "provenance": {
+    "description_raw": "confirmed",
+    "title_avd": "confirmed",
+    "risk_level_avd": "confirmed",
+    "cwe_avd": "confirmed",
+    "trigger_method": "confirmed",
+    "trigger_field": "confirmed",
+    "trigger_condition": "confirmed",
+    "trigger_requests": "confirmed",
+    "trigger_requests_note": "SEC Consult Timo Longin 发现，配合 Exim/Sendmail/Exchange Online 出站组合",
+    "mutation_hints": "confirmed"
+  },
+  "unmatched_avd": false,
+  "avd_id_equivalent": null,
+  "case_id": "SMTP-018"
+}
