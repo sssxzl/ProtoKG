@@ -7,11 +7,16 @@
   · A 的 38 条 == B 的前 38 条（自然序限定）
   · 定向字典是基础字典的**严格超集**（D→C 单变量的前提）
   · 组内 MD5 唯一（不复制种子）
+
+★ **pytest 隔离（重要）**：本模块**绝不允许**写真实的 ``derived/rq3/``。
+  ``derived/rq3/`` 是**已发表语料**（论文引用）：pytest 若直接写它
+  ⇒ 一跑就重建真实语料（内容 + mtime 全变）⇒ 既污染数据，又让
+  「语料已被重建」护栏信号永远为真（无法区分本次构建与历史产物）。
+  ⇒ 构建器的 ``--root`` 指向 pytest 的 ``tmp_path``（见 :func:`_build`）。
 """
 from __future__ import annotations
 
 import hashlib
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -27,9 +32,6 @@ import rq3_common as C  # noqa: E402
 #: 历史参考语料（RQ1.2 protorag）
 REFERENCE = ROOT / "derived" / "seeds" / "rtsp" / "live555_20261024_110155"
 
-#: 语料根目录
-RQ3 = ROOT / "derived" / "rq3"
-
 
 def _md5s(directory: Path) -> set:
     """目录下 .raw 的 MD5 集合。"""
@@ -43,18 +45,29 @@ def _md5_map(directory: Path) -> dict:
             for f in sorted(directory.glob("*.raw"))}
 
 
-def _build() -> subprocess.CompletedProcess:
-    """运行语料构建器。"""
+def _build(root: Path) -> subprocess.CompletedProcess:
+    """运行语料构建器，**``--root`` 指向 ``root``**。
+
+    ★ ``--root`` = 构建根重定向 ⇒ 全部产物落在 ``root`` 下，
+      **不碰真实的 ``derived/rq3/``**（pytest 隔离）。
+    """
     return subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "rq3_build_corpus.py")],
+        [sys.executable, str(ROOT / "scripts" / "rq3_build_corpus.py"),
+         "--root", str(root)],
         cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8",
         errors="replace")
 
 
 @pytest.fixture(scope="module")
-def built():
-    """构建四组语料（模块级，只跑一次）。"""
-    r = _build()
+def rq3_root(tmp_path_factory):
+    """构建根目录（**pytest 隔离** ⇒ 绝不触碰 ``derived/rq3/``）。"""
+    return tmp_path_factory.mktemp("rq3")
+
+
+@pytest.fixture(scope="module")
+def built(rq3_root):
+    """构建四组语料（模块级，只跑一次；产物落在 ``rq3_root``）。"""
+    r = _build(rq3_root)
     assert r.returncode == 0, r.stdout + r.stderr
     return r
 
@@ -68,19 +81,19 @@ def test_build_succeeds(built):
     assert built.returncode == 0
 
 
-def test_layout_created(built):
+def test_layout_created(built, rq3_root):
     """目录骨架符合技术方案 §11.1。"""
     for g in ("A", "B", "C", "D"):
-        assert (RQ3 / g / "seeds").is_dir()
-        assert (RQ3 / g / "manifest.json").is_file()
-    assert (RQ3 / "dict").is_dir()
-    assert (RQ3 / "groups.json").is_file()
-    assert (RQ3 / "dict" / "DICT_FROZEN.json").is_file()
+        assert (rq3_root / g / "seeds").is_dir()
+        assert (rq3_root / g / "manifest.json").is_file()
+    assert (rq3_root / "dict").is_dir()
+    assert (rq3_root / "groups.json").is_file()
+    assert (rq3_root / "dict" / "DICT_FROZEN.json").is_file()
 
 
-def test_groups_json_content(built):
+def test_groups_json_content(built, rq3_root):
     """groups.json 含编排所需的全部字段（编排脚本的唯一输入）。"""
-    data = C.read_json(RQ3 / "groups.json")
+    data = C.read_json(rq3_root / "groups.json")
     assert set(data["groups"]) == {"A", "B", "C", "D"}
     for g, gi in data["groups"].items():
         for k in ("group", "label", "layers", "order", "dict_kind",
@@ -92,9 +105,9 @@ def test_groups_json_content(built):
         assert len(gi["seed_files"]) == gi["expect_seeds"]
 
 
-def test_dict_frozen_record(built):
+def test_dict_frozen_record(built, rq3_root):
     """DICT_FROZEN.json 记录 token 数 + MD5（防字典内容漂移）。"""
-    data = C.read_json(RQ3 / "dict" / "DICT_FROZEN.json")
+    data = C.read_json(rq3_root / "dict" / "DICT_FROZEN.json")
     kinds = {r["kind"]: r for r in data["dictionaries"]}
     assert kinds["base"]["token_count"] == 24
     assert kinds["base"]["md5"] == "464351f88db6c3f0bdac0de01859316b"
@@ -103,9 +116,9 @@ def test_dict_frozen_record(built):
     assert data["base_md5"] == "464351f88db6c3f0bdac0de01859316b"
 
 
-def test_assertion_report_all_pass(built):
+def test_assertion_report_all_pass(built, rq3_root):
     """断言报告里没有 FAIL。"""
-    text = (RQ3 / "assertions_report.md").read_text(encoding="utf-8")
+    text = (rq3_root / "assertions_report.md").read_text(encoding="utf-8")
     assert "| FAIL |" not in text
     assert "失败: 0" in text
 
@@ -116,47 +129,47 @@ def test_assertion_report_all_pass(built):
 
 @pytest.mark.parametrize("group,expect", [("A", 38), ("B", 50), ("C", 50),
                                            ("D", 50)])
-def test_a1_seed_counts(built, group, expect):
+def test_a1_seed_counts(built, rq3_root, group, expect):
     """A1：语料条数正确。"""
-    n = len(list((RQ3 / group / "seeds").glob("*.raw")))
+    n = len(list((rq3_root / group / "seeds").glob("*.raw")))
     assert n == expect
 
 
-def test_a4_a_is_prefix_of_b(built):
+def test_a4_a_is_prefix_of_b(built, rq3_root):
     """A4/A5：A 的 38 条与 B 的前 38 条逐字节相同（自然序）。"""
-    ma = _md5_map(RQ3 / "A" / "seeds")
-    mb = _md5_map(RQ3 / "B" / "seeds")
+    ma = _md5_map(rq3_root / "A" / "seeds")
+    mb = _md5_map(rq3_root / "B" / "seeds")
     assert list(ma) == list(mb)[:38]
     assert [ma[n] for n in ma] == [mb[n] for n in list(mb)[:38]]
 
 
-def test_a6_bcd_same_set(built):
+def test_a6_bcd_same_set(built, rq3_root):
     """A6：B/C/D 的 MD5 集合相等。"""
-    s = [_md5s(RQ3 / g / "seeds") for g in ("B", "C", "D")]
+    s = [_md5s(rq3_root / g / "seeds") for g in ("B", "C", "D")]
     assert s[0] == s[1] == s[2]
     assert len(s[0]) == 50
 
 
-def test_a7_c_matches_rq12(built):
+def test_a7_c_matches_rq12(built, rq3_root):
     """A7：C 的 MD5 集合 == RQ1.2 protorag 语料。"""
     if not REFERENCE.exists():
         pytest.skip("历史参考语料不存在")
-    assert _md5s(RQ3 / "C" / "seeds") == _md5s(REFERENCE)
+    assert _md5s(rq3_root / "C" / "seeds") == _md5s(REFERENCE)
 
 
-def test_a9_superset(built):
+def test_a9_superset(built, rq3_root):
     """A9：定向字典是基础字典的严格超集。"""
-    base = C.dict_tokens(RQ3 / "dict" / "rtsp_base.dict")
-    tgt = C.dict_tokens(RQ3 / "dict" / "c_targeted.dict")
+    base = C.dict_tokens(rq3_root / "dict" / "rtsp_base.dict")
+    tgt = C.dict_tokens(rq3_root / "dict" / "c_targeted.dict")
     assert base < tgt
     assert len(base) == 24
     assert len(tgt) == 123
 
 
-def test_a10_md5_unique(built):
+def test_a10_md5_unique(built, rq3_root):
     """A10：组内 MD5 唯一（不复制种子）。"""
     for g in ("A", "B", "C", "D"):
-        m = _md5_map(RQ3 / g / "seeds")
+        m = _md5_map(rq3_root / g / "seeds")
         assert len(set(m.values())) == len(m)
 
 
@@ -165,10 +178,10 @@ def test_a10_md5_unique(built):
 # ===========================================================================
 
 @pytest.mark.parametrize("group", ["A", "B", "C", "D"])
-def test_manifest_matches_corpus(built, group):
+def test_manifest_matches_corpus(built, rq3_root, group):
     """manifest 的 MD5/filename 与磁盘文件逐条一致。"""
-    manifest = C.read_json(RQ3 / group / "manifest.json")
-    seed_dir = RQ3 / group / "seeds"
+    manifest = C.read_json(rq3_root / group / "manifest.json")
+    seed_dir = rq3_root / group / "seeds"
     disk = _md5_map(seed_dir)
     assert len(manifest["seeds"]) == len(disk)
     for entry in manifest["seeds"]:
@@ -178,10 +191,10 @@ def test_manifest_matches_corpus(built, group):
         assert entry["md5"] == disk[entry["filename"]]
 
 
-def test_manifest_cross_group_md5_consistency(built):
+def test_manifest_cross_group_md5_consistency(built, rq3_root):
     """★ 跨组归因以 MD5 为主键：B/C/D 的文件名**不同**（顺序不同），
     但同一粒种子在各组的 MD5 相同 → 归因必须走 MD5，不能走文件名。"""
-    manifests = {g: C.read_json(RQ3 / g / "manifest.json")
+    manifests = {g: C.read_json(rq3_root / g / "manifest.json")
                  for g in ("B", "C", "D")}
     md5_by_file = {g: {e["filename"]: e["md5"] for e in m["seeds"]}
                    for g, m in manifests.items()}
@@ -209,15 +222,13 @@ def test_manifest_cross_group_md5_consistency(built):
 # 幂等
 # ===========================================================================
 
-def test_check_only_is_idempotent(built):
+def test_check_only_is_idempotent(built, rq3_root):
     """--check-only 重复执行结果一致（幂等）。"""
-    r1 = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "rq3_build_corpus.py"),
-         "--check-only"],
-        cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8")
-    r2 = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "rq3_build_corpus.py"),
-         "--check-only"],
-        cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8")
+    cmd = [sys.executable, str(ROOT / "scripts" / "rq3_build_corpus.py"),
+           "--check-only", "--root", str(rq3_root)]
+    r1 = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True,
+                        encoding="utf-8")
+    r2 = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True,
+                        encoding="utf-8")
     assert r1.returncode == 0 and r2.returncode == 0
     assert r1.stdout == r2.stdout

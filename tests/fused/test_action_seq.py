@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from core.fused.downstream.action_seq import (
@@ -33,6 +34,7 @@ from core.fused.downstream.action_seq import (
     Action,
     ActionLedger,
     ActionSequence,
+    _published_group_dirs,
     apply_actions,
     load_real_base_seeds,
     normalize_field_path,
@@ -482,7 +484,16 @@ def test_parse_raw_seed_skips_methods_outside_allowlist():
 
 
 def test_load_real_base_seeds_prefers_published_corpus(tmp_path):
-    """来源 ① 优先；指定了组却不匹配 ⇒ **不拿别的组冒充**，退回来源 ②。"""
+    """来源 ① 优先；指定了组却不匹配 ⇒ **不拿别的组冒充**，退回来源 ②。
+
+    ★ 同时固化**底料目录筛选护栏**（时间戳形态的批次目录必须带
+      ``manifest.json`` 才算「正式发布」；语义命名的一律保留）：
+      · ``20261031_171135``（时间戳形态、无 manifest、mtime 最新）
+        = 生成过但**未正式发布**的中间产物 ⇒ **排除**（可能混着已废弃、
+        被外网摄像机 URL 污染的语料）；
+      · ``live555_20261024_110155``（语义命名、**无** manifest）
+        = 真实抓包语料（CI 无法重建 ⇒ 天然没有 manifest）⇒ **必须保留**。
+    """
     seeds_dir = tmp_path / "seeds" / "rtsp"
     group_dir = seeds_dir / "rq4_B"
     group_dir.mkdir(parents=True)
@@ -501,6 +512,35 @@ def test_load_real_base_seeds_prefers_published_corpus(tmp_path):
                                          kb_root=tmp_path / "kb")
     assert source == ""
     assert seeds == []
+
+    # ---- 护栏：时间戳形态 + 无 manifest ⇒ 排除；语义命名 + 无 manifest ⇒ 保留 ----
+    polluted = seeds_dir / "20261031_171135"          # 时间戳形态（无 manifest）
+    polluted.mkdir()
+    (polluted / "01_polluted.raw").write_text(
+        "OPTIONS rtsp://10.11.26.98:554/isapi RTSP/1.0\r\nCSeq: 1\r\n\r\n",
+        encoding="utf-8")
+    capture = seeds_dir / "live555_20261024_110155"    # 语义命名（无 manifest）
+    capture.mkdir()
+    (capture / "01_capture.raw").write_text(
+        "OPTIONS rtsp://127.0.0.1:8554/s RTSP/1.0\r\nCSeq: 1\r\n\r\n",
+        encoding="utf-8")
+    # 让污染目录的 mtime **最新** ⇒ 护栏必须**主动挡下它**，而不是靠 mtime 侥幸
+    now = 1_700_000_000
+    os.utime(polluted / "01_polluted.raw", (now, now))
+    os.utime(capture / "01_capture.raw", (now - 100, now - 100))
+    os.utime(group_dir / "01_x.raw", (now - 200, now - 200))
+
+    names = [d.name for d in _published_group_dirs("rtsp", None, seeds_dir)]
+    assert "20261031_171135" not in names, \
+        "未正式发布的时间戳批次目录必须被排除"
+    assert "live555_20261024_110155" in names, \
+        "语义命名的正式语料（真实抓包）不得因缺 manifest 而被排除"
+    assert names[0] == "live555_20261024_110155", \
+        "候选按 mtime 新→旧排序，语义命名的正式语料应排第一"
+
+    # 指定组时行为不变：只有匹配组名的目录进候选
+    names_b = [d.name for d in _published_group_dirs("rtsp", "B", seeds_dir)]
+    assert names_b == ["rq4_B"]
 
 
 # ===========================================================================

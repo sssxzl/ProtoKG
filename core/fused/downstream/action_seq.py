@@ -1172,6 +1172,23 @@ def parse_raw_seed(text: str, profile: dict, *, protocol: str = "",
     )
 
 
+#: 「时间戳形态的批次目录」目录名（``scripts/seedgen.py`` 每次生成一个批次目录）：
+#: 形如 ``20261031_171135`` / ``20261021_105316``。
+#: ★ 这类目录是**自动产出**（每次跑生成器就多一个）⇒ 未正式发布（无
+#:   ``manifest.json``）的**不得**作为底料（可能混着已废弃、被污染的语料）。
+#: ★ **语义命名**的目录（``rq4_B`` / ``pfb_exp_B`` /
+#:   ``live555_20261024_110155`` / ``dict_rtsp`` / ``focused20_*`` …）是
+#:   **人工/工具整理的正式语料**（有的**天然没有** manifest，例如真实抓包语料
+#:   ``live555_20261024_110155`` —— ``docs/ci_and_acceptance.md:122`` 记载
+#:   「CI 无法重建」）⇒ **一律保留**，不因缺 manifest 而排除。
+TIMESTAMP_DIR_PATTERN = re.compile(r"^\d{8}_\d{6}$")
+
+
+def _is_timestamp_batch_dir(name: str) -> bool:
+    """目录名是否呈「时间戳形态」（``20261031_171135``）。"""
+    return bool(TIMESTAMP_DIR_PATTERN.match(str(name or "").strip()))
+
+
 def _dir_has_action_seq_layer(directory: Path) -> bool:
     """该语料目录是否是**含 action_seq 层**的目录（即本层自己的产物）。
 
@@ -1196,6 +1213,32 @@ def _published_group_dirs(protocol: str, group: Optional[str],
     ★ 指定了 ``group`` 时**只返回匹配的目录**（manifest 记录的 focus_group
       优先，其次目录名以组字母结尾）——**绝不拿别的组的语料冒充**（那会让
       「底料 = 本组的真实语料」这一前提失效）。
+
+    ★★ 只承认「**正式发布过**」的**时间戳形态**批次目录：
+      ``derived/seeds/<协议>/`` 下混着两类目录——
+        · **时间戳形态**（``^\\d{8}_\\d{6}$``，如 ``20261031_171135`` /
+          ``20261021_105316``）= ``scripts/seedgen.py`` **每次生成**一个批次目录
+          的**自动产出** ⇒ 正式发布时会写 ``manifest.json``
+          ⇒ **无 manifest ⇒ 未正式发布 ⇒ 排除**。
+          （未正式发布的时间戳批次里可能混着**已书面废弃、且被外网摄像机 URL
+          污染**的语料：``docs/rq4_aflnet_exp_design.md:770``：「``derived/seeds/
+          rtsp/20261031_171135`` 这份**已被污染**，不应作为任何实验语料使用」；
+          同文件 716 行量化：含 ``isapi`` / ``10.11.26.98`` 的文件 **22/37 = 59.5%**。
+          本函数按 **mtime 新→旧**排序 ⇒ 未发布的污染目录会排在第一
+          ⇒ ⑤ 层会把**已废弃的污染语料**当底料。）
+        · **语义命名**（``rq4_B`` / ``pfb_exp_B`` /
+          ``live555_20261024_110155`` / ``dict_rtsp`` / ``focused20_*`` …）
+          = **人工/工具整理的正式语料** ⇒ **一律保留**。
+          ★ 其中 ``live555_20261024_110155`` 是**真实抓包语料**（**天然没有**
+            manifest —— ``docs/ci_and_acceptance.md:122`` 记载「CI 无法重建」）
+            ⇒ **绝不能**因为缺 manifest 而被排除。
+      ⇒ 护栏只针对**时间戳形态**：既挡掉废弃污染目录，也挡住将来任何
+        「新生成但未正式发布」的时间戳批次（同类问题不再复发），
+        同时**不误伤**语义命名的正式语料。
+      ★ 护栏作用在**候选筛选**这一步 ⇒ ``group`` 为空（不做组匹配、任何目录都进候选）
+        的分支**同样**被挡住（否则等于没修）。
+      ★ ``group='B'`` 等既有路径**行为不变**：参与匹配的时间戳目录**都带**
+        ``manifest.json``（正式发布）⇒ 筛选结果一致。
     """
     base = Path(root) if root else paths.seeds_dir(protocol)
     if not base.is_dir():
@@ -1207,6 +1250,17 @@ def _published_group_dirs(protocol: str, group: Optional[str],
             continue
         raws = list(child.glob("*.raw"))
         if not raws:
+            continue
+        # ★★ 护栏：**时间戳形态**的批次目录必须带 ``manifest.json`` 才算
+        #   「正式发布」⇒ 可作底料；无 manifest ⇒ 生成过但未发布的中间产物
+        #   ⇒ 可能混着**已废弃且被污染**的语料
+        #   （docs/rq4_aflnet_exp_design.md:770）⇒ 绝不入候选。
+        #   ★ **语义命名**的目录（rq4_B / pfb_exp_B / live555_* / dict_rtsp
+        #     / focused20_* …）是**人工/工具整理的正式语料**，**一律保留** ——
+        #     真实抓包语料 live555_20261024_110155 就**没有** manifest
+        #     （docs/ci_and_acceptance.md:122：CI 无法重建）⇒ 不能误伤。
+        if _is_timestamp_batch_dir(child.name) \
+                and not (child / "manifest.json").is_file():
             continue
         # ★ P0-2（断自喂）：**排除本层自己产出的目录**。
         #   自喂闭环的成因：action_seq 的产物与基准层**写在同一个目录**，

@@ -25,8 +25,31 @@ from typing import Any, Iterable, Iterator, Optional, Sequence
 #: 项目根（local/rq3_common.py -> local -> <project>/）
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-#: RQ3 产物根目录
+#: RQ3 产物根目录（**默认**值）。
+#:
+#: ★ 可被 :func:`set_rq3_root` 覆盖（pytest 隔离用）：
+#:   ``derived/rq3/`` 是**已发表语料**（论文引用），测试若直接写它
+#:   ⇒ pytest 一跑就重建真实语料（内容 + mtime 全变）⇒ 既污染数据，
+#:   又让「语料已被重建」护栏信号永远为真 ⇒ 无法区分「本次构建」与「历史产物」。
+#:   ⇒ 测试用 ``tmp_path`` + :func:`set_rq3_root` 把根重定向过去。
+#:
+#: ★ **默认值不变**（= ``<project>/derived/rq3``）：生产路径的行为**逐字节不变**。
 RQ3_ROOT = PROJECT_ROOT / "derived" / "rq3"
+
+
+def set_rq3_root(root) -> Path:
+    """把 RQ3 产物根目录**重定向**到 ``root``（返回新根）。
+
+    ★ 用途：**pytest 隔离** —— 让构建写入 ``tmp_path`` 而不是真实的
+      ``derived/rq3/``（已发表语料，论文引用）。
+    ★ 语义：模块级**可覆盖变量**（约定 C2「命名函数单一来源」：
+      路径仍只在本模块定义，调用方只负责**指定根**）。
+    ★ 只影响本进程内的后续调用；**默认值不变**（不调用本函数 = 原行为）。
+    """
+    global RQ3_ROOT
+    RQ3_ROOT = Path(root)
+    return RQ3_ROOT
+
 
 #: RQ3 集中配置文件（唯一配置源）
 CONFIG_PATH = Path(__file__).resolve().parent / "rq3_config.json"
@@ -365,6 +388,7 @@ __all__ = [
     "QUEUE_INDEX_HEADER", "CRASHES_INDEX_HEADER", "ENRICHMENT_AUDIT_HEADER",
     "DRYRUN_HEADER", "SNAPSHOT_TAGS", "QUEUE_KINDS",
     "container_name", "out_dir_name", "group_label", "fuzzer_label",
+    "set_rq3_root",
     "rq3_dir", "group_seed_dir", "group_manifest_path", "dict_dir",
     "collect_dir", "groups_json_path", "dict_frozen_path",
     "load_config",

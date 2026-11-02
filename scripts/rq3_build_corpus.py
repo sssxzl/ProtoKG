@@ -13,6 +13,14 @@
     E:/app/Anaconda3/python.exe scripts/rq3_build_corpus.py
     E:/app/Anaconda3/python.exe scripts/rq3_build_corpus.py --check-only
     E:/app/Anaconda3/python.exe scripts/rq3_build_corpus.py --continue-on-error
+    E:/app/Anaconda3/python.exe scripts/rq3_build_corpus.py --root <目录>
+
+★ ``--root <目录>``：把**构建根目录**整体重定向到别处（默认仍是
+  ``derived/rq3`` ⇒ **默认行为逐字节不变**）。
+  用途：**pytest 隔离** —— ``derived/rq3/`` 是**已发表语料**（论文引用），
+  测试若直接写它 ⇒ pytest 一跑就重建真实语料（内容 + mtime 全变）⇒
+  既污染数据、又让「语料已被重建」护栏信号永远为真（无法区分本次构建/历史产物）。
+  ⇒ 测试用 ``tmp_path`` + ``--root`` 把根指过去 ⇒ **不碰真实语料**。
 
 退出码:
     0 = 全部通过（语料已发布）
@@ -81,6 +89,20 @@ class Assertions:
 def _md5_of(path: Path) -> str:
     """文件 MD5。"""
     return hashlib.md5(path.read_bytes()).hexdigest()
+
+
+def _rel_to_root(path: Path) -> str:
+    """路径 → **仓库相对** POSIX 串（构建根被 ``--root`` 重定向时用绝对路径）。
+
+    ★ ``--root`` 可把构建根指到仓库外（如 pytest 的 ``tmp_path``）⇒
+      ``Path.relative_to(ROOT)`` 会抛 ``ValueError`` ⇒ 这里做兜底。
+      默认（构建根 = ``derived/rq3``）时**输出逐字节不变**。
+    """
+    p = Path(path)
+    try:
+        return str(p.relative_to(ROOT)).replace("\\", "/")
+    except ValueError:
+        return str(p).replace("\\", "/")
 
 
 def _run_seedgen(group: str, out_dir: Path, manifest: bool = True) -> int:
@@ -247,7 +269,7 @@ def _freeze_dicts(cfg: dict, dict_files: dict) -> dict:
                   if ln.strip()]
         records.append({
             "kind": kind,
-            "path": str(p.relative_to(ROOT)).replace("\\", "/"),
+            "path": _rel_to_root(p),
             "token_count": len(tokens),
             "md5": _md5_of(p),
             "generated_at": datetime.now().astimezone().isoformat(),
@@ -489,7 +511,10 @@ def build(check_only: bool = False, continue_on_error: bool = False) -> int:
             "seed_count": m["seed_count"],
             "seed_md5_set": sorted({e["md5"] for e in m["seeds"]}),
             "seed_files": [e["filename"] for e in m["seeds"]],
-            "manifest": f"derived/rq3/{g}/manifest.json",
+            # ★ manifest 路径跟随**实际构建根**（``--root`` 重定向时不是
+            #   ``derived/rq3/...``）⇒ 默认（构建根 = derived/rq3）时
+            #   **输出逐字节不变**。
+            "manifest": _rel_to_root(C.group_manifest_path(g)),
             "in_paper_table18": gcfg["in_paper_table18"],
         }
     C.write_json(C.groups_json_path(), groups_payload)
@@ -516,7 +541,16 @@ def main() -> int:
                     help="某组生成失败时不中止，继续构建其余组；"
                          "全部组跑完后若有失败组则返回非 0 并列出失败组"
                          "（默认：首组失败即中止，返回 4）")
+    ap.add_argument("--root", default=None, metavar="目录",
+                    help="构建根目录（默认 derived/rq3）—— 把整个构建产物"
+                         "重定向到别处（pytest 隔离用：避免重建**已发表**的"
+                         "derived/rq3/）")
     args = ap.parse_args()
+    # ★ --root：重定向构建根（默认 = derived/rq3 ⇒ 默认行为不变）。
+    #   必须在任何路径计算**之前**生效 ⇒ 全局覆盖 rq3_common 的 RQ3_ROOT
+    #   （该模块的所有路径函数都从它派生 ⇒ 一次覆盖，全部跟随）。
+    if args.root:
+        C.set_rq3_root(Path(args.root).expanduser().resolve())
     return build(check_only=args.check_only,
                  continue_on_error=args.continue_on_error)
 
