@@ -42,6 +42,10 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 from core import paths
+from core.fused.downstream.target_env import (  # noqa: E402
+    _split_url_parts,        # 私有工具：与归一化/端点抽取口径一致
+    allowed_endpoints as _allowed_endpoints,   # ★ 与 corpus_gate 的 G1 **共用一份**
+)
 from core.models import SeedCorpus, SeedMessage
 
 # ===========================================================================
@@ -69,6 +73,14 @@ REJECT_HEADER_NOT_FOUND = "header_not_found"
 REJECT_HEADER_ALREADY_EXISTS = "header_already_exists"
 REJECT_EXPECTED_CLASS_OUT_OF_VOCAB = "expected_class_out_of_vocab"
 REJECT_MALFORMED_ACTION = "malformed_action"
+#: ★ P1-1：``value`` 含控制字符（CR/LF/NUL/其它 C0）⇒ 拒绝。
+#:   实测（QA）：塞含 ``\r\n`` 的 value ⇒ ``.raw`` 里**真的凭空多出一个头**
+#:   （``X-Evil: pwned``）或消息**提前截断** ⇒ 这是**协议/头注入**风险。
+REJECT_VALUE_HAS_CONTROL_CHARS = "value_has_control_chars"
+#: ★ P0-1 纵深防御：``url`` 字段的端点不在**合法端点集合**内 ⇒ 拒绝。
+#:   合法端点集合与 ``scripts/corpus_gate.py`` 的 G1 **共用同一份实现**
+#:   （``core.fused.downstream.target_env.allowed_endpoints``）。
+REJECT_ENDPOINT_NOT_ALLOWED = "endpoint_not_allowed"
 
 #: action-seq 种子在 :class:`~core.models.SeedCorpus` 上的 ``generated_by`` 标记。
 ACTION_SEQ_GENERATED_BY = "rule-based:action-seq"
@@ -285,6 +297,52 @@ class ActionOpSpec:
     validate: Callable[[Action, SeedMessage], Optional[str]]
 
 
+def _allowed_endpoint_set(profile: Optional[dict]) -> Optional[set[str]]:
+    """该协议的**合法端点集合**（``host:port``）；无 profile ⇒ ``None``（不启用校验）。
+
+    ★ 与 ``scripts/corpus_gate.py`` 的 G1 **共用同一份实现**
+      （``core.fused.downstream.target_env.allowed_endpoints``）⇒ 口径不会漂移。
+    ★ 返回 ``None``（而非空集）表示「**未启用**端点校验」—— 与「启用了但集合为空」
+      语义不同（后者意味着该协议没有端点概念，如 SMTP）。
+    """
+    if not profile:
+        return None
+    endpoints, _sources = _allowed_endpoints(profile, {})
+    return endpoints
+
+
+def _has_control_chars(value: Any) -> bool:
+    """``value`` 是否含**控制字符**（CR / LF / NUL / 其它 C0）。
+
+    ★ P1-1（安全）：头值里出现 ``\r\n`` ⇒ 落盘时会**凭空多出一个头**
+      （QA 实测 ``X-Evil: pwned``）或让消息**提前截断**
+      ⇒ 这是**协议/头注入**风险，必须在生成侧 fail-closed。
+      ``\t`` 放行（协议里常见的分隔符）；其余 C0 与 DEL 一律拒绝。
+    """
+    if not isinstance(value, str):
+        return False
+    for ch in value:
+        code = ord(ch)
+        if ch == "\t":
+            continue
+        if code < 0x20 or code == 0x7F:
+            return True
+    return False
+
+
+def _endpoint_of_value(value: Any) -> str:
+    """从 URL 值里取出 ``host:port``（无则空串）。
+
+    与 ``corpus_gate.allowed_endpoints`` 的**口径一致**：剥 ``user@``、去 ``<>``。
+    """
+    if not isinstance(value, str) or not value:
+        return ""
+    _scheme, netloc, _path, _query, _fragment = _split_url_parts(value)
+    if not netloc:
+        return ""
+    return netloc.rsplit("@", 1)[-1].strip("<>")
+
+
 def _validate_header_existence(action: Action, message: SeedMessage) -> Optional[str]:
     """头部类动作的存在性校验：``add`` 要求**不存在**、``update``/``remove``
     要求**存在**（否则拒绝，避免静默新建 / 静默空转）。"""
@@ -365,7 +423,8 @@ VALID_OPS: tuple[str, ...] = tuple(sorted(ACTION_OPS))
 # 4. apply_actions —— 确定性执行
 # ===========================================================================
 
-def _reject_reason(action: Action, message: Optional[SeedMessage]) -> Optional[str]:
+def _reject_reason(action: Action, message: Optional[SeedMessage],
+                   allowed_endpoints: Optional[set[str]] = None) -> Optional[str]:
     """判定一个动作是否该被拒绝；合法返回 ``None``。
 
     校验顺序（固定 ⇒ 拒绝原因可复现）：
@@ -373,7 +432,9 @@ def _reject_reason(action: Action, message: Optional[SeedMessage]) -> Optional[s
         2. ``msg_index`` 是否落在消息范围内；
         3. ``field_path`` 是否在封闭取值域内；
         4. 值语义（``remove`` 不得带值；``add``/``update`` 必须带值）；
-        5. op 专属校验（头部的存在性）。
+        5. ★ **值不含控制字符**（P1-1：CR/LF/NUL ⇒ 头注入 / 消息截断）；
+        6. op 专属校验（头部的存在性）；
+        7. ★ **端点在合法端点集合内**（P0-1 纵深防御；仅当调用方给了白名单）。
     """
     op = getattr(action, "op", None)
     if not isinstance(op, str) or op not in ACTION_OPS:
@@ -394,12 +455,28 @@ def _reject_reason(action: Action, message: Optional[SeedMessage]) -> Optional[s
             return REJECT_MISSING_VALUE
         if not isinstance(value, str):
             return REJECT_MALFORMED_ACTION
+    # ★ P1-1：控制字符 ⇒ 拒绝（生成侧 fail-closed，不等落盘后再查）
+    if op != OP_REMOVE and _has_control_chars(value):
+        return REJECT_VALUE_HAS_CONTROL_CHARS
     spec = ACTION_OPS[op]
-    return spec.validate(action, message)
+    reason = spec.validate(action, message)
+    if reason is not None:
+        return reason
+    # ★ P0-1 纵深防御：``url`` 字段的端点必须在**合法端点集合**内。
+    #   合法端点集合与 ``corpus_gate`` 的 G1 **共用一份实现**
+    #   （``core.fused.downstream.target_env.allowed_endpoints``）⇒ 口径不会漂移。
+    if allowed_endpoints is not None:
+        kind, _name = normalize_field_path(getattr(action, "field_path", ""))
+        if kind == "url":
+            endpoint = _endpoint_of_value(value)
+            if endpoint and endpoint not in allowed_endpoints:
+                return REJECT_ENDPOINT_NOT_ALLOWED
+    return None
 
 
 def apply_actions(seed: SeedCorpus, seq: ActionSequence,
-                  *, ledger: Optional[ActionLedger] = None) -> SeedCorpus:
+                  *, ledger: Optional[ActionLedger] = None,
+                  profile: Optional[dict] = None) -> SeedCorpus:
     """把动作序列**确定性地**作用到一个真实种子上，返回新种子（**不原地改**）。
 
     Args:
@@ -420,6 +497,10 @@ def apply_actions(seed: SeedCorpus, seq: ActionSequence,
     # 深拷贝（messages / headers 全部重建）⇒ 输入对象逐字段不变。
     new_seed = SeedCorpus.from_dict(seed.to_dict())
     actions = tuple(getattr(seq, "actions", ()) or ())
+    # ★ P0-1 纵深防御：合法端点集合（与 corpus_gate 的 G1 **共用一份实现**）。
+    #   ★ 无 profile ⇒ 白名单为 ``None`` ⇒ **不启用**端点校验（避免缺上下文时误杀）；
+    #     控制字符校验**始终**生效（纯安全规则，不需要上下文）。
+    allowed = _allowed_endpoint_set(profile)
 
     for action in actions:
         index = getattr(action, "msg_index", -1)
@@ -427,7 +508,7 @@ def apply_actions(seed: SeedCorpus, seq: ActionSequence,
         if isinstance(index, int) and not isinstance(index, bool) \
                 and 0 <= index < len(new_seed.messages):
             message = new_seed.messages[index]
-        reason = _reject_reason(action, message)
+        reason = _reject_reason(action, message, allowed)
         if reason is not None:
             if ledger is not None:
                 ledger.reject(action, reason, _reject_detail(action))
@@ -661,7 +742,9 @@ def _rule_plan(seed: SeedCorpus, bundle: dict, *, protocol: str,
 
 
 def _sanitize_actions(seed: SeedCorpus, actions: tuple[Action, ...],
-                       ledger: Optional[ActionLedger]) -> tuple[Action, ...]:
+                       ledger: Optional[ActionLedger],
+                       allowed_endpoints: Optional[set[str]] = None
+                       ) -> tuple[Action, ...]:
     """剔除对当前种子**不合法**的动作（越界 / 域外 / 缺值 …），并登记拒绝原因。
 
     ★ 逐条判定用的是「动作执行到该步时的中间状态」——故必须**顺序**判定。
@@ -675,7 +758,7 @@ def _sanitize_actions(seed: SeedCorpus, actions: tuple[Action, ...],
         if isinstance(index, int) and not isinstance(index, bool) \
                 and 0 <= index < len(shadow.messages):
             message = shadow.messages[index]
-        reason = _reject_reason(action, message)
+        reason = _reject_reason(action, message, allowed_endpoints)
         if reason is not None:
             if ledger is not None:
                 ledger.reject(action, reason, _reject_detail(action))
@@ -810,8 +893,10 @@ def plan_actions(seed: SeedCorpus, bundle: dict, *, protocol: str,
         :class:`ActionSequence`（**动作均已通过合法性校验**）。
     """
     rules = _rule_plan(seed, bundle, protocol=protocol, profile=profile)
+    # ★ P0-1 纵深防御：合法端点集合（与 corpus_gate 的 G1 共用一份实现）
+    allowed = _allowed_endpoint_set(profile)
     rules = ActionSequence(
-        actions=_sanitize_actions(seed, rules.actions, ledger),
+        actions=_sanitize_actions(seed, rules.actions, ledger, allowed),
         intent=rules.intent,
         expected_class=rules.expected_class,
     )
@@ -828,7 +913,7 @@ def plan_actions(seed: SeedCorpus, bundle: dict, *, protocol: str,
         return rules
     planned = parse_action_sequence(raw, bundle, ledger=ledger)
     planned = ActionSequence(
-        actions=_sanitize_actions(seed, planned.actions, ledger),
+        actions=_sanitize_actions(seed, planned.actions, ledger, allowed),
         intent=planned.intent,
         expected_class=planned.expected_class,
     )

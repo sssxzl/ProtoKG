@@ -73,8 +73,9 @@ if str(REPO_ROOT) not in sys.path:
 from core import paths  # noqa: E402
 from core.fused.downstream.target_env import (  # noqa: E402
     _split_url,          # 私有工具函数：复用它保证 URL 拆分口径与归一化修复一致
+    allowed_endpoints,   # ★ 合法端点集合：已上移到 core（与 action_seq 共用一份）
+    endpoint_default_ports,
     playable_resource_names,
-    target_endpoint,
 )
 
 #: JSON 输出的 schema 版本（与 docs/rq4_s4_corpus_release_gate_spec.md §3.2 一致）。
@@ -241,72 +242,8 @@ def uri_form(profile: dict) -> str:
 # 合法端点集合（配置派生）
 # ===========================================================================
 
-def allowed_endpoints(profile: dict, env_cfg: dict) -> tuple[set[str], list[str]]:
-    """派生该协议的**合法端点集合**（``host:port``），返回 ``(集合, 来源说明)``。
-
-    数据来源（**全部来自配置，禁止写死**）：
-      1. 目标环境显式声明的端点（``target_endpoint`` / ``target_url`` /
-         ``default_url`` / ``url`` / ``server``）；
-      2. profile 的 ``default_url``（经 ``target_env.target_endpoint()``）；
-      3. profile 的 ``seedgen.client_side``：``server_addr``（服务端目标）与
-         ``client_addr``（客户端源端口）—— SIP 的两个端口分别出现在 R-URI 与
-         Via/Contact，**必须都允许**，否则误报。
-
-    实测（真实 profile）：
-      · RTSP → ``{127.0.0.1:8554}``
-      · SIP  → ``{127.0.0.1:5060, 127.0.0.1:5061}``（5060=R-URI 服务端，
-        5061=客户端源端口，出现在 Via/Contact）
-      · SMTP → ``{}``（无端点概念 → G1 不适用）
-    """
-    endpoints: set[str] = set()
-    sources: list[str] = []
-
-    def _add(value: str, source: str) -> None:
-        text = str(value or "").strip()
-        if not text:
-            return
-        if "://" in text:
-            _scheme, netloc, _path = _split_url(text)
-            text = netloc
-        text = text.rsplit("@", 1)[-1].strip("<>")
-        if ":" in text and text.rsplit(":", 1)[1].isdigit():
-            endpoints.add(text)
-            sources.append(source)
-
-    for key in ("target_endpoint", "target_url", "default_url", "url", "server"):
-        _add((env_cfg or {}).get(key), f"profile.seedgen.environments.<env>.{key}")
-
-    _scheme, netloc = target_endpoint(profile)
-    _add(netloc, "profile.default_url（经 target_endpoint()）")
-
-    client_side = (profile.get("seedgen") or {}).get("client_side") or {}
-    _add(client_side.get("server_addr"), "profile.seedgen.client_side.server_addr")
-    _add(client_side.get("client_addr"), "profile.seedgen.client_side.client_addr")
-
-    return endpoints, sources
 
 
-def endpoint_default_ports(profile: dict) -> tuple[str, str]:
-    """返回 ``(服务端默认端口, 客户端默认端口)``（无则空串）。
-
-    用于端口缺省时的补齐（SIP 的 ``sip:127.0.0.1`` → 5060；Via 的 ``127.0.0.1``
-    → 5061）。
-    """
-    server_port = ""
-    client_port = ""
-    _scheme, netloc = target_endpoint(profile)
-    if ":" in netloc and netloc.rsplit(":", 1)[1].isdigit():
-        server_port = netloc.rsplit(":", 1)[1]
-    client_side = (profile.get("seedgen") or {}).get("client_side") or {}
-    for value in (client_side.get("server_addr"), client_side.get("client_addr")):
-        text = str(value or "").strip()
-        if ":" in text and text.rsplit(":", 1)[1].isdigit():
-            port = text.rsplit(":", 1)[1]
-            if not server_port:
-                server_port = port
-            if not client_port:
-                client_port = port
-    return server_port, client_port
 
 
 # ===========================================================================

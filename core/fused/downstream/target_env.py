@@ -88,7 +88,10 @@ __all__ = [
     "filter_transitions_by_boundary",
     "environment_calibration",
     "target_endpoint",
+    "allowed_endpoints",
+    "endpoint_default_ports",
     "normalize_target_endpoint",
+    "normalize_target_endpoint_in_text",
     "normalize_seed_resource",
     "endpoint_normalization_enabled",
 ]
@@ -426,6 +429,125 @@ def endpoint_normalization_enabled(profile: dict) -> bool:
         return "://" in default_url
     ph = (profile or {}).get("url_placeholders") or {}
     return bool(str(ph.get("<server>") or "").strip())
+
+
+# ===========================================================================
+# 合法端点集合（**共用**给 corpus_gate 与下游种子生成）
+#
+# ★ 为什么放这里：`scripts/corpus_gate.py` 的 G1 与 `core/fused/downstream/action_seq.py`
+#   的取值白名单**必须用同一套判据** ⇒ 抽到 core 一份、两边 import，
+#   **不要复制第二份**（口径漂移过一次就够）。
+# ===========================================================================
+
+
+def allowed_endpoints(profile: dict, env_cfg: dict) -> tuple[set[str], list[str]]:
+    """派生该协议的**合法端点集合**（``host:port``），返回 ``(集合, 来源说明)``。
+
+    数据来源（**全部来自配置，禁止写死**）：
+      1. 目标环境显式声明的端点（``target_endpoint`` / ``target_url`` /
+         ``default_url`` / ``url`` / ``server``）；
+      2. profile 的 ``default_url``（经 ``target_env.target_endpoint()``）；
+      3. profile 的 ``seedgen.client_side``：``server_addr``（服务端目标）与
+         ``client_addr``（客户端源端口）—— SIP 的两个端口分别出现在 R-URI 与
+         Via/Contact，**必须都允许**，否则误报。
+
+    实测（真实 profile）：
+      · RTSP → ``{127.0.0.1:8554}``
+      · SIP  → ``{127.0.0.1:5060, 127.0.0.1:5061}``（5060=R-URI 服务端，
+        5061=客户端源端口，出现在 Via/Contact）
+      · SMTP → ``{}``（无端点概念 → G1 不适用）
+    """
+    endpoints: set[str] = set()
+    sources: list[str] = []
+
+    def _add(value: str, source: str) -> None:
+        text = str(value or "").strip()
+        if not text:
+            return
+        if "://" in text:
+            _scheme, netloc, _path = _split_url(text)
+            text = netloc
+        text = text.rsplit("@", 1)[-1].strip("<>")
+        if ":" in text and text.rsplit(":", 1)[1].isdigit():
+            endpoints.add(text)
+            sources.append(source)
+
+    for key in ("target_endpoint", "target_url", "default_url", "url", "server"):
+        _add((env_cfg or {}).get(key), f"profile.seedgen.environments.<env>.{key}")
+
+    _scheme, netloc = target_endpoint(profile)
+    _add(netloc, "profile.default_url（经 target_endpoint()）")
+
+    client_side = (profile.get("seedgen") or {}).get("client_side") or {}
+    _add(client_side.get("server_addr"), "profile.seedgen.client_side.server_addr")
+    _add(client_side.get("client_addr"), "profile.seedgen.client_side.client_addr")
+
+    return endpoints, sources
+
+
+def endpoint_default_ports(profile: dict) -> tuple[str, str]:
+    """返回 ``(服务端默认端口, 客户端默认端口)``（无则空串）。
+
+    用于端口缺省时的补齐（SIP 的 ``sip:127.0.0.1`` → 5060；Via 的 ``127.0.0.1``
+    → 5061）。
+    """
+    server_port = ""
+    client_port = ""
+    _scheme, netloc = target_endpoint(profile)
+    if ":" in netloc and netloc.rsplit(":", 1)[1].isdigit():
+        server_port = netloc.rsplit(":", 1)[1]
+    client_side = (profile.get("seedgen") or {}).get("client_side") or {}
+    for value in (client_side.get("server_addr"), client_side.get("client_addr")):
+        text = str(value or "").strip()
+        if ":" in text and text.rsplit(":", 1)[1].isdigit():
+            port = text.rsplit(":", 1)[1]
+            if not server_port:
+                server_port = port
+            if not client_port:
+                client_port = port
+    return server_port, client_port
+
+#: 文本里的**层级式 URL**（`scheme://authority`）—— authority 到
+#: `/`、`?`、`#`、`;`、引号、空白、`<`、`>` 为止。
+#:
+#: ★ 为什么需要它：`normalize_target_endpoint` 只处理**整个 URL 字符串**，
+#:   而真实抓包的**头部里**也嵌着 URI，例如
+#:   ``Authorization: Digest ... uri="rtsp://10.11.26.98:554/isapi/..."``、
+#:   ``Content-Base: rtsp://10.11.26.98:554/isapi/.../``、
+#:   ``Rtp-Info: url=rtsp://10.11.26.98:554/isapi/.../trackID=1;seq=4276``。
+#:   只归一化消息级 url ⇒ 这些**头部里的外网端点会原样留在 `.raw` 字节里**
+#:   ⇒ 种子打向目标环境不存在的设备（服务端返 404，**所有健康度指标都不会红**
+#:   ⇒ 静默退化），且 `corpus_gate` 的 G1 会判违规。
+_RE_HIER_URL_IN_TEXT = re.compile(
+    r"([A-Za-z][A-Za-z0-9+.\-]*://)([^\s/?#;\"'<>]+)")
+
+
+def normalize_target_endpoint_in_text(text: str, profile: dict) -> str:
+    """把**任意文本**里出现的层级式 URL 的**端点**归一化到 profile 声明的目标服务。
+
+    ★ 与 `normalize_target_endpoint` 的关系：
+      - 协议级开关（`endpoint_normalization_enabled`）**完全继承** ⇒
+        SIP / SMTP 等开关关闭的协议**逐字节不变**（它们的 URI domain 是逻辑实体标识，
+        改写会破坏消息语义）；
+      - **幂等**（关键不变量）：对本就指向 `default_url` 的文本**原样返回**
+        ⇒ 现存历史语料（RQ1.2 / RQ3）不受影响，连续性硬不变式得以保持；
+      - 只处理**层级式** URL（`scheme://authority`）—— 非层级式 URI
+        （`sip:user@host`）的 authority 不是路由端点，改写没有意义。
+
+    Args:
+        text:    任意文本（头值、参数串等）。
+        profile: 协议 profile（读 `default_url` / 开关）。
+
+    Returns:
+        归一化后的文本；开关关闭或找不到层级式 URL 时**原样返回**。
+    """
+    if not text or not endpoint_normalization_enabled(profile):
+        return text          # ★ 协议级开关关闭 ⇒ 逐字节原样返回
+
+    def _repl(m: re.Match) -> str:
+        return normalize_target_endpoint(m.group(0), profile)
+
+    return _RE_HIER_URL_IN_TEXT.sub(_repl, str(text))
 
 
 def normalize_target_endpoint(url: str, profile: dict) -> str:

@@ -61,7 +61,8 @@ from core.fused.downstream.seed_manifest import (  # noqa: E402
 from core.fused.downstream.target_env import (  # noqa: E402
     boundary_methods, effective_config, endpoint_normalization_enabled,
     filter_transitions_by_boundary, normalize_seed_resource,
-    normalize_target_endpoint, playable_resource_names, restrict_resources,
+    normalize_target_endpoint, normalize_target_endpoint_in_text,
+    playable_resource_names, restrict_resources,
 )
 from core.models import SeedCorpus  # noqa: E402
 
@@ -391,6 +392,22 @@ def _apply_url_placeholders(seeds: list, profile: dict, protocol: str,
             if do_endpoint:
                 msg.url = normalize_target_endpoint(msg.url, profile)
             msg.url = normalize_seed_resource(msg.url, allowed_resources, cur_stream)
+            # ★★ 目标侧归一化**也必须覆盖头部里嵌的 URI**（P0-1 根因修复）：
+            #   真实抓包的头部里嵌着端点，例如
+            #     Authorization: Digest ... uri="rtsp://10.11.26.98:554/isapi/..."、
+            #     Content-Base: rtsp://10.11.26.98:554/isapi/.../、
+            #     Rtp-Info: url=rtsp://10.11.26.98:554/isapi/.../trackID=1;seq=4276
+            #   只归一化消息级 url ⇒ 这些**外网端点原样留在 .raw 字节里**
+            #   ⇒ 种子打向目标环境不存在的设备（服务端返 404，**所有健康度指标都不会红**
+            #   ⇒ 静默退化），且 `corpus_gate` 的 G1 判违规。
+            #   ★ **对既有基准层天然是 no-op**：头部里没有层级式 URL、或端点本就等于
+            #     target 时**原样返回**（幂等）⇒ 基准层语料**逐字节不变**
+            #     ⇒ 批次 1 的「回滚态逐字节一致」依然成立。
+            if do_endpoint and msg.headers:
+                for _hk, _hv in list(msg.headers.items()):
+                    _new_hv = normalize_target_endpoint_in_text(_hv, profile)
+                    if _new_hv != _hv:
+                        msg.headers[_hk] = _new_hv
         # 种子级 url（selected_url）也替换
         if seed.selected_url:
             if cur_stream:
