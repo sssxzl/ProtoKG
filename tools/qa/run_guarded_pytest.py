@@ -114,6 +114,18 @@ DEFAULT_EXPECT_ERRORS = HERE / "baseline" / "baseline_errors_pre_cleanup.txt"
 #: ★ 不在清单里的新失败**照抓** ⇒ 闸门能力不被削弱。
 DEFAULT_ENV_VARIANT = HERE / "baseline" / "env_variant_failed_ids.txt"
 
+#: ★ 护栏6（批次 1.6）：**窄化数据态**下的失败项豁免清单。
+#:
+#: ★ 语义（与护栏5 的无条件豁免**不同**）：
+#:   清单内的 id **仅当中枢处于「窄化态」时**才豁免；
+#:   中枢恢复全源（五源齐备）时 ⇒ 这些 id **照常计入漂移** ⇒ 不削弱常态护栏。
+#:
+#: ★ 为什么需要：批次 1.6 引入「**清空整个中枢 + 单源调试**」⇒
+#:   依赖其它源知识（vuln 的漏洞模式、traffic 的取值/出现频次、source 的 FSM）
+#:   的断言在单源态**必然不成立** ⇒ 护栏会永远红 ⇒ 调试无法进行。
+#:   ⇒ 豁免的是「**数据态窄化导致**」的失败，**不是**代码回归。
+DEFAULT_NARROW_HUB = HERE / "baseline" / "narrow_hub_failed_ids.txt"
+
 #: 源码 mtime 快照范围（这些路径的变动会让结果不可比）
 SNAPSHOT_GLOBS = [
     "tests/fused/*.py", "tests/*.py",
@@ -162,6 +174,40 @@ def _find_pytest() -> str:
     return ""
 
 
+def _detect_narrow_hub_state(root=None) -> dict:
+    """检测中枢是否处于「**窄化数据态**」（批次 1.6 护栏6）。
+
+    ★ 判据：中枢根 ``derived/per_source/<协议>/sources.json`` 的
+      ``source_set`` **不是**全部五源 ⇒ 该协议处于窄化态。
+    ★ 任一协议窄化 ⇒ 整体判为窄化（护栏跑的是**跨协议**的全量测试，
+      窄化清单里的 id 多为跨协议断言 ⇒ 粒度上无法再细）。
+
+    Returns:
+        ``{"narrowed": bool, "source_sets": {协议: [源…]}}``
+    """
+    all_sources = {"rfc", "expert_note", "traffic", "vuln", "source"}
+    if root is None:
+        root = Path(__file__).resolve().parents[2] / "derived" / "per_source"
+    else:
+        root = Path(root)
+    sets: dict = {}
+    narrowed = False
+    if root.is_dir():
+        for protocol_dir in sorted(root.iterdir()):
+            manifest = protocol_dir / "sources.json"
+            if not manifest.is_file():
+                continue
+            try:
+                data = json.loads(manifest.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            src = [str(s) for s in (data.get("source_set") or [])]
+            sets[protocol_dir.name] = src
+            if set(src) != all_sources:
+                narrowed = True
+    return {"narrowed": narrowed, "source_sets": sets}
+
+
 def _read_expected(path: Path) -> list[str]:
     """读期望集文件（去空白行、去重、保持排序）。
 
@@ -195,6 +241,10 @@ def main() -> int:
                          "kb 数据态），**可存在也可缺席** ⇒ 判漂移时既不计入"
                          "「新增」也不计入「消失」；**不在清单里的新失败照抓**。"
                          "传空串可关闭该豁免（看原始漂移）")
+    ap.add_argument("--narrow-hub", default=str(DEFAULT_NARROW_HUB),
+                    help="窄化数据态豁免清单（默认 "
+                         "tools/qa/baseline/narrow_hub_failed_ids.txt）；"
+                         "**仅当中枢处于窄化态时**生效（多源态照常计入漂移）")
     ap.add_argument("--no-compare", action="store_true", help="不与期望集比对")
     ap.add_argument("--extra", default="", help="追加给 pytest 的参数（空格分隔）")
     args = ap.parse_args()
@@ -298,6 +348,19 @@ def main() -> int:
     #    （清单入库、逐条注明原因 ⇒ 可审计；不在清单里的新失败照抓）。
     env_ids = _read_expected(Path(args.env_variant)) if args.env_variant else []
     env_set = set(env_ids)
+
+    # ---- 护栏6：窄化数据态的**条件性**豁免 --------------------------------
+    narrow_set: set[str] = set()
+    narrow_state = _detect_narrow_hub_state()
+    if narrow_state["narrowed"]:
+        narrow_set = set(_read_expected(Path(args.narrow_hub))) \
+            if args.narrow_hub else set()
+        print(f"   [窄化态] 中枢为窄化数据态（source_set="
+              f"{narrow_state['source_sets']}）⇒ 窄化豁免清单生效"
+              f"（{len(narrow_set)} 个 id）")
+    else:
+        print("   [窄化态] 中枢为全源态 ⇒ 窄化豁免**不生效**"
+              "（依赖多源的断言照常计入漂移）")
     drift = {}
     if not args.no_compare:
         for label, ids, exp_path in (
@@ -309,11 +372,13 @@ def main() -> int:
             exp = _read_expected(exp_path)
             # ★ 命中环境相关清单的 id：**不算漂移**（可存在也可缺席）。
             hit_env = sorted(set(ids) & env_set)
-            added = sorted(set(ids) - set(exp) - env_set)
-            removed = sorted(set(exp) - set(ids) - env_set)
+            hit_narrow = sorted(set(ids) & narrow_set)
+            added = sorted(set(ids) - set(exp) - env_set - narrow_set)
+            removed = sorted(set(exp) - set(ids) - env_set - narrow_set)
             drift[label] = {"expected": len(exp), "actual": len(ids),
                             "added": added, "removed": removed,
-                            "env_variant_hit": hit_env}
+                            "env_variant_hit": hit_env,
+                            "narrow_hub_hit": hit_narrow}
             print(f"   {label}: 期望 {len(exp)} / 实测 {len(ids)} | "
                   f"新增 {len(added)} / 消失 {len(removed)}")
             for x in added[:10]:
@@ -323,6 +388,10 @@ def main() -> int:
             if hit_env:
                 print(f"      ~ 环境/数据相关（已豁免，{len(hit_env)} 条）：")
                 for x in hit_env[:10]:
+                    print(f"        ~ {x}")
+            if hit_narrow:
+                print(f"      ~ 窄化数据态相关（已豁免，{len(hit_narrow)} 条）：")
+                for x in hit_narrow[:10]:
                     print(f"        ~ {x}")
 
     ok = tree_stable and summary_present and not any(

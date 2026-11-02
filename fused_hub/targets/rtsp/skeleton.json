@@ -1,0 +1,6912 @@
+{
+  "protocol": "rtsp",
+  "note": "协议骨架（跨实验复用）：状态机转移 / 消息实例 / 方法存在性 / 头取值枚举 / 出现频次 / 请求响应配对。由 source + traffic 源抽取 ⇒ 固化为资产，构建时物化进中枢（authority='profile'）⇒ 单源调试时链路不断。",
+  "aspects": [
+    "existence",
+    "message_instance",
+    "method_sequence",
+    "occurrence",
+    "target_state",
+    "value_enum"
+  ],
+  "origin": {
+    "source": [
+      "message_instance",
+      "target_state"
+    ],
+    "traffic": [
+      "existence",
+      "method_sequence",
+      "occurrence",
+      "value_enum"
+    ]
+  },
+  "fact_count": 145,
+  "facts": [
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "OPTIONS",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_a424ff7555dea8b1",
+          "fact_id": "f2_00da05db76e0eb65",
+          "value": {
+            "type": "text",
+            "data": "Idle"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Idle.OPTIONS.Idle"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "OPTIONS",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_53a19d6e181863cd",
+          "fact_id": "f2_7647a4711bb0b756",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Idle.OPTIONS.Idle"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_8519af82023b136a",
+          "fact_id": "f2_b3f1068cc3e41d83",
+          "value": {
+            "type": "text",
+            "data": "Registered"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Idle.DESCRIBE.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_da02f124aaddd81e",
+          "fact_id": "f2_885fd8c4d3b812e8",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "2"
+                },
+                {
+                  "name": "Accept",
+                  "value": "application/sdp"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Idle.DESCRIBE.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_82f065e125a05a44",
+          "fact_id": "f2_59bc928c78aa10f3",
+          "value": {
+            "type": "text",
+            "data": "Invited"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Registered.SETUP.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_eed6a119327e7e2b",
+          "fact_id": "f2_e3bcae98fcebf73b",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/track1"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "3"
+                },
+                {
+                  "name": "Transport",
+                  "value": "RTP/AVP/TCP;unicast;interleaved=0-1"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Registered.SETUP.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PLAY",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c5bfbb3dc68eb3ed",
+          "fact_id": "f2_74fed6ee002ffc8c",
+          "value": {
+            "type": "text",
+            "data": "Confirmed"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Invited.PLAY.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PLAY",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_18fce767e42edf1c",
+          "fact_id": "f2_6af1b89c290a984c",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "4"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Invited.PLAY.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PAUSE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_420b85e6ca027b21",
+          "fact_id": "f2_379918a367b28b3f",
+          "value": {
+            "type": "text",
+            "data": "Paused"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Confirmed.PAUSE.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PAUSE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_50e6f1a12929bc3f",
+          "fact_id": "f2_760bd221bf93b2c9",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "5"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Confirmed.PAUSE.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PLAY",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c5bfbb3dc68eb3ed",
+          "fact_id": "f2_3f2b65a763495cc6",
+          "value": {
+            "type": "text",
+            "data": "Confirmed"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Paused.PLAY.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PLAY",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_f62aa6b7bf57c764",
+          "fact_id": "f2_609d10d7cd50a0d3",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "6"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Paused.PLAY.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_273e92bbba8d4ab6",
+          "fact_id": "f2_f4a578b2ee33dd1c",
+          "value": {
+            "type": "text",
+            "data": "Terminated"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Confirmed.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_65255711ab90851d",
+          "fact_id": "f2_73fe9eaaf8cb8d2f",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "7"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Confirmed.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_273e92bbba8d4ab6",
+          "fact_id": "f2_4b64de411db5b1d0",
+          "value": {
+            "type": "text",
+            "data": "Terminated"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Paused.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_d2df7c9cd49dff1d",
+          "fact_id": "f2_75d73b954c04b144",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "8"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Paused.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "OPTIONS",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_8519af82023b136a",
+          "fact_id": "f2_b394863e9d651ba2",
+          "value": {
+            "type": "text",
+            "data": "Registered"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Idle.OPTIONS.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "OPTIONS",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_5b63eecc4888b9b9",
+          "fact_id": "f2_8025ac3906e28dee",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "1"
+                },
+                {
+                  "name": "User-Agent",
+                  "value": "RTSPClient"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Idle.OPTIONS.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_273e92bbba8d4ab6",
+          "fact_id": "f2_33c0bedc712901e9",
+          "value": {
+            "type": "text",
+            "data": "Terminated"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Registered.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_2177eb11e41fe273",
+          "fact_id": "f2_974a46f5804bcc02",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "3"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Registered.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c5bfbb3dc68eb3ed",
+          "fact_id": "f2_7971802bbef883f8",
+          "value": {
+            "type": "text",
+            "data": "Confirmed"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Confirmed.SET_PARAMETER.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_dc2af16d8244ce2b",
+          "fact_id": "f2_aa42ab7e26cdb493",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "7"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                },
+                {
+                  "name": "Content-Type",
+                  "value": "text/parameters"
+                },
+                {
+                  "name": "Content-Length",
+                  "value": "24"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Confirmed.SET_PARAMETER.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "GET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c5bfbb3dc68eb3ed",
+          "fact_id": "f2_a37ab3e81d2436e1",
+          "value": {
+            "type": "text",
+            "data": "Confirmed"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Confirmed.GET_PARAMETER.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "GET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_f03f2896e5c36c62",
+          "fact_id": "f2_b7b828c088780531",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "8"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Confirmed.GET_PARAMETER.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_a424ff7555dea8b1",
+          "fact_id": "f2_545eb48906db062b",
+          "value": {
+            "type": "text",
+            "data": "Idle"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Idle.DESCRIBE.Idle"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_da02f124aaddd81e",
+          "fact_id": "f2_8dc6bf7379804003",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "2"
+                },
+                {
+                  "name": "Accept",
+                  "value": "application/sdp"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Idle.DESCRIBE.Idle"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_82f065e125a05a44",
+          "fact_id": "f2_fbea2e3873b8d52d",
+          "value": {
+            "type": "text",
+            "data": "Invited"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Idle.SETUP.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c35ab4e98e01faa5",
+          "fact_id": "f2_3e72f746384bcc7b",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/track1"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "3"
+                },
+                {
+                  "name": "Transport",
+                  "value": "RTP/AVP;unicast;client_port=8000-8001"
+                },
+                {
+                  "name": "Blocksize",
+                  "value": "1456"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Idle.SETUP.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_82f065e125a05a44",
+          "fact_id": "f2_7d0e185689eab9b4",
+          "value": {
+            "type": "text",
+            "data": "Invited"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Invited.SETUP.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_98ccbdd535993848",
+          "fact_id": "f2_f6f5308673144e40",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/track2"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "4"
+                },
+                {
+                  "name": "Transport",
+                  "value": "RTP/AVP;unicast;client_port=8002-8003"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Invited.SETUP.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "GET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_420b85e6ca027b21",
+          "fact_id": "f2_c87f1bb7e5aab4ea",
+          "value": {
+            "type": "text",
+            "data": "Paused"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Paused.GET_PARAMETER.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "GET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_9540babd9aafea26",
+          "fact_id": "f2_f598006aed61c0b5",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "9"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Paused.GET_PARAMETER.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c5bfbb3dc68eb3ed",
+          "fact_id": "f2_46fb1183370403c9",
+          "value": {
+            "type": "text",
+            "data": "Confirmed"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Idle.SETUP.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_dd60d6bf50976bad",
+          "fact_id": "f2_ae34d4177193f681",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "method",
+                  "value": "SETUP"
+                },
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/track1"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "2"
+                },
+                {
+                  "name": "Transport",
+                  "value": "RTP/AVP;unicast;client_port=8000-8001"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Idle.SETUP.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c5bfbb3dc68eb3ed",
+          "fact_id": "f2_60ed4bc5d30e7fa1",
+          "value": {
+            "type": "text",
+            "data": "Confirmed"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Confirmed.SETUP.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c77ce466d4454a61",
+          "fact_id": "f2_33198c8d7e70eafc",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "method",
+                  "value": "SETUP"
+                },
+                {
+                  "name": "url",
+                  "value": "rtsp://<server>/<stream>/track2"
+                },
+                {
+                  "name": "CSeq",
+                  "value": "3"
+                },
+                {
+                  "name": "Transport",
+                  "value": "RTP/AVP/TCP;unicast;interleaved=2-3"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Confirmed.SETUP.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_273e92bbba8d4ab6",
+          "fact_id": "f2_ee4b28103406e492",
+          "value": {
+            "type": "text",
+            "data": "Terminated"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Invited.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_0221d031e7ee0bd9",
+          "fact_id": "f2_e7516f955c95b5e2",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "5"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Invited.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "GET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_82f065e125a05a44",
+          "fact_id": "f2_e844aac8079460aa",
+          "value": {
+            "type": "text",
+            "data": "Invited"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Invited.GET_PARAMETER.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "GET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_d4f39add53844a32",
+          "fact_id": "f2_3843706e9af860f4",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "6"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Invited.GET_PARAMETER.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_82f065e125a05a44",
+          "fact_id": "f2_17491960be5ba1a4",
+          "value": {
+            "type": "text",
+            "data": "Invited"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Invited.SET_PARAMETER.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_2f04916e486449a8",
+          "fact_id": "f2_fe8f2fdbb4170681",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "7"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Invited.SET_PARAMETER.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PLAY",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c5bfbb3dc68eb3ed",
+          "fact_id": "f2_c8f1f944c8cf6142",
+          "value": {
+            "type": "text",
+            "data": "Confirmed"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Confirmed.PLAY.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PLAY",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_e90a4b0a54799f28",
+          "fact_id": "f2_048f9309318573e2",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "8"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                },
+                {
+                  "name": "Range",
+                  "value": "npt=0.000-"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Confirmed.PLAY.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PAUSE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_420b85e6ca027b21",
+          "fact_id": "f2_8a7373493b6dcd86",
+          "value": {
+            "type": "text",
+            "data": "Paused"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Paused.PAUSE.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PAUSE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_ba6bdecf35ffe6a3",
+          "fact_id": "f2_075a1f2721e32af6",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "10"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Paused.PAUSE.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_420b85e6ca027b21",
+          "fact_id": "f2_b00cab1a08c84b79",
+          "value": {
+            "type": "text",
+            "data": "Paused"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Paused.SET_PARAMETER.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_ae92a3bc3387905d",
+          "fact_id": "f2_ad29a541203c113d",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "11"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Paused.SET_PARAMETER.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_82f065e125a05a44",
+          "fact_id": "f2_02e1ef68c21fb179",
+          "value": {
+            "type": "text",
+            "data": "Invited"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Terminated.SETUP.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_018d532364eebf42",
+          "fact_id": "f2_59dbe3a4ee26b9fc",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "12"
+                },
+                {
+                  "name": "Transport",
+                  "value": "RTP/AVP;unicast;client_port=8004-8005"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Terminated.SETUP.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_8519af82023b136a",
+          "fact_id": "f2_5bcae4a4b52c44ee",
+          "value": {
+            "type": "text",
+            "data": "Registered"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Terminated.DESCRIBE.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_04309147243ead89",
+          "fact_id": "f2_9c0f0f4529dedcc3",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "13"
+                },
+                {
+                  "name": "Accept",
+                  "value": "application/sdp"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Terminated.DESCRIBE.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "OPTIONS",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_273e92bbba8d4ab6",
+          "fact_id": "f2_471576f7a573cd8a",
+          "value": {
+            "type": "text",
+            "data": "Terminated"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Terminated.OPTIONS.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "OPTIONS",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_aafecf24aec28012",
+          "fact_id": "f2_60a9e45ec58584cc",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "14"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Terminated.OPTIONS.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PLAY",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c5bfbb3dc68eb3ed",
+          "fact_id": "f2_6a2718f59c84d21c",
+          "value": {
+            "type": "text",
+            "data": "Confirmed"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Registered.PLAY.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PLAY",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_51ce86bf3f7a124d",
+          "fact_id": "f2_00e5b9c061628950",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "15"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Registered.PLAY.Confirmed"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PAUSE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_420b85e6ca027b21",
+          "fact_id": "f2_20e533bf1e8d0d1f",
+          "value": {
+            "type": "text",
+            "data": "Paused"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Registered.PAUSE.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PAUSE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_88e8fe06cc4f615d",
+          "fact_id": "f2_e1f3a3441ab31821",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "16"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Registered.PAUSE.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "GET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_8519af82023b136a",
+          "fact_id": "f2_3255a8593188460b",
+          "value": {
+            "type": "text",
+            "data": "Registered"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Registered.GET_PARAMETER.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "GET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_be899f15e568b743",
+          "fact_id": "f2_37a3c31a72ee4786",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "17"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Registered.GET_PARAMETER.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_8519af82023b136a",
+          "fact_id": "f2_a5d247302e778881",
+          "value": {
+            "type": "text",
+            "data": "Registered"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Registered.SET_PARAMETER.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_3a6b6ade436cbd8d",
+          "fact_id": "f2_2ce21e8ed26d3942",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "18"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Registered.SET_PARAMETER.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_273e92bbba8d4ab6",
+          "fact_id": "f2_54b3305878a60f19",
+          "value": {
+            "type": "text",
+            "data": "Terminated"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Idle.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_4af00c9f94fb8d1d",
+          "fact_id": "f2_a31c7075001a1f42",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "19"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Idle.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "GET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_a424ff7555dea8b1",
+          "fact_id": "f2_b627dd6d6297fc54",
+          "value": {
+            "type": "text",
+            "data": "Idle"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Idle.GET_PARAMETER.Idle"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "GET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_2c2d238aee91d678",
+          "fact_id": "f2_656b1132fd8afd4d",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Idle.GET_PARAMETER.Idle"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_a424ff7555dea8b1",
+          "fact_id": "f2_c88613c40c24e6e2",
+          "value": {
+            "type": "text",
+            "data": "Idle"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Idle.SET_PARAMETER.Idle"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Idle",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SET_PARAMETER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_112f831037bda488",
+          "fact_id": "f2_e6d11b84562fcd7f",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "21"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Idle.SET_PARAMETER.Idle"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PAUSE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_420b85e6ca027b21",
+          "fact_id": "f2_497e8bc2de4d1d8f",
+          "value": {
+            "type": "text",
+            "data": "Paused"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Invited.PAUSE.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "PAUSE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_8fc3f55365e20636",
+          "fact_id": "f2_d46788e08802368e",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "23"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Invited.PAUSE.Paused"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_82f065e125a05a44",
+          "fact_id": "f2_5f92ac5f57eaa1f4",
+          "value": {
+            "type": "text",
+            "data": "Invited"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Paused.SETUP.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Paused",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Invited",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_5f6537b3b3a1ed4a",
+          "fact_id": "f2_81fbb2d1846e13d9",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "25"
+                },
+                {
+                  "name": "Transport",
+                  "value": "RTP/AVP;unicast;client_port=8006-8007"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Paused.SETUP.Invited"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_8519af82023b136a",
+          "fact_id": "f2_e79590cbff30e2b2",
+          "value": {
+            "type": "text",
+            "data": "Registered"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Confirmed.DESCRIBE.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Confirmed",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Registered",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_cd6181210f95c760",
+          "fact_id": "f2_d2fc64141522aeba",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "26"
+                },
+                {
+                  "name": "Accept",
+                  "value": "application/sdp"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Confirmed.DESCRIBE.Registered"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_273e92bbba8d4ab6",
+          "fact_id": "f2_50643a199d26af4a",
+          "value": {
+            "type": "text",
+            "data": "Terminated"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.transition.Terminated.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "Terminated",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_caca860bd8171f44",
+          "fact_id": "f2_59e65bddb7f1600f",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "CSeq",
+                  "value": "27"
+                },
+                {
+                  "name": "Session",
+                  "value": "12345678"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "source",
+          "evidence_summary": [
+            "source:source.autoseeder.instance.Terminated.TEARDOWN.Terminated"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "method",
+          "name": "DESCRIBE",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "existence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_68f2fbcf6ad7c218",
+          "fact_id": "f2_09a8194d145e24fe",
+          "value": {
+            "type": "scalar",
+            "data": true
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.message.DESCRIBE"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "method",
+          "name": "GET_PARAMETER",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "existence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_68f2fbcf6ad7c218",
+          "fact_id": "f2_941034ca93436828",
+          "value": {
+            "type": "scalar",
+            "data": true
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.message.GET_PARAMETER"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "method",
+          "name": "OPTIONS",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "existence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_68f2fbcf6ad7c218",
+          "fact_id": "f2_eb197db7c8220bf4",
+          "value": {
+            "type": "scalar",
+            "data": true
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.message.OPTIONS"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "method",
+          "name": "PAUSE",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "existence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_68f2fbcf6ad7c218",
+          "fact_id": "f2_0fbe2f10c049f420",
+          "value": {
+            "type": "scalar",
+            "data": true
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.message.PAUSE"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "method",
+          "name": "PLAY",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "existence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_68f2fbcf6ad7c218",
+          "fact_id": "f2_68f11fca56d2ff33",
+          "value": {
+            "type": "scalar",
+            "data": true
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.message.PLAY"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "method",
+          "name": "SETUP",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "existence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_68f2fbcf6ad7c218",
+          "fact_id": "f2_130793b04675fe8e",
+          "value": {
+            "type": "scalar",
+            "data": true
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.message.SETUP"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "method",
+          "name": "SET_PARAMETER",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "existence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_68f2fbcf6ad7c218",
+          "fact_id": "f2_30e6f1423717e15e",
+          "value": {
+            "type": "scalar",
+            "data": true
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.message.SET_PARAMETER"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "method",
+          "name": "TEARDOWN",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "existence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_68f2fbcf6ad7c218",
+          "fact_id": "f2_4871443d49c3aabe",
+          "value": {
+            "type": "scalar",
+            "data": true
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.message.TEARDOWN"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "method_sequence",
+          "qualifiers": {
+            "source": {
+              "type": "method",
+              "name": "OPTIONS",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "method_sequence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_f8aa00dd7263604d",
+          "fact_id": "f2_951b292e5b1a4a52",
+          "value": {
+            "type": "text",
+            "data": "DESCRIBE"
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.state_machine.methods"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "method_sequence",
+          "qualifiers": {
+            "source": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "method_sequence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_f8aa00dd7263604d",
+          "fact_id": "f2_a0e309f6eb9380c3",
+          "value": {
+            "type": "text",
+            "data": "DESCRIBE"
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.state_machine.methods"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "method_sequence",
+          "qualifiers": {
+            "source": {
+              "type": "method",
+              "name": "DESCRIBE",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "method_sequence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_00d6ed8e4bebf9a4",
+          "fact_id": "f2_a1f9c17f398d9a4a",
+          "value": {
+            "type": "text",
+            "data": "SETUP"
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.state_machine.methods"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "method_sequence",
+          "qualifiers": {
+            "source": {
+              "type": "method",
+              "name": "SETUP",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "method",
+              "name": "PLAY",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "method_sequence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_2b9402a8d62eb46d",
+          "fact_id": "f2_8d0979617357e4b0",
+          "value": {
+            "type": "text",
+            "data": "PLAY"
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.state_machine.methods"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "method_sequence",
+          "qualifiers": {
+            "source": {
+              "type": "method",
+              "name": "PLAY",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "method",
+              "name": "TEARDOWN",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "method_sequence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_5306278d6f42cbd8",
+          "fact_id": "f2_be3fcad49ed1a2e4",
+          "value": {
+            "type": "text",
+            "data": "TEARDOWN"
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.state_machine.methods"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "status",
+          "name": "200",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_3bf7c0c1f96d8546",
+          "fact_id": "f2_4a6811f5208b5097",
+          "value": {
+            "type": "scalar",
+            "data": 5
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.outcome.status"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "status",
+          "name": "401",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_2f38d5df355ee988",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.outcome.status"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Cseq",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_6e9640f66a979202",
+          "fact_id": "f2_4148f2fd8b7397ac",
+          "value": {
+            "type": "scalar",
+            "data": 6
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Cseq.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Cseq",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_d7c170cc7f99b432",
+          "fact_id": "f2_57345aacf8ca51bf",
+          "value": {
+            "type": "set",
+            "data": [
+              "2",
+              "3",
+              "4",
+              "5",
+              "6"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Cseq.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "User-Agent",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_dd2418a2fc3dfc15",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.User-Agent.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "User-Agent",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_8ab2d69269c59661",
+          "fact_id": "f2_000bb37efc6c16ce",
+          "value": {
+            "type": "set",
+            "data": [
+              "LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.User-Agent.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Date",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_40809f37dd56547b",
+          "fact_id": "f2_2ff4243d31d783f3",
+          "value": {
+            "type": "scalar",
+            "data": 2
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Date.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Date",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_4f204ce8313673d2",
+          "fact_id": "f2_dacb879f35ed77e5",
+          "value": {
+            "type": "set",
+            "data": [
+              "Sun, Jun 03 2018 16:31:34 GMT",
+              "Sun, Jun 03 2018 16:31:37 GMT"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Date.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Accept",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_5bf5fe3e3d624a57",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Accept.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Accept",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_27b0df99f94dc5aa",
+          "fact_id": "f2_aad2e6f8790a3385",
+          "value": {
+            "type": "set",
+            "data": [
+              "application/sdp"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Accept.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Www-Authenticate",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_8d3d2dff0c88cf74",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Www-Authenticate.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Www-Authenticate",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_9d59b01dd02120d6",
+          "fact_id": "f2_b6244c8b6569c8cc",
+          "value": {
+            "type": "set",
+            "data": [
+              "Digest realm=\"IP Camera(C1052)\", nonce=\"0004cf6473583f06834f2a63455ef0b7\", stale=\"FALSE\""
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Www-Authenticate.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Authorization",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_40809f37dd56547b",
+          "fact_id": "f2_253f3ffc0f7c0843",
+          "value": {
+            "type": "scalar",
+            "data": 2
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Authorization.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Authorization",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_70bf8efc926fe834",
+          "fact_id": "f2_d815079ac17d3899",
+          "value": {
+            "type": "set",
+            "data": [
+              "Digest username=\"<user>\", realm=\"IP Camera(C1052)\", nonce=\"<nonce>\", uri=\"rtsp://10.11.26.98:554/isapi/streaming/channels/101\", response=\"<response>\"",
+              "Digest username=\"<user>\", realm=\"IP Camera(C1052)\", nonce=\"<nonce>\", uri=\"rtsp://10.11.26.98:554/isapi/streaming/channels/101/\", response=\"<response>\""
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Authorization.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Content-Type",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_acc83498bcc910af",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Content-Type.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Content-Type",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_27b0df99f94dc5aa",
+          "fact_id": "f2_0606e1d233e65a16",
+          "value": {
+            "type": "set",
+            "data": [
+              "application/sdp"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Content-Type.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Content-Base",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_685337fd66c21150",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Content-Base.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Content-Base",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_6afb674a619cafdf",
+          "fact_id": "f2_69ea49906449063a",
+          "value": {
+            "type": "set",
+            "data": [
+              "rtsp://10.11.26.98:554/isapi/streaming/channels/101/"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Content-Base.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Content-Length",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_22c4511409715307",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Content-Length.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Content-Length",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_9ade045eb6b4aa18",
+          "fact_id": "f2_34710c9c676cd032",
+          "value": {
+            "type": "set",
+            "data": [
+              "738"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Content-Length.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Transport",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_40809f37dd56547b",
+          "fact_id": "f2_ff0ed629a74099b5",
+          "value": {
+            "type": "scalar",
+            "data": 2
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Transport.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Transport",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_99adcb5c4b9c5255",
+          "fact_id": "f2_1939692ff90ceebd",
+          "value": {
+            "type": "set",
+            "data": [
+              "RTP/AVP;unicast;client_port=52570-52571",
+              "RTP/AVP;unicast;client_port=52570-52571;server_port=8226-8227;ssrc=3d208345;mode=\"play\""
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Transport.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Session",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_40809f37dd56547b",
+          "fact_id": "f2_d8adeb66ba657753",
+          "value": {
+            "type": "scalar",
+            "data": 2
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Session.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Session",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_f41997371ef65dfe",
+          "fact_id": "f2_92d1ec56fe5b2c4a",
+          "value": {
+            "type": "set",
+            "data": [
+              "107518505",
+              "107518505;timeout=60"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Session.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Range",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_f5ed04c062f36e47",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Range.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Range",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_9b3a01c6957c7714",
+          "fact_id": "f2_93f50d2db6a7fab5",
+          "value": {
+            "type": "set",
+            "data": [
+              "npt=0.000-"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Range.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Rtp-Info",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_d224f72b18169de8",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Rtp-Info.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Rtp-Info",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_5f8a9a66ba35a4bd",
+          "fact_id": "f2_6a5fcb487caf5db5",
+          "value": {
+            "type": "set",
+            "data": [
+              "url=rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1;seq=4276;rtptime=3627500126"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Rtp-Info.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "CSeq",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_3bf7c0c1f96d8546",
+          "fact_id": "f2_d5529c419811d3b1",
+          "value": {
+            "type": "scalar",
+            "data": 5
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.CSeq.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "CSeq",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_d7c170cc7f99b432",
+          "fact_id": "f2_571df261c69757ca",
+          "value": {
+            "type": "set",
+            "data": [
+              "2",
+              "3",
+              "4",
+              "5",
+              "6"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.CSeq.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "RTP-Info",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_feb2c8ae7c71f3f0",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.RTP-Info.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "RTP-Info",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_a6504ea9a68967ea",
+          "fact_id": "f2_c3def2afd5b05c48",
+          "value": {
+            "type": "set",
+            "data": [
+              "url=rtsp://127.0.0.1:8554/mp3AudioTest/track1;seq=65097;rtptime=1453529725"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.RTP-Info.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "method",
+          "name": "ANNOUNCE",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "existence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_68f2fbcf6ad7c218",
+          "fact_id": "f2_537627413d5de956",
+          "value": {
+            "type": "scalar",
+            "data": true
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.message.ANNOUNCE"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "method",
+          "name": "RECORD",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "existence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_68f2fbcf6ad7c218",
+          "fact_id": "f2_5f19a873fd3e70f6",
+          "value": {
+            "type": "scalar",
+            "data": true
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.message.RECORD"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Server",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_6f98601a8314b9c0",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Server.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Server",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_17e48cb3ebd89035",
+          "fact_id": "f2_d595db2f0e2c4735",
+          "value": {
+            "type": "set",
+            "data": [
+              "DSS/6.0.3 (Build/526.3; Platform/Linux; Release/Darwin Streaming Server; State/Development; )"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Server.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Last-Modified",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_ba40a0913048aae2",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Last-Modified.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Last-Modified",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_9e9957daf145dce6",
+          "fact_id": "f2_6ccdfd0bd01a611e",
+          "value": {
+            "type": "set",
+            "data": [
+              "Mon, 26 Jan 2009 16:23:57 GMT"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Last-Modified.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Cache-Control",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_b3e4b10582a3909a",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Cache-Control.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Cache-Control",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_4495d5dac272bba7",
+          "fact_id": "f2_51d1bda1313657ba",
+          "value": {
+            "type": "set",
+            "data": [
+              "must-revalidate"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Cache-Control.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Expires",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_97bf2ceb64893b5a",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Expires.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Expires",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_efc6ecaaba4230f0",
+          "fact_id": "f2_0723d18767040781",
+          "value": {
+            "type": "set",
+            "data": [
+              "Mon, 06 Apr 2009 10:44:36 GMT"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Expires.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "X-Accept-Retransmit",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_719526389416cfb7",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.X-Accept-Retransmit.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "X-Accept-Retransmit",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_f2e4af98710d4449",
+          "fact_id": "f2_2391ec747426ef62",
+          "value": {
+            "type": "set",
+            "data": [
+              "our-retransmit"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.X-Accept-Retransmit.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "X-Accept-Dynamic-Rate",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_0c480c3fc14967da",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.X-Accept-Dynamic-Rate.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "X-Accept-Dynamic-Rate",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_32ec98390c34117f",
+          "fact_id": "f2_ee0c42de2d3aef6f",
+          "value": {
+            "type": "set",
+            "data": [
+              "1"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.X-Accept-Dynamic-Rate.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Connection",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "occurrence",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_22c60db947fe05e4",
+          "fact_id": "f2_130f1b83e87dd853",
+          "value": {
+            "type": "scalar",
+            "data": 1
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Connection.occ"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "Connection",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_b5a9dbc185796d74",
+          "fact_id": "f2_bbc9c7ca549086ba",
+          "value": {
+            "type": "set",
+            "data": [
+              "Close"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.Connection.samples"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "method",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_1cb586430b9c09cc",
+          "fact_id": "f2_399441e80d2b08c9",
+          "value": {
+            "type": "set",
+            "data": [
+              "DESCRIBE",
+              "OPTIONS",
+              "PLAY",
+              "SETUP",
+              "TEARDOWN"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic_packet",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.method"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "url",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_6674ec2d890c9d9c",
+          "fact_id": "f2_6de6622c4ed0cbd6",
+          "value": {
+            "type": "set",
+            "data": [
+              "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+              "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+              "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic_packet",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.url"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "status",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_e9a6d82377d80099",
+          "fact_id": "f2_d71145e4210399e1",
+          "value": {
+            "type": "set",
+            "data": [
+              "200",
+              "401"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic_packet",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.status"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "session",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_f41997371ef65dfe",
+          "fact_id": "f2_46a0961e3466630f",
+          "value": {
+            "type": "set",
+            "data": [
+              "107518505",
+              "107518505;timeout=60"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic_packet",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.session"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "request",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_4681ae45df26f539",
+          "fact_id": "f2_fed2aed80f8c9b58",
+          "value": {
+            "type": "set",
+            "data": [
+              "DESCRIBE rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0\\r\\n",
+              "OPTIONS rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0\\r\\n",
+              "PLAY rtsp://127.0.0.1:8554/mp3AudioTest/ RTSP/1.0\\r\\n",
+              "SETUP rtsp://127.0.0.1:8554/mp3AudioTest/track1 RTSP/1.0\\r\\n",
+              "TEARDOWN rtsp://127.0.0.1:8554/mp3AudioTest/ RTSP/1.0\\r\\n"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic_packet",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.request"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "response",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_fd317d8878dace26",
+          "fact_id": "f2_91f489446409083c",
+          "value": {
+            "type": "set",
+            "data": [
+              "RTSP/1.0 200 OK\\r\\n"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic_packet",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.response"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "content-type",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_27b0df99f94dc5aa",
+          "fact_id": "f2_28e7c39b23451eb5",
+          "value": {
+            "type": "set",
+            "data": [
+              "application/sdp"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic_packet",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.content-type"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "rtsp",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "transport",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_994487c14337bea4",
+          "fact_id": "f2_20ad77306f0b9fad",
+          "value": {
+            "type": "set",
+            "data": [
+              "RTP/AVP;unicast;client_port=46902-46903",
+              "RTP/AVP;unicast;destination=127.0.0.1;source=127.0.0.1;client_port=46902-46903;server_port=6970-6971"
+            ]
+          },
+          "epistemic_type": "observed",
+          "authority": "traffic_packet",
+          "evidence_summary": [
+            "traffic_raw:traffic.field.transport"
+          ],
+          "confidence": null
+        }
+      ]
+    }
+  ]
+}

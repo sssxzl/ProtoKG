@@ -37,6 +37,7 @@ import argparse
 import json
 import os
 import shutil
+from datetime import datetime
 import sys
 from pathlib import Path
 
@@ -203,6 +204,226 @@ def _clean_per_source(protocol: str, sources: list[str] | None = None) -> None:
     if kept_snapshots:
         print(f"[清理] 已保留 {protocol} 的历史幂等快照（snapshots/）: "
               f"{', '.join(kept_snapshots)}")
+
+
+#: ★ 批次 1.6（步 0）：中枢「运行时回写目录」——**不清空**。
+#:   `boundary_probe/` 是 oracle 探测回写的 **legal_boundary 等富化知识**，
+#:   属**积累资产**而非「上次运行的抽取残留」
+#:   （`tests/fused/test_build_hub_clean.py` 明确断言它必须保留）。
+#:   ⇒ 「清空整个中枢」的对象 = **五源抽取产物（facts）+ 语义四库（semantic）**。
+RUNTIME_ENRICH_DIRS: tuple[str, ...] = ("boundary_probe",)
+
+#: ★ 批次 1.6（步 0）：语义四库在清空前的**仓库外备份目录**。
+#:   规则库由 LLM 从 RFC 源产出 ⇒ **不能从 kb 重建**（需 120 次 LLM 调用）
+#:   ⇒ 清空前必须留一份**可恢复**副本（这不是「归档到 derived/」，
+#:   而是**备份**——用户明确否掉了 `derived/per_source_archive/<ts>/` 那种归档）。
+SEMANTIC_BACKUP_ROOT = Path(r"E:\科研\想法idea\ProtoRAG_快照_20261102\semantic_backup")
+
+
+def _backup_semantic_before_purge(protocol: str) -> str:
+    """清空前把语义四库备份到**仓库外**（不可再生资产 ⇒ 必须可恢复）。"""
+    root = paths.per_source_root(protocol)
+    backups: list[str] = []
+    for source_dir in sorted(root.glob("*/semantic")):
+        if not source_dir.is_dir():
+            continue
+        dst = SEMANTIC_BACKUP_ROOT / protocol / source_dir.parent.name
+        dst.mkdir(parents=True, exist_ok=True)
+        for f in source_dir.glob("*.jsonl"):
+            shutil.copy2(f, dst / f.name)
+            # ★ 备份在**仓库外** ⇒ 不能用 relative_to(REPO_ROOT)
+            backups.append(f"{protocol}/{source_dir.parent.name}/{f.name}")
+    if backups:
+        print(f"[清空] 语义四库已备份到仓库外（可恢复）: "
+              f"{SEMANTIC_BACKUP_ROOT / protocol}  ({len(backups)} 个文件)")
+    return SEMANTIC_BACKUP_ROOT / protocol and str(SEMANTIC_BACKUP_ROOT / protocol)
+
+
+def _repo_rel(path) -> str:
+    """把路径显示成「相对仓库根」；**在仓库外**时用绝对路径（不崩）。"""
+    try:
+        return str(Path(path).relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+def _purge_hub_for_batch(protocol: str, *, purge_semantic: bool = True
+                         ) -> list[str]:
+    """★ 批次 1.6（步 0）：**清空整个中枢**（本协议的五源抽取产物）。
+
+    ★ 与 :func:`_clean_per_source` 的区别（后者**不动**，签名与语义被测试锁定）：
+      · 范围 = 该协议下的**全部五源**（不只是本次要构建的那一个）
+      · 「清空」= 五源的 ``facts/``（**保留** ``facts/snapshots/`` 历史快照）
+        + 语义四库 ``semantic/``（D-7 选项 A：中枢里的一切都是本次的）
+      · **保留** :data:`RUNTIME_ENRICH_DIRS`（运行时回写的富化知识）
+      · **直接清，不归档**（用户 2026-11-02 明确：清空不破坏多源复现，
+        反而避免历史抽取记录影响本次；不必归档到 ``derived/per_source_archive/``）
+
+    Returns:
+        被清空的源名列表。
+    """
+    root = paths.per_source_root(protocol)
+    if not root.is_dir():
+        return []
+    if purge_semantic:
+        _backup_semantic_before_purge(protocol)
+    purged: list[str] = []
+    # ★ 骨架的物化产物也清（每次构建会重新物化 ⇒ 中枢里不留旧骨架）
+    skel_dir = root / SKELETON_SOURCE_NAME
+    if skel_dir.is_dir():
+        shutil.rmtree(skel_dir, ignore_errors=True)
+        purged.append(SKELETON_SOURCE_NAME)
+    for source in paths.SOURCES:
+        d = root / source
+        if not d.is_dir():
+            continue
+        # 运行时富化目录：**不清**
+        if source in RUNTIME_ENRICH_DIRS:
+            continue
+        # 语义四库（D-7 选项 A）：清掉，本次靠 --with-rules 重产
+        # ★ **必须受 ``purge_semantic`` 开关控制**（否则 ``--no-purge``
+        #   语义上"不清空"却仍把规则库删了 ⇒ 不可再生的规则静默丢失）
+        sem = d / "semantic"
+        if purge_semantic and sem.is_dir():
+            shutil.rmtree(sem, ignore_errors=True)
+        facts = d / "facts"
+        if facts.is_dir():
+            for child in facts.iterdir():
+                if child.name == "snapshots":
+                    continue
+                if child.is_dir():
+                    shutil.rmtree(child, ignore_errors=True)
+                else:
+                    child.unlink(missing_ok=True)
+        purged.append(source)
+    # 其它非五源目录（运行时富化）不动
+    if purged:
+        print(f"[清空] 已清空 {protocol} 中枢的五源抽取产物: {', '.join(purged)}"
+              + ("（含语义四库）" if purge_semantic else ""))
+    else:
+        print(f"[清空] {protocol} 中枢无五源产物可清")
+    return purged
+
+
+def _write_source_manifest(protocol: str, sources: list[str],
+                            build_ids: dict[str, str],
+                            skeleton_count: int = 0) -> Path:
+    """写中枢的**本次源集合**清单（``per_source/<协议>/sources.json``）。
+
+    ★ 它是「本次实验的知识来源清单」的**唯一权威**：
+      组装侧与消费端都据它判断「本次参与了哪些源」。
+    """
+    root = paths.per_source_root(protocol)
+    root.mkdir(parents=True, exist_ok=True)
+    doc = {
+        "protocol": protocol,
+        "source_set": sorted(sources),
+        "build_ids": dict(build_ids),
+        "built_at": datetime.now().astimezone().isoformat(),
+        "purged_before_build": True,
+        "runtime_enrich_dirs_kept": list(RUNTIME_ENRICH_DIRS),
+        "skeleton": {
+            "source": SKELETON_SOURCE_NAME,
+            "fact_count": skeleton_count,
+            "note": "协议骨架（状态机/消息实例/方法存在性/头取值/频次/配对）"
+                    "由 source+traffic 源抽取后固化为入库资产，构建时物化进中枢"
+                    "⇒ 单源调试时链路不断。",
+        },
+    }
+    path = root / "sources.json"
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8")
+    try:
+        shown = _repo_rel(path)
+    except ValueError:
+        shown = path          # ★ 路径在仓库外（如测试的 tmp_path）⇒ 不崩
+    print(f"[清单] 本次源集合 {sorted(sources)} → {shown}")
+    return path
+
+
+#: ★ 批次 1.6：语义规则的来源候选（B-10 实验产物；发布进中枢的语义四库）。
+SEMANTIC_RULE_SOURCES: tuple[str, ...] = (
+    "derived/exp_semantic_gain/group_E1/rules.jsonl",
+    "derived/exp_semantic_gain/group_E2/rules.jsonl",
+)
+
+
+def _republish_rules(protocol: str) -> None:
+    """把 B-10 实验产出的规则**重新发布**进中枢的语义四库（D-7 选项 A）。
+
+    ★ 为什么必须有这一步：语义四库由 LLM 从 RFC 源产出 ⇒ **不能从 kb 重建**
+      ⇒ 「整个中枢全清」会**永久丢失**它 ⇒ 清空 + 重发必须**成对**执行。
+    """
+    from core.fused.downstream.rule_store import publish_rules
+    rows: list[dict] = []
+    for rel in SEMANTIC_RULE_SOURCES:
+        p = REPO_ROOT / rel
+        if not p.is_file():
+            continue
+        for line in p.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(data, dict) and data.get("kind") == "semantic_rule":
+                data = data.get("rule") or {}
+            if isinstance(data, dict) and data.get("rule_id"):
+                rows.append(data)
+    if not rows:
+        print("[规则] ★ 未找到可发布的规则产物（B-10 实验目录不存在）"
+              "⇒ 本次中枢**不含**语义规则")
+        return
+    report = publish_rules(protocol, rows, replace=True)
+    print(f"[规则] 已重新发布进中枢语义四库：权威 {report['authoritative']} 条 / "
+          f"候选 {report['candidate']} 条 / 拒绝 {report['rejects']}")
+
+
+#: ★ 批次 1.6（步 0.5）：中枢里的**骨架源目录名**。
+#:   它不是 kb 里的知识源，而是「协议骨架」的物化位置。
+SKELETON_SOURCE_NAME = "profile"
+
+
+def _materialize_skeleton(protocol: str) -> int:
+    """把 ``fused_hub/targets/<协议>/skeleton.json`` 物化进中枢的 ``profile/`` 源。
+
+    ★ 为什么必须有：种子生成本质是「**状态机边的遍历**」
+      ⇒ 只抽 RFC 源时 ``transitions`` 为 0 ⇒ **一条种子都生不出来**
+      （实测：「!! 无状态机转移，无法生成种子」）。
+    ★ 骨架是「**跨实验复用的协议结构**」，不是「本次抽取的结果」
+      ⇒ 固化为**入库资产**，每次构建**重新物化**进中枢
+      ⇒ 中枢自洽（里面的一切都是本次的）+ 单源调试时链路不断。
+    ★ ``authority`` 改标 ``profile``：让「本次抽取的源」与「骨架」在
+      ``available_sources`` 里**分得开**（否则骨架会带着 source/traffic 的
+      authority 混进来，破坏「本次源集合」的语义）。
+    """
+    src = paths.target_profile_path(protocol) if hasattr(
+        paths, "target_profile_path") else (
+            REPO_ROOT / "fused_hub" / "targets" / protocol / "skeleton.json")
+    if not src.is_file():
+        print(f"[骨架] ★ {protocol} 无 skeleton.json（协议骨架缺失）"
+              "⇒ 单源构建可能因无状态机而无法生成种子")
+        return 0
+    doc = json.loads(src.read_text(encoding="utf-8"))
+    facts = doc.get("facts") or []
+    if not facts:
+        return 0
+    for f in facts:
+        for claim in (f.get("all_claims") or []):
+            claim["authority"] = SKELETON_SOURCE_NAME
+    dest_dir = paths.per_source_facts_dir(protocol, SKELETON_SOURCE_NAME)
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / f"{SKELETON_SOURCE_NAME}.jsonl"
+    with dest.open("w", encoding="utf-8") as fh:
+        for f in facts:
+            fh.write(json.dumps(f, ensure_ascii=False) + "\n")
+    try:
+        shown = _repo_rel(dest)
+    except ValueError:
+        shown = dest          # ★ 路径在仓库外（如测试的 tmp_path）⇒ 不崩
+    print(f"[骨架] 已物化 {len(facts)} facts → "
+          f"{shown}（authority={SKELETON_SOURCE_NAME}）")
+    return len(facts)
 
 
 def _load_norms(protocol: str) -> list[dict]:
@@ -478,10 +699,22 @@ def main(argv=None) -> int:
                         help="识别知识库中有哪几种知识源, 打印后退出")
     # ★★ 架构约束（2026-10-31 用户明确）：本模型**一次只处理一个知识库 ×
     #    一个知识源**。原 nargs="+" 允许多源，且清理时连带清掉其他源 → 改单值。
-    parser.add_argument("--sources", default="rfc",
+    # ★★ 批次 1.6（步 0）：恢复**多源**支持。
+    #   2026-10-31 曾把它改成单值，理由是「清理时连带清掉其他源 ⇒ 22 个下游测试失效」。
+    #   现在的解法不同：**清空整个中枢**（而不是「部分源清、部分源留」）⇒
+    #   中枢里只有本次抽出的源 ⇒ 既不混杂历史、也不会让下游读到「缺失源的旧数据」。
+    #   ⇒ `--sources` 恢复 nargs="+"，与模块 docstring 的用法示例一致。
+    parser.add_argument("--sources", default=["rfc"], nargs="+",
                         choices=sorted(KNOWN_SOURCES),
-                        help="本次处理的知识源（**单个**；默认 rfc）。"
-                             "本模型一次只处理一个知识源，多源请分次调用。")
+                        help="本次处理的知识源（可多个；默认 rfc）。"
+                             "例：--sources rfc expert_note")
+    parser.add_argument("--no-purge", action="store_true",
+                        help="★ 批次 1.6：**不清空**整个中枢（默认清空该协议的五源"
+                             "抽取产物 + 语义四库）⇒ 增量/多源联合调试时保留其它源")
+    parser.add_argument("--with-rules", action="store_true",
+                        help="★ 批次 1.6（D-7 选项 A）：把**语义规则的发布**纳入"
+                             "本批次 ⇒ 清空语义四库后重新发布（否则规则随清空消失，"
+                             "而它**不能从 kb 重建**，需 LLM）")
     # ★★ 协议显式化：不传则报错，避免「默认 rtsp」的隐式误跑/批量。
     parser.add_argument("--protocol", required=True,
                         help="本次处理的目标协议（**单个**），如 rtsp / sip / smtp")
@@ -521,7 +754,9 @@ def main(argv=None) -> int:
         os.environ[SEMANTIC_RULES_ENV_KEY] = "1"
         set_semantic_rules_enabled(True)
 
-    source = args.sources
+    # ★ 批次 1.6：--sources 恢复多选（列表）
+    sources = list(args.sources) if isinstance(args.sources, list) \
+        else [args.sources]
     protocol = args.protocol
 
     # ---- 单协议语义：校验协议存在 ----
@@ -558,35 +793,61 @@ def main(argv=None) -> int:
         return 0
 
     print(f"仓库根: {REPO_ROOT}")
-    print(f"本次处理: 协议={protocol}  知识源={source}  （单协议 x 单源）")
+    print(f"本次处理: 协议={protocol}  知识源={', '.join(sources)}"
+          f"  （单协议 x {'/'.join(sources)}）")
+    print(f"中枢清空: {'否（--no-purge）' if args.no_purge else '是（整个中枢的五源产物）'}")
     # ★ D-6：把开关状态打进构建摘要 ⇒ 运行者一眼可见当前语义规则是否参与生成。
     print(f"语义规则参与生成: {'开启' if semantic_rules_enabled() else '关闭'}")
     print()
 
-    # ★★ 顺序契约（2026-11-01 修复 P2-1）：
-    #     抽取 → 映射 → **质量闸** → **清理** → 写盘
-    #   闸不通过时 `_build_source` 抛 SystemExit，**旧产物原封不动**
-    #   （原先「先清理、后校验」⇒ 阻断构建反而把该协议的 rfc facts 删空）。
+    # ★★ 顺序契约（2026-11-01 修复 P2-1，批次 1.6 保留并扩展）：
+    #     抽取 → 映射 → **质量闸** → **清空整个中枢** → 写盘
+    #   闸不通过时 `_build_source` 抛 SystemExit ⇒ **旧产物原封不动**
+    #   （清空必须在**全部源**闸通过之后，否则阻断构建会把中枢清空）。
     #
     # 清掉上一次调用残留的幂等键，避免非 rfc 源误用上一次的 build_id。
     _LAST_BUILD_IDS.pop(protocol, None)
 
-    facts, skipped = _build_source(source, norms, registry, protocol,
-                                   constraints=args.constraints,
-                                   vuln_llm=args.vuln_llm)
+    # ---- ① 逐源独立抽取（每次一个源；各自过闸）-----------------------------
+    pending: dict[str, tuple[list, str | None]] = {}
+    build_ids: dict[str, str] = {}
+    for source in sources:
+        _LAST_BUILD_IDS.pop(protocol, None)
+        facts, skipped = _build_source(source, norms, registry, protocol,
+                                       constraints=args.constraints,
+                                       vuln_llm=args.vuln_llm)
+        build_id = _LAST_BUILD_IDS.pop(protocol, None)
+        build_ids[source] = build_id or ""
+        pending[source] = (facts, skipped, build_id)  # type: ignore[assignment]
+        print(f"[{source}] 抽取完成：{len(facts)} Facts / skipped {skipped}")
 
-    # 质量闸通过后才清空**本次指定的源**的旧 facts，避免旧数据残留污染本次产物。
-    # 只清这一个源 —— 同协议的其他源（source/expert_note/vuln/traffic）
-    # 不受影响：它们是独立知识源、独立生命周期。
-    if not args.no_clean:
-        _clean_per_source(protocol, sources=[source])
+    # ---- ② 全部源闸通过 ⇒ 清空整个中枢（★ 批次 1.6 步 0）------------------
+    if not args.no_purge:
+        _purge_hub_for_batch(protocol, purge_semantic=True)
 
-    build_id = _LAST_BUILD_IDS.pop(protocol, None)
-    failed, dest = _write_and_validate(source, facts, registry, protocol,
-                                       build_id=build_id)
-    print(f"[{source}] 映射 {len(facts)} Facts / skipped {skipped} "
-          f"(kind 未实现) / fail-closed 失败 {failed}")
-    print(f"[{source}] -> {dest.relative_to(REPO_ROOT)}")
+    # ---- ③ 写盘（逐源；原子切换）------------------------------------------
+    for source in sources:
+        facts, skipped, build_id = pending[source]
+        failed, dest = _write_and_validate(source, facts, registry, protocol,
+                                           build_id=build_id)
+        print(f"[{source}] 映射 {len(facts)} Facts / skipped {skipped} "
+              f"(kind 未实现) / fail-closed 失败 {failed}")
+        print(f"[{source}] -> {_repo_rel(dest)}")
+
+    # ---- ③' 物化协议骨架（★ 单源调试时链路不断的前提）----------------------
+    skeleton_count = _materialize_skeleton(protocol)
+
+    # ---- ④ 语义规则纳入本批次（D-7 选项 A）----------------------------------
+    if args.with_rules:
+        _republish_rules(protocol)
+    elif not args.no_purge:
+        print("[规则] ★ 语义四库已随中枢清空而清空，且**未**指定 --with-rules "
+              "⇒ 本次中枢**不含**语义规则（legal_boundary / response_expectation "
+              "为空）。规则**不能从 kb 重建**（需 LLM）⇒ 需要时请加 --with-rules。")
+
+    # ---- ⑤ 写本次源集合清单（唯一权威）-------------------------------------
+    _write_source_manifest(protocol, sources, build_ids,
+                            skeleton_count=skeleton_count)
     return 0
 
 

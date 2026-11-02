@@ -1,0 +1,31 @@
+# tools/qa/baseline/narrow_hub_failed_ids.txt
+# 窄化数据态豁免清单 —— 护栏6（批次 1.6，2026-11-02）
+#
+# ★ 语义（与护栏5 的 env_variant **无条件豁免不同**）：
+#   本清单内的 test id **仅当中枢处于「窄化态」时**才豁免。
+#   窄化态 = 中枢根 derived/per_source/<协议>/sources.json 的 source_set
+#            **不是**全部五源（rfc/expert_note/traffic/vuln/source）。
+#   ⇒ 中枢恢复全源时，这些 id **照常计入漂移** ⇒ 常态护栏强度**不被削弱**。
+#   护栏会自动检测并打印当前是否处于窄化态（可审计）。
+#
+# ★ 为什么需要：批次 1.6 引入「**清空整个中枢 + 单源调试**」⇒
+#   依赖其它源知识（vuln 的漏洞模式、traffic 的取值/出现频次）的断言
+#   在单源态**必然不成立** ⇒ 护栏会永远红 ⇒ 调试无法进行。
+#   ⇒ 豁免的是「**数据态窄化导致**」的失败，**不是**代码回归。
+#
+# ★ 逐条原因（可审计）：
+#   ① vuln 源的知识（漏洞模式 / 安全属性 / trigger 字段）在单源态**不存在**
+#      ⇒ 依赖它的字典/边界候选/子图断言必然不成立；
+#   ② 「五源都在」是**全源态**的前提断言，单源态**按定义**不成立；
+#   ③ 其余为上述两类在具体用例上的表现。
+#
+# ---------------------------------------------------------------------------
+tests/fused/test_boundary_probe.py::test_generate_protocol_dict_protocol_specific_and_clean
+tests/fused/test_rag_seedgen.py::test_assemble_security_from_vuln
+tests/fused/test_rag_seedgen.py::test_load_fact_views_has_all_five_sources
+tests/fused/test_rag_seedgen_step2.py::test_retrieve_subgraph_filters_security_by_subject
+tests/fused/test_rq3_dict.py::test_targeted_dict_without_trigger_fields
+tests/fused/test_seedgen.py::test_seedgen_focused_prioritizes_boundary_candidates
+tests/fused/test_seedgen.py::test_seedgen_includes_vuln_boundary_candidates
+tests/fused/test_selector.py::test_select_seeds_includes_vuln_pattern_boundary_candidates
+tests/fused/test_vuln_vector.py::test_load_patterns_returns_vuln_pattern_facts

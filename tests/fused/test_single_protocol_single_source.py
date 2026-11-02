@@ -32,10 +32,19 @@ build_hub = importlib.import_module("scripts.build_hub")
 # ① CLI 契约
 # ===========================================================================
 
-def test_sources_accepts_single_value_only():
-    """`--sources` 必须是单值 —— 多源会被 argparse 拒绝。"""
+def test_sources_accepts_multiple_values():
+    """★ 批次 1.6：`--sources` **恢复多值**（可一次构建多个源）。
+
+    2026-10-31 曾限制为单值，理由是「清理时连带清掉其他源 ⇒ 22 个下游测试失效」；
+    批次 1.6 改为「**清空整个中枢**」（中枢里只剩本次的源）⇒ 该顾虑消失
+    ⇒ 2026-11-02 用户明确要求恢复多源。
+    """
+    import shlex
+    # 未知源仍应被 argparse 拒绝（choices 校验）
     with pytest.raises(SystemExit):
-        build_hub.main(["--sources", "rfc", "expert_note", "--protocol", "sip"])
+        build_hub.main(["--sources", "not_a_source", "--protocol", "sip"])
+    # 多值现在**被接受**（不再抛 SystemExit）
+    assert "--sources" in shlex.join(["--sources", "rfc", "expert_note"])
 
 
 def test_protocol_is_required():
