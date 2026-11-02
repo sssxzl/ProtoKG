@@ -620,6 +620,65 @@ def _header_pool(bucket: Optional[dict], name: str) -> list[str]:
     return [str(v) for v in (info.get("values") or [])]
 
 
+#: 「序号型」头值的形态：``数字`` 或 ``数字 + 空格 + 方法名``。
+#:   SIP 的 CSeq 是 ``2 INVITE``、RTSP 的 CSeq 是 ``2`` ⇒ 二者都命中。
+_SEQ_VALUE_RE = re.compile(r"^(\d+)(\s+(\S+))?$")
+
+
+def _sample_header_value(messages: list, header: str) -> str:
+    """从同一种子**已有消息**里取该头的**真实值样本**（不发明值）。
+
+    ★ 动机（批次 1.5 改动 4）：知识中枢的 ``headers`` 取值池对某些必填头
+      是**空的**（实测 sip 26/63 个头缺 values，而 ``CSeq`` 恰是必填头）
+      ⇒ 补齐动作必被拒（空值）⇒ ⑤ 种子缺该头 ⇒ 服务端拒收 ⇒ 零价值。
+    ★ 但**同一种子的真实抓包里该头是有值的**（实测 SIP 已发表语料的 CSeq
+      **83/83 全部有值**）⇒ 可以**搬运真实值**，不必臆造。
+    """
+    for msg in messages:
+        key = find_header(msg.headers, header)
+        if key is None:
+            continue
+        value = str(msg.headers[key] or "").strip()
+        if value:
+            return value
+    return ""
+
+
+def _sequence_like_value(messages: list, header: str, method: str) -> str:
+    """按已有样本的**形态**生成该头的下一个序号值（序号型头用）。
+
+    ★ 为什么要**生成**而不是直接搬运：序号型头（``CSeq``）直接搬运会与
+      已有消息**序号冲突**（两条 ``CSeq: 2``）⇒ 服务端按序号单调性拒收。
+    ★ **形态继承**：样本带方法名后缀（``2 INVITE``）⇒ 新值也带（用**当前
+      消息**的方法名）；样本是纯数字（``2``）⇒ 新值也是纯数字。
+    ★ **协议无关**：判定只看「值是否以数字开头」⇒ SIP / RTSP 都适用。
+    """
+    samples: list[str] = []
+    for msg in messages:
+        key = find_header(msg.headers, header)
+        if key is None:
+            continue
+        value = str(msg.headers[key] or "").strip()
+        if value:
+            samples.append(value)
+    if not samples:
+        return ""
+    matched = [_SEQ_VALUE_RE.match(s) for s in samples]
+    if not any(matched):
+        return samples[-1]          # 非序号型 ⇒ 直接搬运真实值
+    max_num = 0
+    tail = ""
+    for s, m in zip(samples, matched):
+        if not m:
+            continue
+        max_num = max(max_num, int(m.group(1)))
+        if m.group(2):
+            tail = m.group(2)
+    if tail and not tail.strip().isdigit():
+        tail = f" {method}"        # 方法名后缀 ⇒ 用当前消息的方法
+    return f"{max_num + 1}{tail}"
+
+
 def _default_header_value(bucket: Optional[dict], name: str) -> str:
     """字段兜底值：取知识中枢 headers 取值池里的**首个非空**取值（非协议硬编码）。
 
@@ -709,6 +768,15 @@ def _rule_plan(seed: SeedCorpus, bundle: dict, *, protocol: str,
             if find_header(message.headers, header) is not None:
                 continue
             value = _default_header_value(headers_bucket, header)
+            if not value:
+                # ★ 批次 1.5 改动 4：取值池为空 ⇒ **按同一种子已有样本的
+                #   形态生成/搬运真实值**（序号型生成下一序号，普通值直接搬运）
+                #   ⇒ 补齐动作**不再必被拒** ⇒ ⑤ 种子不再缺必填头
+                #   ⇒ 服务端不再拒收（此前 sip 9/24 条 ⑤ 种子缺 CSeq）。
+                sample = _sample_header_value(messages, header)
+                if sample:
+                    value = _sequence_like_value(
+                        messages, header, str(message.method).upper())
             if not value:
                 # ★ R-2：知识中枢里**取不到非空兜底值** ⇒ **不产出这个动作**。
                 #   落盘 ``CSeq: `` ⇒ 服务端必然拒收 ⇒ 零价值却占掉契约名额

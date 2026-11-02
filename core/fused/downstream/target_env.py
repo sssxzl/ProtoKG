@@ -521,6 +521,18 @@ def endpoint_default_ports(profile: dict) -> tuple[str, str]:
 _RE_HIER_URL_IN_TEXT = re.compile(
     r"([A-Za-z][A-Za-z0-9+.\-]*://)([^\s/?#;\"'<>]+)")
 
+#: ★ 批次 1.5 改动 5（R-4）：**完整**的层级式 URL（含 path/query）。
+#:   ``_RE_HIER_URL_IN_TEXT`` 只匹配到 ``scheme://authority``
+#:   ⇒ 端点归一化**碰不到资源段** ⇒ 头部里的 URI 资源段原样保留。
+_RE_HIER_URL_FULL_IN_TEXT = re.compile(
+    r"[A-Za-z][A-Za-z0-9+.\-]*://[^\s/?#;\"'<>]+(?:/[^\s;\"'<>]*)?")
+
+#: ★ 批次 1.5 改动 5（R-4）：**完整**的层级式 URL（含 path/query）。
+#:   ``_RE_HIER_URL_IN_TEXT`` 只匹配到 ``scheme://authority``
+#:   ⇒ 端点归一化**碰不到资源段** ⇒ 头部里的 URI 资源段原样保留。
+_RE_HIER_URL_FULL_IN_TEXT = re.compile(
+    r"[A-Za-z][A-Za-z0-9+.\-]*://[^\s/?#;\"'<>]+(?:/[^\s;\"'<>]*)?")
+
 
 def normalize_target_endpoint_in_text(text: str, profile: dict) -> str:
     """把**任意文本**里出现的层级式 URL 的**端点**归一化到 profile 声明的目标服务。
@@ -548,6 +560,29 @@ def normalize_target_endpoint_in_text(text: str, profile: dict) -> str:
         return normalize_target_endpoint(m.group(0), profile)
 
     return _RE_HIER_URL_IN_TEXT.sub(_repl, str(text))
+
+
+def normalize_target_resource_in_text(text: str,
+                                         allowed_resources: Optional[list[str]],
+                                         fallback_resource: str = "") -> str:
+    """把文本里层级式 URL 的**资源段**归一化到目标环境允许的集合。
+
+    ★ 与 :func:`normalize_target_endpoint_in_text`（**只换 authority**）互补：
+      端点归一化解决「打向**哪台机器**」，资源段归一化解决「打**哪一路会话**」。
+    ★ R-4（P1）：``Authorization: Digest ... uri="rtsp://host/isapi/…/101"``
+      与请求行的会话名**失配** ⇒ 服务端算 Digest 用**请求行** ⇒ **返 401**
+      ⇒ 该种子零价值（且 G2 只扫请求行 ⇒ **看不见**这个问题）。
+    ★ **幂等**：对已可播的 URL 原样返回（``normalize_seed_resource`` 的既有语义）。
+    ★ **协议无关**：非层级式 URI（``sip:user@host``）不匹配 ⇒ 原样保留。
+    """
+    if not text or not allowed_resources:
+        return text
+
+    def _repl(m: re.Match) -> str:
+        return normalize_seed_resource(m.group(0), allowed_resources,
+                                      fallback_resource)
+
+    return _RE_HIER_URL_FULL_IN_TEXT.sub(_repl, str(text))
 
 
 def normalize_target_endpoint(url: str, profile: dict) -> str:

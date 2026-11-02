@@ -62,6 +62,7 @@ from core.fused.downstream.target_env import (  # noqa: E402
     boundary_methods, effective_config, endpoint_normalization_enabled,
     filter_transitions_by_boundary, normalize_seed_resource,
     normalize_target_endpoint, normalize_target_endpoint_in_text,
+    normalize_target_resource_in_text,
     playable_resource_names, restrict_resources,
 )
 from core.models import SeedCorpus  # noqa: E402
@@ -477,9 +478,19 @@ def _apply_url_placeholders(seeds: list, profile: dict, protocol: str,
             #   ★ **对既有基准层天然是 no-op**：头部里没有层级式 URL、或端点本就等于
             #     target 时**原样返回**（幂等）⇒ 基准层语料**逐字节不变**
             #     ⇒ 批次 1 的「回滚态逐字节一致」依然成立。
-            if do_endpoint and msg.headers:
+            if msg.headers:
                 for _hk, _hv in list(msg.headers.items()):
-                    _new_hv = normalize_target_endpoint_in_text(_hv, profile)
+                    _new_hv = _hv
+                    if do_endpoint:
+                        _new_hv = normalize_target_endpoint_in_text(
+                            _new_hv, profile)
+                    # ★ 批次 1.5 改动 5（R-4）：头部里嵌的 URI **资源段**
+                    #   也归一化 ⇒ 与请求行的会话名一致
+                    #   ⇒ Digest/认证类头部不再与服务端**失配**（原会返 401）。
+                    #   ★ 与端点归一化**独立**（端点归一化是协议级开关；
+                    #     资源段归一化是**环境级**事实：目标环境只播某些会话）。
+                    _new_hv = normalize_target_resource_in_text(
+                        _new_hv, allowed_resources, cur_stream)
                     if _new_hv != _hv:
                         msg.headers[_hk] = _new_hv
         # 种子级 url（selected_url）也替换
