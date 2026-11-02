@@ -1,0 +1,218 @@
+# 上游工作可获得性调研：FlowFSM / SpecGPT / SemFuzz
+
+> **一句话结论**：**三个上游工作都没有可下载的源码** ⇒「下载下来本地化」这条路**不存在**；
+> 但逐项对比后，我们有 **5 处明确缺口**，其中 2 处能**直接治我们自己的病**
+> （种子有效率 / 规则产出率）⇒ 正确的做法是**吸收算法、不搬框架**。
+
+调研日期：2026-11-02　｜　调研者：team-lead　｜　本文所有结论均附**可复现的命令与实测输出**。
+
+---
+
+## 1. 背景：我们借了什么
+
+本项目的 rfc 源在设计阶段明确「借鉴三篇对口文献」（`local/layer2_extraction_methods.md:13-14`、
+`local/rfc_source_design.md:4`）。下表是**我们代码里实际落地的借鉴点**（全部经 `grep` 核实）：
+
+| 上游 | 论文 | 我们借鉴了什么 | 落地位置 |
+|---|---|---|---|
+| **FlowFSM** | arXiv 2507.11222 (2025) | 从 RFC 抽协议状态机：prompt chaining + CoT + agent 链 | 状态机部分**曾被否决**（`local/rfc_source_design.md:23`：「FlowFSM 只抽状态机（不全面）」） |
+| **SpecGPT** | arXiv 2510.14348 (2025) | ① 章节窗口自底向上合并 ② 领域知识提示 + CoT ③ 多模型 ensemble 投票 | ① ✅ `rfc_extractor.py:394/498` `_merge_leaf_windows`（Algorithm 1）<br>② ⚠️ 部分 ③ ❌ 未做（D 阶段推迟） |
+| **SemFuzz** | arXiv 2603.05989 (WWW 2026, 天津大学+奇安信) | ① **构造约束 C + 处理期望 P** 分离抽象 ② LLM 从自然语言抽语义 ③ fail-closed 校验 | ① ✅ `legal_boundary` / `response_expectation` 两桶<br>② ✅ `rfc_extractor.py:3004`「正则打底 + LLM 补语义」<br>③ ✅ 质量闸 fail-closed |
+
+---
+
+## 2. 可获得性核实（可复现）
+
+### 2.1 FlowFSM —— 仓库存在，但**只有 README，没有代码**
+
+论文正文（arXiv 2507.11222 §IV-E）明写：「We open source FlowFSM's source code at:
+`https://github.com/YoussefMaklad/FlowFSM`」。实际仓库真实名为 **`YoussefMaklad/FlowFSM.`**（**带尾点**）。
+
+```bash
+$ git clone --depth 1 https://github.com/YoussefMaklad/FlowFSM..git /tmp/ffsm_clone
+$ cd /tmp/ffsm_clone && git log --oneline -1 && find . -type f -not -path './.git/*'
+4ab9aa4 Update README.md
+./.gitignore
+./README.md
+
+$ cat README.md
+# FlowFSM: An Agentic Flow for Finite-State Machine Extraction using Prompt Chaining.
+The source code of FlowFSM will be shared soon inshallah.
+```
+
+| 项 | 实测值 |
+|---|---|
+| HEAD | `4ab9aa4e2e68da63f842b7e516aee8c27747d339`（**2025-07-02**，此后 16 个月未更新） |
+| 文件数 | **2**（`.gitignore` + 146 字节 README，README md5 `edc59afc0ecaf86e1681eb04199ac1d5`） |
+| 分支 / tag / release | 仅 `main`；**无 tag、无 release** |
+| star | 1 |
+
+⇒ **「共享 soon inshallah」至今未兑现**。论文承诺的开源与实际状态不符。
+
+### 2.2 SpecGPT —— **没有公开仓库**
+
+```bash
+$ curl -sSL https://api.github.com/search/repositories?q=SpecGPT+3GPP
+  total_count: 0
+```
+
+论文（arXiv 2510.14348）与 SECON'26 poster（`aoa0.github.io/pubs/secon26.pdf`）**均未给出代码链接**，
+只描述方法与数据（NAS/NGAP/PFCP 的人工标注 ground truth）。
+
+### 2.3 SemFuzz —— **没有公开仓库**
+
+```bash
+$ curl -sSL https://api.github.com/search/repositories?q=SemFuzz
+  total_count: 0
+```
+
+中文安全内参（secrss.com/index.php/articles/88448）的「基本信息」栏直接写：
+**「开源代码：暂无」**。
+
+### 2.4 汇总
+
+| 上游 | 论文 | 官方仓库 | 源码 | 可否下载本地化 |
+|---|---|---|---|---|
+| FlowFSM | arXiv 2507.11222 | ✅ `YoussefMaklad/FlowFSM.`（1 star，2025-07-02 后未动） | ❌ **仅 README** | ❌ 不可 |
+| SpecGPT | arXiv 2510.14348 | ❌ 搜索 0 命中 | ❌ | ❌ 不可 |
+| SemFuzz | arXiv 2603.05989 | ❌ 搜索 0 命中（官方标注「暂无」） | ❌ | ❌ 不可 |
+
+⇒ **「下载下来本地化」这条路不存在。** 但**「复现」不等于「重建整个框架」** ——
+上游三篇里最重的部分是 **LLM 编排框架**（FlowFSM 用 CrewAI；SpecGPT/SemFuzz 用多模型 API 投票），
+而我们的两层模型 + 质量闸 + CI 闸门**在这两块已经比它们更严**。
+真正值得搬的是**算法细节**，见 §3。
+
+---
+
+## 3. 逐项对比：我们已有什么、缺什么
+
+### 3.1 我们**已经更强**的地方（不必迁移）
+
+| 维度 | 上游做法 | 我们的做法 | 谁强 |
+|---|---|---|---|
+| 幻觉抑制 | SpecGPT：多模型 ensemble 投票（D 阶段，推迟中） | **确定性规则打底 + LLM 兜底 + fail-closed 质量闸**（`constraint is None` 计数 >0 即阻断构建） | 我们（D 阶段做完前更稳） |
+| 可复现性 | 未强调 | `rule_id` 结构化派生 + **M6 幂等性实测通过**（三协议×3轮集合全同） | 我们 |
+| 验收 | 未强调 | **三道护栏 + 真机 CI 5 job 全绿**（失败集合不漂移） | 我们 |
+| 证据可溯 | SpecGPT：人工标注核对 | `EvidenceAnchor` span + `_verify_span_in_source` + M3/M4 = 100% | 我们 |
+| 文档清洗 | SpecGPT：正则去 TOC/页眉页脚 | 六步流水线（清洗→TOC 隔离→标题→章节树→块解析→类型判定） | 我们 |
+
+### 3.2 我们**明确缺失**的地方（迁移清单，按性价比排序）
+
+| # | 缺口 | 来源 | 证据（我们这侧） | 价值 | 成本 | 前置 |
+|---|---|---|---|---|---|---|
+| **A** | **字段级 action-sequence 变异**（在真实抓包种子上做 `add`/`remove`/`update` over field path，而非 LLM 直接编辑字节） | SemFuzz | `scripts/seedgen.py` 四条生成路径（edge_cover / generic_danger / vuln 边界对 / canonical_flow）**全部是「从零构造」**，**没有「在真实种子上做字段级变异」** | ★★★ **直接治我们自己的病**：SemFuzz 实测「确定性 action-sequence 变异把有效测试率 **36% → 87%**」；我们 rq3 语料正卡在「host 轴污染 76.9% / G2 不可播会话占比」 | 中 | 需一个 field-path 操作算子 + 真实种子结构映射 |
+| **B** | **命令级前驱/后继约束**（rule-book 第 2、3 章：每命令的合法前驱与合法后继） | FlowFSM | `ExecutableConstraint.precondition` 字段**存在但可选透传**，实际值来自 **profile**（`_struct.get("precondition")`），**不是从 RFC 抽出来的**；`transitions`/`method_sequences` 桶同理来自 source 源 | ★★☆ 补上「状态机级」的 RFC 约束 ⇒ 可直接生成**顺序违规种子**（而非只有字段级违规） | 中高 | 新的抽取器 + 新 operator 族 + 质量闸扩展 |
+| **C** | **ensemble 投票的对齐判据**（状态精确匹配 + condition/action 文本重叠 ≥75% 才算同一转移） | SpecGPT | 我们 D-1~D-5 未做；且**没有对齐判据** | ★★☆ SpecGPT 实测 ensemble 让 F1 **+6.27% ~ +22.68%**；把 D 阶段从「猜」变成「有据」 | 低（纯判据设计） | 无（可先只写判据与单测，不实现投票） |
+| **D** | **LLM 输出后处理**（校验 JSON 格式 + 移除伪状态/空状态） | SpecGPT | 我们有 fail-closed 校验与 `gate_exercised`，但**没有「伪状态/空状态」清理** | ★☆☆ 降低幻觉噪声 | 低 | 无 |
+| **E** | **领域知识提示 + CoT 分阶段**（状态抽取→转移抽取→后处理，三步分解） | SpecGPT / FlowFSM | 我们是「**确定性规则打底 + LLM 兜底**」，**不是 CoT 分阶段** | ★★☆ 直指我们的瓶颈：B-10 的 M7 显示 **`operator_unresolved 73/106` 占绝对多数** —— 模式表（31 条）没覆盖住大部分自然语言表述 | 中高（改 prompt 架构 + **必须重跑 B-10 实验**，且受 M2 阻塞） | ⚠ M2 不可计算 ⇒ 现在改 prompt **无法验证收益** |
+
+### 3.3 一条重要的**反向**结论
+
+SemFuzz 的核心卖点「用 LLM 从 RFC 抽语义规则」我们**已经在做且更严**（两层模型 + 四库隔离 + 质量闸）。
+它真正比我们强的地方只有一条：**变异方式**（A 项）。
+⇒ **不要重建 SemFuzz 的框架**，只搬它的**变异算子**。
+
+---
+
+## 4. 建议的迁移路线（按「能否被验证」排序）
+
+### ✅ 已落地（本轮完成，可被现有护栏验证）
+
+**迁移项 C + 路线图 D-1 / D-4 / D-7** ⇒ `core/fused/llm_ensemble.py` + `tests/fused/test_llm_ensemble_alignment.py`（20 条）
+
+落地内容：
+
+| 项 | 内容 |
+|---|---|
+| **D-1** | `Candidate(rule, model_id, run_id)` 包装层；单测钉住「`SemanticRule` 上**无** `model_id` 属性」⇒ 模型身份**未污染规范规则** |
+| **D-4** | `align_by_structural_equality()`：**主判据 = 内容身份全等**（主体类型/主体名/目标字段/算子/操作数/操作数来源/操作数引用/期望行为/适用状态/适用方法）；证据位置由**重叠率**单独比 |
+| **D-7** | θ 的语义写死：**「证据 span 重叠的辅助阈值」，主判据始终是结构化全等**；θ 的作用范围被钉死（内容全等时它才有发言权） |
+| **SpecGPT 迁移** | ★ 落成 `DEFAULT_THETA = 0.75`，并在代码注释里写明其**外部实证来源**：SpecGPT 实测「一条转移判为正确需『状态精确匹配』且『condition/action span 重叠 ≥ 75%』」⇒ **两边独立得出同一阈值**，θ 不再是拍脑袋的数 |
+
+三个被刻意固化、防止后来者踩坑的性质（均有单测）：
+
+1. **span 重叠永远不能单独造成对齐** —— 两条 span 重叠 0.9 但算子不同 ⇒ 不对齐（评审 T1 第三点）。
+2. **θ 永远不能越权** —— θ 取 0 / 0.5 / 0.75 / 1.0，内容不同就永远不对齐。
+3. ★ **对齐是成对判定、刻意保留非传递性** —— 内容全等时可能出现
+   `overlap(A,B) ≥ θ` 且 `overlap(B,C) ≥ θ` 但 `overlap(A,C) < θ` ⇒ `align(A,C)` 为假。
+   ⇒ **投票实现不得依赖对齐关系的传递闭包**（否则会把互相矛盾的证据并成一组）。
+   该性质**写在 docstring 里并被测试钉住**，是**已知行为**而非潜在 bug。
+
+⇒ **投票本体（D-2/D-3/D-5）仍按路线图 §6 推迟**（B-10 判定「收益成立」之前不投入）；
+本次只把**对齐口径**写死，D 阶段一旦启动不再临时拍脑袋。
+
+### 🟡 建议下一步做（不依赖标注集，可被现有护栏验证）
+
+**迁移项 A：字段级 action-sequence 变异算子**（SemFuzz）
+- 语义：`add(field, value)` / `remove(field)` / `update(field, value)`，作用于**真实抓包种子**的字段路径
+- 目标：**提高种子有效率** —— SemFuzz 实测「确定性 action-sequence 变异把有效测试率 **36% → 87%**」
+- 指标可直接用现成的 `scripts/corpus_gate.py` G2（不可播会话占比）
+- 这条同时是 **rq3 语料重建**的技术前提
+
+**迁移项 D：LLM 输出后处理**（SpecGPT）—— 校验 JSON 格式 + 移除伪状态/空状态，接在现有 fail-closed 校验之后
+
+### ⛔ 需要你裁决后才做
+
+**迁移项 E（改 prompt 架构成 CoT 分阶段）**
+- ⚠ **当前不建议做**：B-10 的 M2（规则 F1）**不可计算**（标注集 120 条仅 3 条已标、117 待标、
+  缺真人标注者 B ⇒ κ 算不了）⇒ 改了 prompt **没有任何指标能证明收益**，只能靠 M7 直方图的
+  `operator_unresolved` 计数间接看。
+- ⇒ **正确顺序**：先补齐标注集 ⇒ 再改 prompt ⇒ 再跑 B-10 复评。
+
+### 暂不做
+
+**迁移项 B（命令级前驱/后继约束）**
+- 工作量最大（新的抽取器 + 新 operator 族 + 质量闸），且**与 E 项争同一批候选句**。
+- 建议等 B/C/D 路线收敛后再单独立项。
+
+---
+
+## 4.1 落地后的验收（实测）
+
+```
+ruff check core/fused/llm_ensemble.py tests/fused/test_llm_ensemble_alignment.py
+  → All checks passed!
+
+pytest tests/fused/test_llm_ensemble_alignment.py -q
+  → 20 passed
+
+全量护栏：37 failed / 1362 passed / 20 errors / 1 skipped
+  failed 期望 37 / 实测 37（新增 0 / 消失 0）
+  errors 期望 20 / 实测 20（新增 0 / 消失 0）   ⇒ 可采信
+```
+
+---
+
+## 5. 一句话总结
+
+> 三个上游都**没有可下载的源码**（FlowFSM 仓库 16 个月未更新、只有一句 "will be shared soon inshallah"；
+> SpecGPT / SemFuzz 连仓库都没有）。
+> ⇒ 我们的路只能是**照论文复现算法**，而不是**拉代码改**。
+> 而我们**在表达层、幻觉抑制、可复现性、验收严格度上已经强于三者**；
+> 真正值得搬的是 **SemFuzz 的字段级 action-sequence 变异**（它把种子有效率从 36% 做到 87%，
+> 正好治我们 rq3 的种子污染）和 **SpecGPT 的 ensemble 对齐判据 + LLM 输出后处理**（低风险）。
+> 至于「领域知识提示 + CoT 分阶段」（直指我们 `operator_unresolved 73/106` 的瓶颈），
+> **必须等标注集定稿后再动** —— 否则改了也没有指标能证明收益。
+
+---
+
+## 附录：本次调研用到的全部命令（可复现）
+
+```bash
+# ① FlowFSM 仓库元信息 + 可达性
+curl -sSL -H "Accept: application/vnd.github+json" https://api.github.com/repos/YoussefMaklad/FlowFSM.
+git clone --depth 1 https://github.com/YoussefMaklad/FlowFSM..git /tmp/ffsm_clone
+cd /tmp/ffsm_clone && git log --oneline -1 && find . -type f -not -path './.git/*' && cat README.md
+
+# ② SpecGPT / SemFuzz 是否存在公开仓库
+curl -sSL -H "Accept: application/vnd.github+json" "https://api.github.com/search/repositories?q=SpecGPT+3GPP"
+curl -sSL -H "Accept: application/vnd.github+json" "https://api.github.com/search/repositories?q=SemFuzz"
+
+# ③ 论文原文
+#   FlowFSM : https://arxiv.org/abs/2507.11222        （§IV-E 给仓库地址）
+#   SpecGPT : https://arxiv.org/abs/2510.14348        （Algorithm 1 = 章节窗口合并）
+#   SemFuzz : https://arxiv.org/abs/2603.05989        （SR=(p,m,f,C,P)；五阶段管线）
+#   SemFuzz 中文导读（明写「开源代码：暂无」）：https://www.secrss.com/index.php/articles/88448
+#   SpecGPT SECON'26 poster（含 ensemble 对齐判据与提升幅度）：
+#     https://aoa0.github.io/pubs/secon26.pdf
+```
