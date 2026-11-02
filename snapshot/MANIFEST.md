@@ -1,16 +1,25 @@
 # ProtoRAG 全项目快照（清理前）· 回退说明
 
+> ★ **存放位置：git 分支 `snapshot/pre-cleanup-20261102`（不是 Release）**
+> 原因：GitHub 的 `uploads.github.com` 资产端点只接受 multipart，且会把**整个
+> multipart body**（含 boundary 与 part 头）**原样存成资产** ⇒ 下载回来多 243 字节的
+> 包装、`tar` 解不开（实测）。⇒ 改用 **git 原生 blob**：md5 可校验、`git checkout`
+> 直接恢复、无需解压。
+
 > 快照时间：**2026-11-02 17:0x**　|　仓库：`https://github.com/sssxzl/ProtoRAG`
 > 目的：在执行 `derived/` 清理与三项缺陷修复**之前**，把**整个项目**（含 gitignore 的产物）留一份可回退副本。
 
-## 一、这个 Release 里有什么
+## 一、这个分支里有什么
 
-| Asset | 内容 | 原始体积 | 压缩后 |
+| 文件（`snapshot/` 下） | 内容 | 原始体积 | 压缩后 |
 |---|---|---|---|
 | `derived_and_backups.tar.gz` | **整个 `derived/` 目录**（2701 个文件，与磁盘逐一对应）—— 知识中枢原料、已发表语料、语义规则库、实验与分析产物、历史残留 | 126 MB | **22 MB** |
 | `cleanup_backup_20261102.tar.gz` | 2026-11-02 16:05 那轮清理的**全部备份**（16 个 `__pycache__`、`.pytest_cache`、`.ruff_cache`、一次性探针 `_crlf_probe_44148`、8 个根目录临时日志、两个过期备份目录、6 个 kamailio 深处字节码缓存） | 6 MB | 2 MB |
 | `kb_ignored_files.tar.gz` | `kb/` 下被 gitignore 的 25 个文件（13 个 `client.log` 流量日志 + 11 个 kamailio TLS 测试证书 + 1 个 `pdb-server.init.d` + 1 个 `test.log`） | < 1 MB | 34 KB |
 | `MANIFEST.md` | 本文件 | — | — |
+
+> ★ **校验过的**：这 4 个文件的远端 blob md5 与本地**逐一一致**；
+> 且远端 `derived_and_backups.tar.gz` 解包后为 **2701 个文件**（与磁盘一致）。
 
 **代码本体不在这里** —— 它在 git 里，由 tag **`pre-cleanup-20261102`** 指向（commit `e611dd0`）。
 
@@ -39,9 +48,10 @@ git checkout pre-cleanup-20261102        # 或：git reset --hard pre-cleanup-20
 ### 3.2 回退 `derived/` 产物
 
 ```bash
-# ① 下载（GitHub Release 页面 → Assets）
+# ① 从快照分支取出压缩包（不下载，走 git）
+git checkout snapshot/pre-cleanup-20261102 -- snapshot/derived_and_backups.tar.gz
 # ② 解压回仓库根目录（tar 会保留原相对路径）
-tar -xzf derived_and_backups.tar.gz -C /e/科研/想法idea/rag-chatafl/
+tar -xzf snapshot/derived_and_backups.tar.gz -C /e/科研/想法idea/rag-chatafl/
 ```
 
 ### 3.3 回退清理备份 / kb 未入库文件
