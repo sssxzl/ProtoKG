@@ -236,6 +236,10 @@
       "Call-ID": "{seq}@127.0.0.1",
       "Contact": "<sip:alice@127.0.0.1:5060>",
       "Max-Forwards": "70"
+    },
+    "action_seq": {
+      "enabled": false,
+      "note": "批次 1：字段级 action-sequence 变异（SemFuzz 迁移项 A）。默认关闭 ⇒ 关闭时 scripts/seedgen.py 的产物与批次 1 之前逐字节一致（回滚手段）。开启后统一工厂的第五条生成路径会在**真实抓包种子**（已发表语料 / kb 真实抓包）上做 add/remove/update 字段级变异。"
     }
   },
   "note": "SIP 协议 Profile（RFC 3261）：文本头部协议（请求行 + 头部 + 空行 + 可选 body）。raw_format.request_line=\"{method} {url} {version}\"（version=SIP/2.0）；header_line=\"{key}: {value}\"；trailing_blank_line=true（消息间空行分隔）。seedgen.canonical_flow=REGISTER→INVITE→ACK→BYE 黄金路径。state_changing=会改变 dialog/会话状态的方法（REGISTER 注册、INVITE 建 dialog、BYE 结束、CANCEL 取消、SUBSCRIBE 订阅）。required_headers=SIP 每个方法必需头部（Via/From/To/Call-ID/CSeq/Max-Forwards）。precondition=ACK/BYE/CANCEL 需先 INVITE（dialog 内方法依赖）。session_header=Call-ID 标识同一 dialog（跨消息复用）。",

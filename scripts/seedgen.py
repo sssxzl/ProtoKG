@@ -8,6 +8,13 @@
   ③ 漏洞边界候选（derive_vuln_pattern_candidates，序列型漏洞模式，永远；不调 LLM，
      从 vuln_pattern 桶规则生成「合法—非法」边界对种子，让漏洞知识真正参与生成）
   ④ 黄金路径（profile.seedgen.canonical_flow，可选，如 SMTP 的 EHLO→MAIL→RCPT→DATA→QUIT）
+  ⑤ 字段级 action-sequence 变异（**批次 1 / SemFuzz 迁移项 A**；由
+     ``profile.seedgen.action_seq.enabled`` 开关位控制，**默认关闭** ⇒ 关闭时
+     产物与批次 1 之前**逐字节一致**）
+
+★ ⑤ 与前四条的本质区别：前四条是「**从零构造**」，⑤ 是「**在真实抓包种子上做
+  字段级变异**」（底料 = 已发表的真实语料 / kb 真实抓包；LLM 只产出抽象动作序列，
+  由确定性引擎执行 —— SemFuzz 的硬约束）。
 
 协议差异全部下沉到 profile.json（对齐 Fuzz4All 的「配置驱动」），本脚本零协议硬编码：
 换协议 = 加一份 profile.json，一个脚本都不用新增。
@@ -31,10 +38,10 @@ sys.path.insert(0, str(ROOT))
 
 from core import paths  # noqa: E402
 from core.fused.downstream.rag_seedgen import (  # noqa: E402
-    load_fact_views, assemble_bundle, write_seeds, plan_seed_filenames,
+    load_fact_views, assemble_bundle, write_seeds,
 )
 from core.fused.downstream.edge_cover import (  # noqa: E402
-    edge_cover, _detect_init, build_message,
+    edge_cover, build_message,
 )
 from core.fused.downstream.generic_danger import generic_danger  # noqa: E402
 from core.fused.downstream.boundary_probe import (  # noqa: E402
@@ -42,7 +49,11 @@ from core.fused.downstream.boundary_probe import (  # noqa: E402
     generate_targeted_dict, load_base_dict_tokens,
 )
 from core.fused.downstream.selector import (  # noqa: E402
-    dedupe_seeds, prioritize_seeds,
+    dedupe_seeds, prioritize_seeds, vuln_proximity_score,
+)
+from core.fused.downstream.action_seq import (  # noqa: E402
+    ACTION_SEQ_GENERATED_BY, ActionLedger, apply_actions,
+    load_real_base_seeds, plan_actions,
 )
 from core.fused.downstream.seed_manifest import (  # noqa: E402
     build_manifest, write_manifest,
@@ -58,6 +69,13 @@ from core.models import SeedCorpus  # noqa: E402
 #: 全部可用的生成分层（--layers 的取值域）
 ALL_LAYERS: tuple[str, ...] = ("edge_cover", "generic_danger", "vuln_boundary",
                                "canonical")
+
+#: ⑤ 字段级 action-sequence 变异层的名字。
+#:
+#: ★ **不进 ALL_LAYERS**：⑤ 由 ``profile.seedgen.action_seq.enabled`` 开关位
+#:   控制（不是 CLI 层开关）——不进 ALL_LAYERS ⇒ ①~④ 的层集合、manifest 的
+#:   ``layers`` 字段在关闭时与批次 1 之前**逐字节一致**（回滚手段必须成立）。
+ACTION_SEQ_LAYER_NAME = "action_seq"
 
 #: RQ3 聚焦组配置表（技术方案 §2.2 实现契约）。
 #:
@@ -244,6 +262,76 @@ def _derive_vuln_boundary_candidates(bundle: dict, profile: dict,
             continue
         out.append(s)
     return out
+
+
+# ===========================================================================
+# ⑤ 字段级 action-sequence 变异（批次 1：SemFuzz 迁移项 A）
+# ===========================================================================
+
+def _action_seq_enabled(profile: dict) -> bool:
+    """⑤ 路径的**开关位**：``profile.seedgen.action_seq.enabled``。
+
+    ★ **默认关闭**（键缺失 ⇒ False）⇒ 关闭时本脚本产物与批次 1 之前
+      **逐字节一致**（这是回滚手段，必须成立）。
+    """
+    cfg = ((profile.get("seedgen") or {}).get("action_seq") or {})
+    return bool(cfg.get("enabled", False))
+
+
+def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
+                            *, group: Optional[str] = None,
+                            ledger: Optional[ActionLedger] = None
+                            ) -> tuple[list, dict]:
+    """⑤ 在**真实抓包种子**上做字段级变异，返回 ``(种子列表, 溯源信息)``。
+
+    底料来源（优先级，见 ``core/fused/downstream/action_seq.py``）：
+      ① ``derived/seeds/<protocol>/<组>/*.raw``（已发表的语料）
+      ② ``kb/<protocol>/数据流量/**`` 里的真实抓包
+      ③ 都取不到 ⇒ **本协议不产出 ⑤ 种子**（如实报告，**不造假**）
+
+    ★ **不调 LLM**：本脚本既有四条路径都是规则驱动，⑤ 同样保持**确定性可复现**
+      （需要 LLM 兜底时走 ``action_seq.plan_actions(..., llm=...)``）。
+    ★ 协议差异全部下沉到 profile（底料解析、字段取值池都由 profile/bundle 驱动）。
+    """
+    base_seeds, source = load_real_base_seeds(protocol, profile, group=group)
+    info = {
+        "source": source,
+        "base_count": len(base_seeds),
+        "mutated_count": 0,
+        "reject_reasons": {},
+    }
+    if not base_seeds:
+        return [], info
+    out: list = []
+    for base in base_seeds:
+        seq = plan_actions(base, bundle, protocol=protocol, profile=profile,
+                           ledger=ledger)
+        out.append(apply_actions(base, seq, ledger=ledger))
+    info["mutated_count"] = len(out)
+    if ledger is not None:
+        info["reject_reasons"] = ledger.reason_counts()
+    return out, info
+
+
+def _converge_to_contract(seeds: list, expect: Optional[int]) -> list:
+    """把语料条数**收敛到 profile 契约条数**（⑤ 种子优先保留）。
+
+    ★ 只在 ⑤ 路径产出种子时调用（否则**逐字节不变**）。
+    ★ 契约条数是 profile 的**硬约束**（G5 契约闸）：⑤ 的种子是「真实抓包底料 +
+      字段级变异」，**优先保留**；其余名额按漏洞接近度取高分者补齐（**保序** ⇒
+      语料的排序语义不变）。
+    """
+    if expect is None or len(seeds) <= expect:
+        return seeds
+    action_idx = [i for i, s in enumerate(seeds)
+                  if s.generated_by == ACTION_SEQ_GENERATED_BY]
+    other_idx = [i for i, s in enumerate(seeds)
+                 if s.generated_by != ACTION_SEQ_GENERATED_BY]
+    room = max(int(expect) - len(action_idx), 0)
+    ranked = sorted(other_idx, key=lambda i: vuln_proximity_score(seeds[i]),
+                    reverse=True)
+    keep = set(action_idx) | set(ranked[:room])
+    return [s for i, s in enumerate(seeds) if i in keep]
 
 
 def _apply_url_placeholders(seeds: list, profile: dict, protocol: str,
@@ -796,6 +884,29 @@ def main() -> int:
     elif "canonical" in layers:
         print("黄金路径: 跳过（profile 未声明 canonical_flow）")
 
+    # ⑤ 字段级 action-sequence 变异（批次 1：SemFuzz 迁移项 A）
+    #   ★ 由 profile.seedgen.action_seq.enabled 控制（**默认关闭** ⇒ 关闭时
+    #     本脚本产物与批次 1 之前**逐字节一致** —— 回滚手段必须成立）。
+    #   ★ 底料 = **真实抓包种子**（已发表语料 / kb 真实抓包），不是从零构造。
+    #   ★ 不调 LLM（确定性）；LLM 兜底在 action_seq.plan_actions(llm=...) 里。
+    action_seq_ledger = ActionLedger()
+    action_seq_info: dict = {}
+    action_seq_seeds: list = []
+    if _action_seq_enabled(profile):
+        action_seq_seeds, action_seq_info = _build_action_seq_seeds(
+            bundle, profile, protocol, group=focus_group,
+            ledger=action_seq_ledger)
+        seeds += action_seq_seeds
+        print(f"⑤ 字段级 action-sequence 变异: {len(action_seq_seeds)} 条种子"
+              f"（底料来源: {action_seq_info.get('source') or '（无）'}, "
+              f"底料条数: {action_seq_info.get('base_count', 0)}）")
+        if len(action_seq_ledger):
+            print(f"   拒绝动作 {len(action_seq_ledger)} 条: "
+                  f"{action_seq_ledger.reason_counts()}")
+    else:
+        print("⑤ 字段级 action-sequence 变异: 跳过"
+              "（profile.seedgen.action_seq.enabled 未开启）")
+
     seeds = dedupe_seeds(seeds)
     print(f"去重后: {len(seeds)} 条")
 
@@ -823,6 +934,17 @@ def main() -> int:
     else:
         seeds = prioritize_seeds(seeds)
         print(f"漏洞接近度排序后: {len(seeds)} 条（全量，漏洞边界候选排前）")
+
+    # ★ 契约收敛（**仅当 ⑤ 路径产出了种子**）：profile 的 focus_group 契约条数
+    #   是硬约束（G5 契约闸）——⑤ 的种子是「真实抓包底料 + 字段级变异」，优先
+    #   保留；其余名额按漏洞接近度取高分者补齐（保序）。关闭 ⑤ 时**不触碰** ⇒
+    #   产物与批次 1 之前逐字节一致。
+    if action_seq_seeds:
+        before = len(seeds)
+        seeds = _converge_to_contract(seeds, cfg.get("expect_seeds"))
+        if len(seeds) != before:
+            print(f"契约收敛: {before} → {len(seeds)} 条"
+                  f"（契约 {cfg.get('expect_seeds')}，⑤ 种子优先保留）")
 
     out = Path(args.out)
     written = write_seeds(seeds, out)
@@ -868,9 +990,14 @@ def main() -> int:
     #   若需靠外部脚本记得加 --manifest，极易漏（漏了 → 归因失效）。
     #   非分组模式保持原行为：仅在显式 --manifest 时产出（向后兼容）。
     if args.manifest or is_focus:
+        # ★ ⑤ 路径的溯源：只有**开启**时才进 manifest ⇒ 关闭时 manifest 与
+        #   批次 1 之前逐字节一致（回滚手段必须成立）。
+        manifest_layers = list(layers)
+        if _action_seq_enabled(profile):
+            manifest_layers.append(ACTION_SEQ_LAYER_NAME)
         manifest_cfg = {
             "focus_group": focus_group,
-            "layers": layers,
+            "layers": manifest_layers,
             "order": order,
             "dict_kind": dict_kind,
             "danger_minimal": danger_minimal,
@@ -883,6 +1010,8 @@ def main() -> int:
                 and env_cfg.get("playable_resources_file") else []),
             "message_boundary_methods": list(boundary) if boundary else [],
         }
+        if _action_seq_enabled(profile):
+            manifest_cfg["action_seq"] = dict(action_seq_info)
         manifest = build_manifest(seeds, out, protocol=protocol,
                                   group=focus_group, seedgen_cfg=manifest_cfg,
                                   dictionary=dict_info)
