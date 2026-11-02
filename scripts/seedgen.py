@@ -281,7 +281,8 @@ def _action_seq_enabled(profile: dict) -> bool:
 
 def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
                             *, group: Optional[str] = None,
-                            ledger: Optional[ActionLedger] = None
+                            ledger: Optional[ActionLedger] = None,
+                            env_cfg: Optional[dict] = None
                             ) -> tuple[list, dict]:
     """⑤ 在**真实抓包种子**上做字段级变异，返回 ``(种子列表, 溯源信息)``。
 
@@ -305,7 +306,12 @@ def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
         return [], info
     out: list = []
     zero_mutation = 0
+    # ★ P2-6：零变异**区分成因**（此前只有一个笼统计数，无法判断是「规则给不出」
+    #   还是「规则给出的动作全被拒」⇒ 两者指向完全不同的改进方向）。
+    zero_no_rule = 0          # 规则/兜底**根本没给出**任何动作
+    zero_all_rejected = 0     # 规则给出了动作，但**全部被校验拒绝**
     for base in base_seeds:
+        ledger_before = len(ledger) if ledger is not None else 0
         seq = plan_actions(base, bundle, protocol=protocol, profile=profile,
                            ledger=ledger)
         # ★ 零变异（**没有任何动作实际生效**）的种子**直接丢弃**。
@@ -317,19 +323,62 @@ def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
         #   ⇒ 丢弃是唯一自洽的选择。
         if not seq.actions:
             zero_mutation += 1
+            # ★ P2-6：区分「无规则命中」与「规则动作全被拒」——后者看**本次调用**
+            #   的台账增量（ledger 是全局累计的，故先记基线）。
+            if ledger is not None and len(ledger) > ledger_before:
+                zero_all_rejected += 1
+            else:
+                zero_no_rule += 1
             continue
         # ★ P2-2：把**必填头表**传给执行器 ⇒ 「删必填头」在**执行期**也会被拒
         #   （`plan_actions` 的清洗期已拒过一次，这里是**纵深防御**：
         #   万一将来有别的调用方绕过 `plan_actions` 直接 `apply_actions`，
         #   「删必填头」仍然被拒并记账，而不是静默生效）。
-        out.append(apply_actions(
+        mutated = apply_actions(
             base, seq, ledger=ledger, profile=profile,
-            required_headers=(bundle or {}).get("required_headers") or None))
+            required_headers=(bundle or {}).get("required_headers") or None)
+        # ★ R-3：⑤ 种子**立刻**走完整的后处理链（收敛在
+        #   `_postprocess_action_seq_seeds` 一个函数里，不在别处分叉）。
+        mutated = _postprocess_action_seq_seeds([mutated], bundle, profile,
+                                                 protocol, env_cfg)
+        out.extend(mutated)
     info["mutated_count"] = len(out)
     info["zero_mutation_skipped"] = zero_mutation
+    info["zero_no_rule"] = zero_no_rule
+    info["zero_all_rejected"] = zero_all_rejected
     if ledger is not None:
         info["reject_reasons"] = ledger.reason_counts()
     return out, info
+
+
+def _postprocess_action_seq_seeds(seeds: list, bundle: dict, profile: dict,
+                                  protocol: str,
+                                  env_cfg: Optional[dict] = None) -> list:
+    """⑤（action-seq 变异层）种子的**完整**后处理链（与基准层**同款**）。
+
+    ★★ 为什么必须收敛成**一个函数**（QA 的结构性建议）：
+      R-1（漏 ``_rewrite_client_headers``）与 R-3（漏 ``_prepend_session_prologue``）
+      **连续两次**是同一类根因 ——「⑤ 在流程末尾追加 ⇒ 分叉调用 ⇒ 漏步骤」
+      ⇒ 分散调用必然还会漏第三次。
+      ⇒ **⑤ 的后处理只允许从这里走**（新增步骤必须加在这里，不得在别处分叉）。
+
+    顺序（与基准层一致，且步骤间有依赖）：
+      1. ``_prepend_session_prologue`` —— **插消息**（有状态协议；
+         SIP 的 REGISTER 是 registrar 路由上唯一返回响应的无状态自环
+         ⇒ 不插 REGISTER 的 INVITE/BYE 会被 kamailio 静默丢弃）
+      2. ``_render_seq_headers`` —— ``{seq}`` 占位替换（prologue 消息也带占位）
+      3. ``_apply_url_placeholders`` —— 端点/资源归一化
+      4. ``_rewrite_client_headers`` —— 响应回传地址改写（Via/Contact）
+
+    ★ 对**基准层零影响**（本函数只作用于 ⑤ 种子）。
+    """
+    if not seeds:
+        return seeds
+    seeds = _prepend_session_prologue(seeds, bundle, profile)
+    seeds = _render_seq_headers(seeds)
+    seeds = _apply_url_placeholders(seeds, profile, protocol, env_cfg)
+    seeds = _rewrite_client_headers(seeds, profile, protocol)
+    return seeds
 
 
 def _append_action_seq_seeds(seeds: list, action_seeds: list) -> list:
@@ -520,6 +569,32 @@ def _renumber_cseq(seed: SeedCorpus) -> None:
                                   if seed.protocol == "sip" else str(i))
 
 
+def _shift_cseq_by_one(seed: SeedCorpus) -> None:
+    """把所有消息的 CSeq 序号**整体 +1**（保留「序号 + 方法」形态）。
+
+    ★ 为什么需要它（R-3 的配套）：``_prepend_session_prologue`` 会在最前插入一条
+      ``CSeq: 1 <入口方法>`` 的消息 ⇒ 原有消息的序号必须**让位**，
+      否则新旧序号**冲突**（两条 ``CSeq: 1``）。
+    ★ 为什么是**平移**而不是 ``_renumber_cseq`` 的**重排**：
+      重排会把 ``cseq-replay`` 的变异（本条序号 == 下一条序号）**静默抹掉**
+      （P0-3：实测 SIP C/D 组 22/23 = 96% 的 CSeq 变异被抹）
+      ⇒ 平移只改**绝对值**、**相对关系不变** ⇒ 重放形态**保留**。
+    """
+    for msg in seed.messages:
+        for k in list(msg.headers):
+            if k.lower() != "cseq":
+                continue
+            parts = str(msg.headers[k]).split()
+            if not parts:
+                continue
+            try:
+                number = int(parts[0])
+            except (TypeError, ValueError):
+                continue
+            parts[0] = str(number + 1)
+            msg.headers[k] = " ".join(parts)
+
+
 def _prepend_session_prologue(seeds: list, bundle: dict, profile: dict) -> list:
     """P0：有状态协议——每条种子强制以「会话入口」方法开头（如 SIP 的 REGISTER）。
 
@@ -559,11 +634,19 @@ def _prepend_session_prologue(seeds: list, bundle: dict, profile: dict) -> list:
             headers=bundle.get("headers"), cseq=1,
             instance_fields=inst,
             cseq_with_method=(seed.protocol == "sip"))
+        # ★ R-3：⑤（action-seq）种子插 prologue 前，先把**原有**消息的 CSeq
+        #   序号整体 +1，给新插入的 ``CSeq: 1 <入口方法>`` **让位**（否则序号冲突）。
+        #   ★ 用**平移**而不是 ``_renumber_cseq`` 的重排 ⇒ ``cseq-replay`` 的
+        #     「本条序号 == 下一条序号」形态**保留**（重排会把它抹掉 ⇒ P0-3 回归）。
+        is_action_seq = (seed.generated_by or "").strip() == ACTION_SEQ_GENERATED_BY
+        if is_action_seq:
+            _shift_cseq_by_one(seed)
         seed.messages = [prologue_msg] + seed.messages
         seed.target_methods = [prologue_msg.method] + list(seed.target_methods)
         seed.target_state_path = [s] + list(seed.target_state_path)
         seed.description = f"{seed.description} [prologue:{entry_method}]"
-        _renumber_cseq(seed)
+        if not is_action_seq:
+            _renumber_cseq(seed)
     return seeds
 
 
@@ -938,32 +1021,20 @@ def main() -> int:
     if _action_seq_enabled(profile):
         action_seq_seeds, action_seq_info = _build_action_seq_seeds(
             bundle, profile, protocol, group=focus_group,
-            ledger=action_seq_ledger)
+            ledger=action_seq_ledger, env_cfg=env_cfg)
         # ★ 追加动作**延后到基准层去重之后**（见下方 `_append_action_seq_seeds` 调用）：
         #   若 ⑤ 先加入再统一去重，⑤ 与基准层的**近重复**会被判重 ⇒
         #   基准层里被判重的那条被 ⑤ 的副本顶替 ⇒ **基准层集合发生变化**
         #   （实测 rtsp/B 基准层 65 → 66、smtp/B 61 → 73）
         #   ⇒ 违反「ON 时基准层条数与 OFF 完全相同」。
-        # ★ ⑤ 单独做**与基准层同等的后处理**（端点归一化 + 资源归一化 + 自去重），
-        #   但**单独调用** ⇒ 不与基准层的多资源轮转互相影响。
-        #   ★ 为什么必须做：⑤ 在流程末尾追加 ⇒ 若不单独做，它会**绕过**
-        #     `_apply_url_placeholders` ⇒ 底料自带的**外网端点**与**不可播会话**
-        #     原样留在字节里 ⇒ 实测 rtsp/A 的 G1 违规从 0 变 2、
-        #     G2（不可播会话）**不降反升** ⇒ SemFuzz 的「36%→87%」效果**未复现**。
+        # ★ R-1 / R-3 的结构性修复：⑤ 的**全部**后处理已收敛到
+        #   `_postprocess_action_seq_seeds` 一个函数里（prologue → {seq} →
+        #   端点/资源归一化 → 响应回传地址重写）。
+        #   ★ 历史教训：R-1（漏 `_rewrite_client_headers`）与
+        #     R-3（漏 `_prepend_session_prologue`）**连续两次**同根因
+        #     ——「⑤ 在流程末尾追加 ⇒ 分叉调用 ⇒ 漏步骤」⇒ 这里**不再分叉**。
+        #   ★ 这里**只**做去重（去重应在**最终内容**上做）。
         if action_seq_seeds:
-            action_seq_seeds = _apply_url_placeholders(
-                action_seq_seeds, profile, protocol, env_cfg)
-            # ★ R-1（P0）：⑤ 种子**也必须跑**「响应回传地址重写」。
-            #   ⑤ 在流程**末尾**追加 ⇒ 若不单独跑，它会**绕过基准层的全部后处理链**
-            #   （`_apply_url_placeholders` / `_rewrite_client_headers`）⇒ 真实抓包
-            #   底料里的**源侧端点**（实测 SIP 的 ``Via: SIP/2.0/UDP 192.168.1.2:5060``）
-            #   原样留在 ``.raw`` 字节里 ⇒ `corpus_gate` 的 G1 判违规（退出码 1
-            #   ⇒ **语料无法发布**）；语义后果更重：服务端把响应回传到**错地址**
-            #   ⇒ AFLNet **收不到响应** ⇒ 该种子零价值。
-            #   ★ 与基准层**完全同款**处理（协议无关；无 client_side 声明则原样返回）
-            #   ⇒ 修完 ⑤ 与基准层的头部语义一致。
-            action_seq_seeds = _rewrite_client_headers(
-                action_seq_seeds, profile, protocol)
             action_seq_seeds = dedupe_seeds(action_seq_seeds)
         print(f"⑤ 字段级 action-sequence 变异: {len(action_seq_seeds)} 条种子"
               f"（底料来源: {action_seq_info.get('source') or '（无）'}, "

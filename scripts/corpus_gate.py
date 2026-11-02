@@ -488,8 +488,20 @@ def check_g1(profile: dict, protocol: str, seed_texts: list[tuple[Path, str]],
 
 
 def check_g2(profile: dict, protocol: str, seed_texts: list[tuple[Path, str]],
-             env_cfg: dict, max_violations: int) -> dict:
-    """G2：语料引用的会话/资源名必须 ⊆ 目标环境的可播清单。"""
+             env_cfg: dict, max_violations: int,
+             manifest: Optional[dict] = None) -> dict:
+    """G2：语料引用的会话/资源名必须 ⊆ 目标环境的可播清单。
+
+    ★★ **比率口径**（QA 的 F-4 修正）：
+      ``violation_count`` 是**绝对配对计数**、**不是比率** ⇒
+      基准层本就有 N 条不可播会话时，追加一批**全部可播**的 ⑤ 种子
+      ⇒ 绝对数**持平**（看着像「没改善」）
+      ⇒ 但**比率**会明显下降（分母变大、分子不变）。
+      实测（rtsp/B）：绝对数 31 → 31 **持平**，比率 **47.7% → 33.7%（+14.0pp）**
+      ⇒ SemFuzz 的「36%→87%」在**比率口径下确实成立**。
+      ⇒ 因此本闸门**同时**给出 ``violation_count``（绝对）与 ``violation_ratio``
+      （比率），并**按层拆分**（基准层 / ⑤ 变异层）⇒ ⑤ 层的贡献**可见**。
+    """
     try:
         playable = playable_resource_names(profile, protocol, env_cfg)
     except (FileNotFoundError, ValueError) as exc:
@@ -520,12 +532,33 @@ def check_g2(profile: dict, protocol: str, seed_texts: list[tuple[Path, str]],
     resources_found = Counter(all_sessions)
     violations: Counter[str] = Counter()
     violation_files: dict[str, list[str]] = {}
+    # ★ 按 manifest 的 layer 把种子分成「基准层 / ⑤ 变异层」⇒ ⑤ 的贡献可见。
+    layer_of: dict[str, str] = {}
+    for entry in (manifest or {}).get("seeds") or []:
+        if not isinstance(entry, dict):
+            continue
+        name = str(entry.get("filename") or "")
+        if name:
+            layer_of[name] = str(entry.get("layer") or "")
+    base_files = 0
+    mut_files = 0
+    base_violations = 0
+    mut_violations = 0
     for path, sessions in per_file:
         bad = sorted({name for name in sessions if name not in allowed})
+        is_mutation = (layer_of.get(path.name, "") == "L5")
+        if is_mutation:
+            mut_files += 1
+        else:
+            base_files += 1
         if bad:
             for name in bad:
                 violations[name] += 1
                 violation_files.setdefault(name, []).append(path.name)
+            if is_mutation:
+                mut_violations += len(bad)
+            else:
+                base_violations += len(bad)
 
     violation_list = [
         {
@@ -536,6 +569,11 @@ def check_g2(profile: dict, protocol: str, seed_texts: list[tuple[Path, str]],
         for name, count in violations.most_common()
     ]
     violation_count = sum(violations.values())
+    total_files = len(per_file)
+
+    def _ratio(count: int, files: int) -> float:
+        return round(count / files, 4) if files else 0.0
+
     return {
         "name": GATE_NAMES["G2"],
         "applicable": True,
@@ -544,6 +582,21 @@ def check_g2(profile: dict, protocol: str, seed_texts: list[tuple[Path, str]],
         "resources_found": dict(resources_found.most_common()),
         "violations": violation_list,
         "violation_count": violation_count,
+        # ★ 比率口径（绝对计数看不出 ⑤ 的贡献，见本函数 docstring）
+        "seed_count": total_files,
+        "violation_ratio": _ratio(violation_count, total_files),
+        "by_layer": {
+            "base": {
+                "seed_count": base_files,
+                "violation_count": base_violations,
+                "violation_ratio": _ratio(base_violations, base_files),
+            },
+            "mutation": {
+                "seed_count": mut_files,
+                "violation_count": mut_violations,
+                "violation_ratio": _ratio(mut_violations, mut_files),
+            },
+        },
         "threshold": max_violations,
         "pass": violation_count <= max_violations,
     }
@@ -594,7 +647,12 @@ def check_g5(profile: dict, protocol: str, group: Optional[str],
     base_actual = actual
     entries = (manifest or {}).get("seeds") or []
     layers = [str(e.get("layer") or "") for e in entries if isinstance(e, dict)]
-    if entries and any(layers):
+    # ★ 口径**只有一个事实来源**：``base_scope_used`` 决定 ``actual`` 算的是
+    #   「基准层」还是「总数」⇒ ``scope`` 标签必须**由它派生**（P2-7：
+    #   原实现在「manifest 有 entries 但 layer 全空」时，actual 用**总数**
+    #   而 scope 却写成 "base-layers-only" ⇒ **标签与口径矛盾**）。
+    base_scope_used = bool(entries) and any(layers)
+    if base_scope_used:
         mutation_count = sum(1 for lay in layers if lay == "L5")
         base_actual = len(entries) - mutation_count
         actual = base_actual
@@ -608,12 +666,13 @@ def check_g5(profile: dict, protocol: str, group: Optional[str],
         "actual": actual,
         "pass": passed,
     }
-    if mutation_count:
+    if base_scope_used:
         result["base_seed_count"] = base_actual
-        result["mutation_count"] = mutation_count
         result["scope"] = "base-layers-only"
+        if mutation_count:
+            result["mutation_count"] = mutation_count
     else:
-        result["scope"] = "all-seeds" if not layers else "base-layers-only"
+        result["scope"] = "all-seeds"
     if not passed:
         # 分级：默认只告警（契约漂移有时是预期的），--strict 才阻断。
         result["warning"] = (
@@ -642,7 +701,8 @@ def run_gate(protocol: str, seed_dir: Path, profile: dict,
 
     gates = {
         "G1": check_g1(profile, protocol, seed_texts, env_cfg, max_violations),
-        "G2": check_g2(profile, protocol, seed_texts, env_cfg, max_violations),
+        "G2": check_g2(profile, protocol, seed_texts, env_cfg, max_violations,
+                       manifest=manifest),
         "G5": check_g5(profile, protocol, group, seed_files, manifest, env_name,
                        strict),
     }
