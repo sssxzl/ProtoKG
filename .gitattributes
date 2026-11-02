@@ -18,20 +18,39 @@
 #   **i/ 列没有任何变化** ⇒ **入库 blob 一个字节都没变**
 #   （这正是「归一化只影响检出、不影响库内容」的证明）。
 #
-#   ⚠ **必须排除 kb/**（研究素材）：`kb/*/历史漏洞/*.json` 与 `kb/*/expert_note/*.json`
-#     是**五源之一（历史漏洞 / expert_note）的抽取输入** ⇒ 它们的字节会进入
-#     fact 的 `value` 与 `evidence_id`/`claim_id` 的摘要输入
-#     ⇒ **改行尾 ⇒ 改 fact_id ⇒ 整座知识中枢的指纹全变**
-#     （且 `kb/*/历史漏洞/*.json` 在本机带**只读属性**，是人为保护信号）。
-#     ⇒ kb/ 保持**平台默认**行尾（现状行为，Windows CRLF / Linux LF），不动。
+#   ⚠ **kb/ 的行尾必须单独钉死**（研究素材）：
+#     `kb/*/历史漏洞/*.json` 与 `kb/*/expert_note/*.json` 是**五源之一
+#     （历史漏洞 / expert_note）的抽取输入**。
 #
-#   ★ `kb/** text=auto -eol` 里那个 `-eol` 是**必须的**：
-#     .gitattributes 的属性是**逐个独立**的 —— 后一条规则没提 `eol`，
-#     **并不会清掉**前一条已经设好的 `eol=lf` ⇒ 只会写 `text=auto` 的话，
-#     kb/ 仍然被 `eol=lf` 覆盖（实测 `git check-attr eol` 仍返回 `lf`）。
-#     `-eol` = 显式**取消** eol 属性 ⇒ 回落到 `core.autocrlf` / 平台默认。
+#   ★ 2026-11-02 实测更正（原注释的判断是错的，两处）：
+#     ① **改行尾不会改 fact_id**。`kb/` 的所有读取点都走
+#        `Path.read_text()`（**默认 universal newlines** ⇒ 读到内存时 CRLF 已翻译成 LF）
+#        ⇒ CRLF 工作区与 LF 工作区的 fact_id / norm_id / span / build_id /
+#          **冻结候选集 md5 全部逐字节相同**（隔离克隆 A/B 实测，三协议一致）。
+#     ② ★ **真正的风险是「span 偏移是翻译后文本的字符下标，不是磁盘字节下标」**
+#        ⇒ 在 CRLF 工作区上，任何用**磁盘原始字节**核对 span 的工具或人工复核
+#        **100% 错位**（实测 120/120 条冻结候选全部错位）。
+#        ⇒ 必须让 kb/ 的**工作区字节**也跨平台一致，才能让 span 可被第三方按字节复核。
+#
+#   ⇒ 规则改为 `kb/** text=auto eol=lf`：
+#     · `eol=lf` **显式覆盖** `core.eol` / `core.autocrlf`
+#       ⇒ 四种配置组合（autocrlf true/false × core.eol native/lf）下**都产出 LF**
+#       （实测语义矩阵，见 `%TEMP%/batch0_ab/docs/batch0_kb_eol_risk_assessment.md` §1.1）
+#     · 保留 `text=auto` ⇒ 二进制文件（pcapng/png/dia）由 git 自动识别为 `-text`，不受影响
+#     · **blob 不变** ⇒ `git ls-files --eol kb/` 的 `i/` 列前后完全一致
+#       ⇒ **不会产生任何 kb/ 内容变更**，`git status` 仍然干净
+#
+#   ⚠ **`-eol` 回落到的是 `core.eol`（默认 `native`），不是 `core.autocrlf`**
+#     （实测；原注释写的是 `core.autocrlf`）⇒ 所以 **`core.autocrlf=false` 救不了 kb/**，
+#     只有 `core.eol=lf` 或显式 `eol=lf` 属性能救。
+#
+#   ⚠ **改完 `.gitattributes` 不等于生效**：新规则下 git 用 **clean filter 归一化后**
+#     的内容与 blob 比较 ⇒ CRLF 工作区文件「归一化后 == blob」⇒ git 认定**已是最新**、
+#     **不重写文件**。可靠做法是**删除工作区文件后重新物化**
+#     （实测：`touch`+`checkout-index --all --force` ✅；`git checkout -f HEAD -- kb/` ✅；
+#     `update-index --really-refresh`+`checkout-index` ❌；`rm --cached`+`checkout` ❌）。
 * text=auto eol=lf
-kb/** text=auto -eol
+kb/** text=auto eol=lf
 
 # ★ 字节契约文件：显式二进制，git 完全不做任何行尾转换
 #
