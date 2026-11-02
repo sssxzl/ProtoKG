@@ -702,6 +702,81 @@ def _resolve_semantic_rules(semantic_rules: Optional[list],
 SKELETON_AUTHORITY = "profile"
 
 
+#: ★ 批次 1.6 步 3：``(subject_type, aspect)`` → **中枢桶名**。
+#:   用于「桶级溯源统计」（`bundle["by_source"]`）。
+#:   ★ 由 `tests/fused/test_bundle_provenance.py` **逐组合验证**
+#:     （每个组合单独组装 ⇒ 落在且只落在指定桶）⇒ 映射表错了测试就红。
+_BUCKET_BY_KIND: dict[tuple[str, str], str] = {
+    # ── method 主体 ──
+    ("method", "state_changing"): "methods",
+    ("method", "definition"): "methods",
+    ("method", "existence"): "methods",
+    ("method", "relation_to_other"): "required_headers",
+    ("method", "security_property"): "security",
+    ("method", "precondition"): "precondition",
+    ("method", "session_header"): "session_header",
+    ("method", "url_template"): "url_template",
+    ("method", "legal_boundary"): "legal_boundary",
+    ("method", "vuln_pattern"): "vuln_pattern",
+    # ── header 主体 ──
+    ("header", "syntax"): "headers",
+    ("header", "definition"): "headers",
+    ("header", "value_enum"): "headers",
+    ("header", "occurrence"): "headers",
+    ("header", "security_property"): "security",
+    ("header", "legal_boundary"): "legal_boundary",
+    ("header", "response_expectation"): "response_expectation",
+    ("header", "vuln_pattern"): "vuln_pattern",
+    # ── relation 主体 ──
+    ("relation", "target_state"): "transitions",
+    ("relation", "method_sequence"): "method_sequences",
+    ("relation", "message_instance"): "message_instances",
+    # ── status 主体 ──
+    ("status", "definition"): "statuses",
+    # ★ `("status", "occurrence")` **刻意不在此表**：`assemble_bundle` 只处理
+    #   `status` + `definition` ⇒ status/occurrence 事实**不进任何桶**
+    #   （既有行为；真实骨架里实测有 13 条这样的事实 ⇒ 被丢弃）。
+    #   本步**不改**这个行为（改了会动 bundle 内容 ⇒ 种子漂移）⇒ 只如实记录。
+    # ── protocol / actor 主体 ──
+    ("protocol", "value_enum"): "protocol",
+    ("actor", "value_enum"): "actors",
+}
+
+#: ★ 批次 1.6 步 3：这些桶有 **profile.json 兜底**来源（facts 再叠加/覆盖）
+#:   ⇒ 报告里「facts 派生」与「profile 兜底」**分列**，不混说。
+_PROFILE_FALLBACK_BUCKETS: tuple[str, ...] = (
+    "required_headers", "precondition", "session_header", "url_template",
+)
+
+
+def _dedupe_sorted(values: list) -> list:
+    """去重 + 排序（**兼容不可哈希的值**）。
+
+    ★ 为什么需要：中枢里多个桶的值是 **dict**（安全属性 / 前置方法 / URL 模板
+      等结构化描述）⇒ 原来的 ``sorted(set(v))`` 会抛
+      ``TypeError: unhashable type: 'dict'``。
+      ⚠ 这是**首次入库即存在的历史缺陷**：当前单源态没有这些 aspect 的事实
+        ⇒ 触发不到；一旦引入 vuln / expert_note 源就会崩。
+    ★ 兼容策略：**值可哈希时走原路径**（``sorted(set(...))`` ⇒ 逐字节不变）；
+      仅在会崩时改用「稳定 JSON 键」去重 + 排序。
+    """
+    try:
+        return sorted(set(values))
+    except TypeError:
+        seen: set = set()
+        kept: list = []
+        for item in values:
+            key = json.dumps(item, ensure_ascii=False, sort_keys=True,
+                             default=str)
+            if key in seen:
+                continue
+            seen.add(key)
+            kept.append(item)
+        return sorted(kept, key=lambda t: json.dumps(t, ensure_ascii=False,
+                                                     sort_keys=True,
+                                                     default=str))
+
+
 def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                     *, semantic_rules: Optional[list] = None,
                     source_set: Optional[Iterable[str]] = None) -> dict:
@@ -723,6 +798,14 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
       url_template     method_name -> pattern  (会话语义：URL 结构)
       available_sources 本次参与的事实来源集合（五源分工传导，P0）
       semantic_rules   [两层嵌套的语义规则 dict, ...]  (B-8：两层模型，**不进 facts.jsonl**)
+
+    ★★ 批次 1.6 步 3：**溯源保留**（**只加顶层新键** ⇒ 既有桶结构逐字节不变
+      ⇒ prompt 渲染不变 ⇒ 种子产物逐字节不变）：
+      by_source        桶级统计 {桶名: {源名: 事实条数}}
+      bucket_fact_ids  桶 → 事实 id（有序）⇒ 桶里每条都能回指
+      fact_index       事实 id → {authority, aspect, subject, bucket}（双向可追）
+      bucket_origin    {桶名: {facts: bool, profile: bool}}
+                       ⇒ 「facts 派生」与「profile 兜底」**分列**，不混说
       bundle_schema_version "2.0"  (B-8：bundle 契约版本；旧 bundle 无此键，读取方须容忍)
 
     ★ B-8（§3.6 选项 c）：`legal_boundary` / `response_expectation` 两桶在返回前
@@ -818,6 +901,22 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     if required_headers or preconditions or url_templates or _state_changing_profile:
         available_sources.add("profile")
 
+    # ★ 批次 1.6 步 3：**溯源保留**（只加字段、不改旧字段 ⇒ 旧消费者零影响）
+    #   by_source       桶级统计：{桶名: {源名: 事实条数}}
+    #   bucket_fact_ids 桶 → 事实 id 的有序列表（桶里每条都能回指）
+    #   fact_index      事实 id → {authority, aspect, subject, bucket}（双向可追）
+    by_source: dict[str, dict[str, int]] = {}
+    bucket_fact_ids: dict[str, list[str]] = {}
+    fact_index: dict[str, dict] = {}
+    # ★ profile 兜底的存在性（**只取 profile 侧**，facts 叠加后仍要能分列）
+    _profile_has: dict[str, bool] = {
+        "required_headers": bool(_struct.get("required_headers")),
+        "precondition": bool(_struct.get("precondition")),
+        "session_header": bool(_struct.get("session_header")),
+        "url_template": bool(_struct.get("url_template")),
+        "methods": bool(_state_changing_profile),
+    }
+
     # ★ 批次 1.6 步 2：**组装期源过滤**（双保险）。
     #   批次级「清空整个中枢」已保证中枢里只有本次的源；这里再加一道 ——
     #   「非本次源集合的 claim **根本不进桶**」（不是「进去再标记」）。
@@ -854,6 +953,27 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                 a = c.get("authority", "")
                 if a:
                     available_sources.add(a)
+
+        # ★ 批次 1.6 步 3：登记这条事实的**桶归属**与**来源**（溯源）
+        _bucket = _BUCKET_BY_KIND.get((stype, aspect))
+        if _bucket:
+            _src = main_auth or "(unknown)"
+            _cnt = by_source.setdefault(_bucket, {})
+            _cnt[_src] = _cnt.get(_src, 0) + 1
+            _fid = ""
+            for c in claims:
+                if c.get("fact_id"):
+                    _fid = str(c["fact_id"])
+                    break
+            if _fid:
+                bucket_fact_ids.setdefault(_bucket, []).append(_fid)
+                fact_index.setdefault(_fid, {
+                    "authority": main_auth,
+                    "aspect": aspect,
+                    "subject_type": stype,
+                    "subject_name": sname,
+                    "bucket": _bucket,
+                })
 
         if stype == "method":
             info = methods.setdefault(sname, {})
@@ -964,7 +1084,11 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     # 去重（多源可能重复，保持稳定序）
     transitions = sorted(set(transitions))
     method_sequences = sorted(set(method_sequences))
-    security = sorted(set(security))
+    # ★ security / precondition 等桶的值可能是 **dict**（结构化描述）
+    #   ⇒ `set()` 需要可哈希 ⇒ 原 `sorted(set(...))` 会抛 TypeError（历史缺陷，
+    #     当前单源态触发不到；引入 vuln / expert_note 源就会崩）
+    #   ⇒ 统一走 `_dedupe_sorted`（可哈希时**逐字节不变**）
+    security = _dedupe_sorted(security)
     # 协议方法白名单过滤：source 源 LLM 先验会产出垃圾方法名（中文功能词、带空格的
     # "AUTH TLS"/"SITE CPFR"、非标准命令 CAP/ALIAS），用 profile.allowed_methods 过滤
     # methods 桶 + transitions 桶，保证后续种子生成只用协议真实命令。
@@ -1046,14 +1170,15 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     bundle = {
         "methods": methods,
         "headers": headers,
-        "required_headers": {k: sorted(set(v)) for k, v in required_headers.items()},
+        "required_headers": {k: _dedupe_sorted(v)
+                             for k, v in required_headers.items()},
         "transitions": transitions,
         "method_sequences": method_sequences,
         "security": security,
         "statuses": statuses,
-        "protocol": {k: sorted(set(v)) for k, v in protocol.items()},
-        "actors": {k: sorted(set(v)) for k, v in actors.items()},
-        "precondition": {k: sorted(set(v)) for k, v in preconditions.items()},
+        "protocol": {k: _dedupe_sorted(v) for k, v in protocol.items()},
+        "actors": {k: _dedupe_sorted(v) for k, v in actors.items()},
+        "precondition": {k: _dedupe_sorted(v) for k, v in preconditions.items()},
         "session_header": {k: [dict(x) for x in v] for k, v in session_headers.items()},
         "url_template": url_templates,
         "legal_boundary": {k: [dict(x) for x in v] for k, v in legal_boundaries.items()},
@@ -1063,6 +1188,22 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         "message_instances": message_instances,
         "available_sources": sorted(available_sources),  # P0
         "method_order": _derive_method_order(method_sequences),  # P2b 拓扑序
+    }
+    # ★★ 批次 1.6 步 3：**溯源保留**（**只加顶层新键** ⇒ 既有桶结构逐字节不变
+    #   ⇒ prompt 渲染不变 ⇒ 种子产物逐字节不变；旧消费者零影响）。
+    #   ① by_source：桶级统计 —— 每个桶里各源贡献多少条事实
+    #   ② bucket_fact_ids：桶 → 事实 id（有序）⇒ 桶里每条都能回指
+    #   ③ fact_index：事实 id → 来源/维度/主体 ⇒ 桶 → fact → authority 双向可追
+    #   ④ bucket_origin：facts 派生 vs profile 兜底**分列**（不混说）
+    bundle["by_source"] = {k: dict(sorted(v.items()))
+                           for k, v in sorted(by_source.items())}
+    bundle["bucket_fact_ids"] = {k: list(v)
+                                 for k, v in sorted(bucket_fact_ids.items())}
+    bundle["fact_index"] = dict(sorted(fact_index.items()))
+    bundle["bucket_origin"] = {
+        k: {"facts": bool(by_source.get(k)),
+            "profile": bool(_profile_has.get(k))}
+        for k in sorted(set(by_source) | set(_profile_has))
     }
     # ★★ D-6：语义规则参与生成的可关闭开关位（**默认关闭**）
     #   ① 显式传参 ⇒ 调用方**显式授权** ⇒ 优先于开关：照常装载 + 投影；
