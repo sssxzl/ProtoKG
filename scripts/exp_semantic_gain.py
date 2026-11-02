@@ -1877,6 +1877,12 @@ def main(argv: Optional[list[str]] = None) -> int:
                     help=f"结果文档路径（默认 {DEFAULT_RESULTS_DOC}）")
     ap.add_argument("--idempotency-runs", type=int, default=3,
                     help="M6 幂等性重复抽取轮数 N（默认 3，须 ≥ 2）")
+    ap.add_argument("--publish-authoritative", action="store_true",
+                    help="★ 批次 1.5：把实验产出的规则**分流发布**进权威库"
+                         "（derived/per_source/<协议>/rfc/semantic/）⇒ "
+                         "知识中枢能读到 ⇒ 投影出 legal_boundary ⇒ "
+                         "「源 A 第四类」约束边界候选不再恒为 0。"
+                         "★ **默认不发布**（保持实验不污染生产）。")
     args = ap.parse_args(argv)
 
     if not (args.prereg or args.run or args.all):
@@ -1910,6 +1916,30 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     if args.run or args.all:
         run_experiment(out_dir, results_doc, max(2, args.idempotency_runs))
+
+    if args.publish_authoritative:
+        # ★ 批次 1.5：受控发布（默认不发布）。
+        #   把各实验组的 rules.jsonl 交给 rule_store.publish_rules 分流：
+        #   合格 ⇒ 权威库；不合格 ⇒ 候选库（带 reject_reason，不静默丢弃）。
+        from core.fused.downstream.rule_store import publish_rules
+        for _label in ("E1", "E2"):
+            _src = out_dir / f"group_{_label}" / "rules.jsonl"
+            if not _src.is_file():
+                continue
+            _rows = [json.loads(_l) for _l in
+                     _src.read_text(encoding="utf-8").splitlines()
+                     if _l.strip()]
+            for _proto in PROTOCOLS:
+                _sub = [r for r in _rows
+                        if ((r.get("evidence") or {}).get("protocol")
+                            in (None, _proto))]
+                if not _sub:
+                    continue
+                _rep = publish_rules(_proto, _sub, replace=True)
+                print(f"[发布] {_proto} ← {_label}: 权威库 "
+                      f"{_rep['authoritative']} 条 / 候选库 "
+                      f"{_rep['candidate']} 条 / 拒绝 "
+                      f"{_rep['rejects']}")
 
     return 0
 

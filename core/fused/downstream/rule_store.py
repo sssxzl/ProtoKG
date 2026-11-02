@@ -165,6 +165,117 @@ def save_rules(protocol: str, rules: Iterable[SemanticRule]) -> Path:
     return _write_jsonl(library_path(protocol, "authoritative"), rows)
 
 
+def publish_rules(protocol: str, rows: Iterable[Any], *,
+                    replace: bool = True) -> dict:
+    """把规则**分流**发布进四库（**受控通道**：实验产物 → 生产库）。
+
+    ★ 分流规则（两层模型的正确用法）：
+      · **合格**的规则 ⇒ **权威库**（``rules.jsonl``）⇒ 知识中枢能读到 ⇒
+        投影出 ``legal_boundary`` / ``response_expectation`` ⇒ 消费端有输入；
+      · **不合格**的规则 ⇒ **候选库**（``candidates.jsonl``）⇒ **不静默丢弃**
+        （带 ``reject_reason``，供人工复核）。
+
+    ★ 质量闸（发布前逐条判定，与 :func:`load_rules` 的三重保险**同口径**）：
+      ① 可反序列化为 ``SemanticRule``；
+      ② ``constraint is not None``（无约束者**结构上装不下** operator/operand）；
+      ③ :func:`core.fused.semantic.sanitize_rule` 的三类移除判定。
+
+    ★ ``replace=False`` ⇒ **追加**到既有权威库（按 ``rule_id`` 去重）。
+
+    Returns:
+        报告 dict：``{"authoritative": n, "candidate": n, "rejects": {...},
+        "path": str, "candidate_path": str}``。
+    """
+    from core.fused.semantic import KnowledgeCandidate, sanitize_rule
+
+    accepted: list[SemanticRule] = []
+    demoted: list[KnowledgeCandidate] = []
+    rejects: dict[str, int] = {}
+
+    def _count(reason: str) -> None:
+        rejects[reason] = rejects.get(reason, 0) + 1
+
+    for row in rows:
+        rule: Any = row
+        if isinstance(row, dict):
+            try:
+                rule = _rule_from_dict(row)
+            except Exception:
+                _count("malformed")
+                continue
+        if not isinstance(rule, SemanticRule):
+            _count("not_a_rule")
+            continue
+        if rule.constraint is None:
+            _count("no_constraint")
+            demoted.append(KnowledgeCandidate(
+                candidate_id=f"pub-{rule.rule_id}",
+                evidence=rule.evidence,
+                subject_type=rule.subject_type,
+                subject_name=rule.subject_name,
+                raw_text=rule.evidence.span_text,
+                convertible=False,
+                reject_reason="no_constraint",
+            ))
+            continue
+        kept, reason = sanitize_rule(rule)
+        if kept is None:
+            _count(reason or "unknown")
+            demoted.append(KnowledgeCandidate(
+                candidate_id=f"pub-{rule.rule_id}",
+                evidence=rule.evidence,
+                subject_type=rule.subject_type,
+                subject_name=rule.subject_name,
+                raw_text=rule.evidence.span_text,
+                convertible=False,
+                reject_reason=reason,
+            ))
+            continue
+        accepted.append(kept)
+
+    # 去重（按 rule_id，保留首次出现）
+    seen: set[str] = set()
+    uniq: list[SemanticRule] = []
+    for r in accepted:
+        if r.rule_id in seen:
+            _count("duplicate_rule_id")
+            continue
+        seen.add(r.rule_id)
+        uniq.append(r)
+
+    path = library_path(protocol, "authoritative")
+    if replace:
+        saved = save_rules(protocol, uniq)
+    else:
+        existing = load_rules(path) if path.is_file() else []
+        merged = list(existing)
+        have = {r.rule_id for r in existing}
+        merged += [r for r in uniq if r.rule_id not in have]
+        saved = save_rules(protocol, merged)
+
+    # ★ 候选库**追加**（不得覆盖）：分批发布时，后一批的候选会把前一批**丢掉**
+    #   ⇒ 候选是「不可转换者的去处」，丢了就**永久消失**（不可恢复）。
+    cand_path = None
+    if demoted:
+        cpath = library_path(protocol, "candidate")
+        existing_c = load_candidates(cpath) if cpath.is_file() else []
+        have_c = {c.candidate_id for c in existing_c}
+        merged_c = list(existing_c)
+        merged_c += [c for c in demoted if c.candidate_id not in have_c]
+        cand_path = save_candidates(protocol, merged_c)
+
+    return {
+        "authoritative": len(uniq),
+        "candidate": len(demoted),
+        "authoritative_total": len(load_rules(saved)),
+        "candidate_total": (len(load_candidates(cand_path))
+                            if cand_path else 0),
+        "rejects": dict(sorted(rejects.items())),
+        "path": str(saved),
+        "candidate_path": str(cand_path) if cand_path else "",
+    }
+
+
 def load_rules(path: Path) -> list[SemanticRule]:
     """只加载**可执行**规则（§3.3 强制机制 3 的三重保险）。
 

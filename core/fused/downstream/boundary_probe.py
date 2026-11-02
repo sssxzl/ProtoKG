@@ -603,7 +603,61 @@ def generate_dict_balanced(bundle: dict, resources: Optional[list] = None) -> st
     return "\n".join(f'"{t}"' for t in sorted(tokens)) + "\n"
 
 
-def derive_constraint_candidates(bundle: dict, stream: str = "matroskaFileTest") -> list:
+def _constraint_entry_method(bundle: dict, protocol: str) -> str:
+    """选「约束边界候选」用的**入口方法**（协议无关）。
+
+    ★ 优先用**知识中枢自己**声明的方法（``methods`` + ``required_headers``）⇒
+      协议差异全在 bundle/profile 里，**通用层零协议内置**。
+    ★ 兜底：bundle 里没有可用方法 ⇒ 沿用历史上的 RTSP ``DESCRIBE``
+      （保持既有调用方与测试的**逐字节行为**不变）。
+    """
+    methods = bundle.get("methods") or {}
+    required = bundle.get("required_headers") or {}
+    for name in methods:
+        if str(name).strip().upper() in ("DESCRIBE", "OPTIONS"):
+            return str(name).strip().upper()
+    for name in methods:
+        if required.get(str(name).strip().upper()):
+            return str(name).strip().upper()
+    for name in methods:
+        return str(name).strip().upper()
+    return "DESCRIBE"
+
+
+def _constraint_messages(bundle: dict, field: str, protocol: str,
+                         stream: str) -> tuple[list, list]:
+    """构造约束边界的「合法 / 非法」两条消息（**协议无关**）。
+
+    ★ 用知识中枢的 ``required_headers`` / ``headers`` 构造 ⇒ 任意协议可用；
+      bundle 里没有这些桶时**兜底**到 RTSP DESCRIBE 形态（向后兼容）。
+    """
+    required = bundle.get("required_headers") or {}
+    hdr_bucket = bundle.get("headers") or {}
+    entry = _constraint_entry_method(bundle, protocol)
+    url_base = _url_base(protocol)
+    url = f"{url_base}/{stream}" if stream else url_base
+    if not required and not bundle.get("methods"):
+        # 兜底：历史行为（RTSP DESCRIBE）
+        legal_msgs = [_describe_msg(stream, 1, url_base)]
+        illegal_msgs = [_msg(entry, url, {"CSeq": "1", "Accept": "application/sdp",
+                                         field: "A" * 300})]
+        return legal_msgs, illegal_msgs
+    from core.fused.downstream.edge_cover import build_message
+    legal_msg = build_message(
+        entry, required_headers=required, headers=hdr_bucket, cseq=1,
+        cseq_with_method=(protocol == "sip"))
+    legal_msg.url = url
+    illegal_msg = build_message(
+        entry, required_headers=required, headers=hdr_bucket, cseq=1,
+        cseq_with_method=(protocol == "sip"))
+    illegal_msg.url = url
+    # 非法候选：字段用超长值（违反长度约束的通用方式）
+    illegal_msg.headers[field] = "A" * 300
+    return [legal_msg], [illegal_msg]
+
+
+def derive_constraint_candidates(bundle: dict, stream: str = "matroskaFileTest",
+                                 *, protocol: str = "rtsp") -> list:
     """源 A 第四类：从 rfc 源抽取的字段约束（legal_boundary）推导边界候选。
 
     借鉴 SemFuzz：rfc 源抽出的「构造约束」（legal_boundary，{dim,legal,illegal,trigger}）
@@ -613,6 +667,11 @@ def derive_constraint_candidates(bundle: dict, stream: str = "matroskaFileTest")
 
     oracle 判定后：非法候选被判「越界」（崩溃）→ 该字段确实是崩溃边界；
     被判「合法」（服务器正常拒绝）→ 该约束只是「覆盖边界」而非「崩溃边界」。
+
+    ★★ 批次 1.5：**协议化**。原实现硬编码 RTSP 的 DESCRIBE 消息 ⇒ 只对 RTSP 有意义；
+      现改为用**知识中枢自己的** ``methods`` / ``required_headers`` / ``headers``
+      构造消息 ⇒ 任意协议可用（协议差异全在 bundle/profile 里）。
+      bundle 里没有这些桶时**兜底**到历史 RTSP 形态（既有调用方逐字节不变）。
     """
     boundaries = bundle.get("legal_boundary") or {}
     candidates: list = []
@@ -624,19 +683,18 @@ def derive_constraint_candidates(bundle: dict, stream: str = "matroskaFileTest")
             illegal_desc = b.get("illegal", "")
             if not legal_desc or not illegal_desc:
                 continue
-            # 合法候选：正常 DESCRIBE（字段满足约束）
+            legal_msgs, illegal_msgs = _constraint_messages(
+                bundle, field, protocol, stream)
+            entry = _constraint_entry_method(bundle, protocol)
             legal = SeedCorpus(
                 description=f"constraint-boundary {field} legal(满足约束)",
-                target_methods=["DESCRIBE"], generated_by="rule-based:boundary-probe-constraint",
-                messages=[_describe_msg(stream, 1)],
+                target_methods=[entry], generated_by="rule-based:boundary-probe-constraint",
+                messages=legal_msgs,
             )
-            # 非法候选：字段用超长值（违反长度约束的通用方式）
             illegal = SeedCorpus(
                 description=f"constraint-boundary {field} illegal(违反约束)",
-                target_methods=["DESCRIBE"], generated_by="rule-based:boundary-probe-constraint",
-                messages=[_msg("DESCRIBE", f"rtsp://127.0.0.1:8554/{stream}",
-                               {"CSeq": "1", "Accept": "application/sdp",
-                                field: "A" * 300})],
+                target_methods=[entry], generated_by="rule-based:boundary-probe-constraint",
+                messages=illegal_msgs,
             )
             candidates.append(("legal", legal))
             candidates.append(("illegal", illegal))

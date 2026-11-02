@@ -173,6 +173,64 @@ class SemanticRule:
     validated: bool  # B2 证据区间校验是否通过
 
 
+#: ★ 批次 2（迁移项 D）：``sanitize_rule`` 的**移除原因词表**（封闭）。
+#:   每一次移除**都必须**落一条（可观测，**不得静默丢弃**）。
+SANITIZE_REJECT_REASONS: tuple[str, ...] = (
+    "empty_subject",        # subject_name 与 target_field 都空 ⇒ 投影不出任何桶
+    "empty_operand",        # 有参算子但 operand 空（构造期已拦 ⇒ 兜底）
+    "self_reference",       # operand_ref == target_field ⇒ 自指约束
+)
+
+
+def sanitize_rule(rule: Any) -> tuple[Optional[SemanticRule], Optional[str]]:
+    """规则后处理（批次 2 / 迁移项 D）：移除**伪规则 / 空规则**。
+
+    ★ **动机**：SpecGPT 的后处理（校验 JSON 格式 + **移除伪状态/空状态**）我们没有
+      ⇒ 本函数是等价物；LLM 兜底路径可能产出「结构合法但语义无效」的规则。
+
+    ★ 三类移除（逐条记 ``reject_reason``，**不静默丢弃**）：
+
+      ① ``empty_subject``：``subject_name`` 与 ``constraint.target_field``
+         **都为空** ⇒ 投影时的归组键为空 ⇒ **投影不出任何桶**
+         ⇒ 是无效负载（实测 E1 组 14 条里 **9 条**属此类）。
+      ② ``empty_operand``：有参算子（``le/ge/lt/gt/eq/ne/in/range``）但
+         ``operand`` 为空 ⇒ ``ExecutableConstraint.__post_init__`` 已拦，
+         这里只是**兜底**（防止 LLM 兜底路径绕过构造校验）。
+      ③ ``self_reference``：``operand_source == "field_ref"`` 且
+         ``operand_ref == target_field`` ⇒ **自指约束**（拿自己比自己）⇒ 无意义。
+
+    ★ **刻意不移除** ``expected_behavior`` 为空的规则：
+      它**仍然能**投影出 **C（合法边界）**，只是出不了 **P（响应期望）**
+      ⇒ 移除它会白白丢掉 C 侧知识。
+      （实测 E1 组 **14/14 条** ``expected_behavior`` 全空 ⇒ 若一并移除，
+      ``legal_boundary`` 会从 **5 条变成 0 条** ⇒ 整条 RFC 语义链路重新断开。）
+
+    Args:
+        rule: ``SemanticRule``（或带 ``.constraint`` / ``.subject_name`` 的对象）。
+
+    Returns:
+        ``(保留的规则, 移除原因)``：
+        · 保留 ⇒ ``(rule, None)``；
+        · 移除 ⇒ ``(None, "<reject_reason> ∈ SANITIZE_REJECT_REASONS>")``。
+    """
+    constraint = getattr(rule, "constraint", None)
+    if constraint is None:
+        return None, "empty_subject"
+    subject_name = str(getattr(rule, "subject_name", "") or "").strip()
+    target_field = str(getattr(constraint, "target_field", "") or "").strip()
+    if not subject_name and not target_field:
+        return None, "empty_subject"
+    operator = str(getattr(constraint, "operator", "") or "")
+    operand = tuple(getattr(constraint, "operand", ()) or ())
+    if operator not in ("present", "absent") and not operand:
+        return None, "empty_operand"
+    operand_source = str(getattr(constraint, "operand_source", "") or "")
+    operand_ref = str(getattr(constraint, "operand_ref", "") or "").strip()
+    if operand_source == "field_ref" and operand_ref and operand_ref == target_field:
+        return None, "self_reference"
+    return rule, None
+
+
 @dataclass(frozen=True)
 class KnowledgeCandidate:
     """知识候选：**不可转换为可执行规则**的内容。

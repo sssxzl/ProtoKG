@@ -38,15 +38,15 @@ sys.path.insert(0, str(ROOT))
 
 from core import paths  # noqa: E402
 from core.fused.downstream.rag_seedgen import (  # noqa: E402
-    load_fact_views, assemble_bundle, write_seeds,
+    load_fact_views, assemble_bundle, write_seeds, load_semantic_rules,
 )
 from core.fused.downstream.edge_cover import (  # noqa: E402
     edge_cover, build_message,
 )
 from core.fused.downstream.generic_danger import generic_danger  # noqa: E402
 from core.fused.downstream.boundary_probe import (  # noqa: E402
-    derive_vuln_pattern_candidates, generate_protocol_dict,
-    generate_targeted_dict, load_base_dict_tokens,
+    derive_constraint_candidates, derive_vuln_pattern_candidates,
+    generate_protocol_dict, generate_targeted_dict, load_base_dict_tokens,
 )
 from core.fused.downstream.selector import (  # noqa: E402
     dedupe_seeds, prioritize_seeds,
@@ -250,7 +250,15 @@ def _derive_vuln_boundary_candidates(bundle: dict, profile: dict,
     """
     stream = ((profile.get("url_placeholders") or {}).get("<stream>")
               or ("" if protocol != "rtsp" else "matroskaFileTest"))
+    # ★★ 批次 1.5：把「源 A 第四类」（**RFC 语义规则投影出的 legal_boundary**
+    #   → 「满足约束 vs 违反约束」的边界候选）**并入 ③ 层**。
+    #   ★ 此前它**只被测试调用、生产代码从不调用** ⇒ 即使 legal_boundary 有内容
+    #     （规则发布进权威库之后），约束边界种子**永远产不出来**
+    #     ⇒ 「RFC 语义 → 知识中枢 → 消费」链路的**最后一跳缺失**。
+    #   ★ 与漏洞模式候选（源 B）**并列**：前者来自 RFC 规范，后者来自漏洞库。
     cands = derive_vuln_pattern_candidates(bundle, stream=stream,
+                                           protocol=protocol)
+    cands += derive_constraint_candidates(bundle, stream=stream,
                                            protocol=protocol)
     valid_methods = set(bundle["methods"].keys())
     allow = ({str(m).strip().upper() for m in boundary} if boundary else None)
@@ -887,7 +895,20 @@ def main() -> int:
         print(f"!! 无 facts（协议 {protocol}），请先运行 "
               f"build_hub.py --sources <源> --protocol {protocol}")
         return 1
-    bundle = assemble_bundle(views)
+    # ★ 批次 1.5：消费端**显式装载**语义规则并显式传参。
+    #   ★ 契约（bundle 2.0）：「显式传入 ``semantic_rules=``」= 调用方的
+    #     **显式授权**，**优先于 D-6 开关** ⇒ 规则**一定**被装载并投影。
+    #   ★ **不改 D-6 的默认值**（不变量 I5.4：D-6 OFF 且未显式传参 ⇒ bundle
+    #     不含 ``semantic_rules``/``bundle_schema_version`` ⇒ 与 B-8 之前
+    #     逐字节一致）⇒ 默认路径**不被悄悄改变**。
+    #   ★ 效果：RFC 源抽出的语义规则 ⇒ 投影出 ``legal_boundary`` /
+    #     ``response_expectation`` ⇒ 「源 A 第四类」约束边界候选**从 0 变非 0**。
+    semantic_rules = load_semantic_rules(protocol)
+    bundle = assemble_bundle(views, semantic_rules=semantic_rules)
+    if semantic_rules:
+        print(f"语义规则: 装载 {len(semantic_rules)} 条 → "
+              f"legal_boundary {sum(len(v) for v in (bundle.get('legal_boundary') or {}).values())} 条 / "
+              f"response_expectation {sum(len(v) for v in (bundle.get('response_expectation') or {}).values())} 条")
     # 注入 profile.seedgen.default_headers 到 headers 桶（兜底默认头值）。
     # 某些协议的方法（如 SIP 的 REGISTER 是 Idle→Idle 自环）AutoSeeder 只抽到
     # 少量字段实例、headers 桶也为空，导致必填头（Via/From/To/Contact/Max-Forwards）

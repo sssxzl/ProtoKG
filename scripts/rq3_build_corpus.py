@@ -187,12 +187,16 @@ def _generate_dicts(cfg: dict) -> dict:
     from core.fused.downstream.boundary_probe import (
         generate_targeted_dict, generate_protocol_dict, load_base_dict_tokens,
     )
-    from core.fused.downstream.rag_seedgen import load_fact_views, assemble_bundle
+    from core.fused.downstream.rag_seedgen import (load_fact_views,
+                                                    assemble_bundle,
+                                                    load_semantic_rules)
     from scripts.seedgen import _load_profile, _load_resources
 
     protocol = cfg["protocol"]
     profile = _load_profile(protocol)
-    bundle = assemble_bundle(load_fact_views(protocol))
+    # ★ 批次 1.5：与 seedgen **同款**显式装载（显式传参 = 显式授权，优先于 D-6 开关）。
+    bundle = assemble_bundle(load_fact_views(protocol),
+                             semantic_rules=load_semantic_rules(protocol))
     resources = _load_resources(profile, protocol)
 
     out_dir = C.dict_dir()
