@@ -1,0 +1,26 @@
+# tools/qa/baseline/env_variant_failed_ids.txt
+# 环境/数据相关失败项 —— 护栏5（run_guarded_pytest.py 的 --env-variant 清单）
+#
+# ★ 语义：清单内的 test id **成败取决于本机环境/数据态**，不是代码回归
+#   ⇒ 判漂移时**既不计入「新增」也不计入「消失」**（可存在也可缺席）。
+# ★ 清单入库、逐条注明原因 ⇒ 可审计；**不在清单里的新失败照抓** ⇒ 闸门不被削弱。
+# ★ 格式：每行一个 test id（与 pytest 的 `FAILED <path>::<name>` 一致，带完整路径）；
+#   以 `#` 开头的行是注释。
+#
+# ---------------------------------------------------------------------------
+# 1) 需要真实 DEEPSEEK_API_KEY 的用例
+#    core/llm.py:208 —— 环境变量与 .env 都没有 key 时 `DeepSeekClient()` 直接抛
+#    ValueError ⇒ 用例失败；设任意 key 即通过 ⇒ 与代码质量无关。
+#    （CI 同样没有该变量 ⇒ 该条已列在 ci_expected_failed_ids.txt:3）
+# ---------------------------------------------------------------------------
+tests/fused/test_build_hub_gate_order.py::test_non_rfc_source_does_not_inherit_rfc_build_id
+#
+# ---------------------------------------------------------------------------
+# 2) 依赖 kb 数据态（client.log 是否在）的用例
+#    core/fused/traffic_extractor.py 的 LLM 兜底要吃「原始样本」形态的 field norm；
+#    而 kb/**/数据流量/**/client.log 被 .gitignore 的全局 `*.log` 规则排除
+#    ⇒ 换机器/重新生成 kb 后该文件可能不在 ⇒ 兜底分支取不到样本 ⇒ 用例失败。
+#    （本机已把快照里的 13 个 client.log 还原回 kb/ ⇒ 本地通过；
+#      CI 无这些文件 ⇒ 仍失败，故列在此处）
+# ---------------------------------------------------------------------------
+tests/fused/test_traffic_extractor.py::test_infer_traffic_fields_llm_fallback

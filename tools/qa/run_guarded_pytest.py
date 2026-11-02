@@ -24,6 +24,22 @@
   永远判定「无漂移」——一个看起来在把关、实际上什么都不拦的假闸。
   ⇒ 必须写成**合并形式** ``-rfE``（f=失败、E=错误），两个报告都出。
 
+★ 护栏5：环境/数据相关失败项（2026-11-02 补上，QA 第三轮 K-1）
+  失败集合**不是环境无关**的：有的用例成败取决于本机环境
+  （典型：需要 ``DEEPSEEK_API_KEY``；或依赖 kb 数据态，如 ``client.log``
+  是否在）。⇒ 固定基线会把这些项算成「新增失败」⇒ 护栏**永远红**
+  （实测：基线 37、本机 39 ⇒ 谁跑都「不可采信」⇒ 闸门等于失效）。
+  ⇒ 新增 ``--env-variant <清单>``（默认
+    ``tools/qa/baseline/env_variant_failed_ids.txt``）：清单内的 test id
+    **可存在也可缺席** ⇒ 判漂移时**既不计入「新增」也不计入「消失」**。
+  ★ **不削弱闸门**：
+    · 只有**清单里点名的** id 被豁免；**任何不在清单里的新失败照抓**；
+    · 清单**入库**、逐条注明原因 ⇒ 可审计（不是「白名单黑洞」）；
+    · 实测命中清单的 id 会在输出里**逐条打印**（不隐藏）；
+    · 护栏1/2/4 与 ``-rfE`` 全部不变。
+  ⇒ 有了它，护栏在「有 API key / 无 API key」「有 client.log / 无 client.log」
+    两种环境下都能**既绿又有判回归的能力**。
+
 用法
 ----
     python tools/qa/run_guarded_pytest.py                       # 全量 + 与基线期望集比对
@@ -31,6 +47,7 @@
     python tools/qa/run_guarded_pytest.py --no-compare         # 只跑，不比对期望集
     python tools/qa/run_guarded_pytest.py --out-dir <目录>      # 指定产物目录
     python tools/qa/run_guarded_pytest.py --repo-root <目录>    # 指定仓库根（默认自动推断）
+    python tools/qa/run_guarded_pytest.py --env-variant ""     # 关闭环境相关豁免（看原始漂移）
 
 退出码
 ------
@@ -90,6 +107,13 @@ _force_utf8_stdio()
 DEFAULT_EXPECT_FAILED = HERE / "baseline" / "expected_b_class_failed_ids.txt"
 DEFAULT_EXPECT_ERRORS = HERE / "baseline" / "baseline_errors_pre_cleanup.txt"
 
+#: 环境/数据相关失败项清单 —— 随仓库入库（护栏5，见模块 docstring）
+#:
+#: ★ 这些 id 的成败**取决于本机环境/数据态**（不是代码回归）：
+#:   可存在也可缺席 ⇒ 判漂移时既不计入「新增」也不计入「消失」。
+#: ★ 不在清单里的新失败**照抓** ⇒ 闸门能力不被削弱。
+DEFAULT_ENV_VARIANT = HERE / "baseline" / "env_variant_failed_ids.txt"
+
 #: 源码 mtime 快照范围（这些路径的变动会让结果不可比）
 SNAPSHOT_GLOBS = [
     "tests/fused/*.py", "tests/*.py",
@@ -139,9 +163,18 @@ def _find_pytest() -> str:
 
 
 def _read_expected(path: Path) -> list[str]:
-    """读期望集文件（去空白行、去重、保持排序）。"""
-    return sorted({ln.strip() for ln in
-                   path.read_text(encoding="utf-8").splitlines() if ln.strip()})
+    """读期望集文件（去空白行、去重、保持排序）。
+
+    ★ 以 ``#`` 开头的行是**注释**（跳过）—— 期望集与环境相关清单都要能
+      **就地写明每条的原因**，否则「为什么豁免它」无从审计。
+    """
+    out = set()
+    for ln in path.read_text(encoding="utf-8").splitlines():
+        s = ln.strip()
+        if not s or s.startswith("#"):
+            continue
+        out.add(s)
+    return sorted(out)
 
 
 def main() -> int:
@@ -156,6 +189,12 @@ def main() -> int:
                     help="期望 FAILED 集（基线文件）")
     ap.add_argument("--expect-errors", default=str(DEFAULT_EXPECT_ERRORS),
                     help="期望 ERROR 集（基线文件）")
+    ap.add_argument("--env-variant", default=str(DEFAULT_ENV_VARIANT),
+                    help="环境/数据相关失败项清单（每行一个 test id）："
+                         "这些用例的成败取决于本机环境（如 DEEPSEEK_API_KEY、"
+                         "kb 数据态），**可存在也可缺席** ⇒ 判漂移时既不计入"
+                         "「新增」也不计入「消失」；**不在清单里的新失败照抓**。"
+                         "传空串可关闭该豁免（看原始漂移）")
     ap.add_argument("--no-compare", action="store_true", help="不与期望集比对")
     ap.add_argument("--extra", default="", help="追加给 pytest 的参数（空格分隔）")
     args = ap.parse_args()
@@ -255,6 +294,10 @@ def main() -> int:
     print(f"   FAILED {len(failed_ids)} 条   ERROR {len(err_ids)} 条")
 
     # ---- 与期望集比对 ----
+    #  ★ 护栏5：环境/数据相关失败项**既不计入「新增」也不计入「消失」**
+    #    （清单入库、逐条注明原因 ⇒ 可审计；不在清单里的新失败照抓）。
+    env_ids = _read_expected(Path(args.env_variant)) if args.env_variant else []
+    env_set = set(env_ids)
     drift = {}
     if not args.no_compare:
         for label, ids, exp_path in (
@@ -264,16 +307,23 @@ def main() -> int:
                 print(f"   （跳过 {label} 比对：期望集 {exp_path.name} 不存在）")
                 continue
             exp = _read_expected(exp_path)
-            added = sorted(set(ids) - set(exp))
-            removed = sorted(set(exp) - set(ids))
+            # ★ 命中环境相关清单的 id：**不算漂移**（可存在也可缺席）。
+            hit_env = sorted(set(ids) & env_set)
+            added = sorted(set(ids) - set(exp) - env_set)
+            removed = sorted(set(exp) - set(ids) - env_set)
             drift[label] = {"expected": len(exp), "actual": len(ids),
-                            "added": added, "removed": removed}
+                            "added": added, "removed": removed,
+                            "env_variant_hit": hit_env}
             print(f"   {label}: 期望 {len(exp)} / 实测 {len(ids)} | "
                   f"新增 {len(added)} / 消失 {len(removed)}")
             for x in added[:10]:
                 print(f"      + {x}")
             for x in removed[:10]:
                 print(f"      - {x}")
+            if hit_env:
+                print(f"      ~ 环境/数据相关（已豁免，{len(hit_env)} 条）：")
+                for x in hit_env[:10]:
+                    print(f"        ~ {x}")
 
     ok = tree_stable and summary_present and not any(
         d.get("added") or d.get("removed") for d in drift.values())

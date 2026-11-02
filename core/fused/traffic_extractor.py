@@ -348,7 +348,15 @@ def extract_packet_fields(protocol: str) -> list[dict]:
         for name, values in fields.items():
             samples = ", ".join(repr(v) for v in sorted(values)[:5])
             norms.append({
-                "norm_id": f"traffic.field.{name}",
+                # ★ norm_id 必须带 ``.samples`` 后缀：本模块下游的
+                #   ``infer_traffic_fields()``（:424）按
+                #   ``norm_id.endswith(".samples")`` 筛选「原始样本」形态的
+                #   field norm，用来喂 LLM 兜底抽取。
+                #   ⇒ 原先这里写 ``traffic.field.{name}``（**无后缀**）⇒
+                #     筛选恒为假 ⇒ **LLM 兜底分支是死代码**
+                #     （实测 rtsp 37 条 norm 里 field=16 但 .samples=0）
+                #     ⇒ 无 API key 时字段推断恒返回 []。
+                "norm_id": f"traffic.field.{name}.samples",
                 "kind": "field",
                 "name": name,
                 "content": f"unique {name}s={len(values)} samples=[{samples}]",
