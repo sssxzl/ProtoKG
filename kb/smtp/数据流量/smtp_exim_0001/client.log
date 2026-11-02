@@ -1,0 +1,554 @@
+# SMTP session log  (run: smtp_exim_0001)
+=== Connected to 74.53.140.153 (SMTP) ===
+S: 220-xc90.websitewelcome.com ESMTP Exim 4.69 #1 Mon, 05 Oct 2009 01:05:54 -0500 
+S: 220-We do not authorize the use of this system to transport unsolicited, 
+S: 220 and/or bulk e-mail.
+C: EHLO GP
+S: 250-xc90.websitewelcome.com Hello GP [122.162.143.157]
+S: 250-SIZE 52428800
+S: 250-PIPELINING
+S: 250-AUTH PLAIN LOGIN
+S: 250-STARTTLS
+S: 250 HELP
+C: AUTH LOGIN
+S: 334 VXNlcm5hbWU6
+C: Z3VycGFydGFwQHBhdHJpb3RzLmlu
+S: 334 UGFzc3dvcmQ6
+C: cHVuamFiQDEyMw==
+S: 235 Authentication succeeded
+C: MAIL FROM: <gurpartap@patriots.in>
+S: 250 OK
+C: RCPT TO: <raj_deol2002in@yahoo.co.in>
+S: 250 Accepted
+C: DATA
+S: 354 Enter message, ending with "." on a line by itself
+C: From: "Gurpartap Singh" <gurpartap@patriots.in>
+C: To: <raj_deol2002in@yahoo.co.in>
+C: Subject: SMTP
+C: Date: Mon, 5 Oct 2009 11:36:07 +0530
+C: Message-ID: <000301ca4581$ef9e57f0$cedb07d0$@in>
+C: MIME-Version: 1.0
+C: Content-Type: multipart/mixed;
+C: 	boundary="----=_NextPart_000_0004_01CA45B0.095693F0"
+C: X-Mailer: Microsoft Office Outlook 12.0
+C: Thread-Index: AcpFgem9BvjjZEDeR1Kh8i+hUyVo0A==
+C: Content-Language: en-us
+C: x-cr-hashedpuzzle: SeA= AAR2 ADaH BpiO C4G1 D1gW FNB1 FPkR Fn+W HFCP HnYJ JO7s Kum6 KytW LFcI LjUt;1;cgBhAGoAXwBkAGUAbwBsADIAMAAwADIAaQBuAEAAeQBhAGgAbwBvAC4AYwBvAC4AaQBuAA==;Sosha1_v1;7;{CAA37F59-1850-45C7-8540-AA27696B5398};ZwB1AHIAcABhAHIAdABhAHAAQABwAGEAdAByAGkAbwB0AHMALgBpAG4A;Mon, 05 Oct 2009 06:06:01 GMT;UwBNAFQAUAA=
+C: x-cr-puzzleid: {CAA37F59-1850-45C7-8540-AA27696B5398}
+C: This is a multipart message in MIME format.
+C: ------=_NextPart_000_0004_01CA45B0.095693F0
+C: Content-Type: multipart/alternative;
+C: 	boundary="----=_NextPart_001_0005_01CA45B0.095693F0"
+C: ------=_NextPart_001_0005_01CA45B0.095693F0
+C: Content-Type: text/plain;
+C: 	charset="us-ascii"
+C: Content-Transfer-Encoding: 7bit
+C: Hello
+C:  
+C: I send u smtp pcap file 
+C: Find the attachment
+C:  
+C: GPS
+C: ------=_NextPart_001_0005_01CA45B0.095693F0
+C: Content-Type: text/html;
+C: 	charset="us-ascii"
+C: Content-Transfer-Encoding: quoted-printable
+C: <html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+C: xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+C: xmlns:w=3D"urn:schemas-microso
+C: ft-com:office:word" =
+C: xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+C: xmlns=3D"http://www.w3.org/TR/REC-html40">
+C: <head>
+C: <META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+C: charset=3Dus-ascii">
+C: <meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+C: <style>
+C: <!--
+C:  /* Font Definitions */
+C:  @font-face
+C: 	{font-family:"Cambria Math";
+C: 	panose-1:2 4 5 3 5 4 6 3 2 4;}
+C: @font-face
+C: 	{font-family:Calibri;
+C: 	panose-1:2 15 5 2 2 2 4 3 2 4;}
+C:  /* Style Definitions */
+C:  p.MsoNormal, li.MsoNormal, div.MsoNormal
+C: 	{margin:0in;
+C: 	margin-bottom:.0001pt;
+C: 	font-size:11.0pt;
+C: 	font-family:"Calibri","sans-serif";}
+C: a:link, span.MsoHyperlink
+C: 	{mso-style-priority:99;
+C: 	color:blue;
+C: 	text-decoration:underline;}
+C: a:visited, span.MsoHyperlinkFollowed
+C: 	{mso-style-priority:99;
+C: 	color:purple;
+C: 	text-decoration:underline;}
+C: span.EmailStyle17
+C: 	{mso-style-type:personal-compose;
+C: 	font-family:"Calibri","sans-serif";
+C: 	color:windowtext;}
+C: ..MsoChpDefault
+C: 	{mso-style-type:export-only;}
+C: @page Section1
+C: 	{size:8.5in 11.0in;
+C: 	margin:1.0in 1.0in 1.0in 1.0in;}
+C: div.Section1
+C: 	{page:Section1;}
+C: -->
+C: </style>
+C: <!--[if gte mso 9]><xml>
+C:  <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+C: </xml><![endif]--><!--[if gte mso 9]><xml>
+C:  <o:shapelayout v:ext=3D"edit">
+C:   <o:idmap v:ext=3D"edit" data=3D"1" />
+C:  </o:shapelayout></xml><![endif]-->
+C: </head>
+C: <body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+C: <div class=3DSection1>
+C: 
+
+C: <p class=3DMsoNormal>Hello<o:p></o:p></p>
+C: <p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+C: <p class=3DMsoNormal>I send u smtp pcap file <o:p></o:p></p>
+C: <p class=3DMsoNormal>Find the attachment<o:p></o:p></p>
+C: <p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+C: <p class=3DMsoNormal>GPS<o:p></o:p></p>
+C: </div>
+C: </body>
+C: </html>
+C: ------=_NextPart_001_0005_01CA45B0.095693F0--
+C: ------=_NextPart_000_0004_01CA45B0.095693F0
+C: Content-Type: text/plain;
+C: 	name="NEWS.txt"
+C: Content-Transfer-Encoding: quoted-printable
+C: Content-Disposition: attachment;
+C: 	filename="NEWS.txt"
+C: Version 4.9.9.1
+C: * Many bug fixes
+C: * Improved editor
+C: Version 4.9.9.0
+C: * Support for latest Mingw compiler system builds
+C: * Bug fixes
+C: Version 4.9.8.9
+C: * New code tooltip display
+C: * Improved Indent/Unindent and Remove Comment
+C: * Improved automatic indent
+C: * Added support for the "interface" keyword
+C: * WebUpdate should now report installation problems from PackMan
+C: * New splash screen and association icons
+C: * Improved installer
+C: * Many bug fixes
+C: Version 4.9.8.7
+C: * Added support for GCC > 3.2
+C: * Debug variables are now resent during next debug session
+C: * Watched Variables not in correct context are now kept and updated when =
+C: it is needed
+C: * Added new compiler/linker options:=20
+C:   - Strip executable
+C:   - Generate instructions for a specific machine (i386, i486, i586, =
+C: i686, pentium, pentium-mmx, pentiumpro, pentium2, pentium3, pentium4,=20
+C:     k6, k6-2, k6-3
+C: , athlon, athlon-tbird, athlon-4, athlon-xp, =
+C: athlon-mp, winchip-c6, winchip2, k8, c3 and c3-2)
+C:   - Enable use of processor specific built-in functions (mmmx, sse, =
+C: sse2, pni, 3dnow)
+C: * "Default" button in Compiler Options is back
+C: * Error messages parsing improved
+C: * Bug fixes
+C: Version 4.9.8.5
+C: * Added the possibility to modify the value of a variable during =
+C: debugging (right click on a watch variable and select "Modify value")
+C: * During Dev-C++ First Time COnfiguration window, users can now choose =
+C: between using or not class browser and code completion features.
+C: * Many bug fixes
+C: Version 4.9.8.4
+C: * Added the possibility to specify an include directory for the code =
+C: completion cache to be created at Dev-C++ first startup
+C: * Improved code completion cache
+C: * WebUpdate will now backup downloaded DevPaks in Dev-C++\Packages =
+C: directory, and Dev-C++ executable in devcpp.exe.BACKUP
+C: * Big speed up in function parameters listing while editing
+C: * Bug fixes
+C: Version 4.9.8.3
+C: * On Dev-C++ first time configuration dialog, a code completion cache of =
+C: all the standard=20
+C:   include files can now be generated.
+C: * Improved WebUpdate module
+C: * Many bug fixes
+C: Version 4.9.8.2
+C: * New debug feature for DLLs: attach to a running process
+C: * New project option: Use custom Makefile.=20
+C: * New WebUpdater module.
+C: * Allow user to specify an alternate configuration file in Environment =
+C: Options=20
+C:   (still can be overriden by using "-c
+C: -microsoft-com:office:word" =
+C: xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+C: xmlns=3D"http://www.w3.org/TR/REC-html40">
+C: <head>
+C: <META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+C: charset=3Dus-ascii">
+C: <meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+C: <style>
+C: <!--
+C:  /* Font Definitions */
+C:  @font-face
+C: 	{font-family:"Cambria Math";
+C: 	panose-1:2 4 5 3 5 4 6 3 2 4;}
+C: @font-face
+C: 	{font-family:Calibri;
+C: 	panose-1:2 15 5 2 2 2 4 3 2 4;}
+C:  /* Style Definitions */
+C:  p.MsoNormal, li.MsoNormal, div.MsoNormal
+C: 	{margin:0in;
+C: 	margin-bottom:.0001pt;
+C: 	font-size:11.0pt;
+C: 	font-family:"Calibri","sans-serif";}
+C: a:link, span.MsoHyperlink
+C: 	{mso-style-priority:99;
+C: 	color:blue;
+C: 	text-decoration:underline;}
+C: a:visited, span.MsoHyperlinkFollowed
+C: 	{mso-style-priority:99;
+C: 	color:purple;
+C: 	text-decoration:underline;}
+C: span.EmailStyle17
+C: 	{mso-style-type:personal-compose;
+C: 	font-family:"Calibri","sans-serif";
+C: 	color:windowtext;}
+C: ..MsoChpDefault
+C: 	{mso-style-type:export-only;}
+C: @page Section1
+C: 	{size:8.5in 11.0in;
+C: 	margin:1.0in 1.0in 1.0in 1.0in;}
+C: div.Section1
+C: 	{page:Section1;}
+C: -->
+C: </style>
+C: <!--[if gte mso 9]><xml>
+C:  <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+C: </xml><![endif]--><!--[if gte mso 9]><xml>
+C:  <o:shapelayout v:ext=3D"edit">
+C:   <o:idmap v:ext=3D"edit" data=3D"1" />
+C:  </o:shapelayout></xml><![endif]-->
+C: </head>
+C: <body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+C: <div cl
+C: ass=3DSection1>
+C: <p class=3DMsoNormal>Hello<o:p></o:p></p>
+C: <p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+C: <p class=3DMsoNormal>I send u smtp pcap file <o:p></o:p></p>
+C: <p class=3DMsoNormal>Find the attachment<o:p></o:p></p>
+C: <p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+C: <p class=3DMsoNormal>GPS<o:p></o:p></p>
+C: </div>
+C: </body>
+C: </html>
+C: ------=_NextPart_001_0005_01CA45B0.095693F0--
+C: ------=_NextPart_000_0004_01CA45B0.095693F0
+C: Content-Type: text/plain;
+C: 	name="NEWS.txt"
+C: Content-Transfer-Encoding: quoted-printable
+C: Content-Disposition: attachment;
+C: 	filename="NEWS.txt"
+C: Version 4.9.9.1
+C: * Many bug fixes
+C: * Improved editor
+C: Version 4.9.9.0
+C: * Support for latest Mingw compiler system builds
+C: * Bug fixes
+C: Version 4.9.8.9
+C: * New code tooltip display
+C: * Improved Indent/Unindent and Remove Comment
+C: * Improved automatic indent
+C: * Added support for the "interface" keyword
+C: * WebUpdate should now report installation problems from PackMan
+C: * New splash screen and association icons
+C: * Improved installer
+C: * Many bug fixes
+C: Version 4.9.8.7
+C: * Added support for GCC > 3.2
+C: * Debug variables are now resent during next debug session
+C: * Watched Variables not in correct context are now kept and updated when =
+C: it is needed
+C: * Added new compiler/linker options:=20
+C:   - Strip executable
+C:   - Generate instructions for a specific machine (i386, i486, i586, =
+C: i686, pentium, pentium-mmx, pentiumpro, pentium2, pentium3, pentium4
+C: ,=20
+C:     k6, k6-2, k6-3, athlon, athlon-tbird, athlon-4, athlon-xp, =
+C: athlon-mp, winchip-c6, winchip2, k8, c3 and c3-2)
+C:   - Enable use of processor specific built-in functions (mmmx, sse, =
+C: sse2, pni, 3dnow)
+C: * "Default" button in Compiler Options is back
+C: * Error messages parsing improved
+C: * Bug fixes
+C: Version 4.9.8.5
+C: * Added the possibility to modify the value of a variable during =
+C: debugging (right click on a watch variable and select "Modify value")
+C: * During Dev-C++ First Time COnfiguration window, users can now choose =
+C: between using or not class browser and code completion features.
+C: * Many bug fixes
+C: Version 4.9.8.4
+C: * Added the possibility to specify an include directory for the code =
+C: completion cache to be created at Dev-C++ first startup
+C: * Improved code completion cache
+C: * WebUpdate will now backup downloaded DevPaks in Dev-C++\Packages =
+C: directory, and Dev-C++ executable in devcpp.exe.BACKUP
+C: * Big speed up in function parameters listing while editing
+C: * Bug fixes
+C: Version 4.9.8.3
+C: * On Dev-C++ first time configuration dialog, a code completion cache of =
+C: all the standard=20
+C:   include files can now be generated.
+C: * Improved WebUpdate module
+C: * Many bug fixes
+C: Version 4.9.8.2
+C: * New debug feature for DLLs: attach to a running process
+C: * New project option: Use custom Makefile.=20
+C: * New WebUpdater module.
+C: * Allow user to specify an alternate configuration file in Environment =
+C: Options=20
+C:   (sti
+C: ll can be overriden by using "-c" command line parameter).
+C: * Lots of bug fixes.
+C: Version 4.9.8.1
+C: * When creating a DLL, the created static lib respects now the =
+C: project-defined output directory
+C: Version 4.9.8.0
+C: * Changed position of compiler/linker parameters in Project Options.
+C: * Improved help file
+C: * Bug fixes
+C: Version 4.9.7.9
+C: * Resource errors are now reported in the Resource sheet
+C: * Many bug fixes
+C: Version 4.9.7.8
+C: * Made whole bottom report control floating instead of only debug =
+C: output.
+C: * Many bug fixes
+C: Version 4.9.7.7
+C: * Printing settings are now saved
+C: * New environment options : "watch variable under mouse" and "Report =
+C: watch errors"
+C: * Bug fixes
+C: Version 4.9.7.6
+C: * Debug variable browser
+C: * Added possibility to include in a Template the Project's directories =
+C: (include, libs and ressources)
+C: * Changed tint of Class browser pictures colors to match the New Look =
+C: style
+C: * Bug fixes
+C: Version 4.9.7.5
+C: * Bug fixes
+C: Version 4.9.7.4
+C: * When compiling with debugging symbols, an extra definition is passed =
+C: to the
+C:   compiler: -D__DEBUG__
+C: * Each project creates a <project_name>_private.h file containing =
+C: version
+C:   information definitions
+C: * When compiling the current file only, no dependency checks are =
+C: performed
+C: * ~300% Speed-up in class parser
+C: * Added "External programs" in Tools/Environment Options (for units =
+C: "Open with")
+C: * Added "Open with" in project units context menu
+C: * Added
+C:  "Classes" toolbar
+C: * Fixed pre-compilation dependency checks to work correctly
+C: * Added new file menu entry: Save Project As
+C: * Bug-fix for double quotes in devcpp.cfg file read by vUpdate
+C: * Other bug fixes
+C: Version 4.9.7.3
+C: * When adding debugging symbols on request, remove "-s" option from =
+C: linker
+C: * Compiling progress window
+C: * Environment options : "Show progress window" and "Auto-close progress =
+C: window"
+C: * Bug fixes
+C: Version 4.9.7.2
+C: * Bug fixes
+C: Version 4.9.7.1
+C: * "Build priority" per-unit
+C: * "Include file in linking process" per-unit
+C: * New feature: compile current file only
+C: * Separated C++ compiler options from C compiler options in Makefile =
+C: (see bug report #654744)
+C: * Separated C++ include dirs from C include dirs in Makefile (see bug =
+C: report #654744)
+C: * Necessary UI changes in Project Options
+C: * Added display of project filename, project output and a summary of the =
+C: project files in Project Options General tab.
+C: * Fixed the "compiler-dirs-with-spaces" bug that crept-in in 4.9.7.0
+C: * Multi-select files in project-view (when "double-click to open" is =
+C: configured in Environment Settings)
+C: * Resource files are treated as ordinary files now
+C: * Updates in "Project Options/Files" code
+C: * MSVC import now creates the folders structure of the original VC =
+C: project
+C: * Bug fixes
+C: Version 4.9.7.0
+C: * Allow customizing of per-unit compile command in projects
+C: * Added two new macros: <DATE> and <DATETIME>
+C: * A
+C: dded support for macros in the "default source code" (Tools/Editor =
+C: Options/Code)
+C: * Separated layout info from project file. It is now kept in a different =
+C: file
+C:   (the same filename as the project's but with extension ".layout"). If =
+C: you
+C:   have your project under CVS control, you ''ll know why this had to =
+C: happen...
+C: * Compiler settings per-project
+C: * Compiler set per-project
+C: * Implemented new compiler settings framework
+C: * "Compile as C++" per-unit
+C: * "Include file in compilation process" per-unit
+C: * Project version info (creates the relevant VERSIONINFO struct in the =
+C: private
+C:   resource)
+C: * Support XP Themes (creates the CommonControls 6.0 manifest file and =
+C: includes
+C:   it in the private resource)
+C: * Added CVS "login" and "logout" commands
+C: * Project manager and debugging window (in Debug tab) can now be =
+C: trasnformed into floating windows.
+C: * Added "Add Library" button in Project Options
+C: * Bug fixes
+C: Version 4.9.6.9
+C: * Implemented search in help files for the word at cursor (context =
+C: sensitive help)
+C: * Implemented "compiler sets" infrastructure to switch between different =
+C: compilers easily (e.g. gcc-2.95 and gcc-3.2)
+C: * Added "Files" tab in CVS form to allow selection of more than one file =
+C: for
+C:   the requested CVS action
+C:  =20
+C: Version 4.9.6.8
+C: * support for DLL application hosting, for debugging and executing DLLs =
+C: under Dev-C++.
+C: * New class browser option: "Show inherited members"
+C: * Added sup
+C: port for the '::' member access operator in code-completion
+C: * Added *working* function arguments hint
+C: * Added bracket highlighting. When the caret is on a bracket, that =
+C: bracket and
+C:   its counterpart are highlighted
+C: * Nested folders in project view
+C: Version 4.9.6.7
+C: * XP Theme support
+C: * Added CVS commands "Add" and "Remove"
+C: * Added configuration option for "Templates Directory" in "Environment =
+C: Options"
+C: * Code-completion updates
+C: * Bug fixes
+C: Version 4.9.6.6
+C: * Editor colors are initialized properly on Dev-C++ first-run
+C: * Added doxygen-style comments in NewClass, NewMemberFunction and =
+C: NewMemberVariable wizards
+C: * Added file's date/time stamp in File/Properties window
+C: * Current windows listing in Window menu
+C: * Bug fixes
+C: Version 4.9.6.5
+C: * CVS support
+C: * Window list (in Window menu)
+C: * bug fixes
+C: version 4.9.6.4
+C: * added ENTER key for opening file in project browser, DEL to delete =
+C: from the project.
+C: * bug fixes
+C: version 4.9.6.3
+C: * Bug fixes
+C: version 4.9.6.2
+C: * Bug fixes
+C: version 4.9.6.1
+C: * New "Abort compilation" button
+C: * Bug fixes
+C: * Now checks for vRoach existance when sending a crash report
+C: Version 4.9.5.5
+C: * New option in Editor Options: Show editor hints. User can disable the =
+C: hints
+C:   displayed in the editor when the mouse moves over a word. Since this =
+C: was the
+C:   cause of many errors (although it should be fixed by now), we are =
+C: giving the
+C:   user the option to disable this featu
+C: re.
+C: * New option in Editor Options (code-completion): Use code-completion =
+C: cache.
+C:   Well, it adds caching to code-completion. Depending on the cache size,
+C:   the program may take a bit longer to start-up, but provides very fast
+C:   code-completion and the user has all the commands (belonging to the =
+C: files
+C:   he added in the cache) at his fingertips. If, for example, the user =
+C: adds
+C:   "windows.h", he gets all the WinAPI! If he adds "wx/wx.h", he gets all =
+C: of
+C:   wxWindows! You get the picture...
+C: * Removed "Only show classes from current file" option in class browser =
+C: settings.
+C:   It used to be a checkbox, allowing only two states (on or off), but =
+C: there is
+C:   a third relevant option now: "Project classes" so it didn't fit the =
+C: purpose...
+C:   The user can define this in the class browser's context menu under =
+C: "View mode".
+C: * Fixed the dreaded "Clock skew detected" compiler warning!
+C: * Fixed many class browser bugs, including some that had to do with =
+C: class folders.
+C: Version 4.9.5.4
+C: * Under NT, 2000 and XP, user application data directory will be used to =
+C: store config files (i.e : C:\Documents and Settings\Username\Local =
+C: Settings\Application Data)
+C: Version 4.9.5.3
+C: * Added ExceptionsAnalyzer. If the devcpp.map file is in the devcpp.exe =
+C: directory
+C:   then we even get a stack trace in the bug report!
+C: * Added new WebUpdate module (inactive temporarily).
+C: * Added new code for code-completion caching of fi
+C: les (disabled - work =
+C: in progress).
+C: Version 4.9.5.2
+C: * Added new option in class-browser: Use colors
+C:   (available when right-clicking the class-browser
+C:   and selecting "View mode").
+C: * Dev-C++ now traps access violation of your programs (and of itself too =
+C: ;)
+C: Version 4.9.5.1
+C: * Implemented the "File/Export/Project to HTML" function.
+C: * Added "Tip of the day" system.
+C: * When running a source file in explorer, don't spawn new instance.
+C:   Instead open the file in an already launched Dev-C++.
+C: * Class-parser speed-up (50% to 85% improvement timed!!!)
+C: * Many code-completion updates. Now takes into account context,
+C:   class inheritance and visibility (shows items only from files
+C:   #included directly or indirectly)!
+C: * Caching of result set of code-completion for speed-up.
+C: * New option "Execution/Parameters" (and "Debug/Parameters").
+C: Version 4.9.5.0 (5.0 beta 5):
+C: * CPU Window (still in development)
+C: * ToDo  list
+C: * Backtrace in debugging
+C: * Run to cursor
+C: * Folders in Project and Class Browser
+C: * Send custom commands to GDB
+C: * Makefile can now be customized.
+C: * Modified the behaviour of the -c param :=20
+C:   -c <config file directory>
+C: * Saving of custom syntax parameter group
+C: * Possibility of changing compilers and tools filename.
+C: * Many bug fixes
+C: Version 4.9.4.1 (5.0 beta 4.1):
+C: * back to gcc 2.95.3
+C: * Profiling support
+C: * new update/packages checker (vUpdate)
+C: * Lots of bugfixes
+C: ------=_NextPart_000_00
+C: 04_01CA45B0.095693F0--
+C: .
+S: 250 OK id=1Mugho-0003Dg-Un
+C: QUIT
+S: 221 xc90.websitewelcome.com closing connection

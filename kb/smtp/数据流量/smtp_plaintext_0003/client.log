@@ -1,0 +1,36 @@
+# SMTP session log  (run: smtp_plaintext_0003)
+=== Connected to 192.168.1.1 (SMTP) ===
+S: 220 domex ESMTP Postfix
+C: EHLO [192.168.1.104]
+S: 250-domex
+S: 250-PIPELINING
+S: 250-SIZE 10485760
+S: 250-VRFY
+S: 250-ETRN
+S: 250-AUTH LOGIN PLAIN CRAM-MD5 GSSAPI
+S: 250-STARTTLS
+S: 250-ENHANCEDSTATUSCODES
+S: 250-8BITMIME
+S: 250 DSN
+C: MAIL FROM:<charlie@m57.biz> SIZE=468
+S: 250 2.1.0 Ok
+C: RCPT TO:<alix.pery@yahoo.com>
+S: 250 2.1.5 Ok
+C: DATA
+S: 354 End data with <CR><LF>.<CR><LF>
+C: Message-ID: <4B04604B.3070508@m57.biz>
+C: Date: Wed, 18 Nov 2009 12:59:55 -0800
+C: From: Charlie <charlie@m57.biz>
+C: User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+C: MIME-Version: 1.0
+C: To: Alix Pery <alix.pery@yahoo.com>
+C: Subject: Movie tonight???
+C: Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+C: Content-Transfer-Encoding: 7bit
+C: Wanna go see a flick tonight?  I'll probably leave work at around 
+C: 4:00pm.  Pick you up at 5 for dinner first?
+C: Charlie
+C: .
+S: 250 2.0.0 Ok: queued as 0B4782AF94B
+C: QUIT
+S: 221 2.0.0 Bye

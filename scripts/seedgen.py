@@ -8,9 +8,21 @@
   ③ 漏洞边界候选（derive_vuln_pattern_candidates，序列型漏洞模式，永远；不调 LLM，
      从 vuln_pattern 桶规则生成「合法—非法」边界对种子，让漏洞知识真正参与生成）
   ④ 黄金路径（profile.seedgen.canonical_flow，可选，如 SMTP 的 EHLO→MAIL→RCPT→DATA→QUIT）
-  ⑤ 字段级 action-sequence 变异（**批次 1 / SemFuzz 迁移项 A**；由
-     ``profile.seedgen.action_seq.enabled`` 开关位控制，**默认关闭** ⇒ 关闭时
-     产物与批次 1 之前**逐字节一致**）
+   ⑤ 字段级 action-sequence 变异（**批次 1 / SemFuzz 迁移项 A**；由
+      ``profile.seedgen.action_seq.enabled`` 开关位控制，**默认关闭** ⇒ 关闭时
+      **批次 1 的改动不引入任何产物变化**（回滚手段必须成立））
+
+★ 关于「回滚态逐字节一致」的**口径**（QA 第三轮 K-3，务必照此表述）
+  正确说法：**「批次 1 的改动不引入任何产物变化（开关 OFF 时）」** —— 即与
+  **批次 1 自身的基线**逐字节一致。
+  ⚠ **不要**说成「与批次 1 之前（``0046d6f``）逐字节一致」：批次 1.5
+    （``955e325``，改了 ``core/fused/downstream/boundary_probe.py`` 的 ③ 层候选
+    生成）**已合法改变基准层** ⇒ QA 实测 rtsp/B 关闭态 **65 → 70 条**
+    （多出 4 条 DESCRIBE）⇒ 那个「之前」不是可回滚到的目标。
+    逐 commit 归因（QA 实测，rtsp/B 关闭态条数）：
+    ``0046d6f`` 65 → ``470775a`` 65 → ``39ef9ef`` 65 → ``ae7dd1c`` 65 →
+    ``955e325`` **70** → ``de7d5f9`` 70 ⇒ **批次 1 自己的 commit 逐字节一致**，
+    65 → 70 发生在**批次 1.5**，与批次 1 无关。
 
 ★ ⑤ 与前四条的本质区别：前四条是「**从零构造**」，⑤ 是「**在真实抓包种子上做
   字段级变异**」（底料 = 已发表的真实语料 / kb 真实抓包；LLM 只产出抽象动作序列，
@@ -76,7 +88,8 @@ ALL_LAYERS: tuple[str, ...] = ("edge_cover", "generic_danger", "vuln_boundary",
 #:
 #: ★ **不进 ALL_LAYERS**：⑤ 由 ``profile.seedgen.action_seq.enabled`` 开关位
 #:   控制（不是 CLI 层开关）——不进 ALL_LAYERS ⇒ ①~④ 的层集合、manifest 的
-#:   ``layers`` 字段在关闭时与批次 1 之前**逐字节一致**（回滚手段必须成立）。
+#:   ``layers`` 字段在关闭时**不受批次 1 影响**（与批次 1 的基线逐字节一致 ——
+#:   回滚手段必须成立；口径见模块 docstring 的「回滚态逐字节一致」一段）。
 ACTION_SEQ_LAYER_NAME = "action_seq"
 
 #: RQ3 聚焦组配置表（技术方案 §2.2 实现契约）。
@@ -281,8 +294,9 @@ def _derive_vuln_boundary_candidates(bundle: dict, profile: dict,
 def _action_seq_enabled(profile: dict) -> bool:
     """⑤ 路径的**开关位**：``profile.seedgen.action_seq.enabled``。
 
-    ★ **默认关闭**（键缺失 ⇒ False）⇒ 关闭时本脚本产物与批次 1 之前
-      **逐字节一致**（这是回滚手段，必须成立）。
+    ★ **默认关闭**（键缺失 ⇒ False）⇒ 关闭时**批次 1 的改动不引入任何产物变化**
+      （与批次 1 的基线逐字节一致 —— 这是回滚手段，必须成立；
+      口径见模块 docstring：不要说成「与批次 1 之前逐字节一致」）。
     """
     cfg = ((profile.get("seedgen") or {}).get("action_seq") or {})
     return bool(cfg.get("enabled", False))
@@ -477,7 +491,7 @@ def _apply_url_placeholders(seeds: list, profile: dict, protocol: str,
             #   ⇒ 静默退化），且 `corpus_gate` 的 G1 判违规。
             #   ★ **对既有基准层天然是 no-op**：头部里没有层级式 URL、或端点本就等于
             #     target 时**原样返回**（幂等）⇒ 基准层语料**逐字节不变**
-            #     ⇒ 批次 1 的「回滚态逐字节一致」依然成立。
+            #     ⇒ 批次 1 的「回滚态（关闭时不引入产物变化）」依然成立。
             if msg.headers:
                 for _hk, _hv in list(msg.headers.items()):
                     _new_hv = _hv
@@ -1044,7 +1058,7 @@ def main() -> int:
 
     # ⑤ 字段级 action-sequence 变异（批次 1：SemFuzz 迁移项 A）
     #   ★ 由 profile.seedgen.action_seq.enabled 控制（**默认关闭** ⇒ 关闭时
-    #     本脚本产物与批次 1 之前**逐字节一致** —— 回滚手段必须成立）。
+    #     **批次 1 的改动不引入任何产物变化** —— 回滚手段必须成立）。
     #   ★ 底料 = **真实抓包种子**（已发表语料 / kb 真实抓包），不是从零构造。
     #   ★ 不调 LLM（确定性）；LLM 兜底在 action_seq.plan_actions(llm=...) 里。
     action_seq_ledger = ActionLedger()
@@ -1169,8 +1183,8 @@ def main() -> int:
     #   若需靠外部脚本记得加 --manifest，极易漏（漏了 → 归因失效）。
     #   非分组模式保持原行为：仅在显式 --manifest 时产出（向后兼容）。
     if args.manifest or is_focus:
-        # ★ ⑤ 路径的溯源：只有**开启**时才进 manifest ⇒ 关闭时 manifest 与
-        #   批次 1 之前逐字节一致（回滚手段必须成立）。
+        # ★ ⑤ 路径的溯源：只有**开启**时才进 manifest ⇒ 关闭时 manifest
+        #   **不受批次 1 影响**（回滚手段必须成立）。
         manifest_layers = list(layers)
         if _action_seq_enabled(profile):
             manifest_layers.append(ACTION_SEQ_LAYER_NAME)

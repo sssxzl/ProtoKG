@@ -1,0 +1,97 @@
+Sending request: OPTIONS rtsp://10.11.26.98:554/isapi/streaming/channels/101 RTSP/1.0
+Cseq: 2
+User-Agent: LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)
+
+Received a complete response:
+RTSP/1.0 200 OK
+Cseq: 2
+Public: OPTIONS, DESCRIBE, PLAY, PAUSE, SETUP, TEARDOWN, SET_PARAMETER, GET_PARAMETER
+Date: Sun, Jun 03 2018 16:31:34 GMT
+
+Sending request: DESCRIBE rtsp://10.11.26.98:554/isapi/streaming/channels/101 RTSP/1.0
+Cseq: 3
+User-Agent: LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)
+Accept: application/sdp
+
+Received a complete response:
+RTSP/1.0 401 Unauthorized
+Cseq: 3
+Www-Authenticate: Digest realm="IP Camera(C1052)", nonce="0004cf6473583f06834f2a63455ef0b7", stale="FALSE"
+Date: Sun, Jun 03 2018 16:31:34 GMT
+
+Sending request: DESCRIBE rtsp://10.11.26.98:554/isapi/streaming/channels/101 RTSP/1.0
+Cseq: 4
+Authorization: Digest username="admin", realm="IP Camera(C1052)", nonce="0004cf6473583f06834f2a63455ef0b7", uri="rtsp://10.11.26.98:554/isapi/streaming/channels/101", response="c976ae83ce45f4281a45ae03876982db"
+User-Agent: LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)
+Accept: application/sdp
+
+Received a complete response:
+RTSP/1.0 200 OK
+Cseq: 4
+Content-Type: application/sdp
+Content-Base: rtsp://10.11.26.98:554/isapi/streaming/channels/101/
+Content-Length: 738
+
+v=0
+o=- 1528043494654317 1528043494654317 IN IP4 10.11.26.98
+s=Media Presentation
+e=NONE
+b=AS:5100
+t=0 0
+a=control:rtsp://10.11.26.98:554/isapi/streaming/channels/101/
+m=video 0 RTP/AVP 96
+c=IN IP4 0.0.0.0
+b=AS:5000
+a=recvonly
+a=x-dimensions:1920,1080
+a=control:rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1
+a=rtpmap:96 H265/90000
+a=fmtp:96 sprop-sps=QgEBAWAAAAMAsAAAAwAAAwB7oAPAgBDlja5JMvTcBAQEAg==; sprop-pps=RAHA8vA8kAA=
+m=audio 0 RTP/AVP 11
+c=IN IP4 0.0.0.0
+b=AS:50
+a=recvonly
+a=control:rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=2
+a=rtpmap:11 PCM/32000
+a=Media_header:MEDIAINFO=494D4B48010200000400050001700110007D0000007D000000000000000000000000000000000000;
+a=appversion:1.0
+
+
+Sending request: SETUP rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1 RTSP/1.0
+Cseq: 5
+Authorization: Digest username="admin", realm="IP Camera(C1052)", nonce="0004cf6473583f06834f2a63455ef0b7", uri="rtsp://10.11.26.98:554/isapi/streaming/channels/101/", response="6da4f4c77269802109b94c494d57d259"
+User-Agent: LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)
+Transport: RTP/AVP;unicast;client_port=52570-52571
+
+Received a complete response:
+RTSP/1.0 200 OK
+Cseq: 5
+Session: 107518505;timeout=60
+Transport: RTP/AVP;unicast;client_port=52570-52571;server_port=8226-8227;ssrc=3d208345;mode="play"
+Date: Sun, Jun 03 2018 16:31:34 GMT
+
+Sending request: PLAY rtsp://10.11.26.98:554/isapi/streaming/channels/101/ RTSP/1.0
+Cseq: 6
+Authorization: Digest username="admin", realm="IP Camera(C1052)", nonce="0004cf6473583f06834f2a63455ef0b7", uri="rtsp://10.11.26.98:554/isapi/streaming/channels/101/", response="aca31dc4a621f852b46902398a333a40"
+User-Agent: LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)
+Session: 107518505
+Range: npt=0.000-
+
+Received a complete response:
+RTSP/1.0 200 OK
+Cseq: 6
+Session: 107518505
+Rtp-Info: url=rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1;seq=4276;rtptime=3627500126
+Date: Sun, Jun 03 2018 16:31:34 GMT
+
+Sending request: TEARDOWN rtsp://10.11.26.98:554/isapi/streaming/channels/101/ RTSP/1.0
+Cseq: 7
+Authorization: Digest username="admin", realm="IP Camera(C1052)", nonce="0004cf6473583f06834f2a63455ef0b7", uri="rtsp://10.11.26.98:554/isapi/streaming/channels/101/", response="8d4d6b5cee9459840a2433cd206fc849"
+User-Agent: LibVLC/3.0.3 (LIVE555 Streaming Media v2016.11.28)
+Session: 107518505
+
+Received a complete response:
+RTSP/1.0 200 OK
+Cseq: 7
+Session: 107518505
+Date: Sun, Jun 03 2018 16:31:37 GMT

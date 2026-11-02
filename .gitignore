@@ -24,6 +24,14 @@ kb/spec/<task_id>/spec_chunks.jsonl
 kb/vuln/<task_id>/vuln_samples.jsonl
 kb/runtime_evidence/*.jsonl
 *.log
+# ★ 例外（K-2c，2026-11-02）：kb 下的 **client.log** 是**流量素材**，
+#   与同目录的 pcap / ndjson / csv **同类**（那些都已入库）⇒ 不该被
+#   全局 ``*.log`` 规则排除。
+#   ★ 它是 ``profile.traffic_schema.log_files`` 声明的**底料日志类型**
+#     （``core/fused/downstream/action_seq.py:1392`` 按该白名单在流量目录里
+#     找日志 ⇒ 找不到 ⇒ 来源② traffic-capture 底料**永久失效**）
+#     ⇒ 换机器 / CI 必然缺（实测 CI 上 traffic 字段推断恒返回 []）。
+!kb/**/client.log
 *.tmp
 
 # Generated artefacts (regenerable, do not commit)

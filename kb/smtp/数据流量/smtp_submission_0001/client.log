@@ -1,0 +1,1322 @@
+# SMTP session log  (run: smtp_submission_0001)
+=== Connected to 217.12.11.66 (SMTP) ===
+S: 220 smtp006.mail.xxx.xxxxx.com ESMTP
+C: EHLO Percival
+S: 250-smtp006.mail.xxx.xxxxx.com
+S: 250-AUTH LOGIN PLAIN XYMCOOKIE
+S: 250-PIPELINING
+S: 250 8BITMIME
+C: AUTH LOGIN
+S: 334 VXNlcm5hbWU6
+C: Z2FsdW50
+S: 334 UGFzc3dvcmQ6
+C: VjF2MXRyMG4=
+S: 235 ok, go ahead (#2.0.0)
+C: MAIL FROM: <xxxxxx@xxxxx.co.uk>
+S: 250 ok
+C: RCPT TO: <xxxxxx.xxxx@xxxxx.com>
+S: 250 ok
+C: DATA
+S: 354 go ahead
+C: Reply-To: <xxxxxx@xxxxx.co.uk>
+C: From: "WShark User" <xxxxxx@xxxxx.co.uk>
+C: To: <xxxxxx.xxxx@xxxxx.com>
+C: Subject: Test message for capture
+C: Date: Sun, 24 Jun 2007 10:56:03 +0200
+C: MIME-Version: 1.0
+C: Content-Type: multipart/mixed;
+C: 	boundary="----=_NextPart_000_0012_01C7B64E.426C8120"
+C: X-Mailer: Microsoft Office Outlook, Build 11.0.5510
+C: Thread-Index: Ace2O6M0WGyVJP3rQCuQePVHKWo5Ag==
+C: X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+C: This is a multi-part message in MIME format.
+C: ------=_NextPart_000_0012_01C7B64E.426C8120
+C: Content-Type: text/plain;
+C: 	charset="us-ascii"
+C: Content-Transfer-Encoding: 7bit
+C: Testing, testing, 1 2 3 
+C: ------=_NextPart_000_0012_01C7B64E.426C8120
+C: Content-Type: text/plain;
+C: 	name="words.txt"
+C: Content-Transfer-Encoding: quoted-printable
+C: Content-Disposition: attachment;
+C: 	filename="words.txt"
+C: -T=20
+C: :: UserWarning: The same field names for different types. Explicit field =
+C: renaming is recommended.
+C: x121_dcc_code
+C:  x121_dcc_code_01     AddrNumericString    =
+C: PhysicalDeliveryCountryName/x121-dcc-code
+C:  x121_dcc_code        NumericString        =
+C: CountryName/_untag/x121-dcc-code
+C: x411.cnf:529: UserWarning: Unused SET_TYPE for CountryName/x121-dcc-code
+C:   AddrNumericString     UserAddress/x121/x121-address =
+C: CountryName/x121-dcc-code PhysicalDeliveryCountryName/x121-dcc-code =
+C: PostalCode/numeric-code
+C: ASN.1 to Wireshark dissector compiler
+C: 13% smaller
+C: rtse.cnf(112) : error C2220: warnin
+C: g treated as error - no object file =
+C: generated
+C: rtse.cnf(112) : warning C4133: 'function' : incompatible types - from =
+C: 'const struct _ber_sequence_t [5]' to 'const struct _ber_old_sequence_t =
+C: *'
+C: rtse.cnf:128: UserWarning: Unused FN_BODY for =
+C: EXTERNALt/encoding/single-ASN1-type
+C:   offset=3Dcall_rtse_oid_callback(object_identifier_id, tvb, offset, =
+C: actx->pinfo, top_tree);
+C: rtse.cnf:115: UserWarning: Unused FN_BODY for =
+C: EXTERNALt/indirect-reference
+C:   char *oid;
+C: ------=_NextPart_000_0012_01C7B64E.426C8120
+C: Content-Type: application/octet-stream;
+C: 	name="related.patch"
+C: Content-Transfer-Encoding: quoted-printable
+C: Content-Disposition: attachment;
+C: 	filename="related.patch"
+C: Index: asn1/ldap/Lightweight-Directory-Access-Protocol-V3.asn=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- asn1/ldap/Lightweight-Directory-Access-Protocol-V3.asn	(revision =
+C: 18688)=0A=
+C: +++ asn1/ldap/Lightweight-Directory-Access-Protocol-V3.asn	(working copy)=0A=
+C: @@ -1,7 +1,7 @@=0A=
+C:  -- Module Lightweight-Directory-Access-Protocol-V3 (RFC 2251:12/1997)=0A=
+C:  Lightweight-Directory-Access-Protocol-V3=0A=
+C:  --=0A=
+C: --- $Id:$=0A=
+C: +-- $Id$=0A=
+C:  -- Copyright (C) The Internet Society (1997). This version of=0A=
+C:  -- this ASN.1 module is part of RFC 2251;=0A=
+C:  -- see the RFC itse
+C: lf for full legal notices.=0A=
+C: @@ -113,7 +113,7 @@=0A=
+C:  =0A=
+C:  Referral ::=3D SEQUENCE OF LDAPURL=0A=
+C:  =0A=
+C: -LDAPURL ::=3D LDAPString -- limited to characters permitted in URLs=0A=
+C: +LDAPURL ::=3D OCTET STRING -- LDAPString - - limited to characters =
+C: permitted in URLs=0A=
+C:  =0A=
+C:  Controls ::=3D SEQUENCE OF Control=0A=
+C:  =0A=
+C: Index: asn1/ldap/ldap.cnf=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- asn1/ldap/ldap.cnf	(revision 18688)=0A=
+C: +++ asn1/ldap/ldap.cnf	(working copy)=0A=
+C: @@ -28,6 +28,9 @@=0A=
+C:  Mechanism  TYPE =3D FT_STRING  DISPLAY =3D BASE_NONE  STRINGS =3D NULL=0A=
+C:  AssertionValue TYPE =3D FT_STRING  DISPLAY =3D BASE_NONE  STRINGS =3D =
+C: NULL=0A=
+C:  =0A=
+C: +#.FN_FTR LDAPURL=0A=
+C: +	PROTO_ITEM_SET_URL(get_ber_last_created_item());=0A=
+C: +=0A=
+C:  #.FN_PARS LDAPOID VAL_PTR =3D &parameter_tvb=0A=
+C:  #.FN_HDR LDAPOID=0A=
+C:  =0A=
+C: Index: asn1/logotype-cert-extn/logotype-cert-extn.cnf=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- asn1/logotype-cert-extn/logotype-cert-extn.cnf	(revision 18688)=0A=
+C: +++ asn1/logotype-cert-extn/logotype-cert-extn.cnf	(working copy)=0A=
+C: @@ -14,6 +14,12 @@=
+C: 0A=
+C:  LogotypeExtn B "1.3.6.1.5.5.7.20.1" "id-pe-logo-loyalty"=0A=
+C:  LogotypeExtn B "1.3.6.1.5.5.7.20.2" "id-pe-logo-background"=0A=
+C:  =0A=
+C: +#.FN_FTR IA5String=0A=
+C: +	if((hf_index =3D=3D hf_logotypecertextn_logotypeURI_item) ||=0A=
+C: +	   (hf_index =3D=3D hf_logotypecertextn_refStructURI_item)) =0A=
+C: +	   PROTO_ITEM_SET_URL(get_ber_last_created_item());=0A=
+C: +=0A=
+C: +=0A=
+C:  #.NO_EMIT=0A=
+C:  =0A=
+C:  #.TYPE_RENAME=0A=
+C: Index: asn1/x509ce/packet-x509ce-template.c=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- asn1/x509ce/packet-x509ce-template.c	(revision 18688)=0A=
+C: +++ asn1/x509ce/packet-x509ce-template.c	(working copy)=0A=
+C: @@ -30,6 +30,7 @@=0A=
+C:  #include <glib.h>=0A=
+C:  #include <epan/packet.h>=0A=
+C:  #include <epan/conversation.h>=0A=
+C: +#include <epan/related.h>=0A=
+C:  =0A=
+C:  #include <stdio.h>=0A=
+C:  #include <string.h>=0A=
+C: @@ -116,5 +117,8 @@=0A=
+C:  #include "packet-x509ce-dis-tab.c"=0A=
+C:  	register_ber_oid_dissector("2.5.29.24", =
+C: dissect_x509ce_invalidityDate_callback, proto_x509ce, =
+C: "id-ce-invalidityDate");=0A=
+C:  	register_ber_oid_dissector("2.5.29.51", =
+C: dissect_x509ce_baseUpdateTime_callback, proto_x509ce, =
+C: "id-ce-baseUpdateTime");=0A=
+C: +=0A=
+C: +	register_related_hfid_callback("GeneralName URL", =
+C: hf_x509ce_uniformResourceIdentifier, related_url_cb);=0A=
+C: +=0A=
+C:  }=0A=
+C:  =0A=
+C: Index: asn1/x509ce/x509ce-exp.cnf=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- asn1/x509ce/x509ce-exp.cnf	(revision 18688)=0A=
+C: +++ asn1/x509ce/x509ce-exp.cnf	(working copy)=0A=
+C: @@ -1,6 +1,6 @@=0A=
+C:  # Do not modify this file.=0A=
+C:  # It is created automatically by the ASN.1 to Wireshark dissector =
+C: compiler=0A=
+C: -# .\x509ce-exp.cnf=0A=
+C: +# ./x509ce-exp.cnf=0A=
+C:  # ../../tools/asn2wrs.py -b -e -p x509ce -c x509ce.cnf -s =
+C: packet-x509ce-template CertificateExtensions.asn=0A=
+C:  =0A=
+C:  #.MODULE=0A=
+C: Index: gtk/menu.c=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- gtk/menu.c	(revision 18688)=0A=
+C: +++ gtk/menu.c	(working copy)=0A=
+C: @@ -531,6 +531,8 @@=0A=
+C:                         0, WIRESHARK_STOCK_WIKI),=0A=
+C:      ITEM_FACTORY_STOCK_ENTRY("/Filter Field Reference", NULL, =
+C: selected_ptree_ref_cb,=0A=
+C:                         0, WIRESHARK_STOCK_INTERNET),=0A=
+C: +    ITEM_FACTORY_STOCK_ENTRY("/Related Information", NULL, =
+C: selected_ptree_related_cb,=0A=
+C: +                       0, WIRESHARK_STOCK_INTERNET),=0A=
+C:      ITEM_FACTORY_ENTRY("/Protocol Preferences...", NULL, pro
+C: perties_cb,=0A=
+C:                         0, NULL, NULL),=0A=
+C:      ITEM_FACTORY_ENTRY("/<separator>", NULL, NULL, 0, "<Separator>", =
+C: NULL),=0A=
+C: @@ -2160,6 +2162,8 @@=0A=
+C:  	  TRUE);=0A=
+C:  	set_menu_sensitivity(tree_view_menu_factory, "/Filter Field Reference",=0A=
+C:  	  TRUE);=0A=
+C: +	set_menu_sensitivity(tree_view_menu_factory, "/Related Information",=0A=
+C: +			     selected_ptree_has_related());=0A=
+C:    } else {=0A=
+C:  	set_menu_sensitivity(main_menu_factory,=0A=
+C:  	    "/Go/Go to Corresponding Packet", FALSE);=0A=
+C: @@ -2177,6 +2181,8 @@=0A=
+C:  	  FALSE);=0A=
+C:  	set_menu_sensitivity(tree_view_menu_factory, "/Filter Field Reference",=0A=
+C:  	  FALSE);=0A=
+C: +	set_menu_sensitivity(tree_view_menu_factory, "/Related Information",=0A=
+C: +	  FALSE);=0A=
+C:    }=0A=
+C:  =0A=
+C:    walk_menu_tree_for_selected_tree_row(tap_menu_tree_root, =
+C: cf->finfo_selected);=0A=
+C: Index: gtk/main.c=0A=
+C: =3D=3D=
+C: 3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- gtk/main.c	(revision 18688)=0A=
+C: +++ gtk/main.c	(working copy)=0A=
+C: @@ -65,6 +65,7 @@=0A=
+C:  #include <epan/emem.h>=0A=
+C:  #include <epan/ex-opt.h>=0A=
+C:  #include <epan/funnel.h>=0A=
+C: +#include <epan/related.h>=0A=
+C:  =0A=
+C:  /* general (not GTK specific) */=0A=
+C:  #include "file.h"=0A=
+C: @@ -90,6 +91,7 @@=0A=
+C:  #include "version_info.h"=0A=
+C:  #include "merge.h"=0A=
+C:  =0A=
+C: +=0A=
+C:  #ifdef HAVE_LIBPCAP=0A=
+C:  #include "capture-pcap-util.h"=0A=
+C:  #include "capture.h"=0A=
+C: @@ -382,6 +384,27 @@=0A=
+C:      }=0A=
+C:  }=0A=
+C:  =0A=
+C: +void=0A=
+C: +selected_ptree_related_cb(GtkWidget *widget _U_, gpointer data _U_)=0A=
+C: +{=0A=
+C: +=0A=
+C: +  gchar *ret_url =3D NULL;=0A=
+C: +=0A=
+C: +  if(do_related(cfile.finfo_selected, &ret_url) && *ret_url) {=0A=
+C: +    browser_open_url(ret_url);=0A=
+C: +    g_free(ret_url);=0A=
+C: +  }=0A=
+C: +=0A=
+C: +=0A=
+C: +}=0A=
+C: +=0A=
+C: +gboolean selected_ptree_has_related()=0A=
+C: +{=0A=
+C: +=0A=
+C: +  return have_related(cfile.finfo_selected);=0A=
+C: +=0A=
+C: +}=0A=
+C: +=0A=
+C:  static gchar *=0A=
+C:  get_text_from_packet_list(gpointer data)=0A=
+C:  {=0A=
+C: Index: gtk/main.h=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+C: =3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- gtk/main.h	(revision 18688)=0A=
+C: +++ gtk/main.h	(working copy)=0A=
+C: @@ -105,6 +105,18 @@=0A=
+C:   */=0A=
+C:  extern void selected_ptree_ref_cb(GtkWidget *widget, gpointer data);=0A=
+C:  =0A=
+C: +/** User requested "Related Information" by ptree context menu.=0A=
+C: + *=0A=
+C: + * @param widget parent widget (unused)=0A=
+C: + * @param data unused=0A=
+C: + */=0A=
+C: +extern void selected_ptree_related_cb(GtkWidget *widget, gpointer data);=0A=
+C: +=0A=
+C: +/** Determine if "Related Information" should be enabled in ptree =
+C: context menu.=0A=
+C: + *=0A=
+C: + */=0A=
+C: +extern gboolean selected_ptree_has_related();=0A=
+C: +=0A=
+C:  /** "Apply as Filter" / "Prepare a Filter" action type. */=0A=
+C:  typedef enum {=0A=
+C:      MATCH_SELECTED_REPLACE, /**< "Selected" */=0A=
+C: Index: epan/related.c=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/related.c	(revision 0)=0A=
+C: +++ epan/related.c	(revision 0)=0A=
+C: @@ -0,0 +1,177 @@=0A=
+C: +/* related.c=0A=
+C: + * related field information   2006 Graeme Lunt=0A=
+C: + *=0A=
+C: + * $Id$=0A=
+C: + *=0A=
+C: + * Wireshark - Network traffic analyzer=0A=
+C: + * By Gerald Combs <gerald@wireshark.org>=0A=
+C: + * Copyright 1998 Gerald Combs=0A=
+C: + * =0A=
+C: + * This program is free software; you can redistribute it and/or=0A=
+C: + * modify it under the terms of t
+C: he GNU General Public License=0A=
+C: + * as published by the Free Software Foundation; either version 2=0A=
+C: + * of the License, or (at your option) any later version.=0A=
+C: + * =0A=
+C: + * This program is distributed in the hope that it will be useful,=0A=
+C: + * but WITHOUT ANY WARRANTY; without even the implied warranty of=0A=
+C: + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the=0A=
+C: + * GNU General Public License for more details.=0A=
+C: + * =0A=
+C: + * You should have received a copy of the GNU General Public License=0A=
+C: + * along with this program; if not, write to the Free Software=0A=
+C: + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  =
+C: 02111-1307, USA.=0A=
+C: + */=0A=
+C: +=0A=
+C: +#ifdef HAVE_CONFIG_H=0A=
+C: +# include "config.h"=0A=
+C: +#endif=0A=
+C: +=0A=
+C: +#include <stdio.h>=0A=
+C: +=0A=
+C: +#ifdef HAVE_SYS_TYPES_H=0A=
+C: +# include <sys/types.h>=0A=
+C: +#endif=0A=
+C: +=0A=
+C: +#include <string.h>=0A=
+C: +#include "epan/packet_info.h"=0A=
+C: +#include <epan/related.h>=0A=
+C: +=0A=
+C: +typedef struct _related_callback_t {=0A=
+C: +  struct _related_callback_t *next;=0A=
+C: +  gchar *name;=0A=
+C: +  int  hf_lb;=0A=
+C: +  int hf_ub;=0A=
+C: +  enum ftenum type;=0A=
+C: +  related_cb related;=0A=
+C: +} related_t;=0A=
+C: +=0A=
+C: +=0A=
+C: +static related_t *related_list=3DNULL;=0A=
+C: +=0A=
+C: +static gboolean check_related(field_info *finfo, gboolean doit, const =
+C: gchar **ret_url);=0A=
+C: +=0A=
+C: +static gboolean related_url_string_cb(field_info *finfo, gboolean doit, =
+C: 
+const gchar**  ret_url)=0A=
+C: +{=0A=
+C: +=0A=
+C: +  if(finfo && IS_FT_STRING(finfo->hfinfo->type) && FI_GET_FLAG(finfo, =
+C: FI_URL)) {=0A=
+C: +    =0A=
+C: +    if(doit && ret_url) {=0A=
+C: +      /* the URL will be freed */=0A=
+C: +      *ret_url =3D g_strndup(tvb_get_ptr(finfo->ds_tvb, finfo->start, =
+C: finfo->length), finfo->length);=0A=
+C: +=0A=
+C: +      return TRUE;=0A=
+C: +    } else {=0A=
+C: +	return TRUE;=0A=
+C: +    }=0A=
+C: +  }=0A=
+C: +=0A=
+C: +  return FALSE;=0A=
+C: +=0A=
+C: +}=0A=
+C: +=0A=
+C: +void related_init()=0A=
+C: +{=0A=
+C: +=0A=
+C: +  /* register a callback for strings that have been marked as URLs with=0A=
+C: +     PROTO_ITEM_SET_URL */=0A=
+C: +=0A=
+C: +  register_related_type_callback("View URL", FT_STRING, =
+C: related_url_string_cb);=0A=
+C: +=0A=
+C: +}=0A=
+C: +=0A=
+C: +int register_related_callback(const char *name, int hf_lb, int hf_ub, =
+C: enum ftenum type, related_cb related)=0A=
+C: +{=0A=
+C: +  related_t *r, *rl;=0A=
+C: +  int i;=0A=
+C: +=0A=
+C: +  /* sanity check */=0A=
+C: +  if(!related)=0A=
+C: +    return 0;=0A=
+C: +=0A=
+C: +  r =3D g_malloc(sizeof(related_t));=0A=
+C: +  r->next =3D NULL;=0A=
+C: +  =0A=
+C: +  r->name =3D g_strdup(name);=0A=
+C: +  r->hf_lb =3D hf_lb;=0A=
+C: +  r->hf_ub =3D hf_ub;=0A=
+C: +  r->type =3D type;=0A=
+C: +  r->related =3D related;=0A=
+C: +=0A=
+C: +  if(!related_list){=0A=
+C: +    related_list=3Dr;=0A=
+C: +    i=3D1;=0A=
+C: +  } else {=0A=
+C: +    for(i=3D2,rl=3Drelated_list; rl->next; i++,rl=3Drl->next)=0A=
+C: +      ;=0A=
+C: +    rl->next=3Dr;=0A=
+C: +  }=0A=
+C: +  =0A=
+C: +  return i;=0A=
+C: +
+C: =0A=
+C: +}=0A=
+C: +=0A=
+C: +gboolean have_related(field_info *finfo)=0A=
+C: +{=0A=
+C: +=0A=
+C: +  return check_related(finfo, FALSE, NULL);=0A=
+C: +=0A=
+C: +}=0A=
+C: +=0A=
+C: +gboolean do_related(field_info *finfo, const gchar **ret_url)=0A=
+C: +{=0A=
+C: +=0A=
+C: +  return check_related(finfo, TRUE, ret_url);=0A=
+C: +=0A=
+C: +}=0A=
+C: +=0A=
+C: +static gboolean check_related(field_info *finfo, gboolean doit, const =
+C: gchar **ret_url)=0A=
+C: +{=0A=
+C: +  related_t *r;=0A=
+C: +  int pass;=0A=
+C: +  =0A=
+C: +  for(pass =3D 1; pass < 3; pass++) {=0A=
+C: +    for(r =3D related_list; r; r =3D r->next) {=0A=
+C: +    =0A=
+C: +      if(/* first pass does specific ranges and hfid fields */ =0A=
+C: +	 ((pass =3D=3D 1) && (r->hf_ub !=3D G_MAXINT)) || =0A=
+C: +	 /* second pass does generic type field */=0A=
+C: +	 ((pass =3D=3D 2) && (r->hf_ub =3D=3D G_MAXINT))) {=0A=
+C: +    =0A=
+C: +	if(((finfo->hfinfo->id >=3D r->hf_lb) && (finfo->hfinfo->id <=3D =
+C: r->hf_ub)) &&=0A=
+C: +	   ((finfo->hfinfo->type =3D=3D r->type) || (r->type =3D=3D FT_NONE))) =
+C: {=0A=
+C: +=0A=
+C: +	  if(r->related(finfo, doit, ret_url))=0A=
+C: +	    /* we have found some related information */=0A=
+C: +	    return TRUE;=0A=
+C: +	}=0A=
+C: +      }=0A=
+C: +    }=0A=
+C: +  }=0A=
+C: +  =0A=
+C: +  return FALSE;=0A=
+C: +=0A=
+C: +}=0A=
+C: +=0A=
+C: +/* a common utility function for fields that are URLs */=0A=
+C: +=0A=
+C: +gboolean related_url_cb(field_info *finfo, gboolean doit, const gchar** =
+C:  ret_url)=0A=
+C: +{=0A=
+C: +  =0A=
+C: +  if(finfo && IS_FT_STRING(finfo->hfinfo->type)) {=0A=
+C: +=0A=
+C: +    if(doit && ret_url) {=0A=
+C: +      /* the URL will be freed */=0A=
+C: +      *ret_url =3D g_strndup(tvb_get_ptr(finfo->ds_tvb, finfo->start, =
+C: finfo->length), finfo->length);=0A=
+C: +=0A=
+C: +      return TRUE;=0A=
+C: +    } else {=0A=
+C: +	return TRUE;=0A=
+C: +    }=0A=
+C: +  }=0A=
+C: +=0A=
+C: +  return FALSE;=0A=
+C: +=0A=
+C: +}=0A=
+C: +=0A=
+C: +=0A=
+C: +=0A=
+C: =0A=
+C: Property changes on: epan/related.c=0A=
+C: ___________________________________________________________________=0A=
+C: Name: svn:keywords=0A=
+C:    + Id=0A=
+C: Name: svn:eol-style=0A=
+C:    + native=0A=
+C: =0A=
+C: Index: epan/related.h=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/related.h	(revision 0)=0A=
+C: +++ epan/related.h	(revision 0)=0A=
+C: @@ -0,0 +1,57 @@=0A=
+C: +/*
+C:  related.h=0A=
+C: + * related field information   2006  Graeme Lunt=0A=
+C: + *=0A=
+C: + * $Id$=0A=
+C: + *=0A=
+C: + * Wireshark - Network traffic analyzer=0A=
+C: + * By Gerald Combs <gerald@wireshark.org>=0A=
+C: + * Copyright 1998 Gerald Combs=0A=
+C: + * =0A=
+C: + * This program is free software; you can redistribute it and/or=0A=
+C: + * modify it under the terms of the GNU General Public License=0A=
+C: + * as published by the Free Software Foundation; either version 2=0A=
+C: + * of the License, or (at your option) any later version.=0A=
+C: + * =0A=
+C: + * This program is distributed in the hope that it will be useful,=0A=
+C: + * but WITHOUT ANY WARRANTY; without even the implied warranty of=0A=
+C: + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the=0A=
+C: + * GNU General Public License for more details.=0A=
+C: + * =0A=
+C: + * You should have received a copy of the GNU General Public License=0A=
+C: + * along with this program; if not, write to the Free Software=0A=
+C: + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  =
+C: 02111-1307, USA.=0A=
+C: + */=0A=
+C: +=0A=
+C: +#ifndef _RELATED_H_=0A=
+C: +#define _RELATED_H_=0A=
+C: +=0A=
+C: +#include <epan/proto.h>=0A=
+C: +=0A=
+C: +/* The callback function indicates if it can provide related =
+C: information for=0A=
+C: +   the given field by its return value. As much info is likely to be a =
+C: URL=0A=
+C: +   the callback can return a url which will be opened by the caller=0A=
+C: +*/=0A=
+C: +=0A=
+C: +typedef gboolean (*related_cb)(field_info *f
+C: info, gboolean doit, const =
+C: gchar**  ret_url);=0A=
+C: +=0A=
+C: +void related_init();=0A=
+C: +=0A=
+C: +/* Register a related function for a given range of fields, or a =
+C: specific =0A=
+C: +   field type */=0A=
+C: +int register_related_callback(const char *name, int hf_lb, int hf_ub, =
+C: enum ftenum type, related_cb related);=0A=
+C: +=0A=
+C: +#define register_related_range_callback(n, lb, ub, cb) =
+C: register_related_callback(n, lb, ub, FT_NONE, cb)=0A=
+C: +#define register_related_type_callback(n, t, cb) =
+C: register_related_callback(n, 0, G_MAXINT, t, cb)=0A=
+C: +#define register_related_hfid_callback(n, h, cb) =
+C: register_related_callback(n, h, h, FT_NONE, cb)=0A=
+C: +=0A=
+C: +=0A=
+C: +/* Determine if there is related information for this field */=0A=
+C: +gboolean have_related(field_info *finfo);=0A=
+C: +=0A=
+C: +/* Show the related information for this field */=0A=
+C: +gboolean do_related(field_info *finfo, const gchar **ret_url);=0A=
+C: +=0A=
+C: +/* A common function for fields that are URIs */=0A=
+C: +gboolean related_url_cb(field_info *finfo, gboolean doit, const gchar** =
+C:  ret_url);=0A=
+C: +=0A=
+C: +#endif=0A=
+C: =0A=
+C: Property changes on: epan/related.h=0A=
+C: ___________________________________________________________________=0A=
+C: Name: svn:keywords=0A=
+C:    + Id=0A=
+C: Name: svn:eol-style=0A=
+C:    + native=0A=
+C: =0A=
+C: Index: epan/Makefile.common=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3
+C: D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/Makefile.common	(revision 18688)=0A=
+C: +++ epan/Makefile.common	(working copy)=0A=
+C: @@ -71,6 +71,7 @@=0A=
+C:  	radius_dict.c		\=0A=
+C:  	range.c			\=0A=
+C:  	reassemble.c		\=0A=
+C: +	related.c 		\=0A=
+C:  	req_resp_hdrs.c		\=0A=
+C:  	sha1.c			\=0A=
+C:  	sigcomp_state_hdlr.c	\=0A=
+C: @@ -163,6 +164,7 @@=0A=
+C:  	ptvcursor.h		\=0A=
+C:  	range.h			\=0A=
+C:  	reassemble.h		\=0A=
+C: +	related.h 		\=0A=
+C:  	report_err.h		\=0A=
+C:  	req_resp_hdrs.h		\=0A=
+C:  	rtp_pt.h		\=0A=
+C: Index: epan/proto.h=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/proto.h	(revision 18688)=0A=
+C: +++ epan/proto.h	(working copy)=0A=
+C: @@ -212,6 +212,8 @@=0A=
+C:   * used in field_info.flags. */=0A=
+C:  #define FI_GENERATED		0x0002=0A=
+C:  =0A=
+C: +/* The protocol field is actually a URL */=0A=
+C: +#define FI_URL                  0x0004=0A=
+C:  =0A=
+C:  /** convenience macro to get field_info.flags */=0A=
+C:  #define FI_GET_FLAG(fi, flag) (fi->flags & flag)=0A=
+C: @@ -289,6 +291,12 @@=0A=
+C:  /** mark this protocol field as generated by Wireshark (and not read =
+C: from the packet data) */=0A=
+C:  #define PROTO_ITEM_SET_GENERATED(proto_item)	\=0A=
+C:  	((proto_item) ? FI_SET_FLAG((proto_item)->finfo, FI_GENERATED) : 0)=0A=
+C: +/* is this protocol field actually a
+C:  URL */=0A=
+C: +#define PROTO_ITEM_IS_URL(proto_item)	\=0A=
+C: +	((proto_item) ? FI_GET_FLAG((proto_item)->finfo, FI_URL) : 0)=0A=
+C: +/* mark this protocol field as a URL */=0A=
+C: +#define PROTO_ITEM_SET_URL(proto_item)	\=0A=
+C: +	((proto_item) ? FI_SET_FLAG((proto_item)->finfo, FI_URL) : 0)=0A=
+C:  =0A=
+C:  typedef void (*proto_tree_foreach_func)(proto_node *, gpointer);=0A=
+C:  =0A=
+C: Index: epan/dissectors/packet-ldap.c=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/dissectors/packet-ldap.c	(revision 18688)=0A=
+C: +++ epan/dissectors/packet-ldap.c	(working copy)=0A=
+C: @@ -642,7 +642,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_MessageID(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 53 "ldap.cnf"=0A=
+C: +#line 56 "ldap.cnf"=0A=
+C:  =0A=
+C:      offset =3D dissect_ber_integer(implicit_tag, pinfo, tree, tvb, =
+C: offset, hf_index,=0A=
+C:                                    &MessageID);=0A=
+C: @@ -675,7 +675,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_LDAPString(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 240 "ldap.cnf"=0A=
+C: +#line 243 "ldap.cnf"=0A=
+C:    tvbuff_t	*parameter_tvb =3D NULL;=0A=
+C:    char          *ldaps
+C: tring;=0A=
+C:    gchar		*sc =3D NULL; /* semi-colon pointer */=0A=
+C: @@ -799,7 +799,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_Simple(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 103 "ldap.cnf"=0A=
+C: +#line 106 "ldap.cnf"=0A=
+C:  ldap_conv_info_t *ldap_info;=0A=
+C:  =0A=
+C:    offset =3D dissect_ber_octet_string(implicit_tag, pinfo, tree, tvb, =
+C: offset, hf_index,=0A=
+C: @@ -823,7 +823,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_Mechanism(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 114 "ldap.cnf"=0A=
+C: +#line 117 "ldap.cnf"=0A=
+C:  =0A=
+C:  ldap_conv_info_t *ldap_info;=0A=
+C:  tvbuff_t	*parameter_tvb;=0A=
+C: @@ -875,7 +875,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_Credentials(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 153 "ldap.cnf"=0A=
+C: +#line 156 "ldap.cnf"=0A=
+C:  =0A=
+C:  tvbuff_t	*parameter_tvb;=0A=
+C:  ldap_conv_info_t *ldap_info;=0A=
+C: @@ -943,7 +943,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_AuthenticationChoice(gboolean implicit_tag _U_, tvbuff_t =
+C: *tvb, int offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index =
+C: _U_) {=0A=
+C: -#line 415 "ldap.cnf"=0A=
+C: +#line 418 "ldap.cnf"=0A=
+C:    gint branch =3D -1;=0A=
+C:    gint auth =3D -1;=0A=
+C:    const gchar *valstr;=0A=
+C: @@ -1041,
+C: 7 +1041,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_BindResponse_resultCode(gboolean implicit_tag _U_, =
+C: tvbuff_t *tvb, int offset, packet_info *pinfo _U_, proto_tree *tree, int =
+C: hf_index _U_) {=0A=
+C: -#line 357 "ldap.cnf"=0A=
+C: +#line 360 "ldap.cnf"=0A=
+C:  =0A=
+C:    const gchar *valstr;=0A=
+C:  =0A=
+C: @@ -1088,8 +1088,13 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_LDAPURL(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -  offset =3D dissect_ldap_LDAPString(implicit_tag, tvb, offset, pinfo, =
+C: tree, hf_index);=0A=
+C: +  offset =3D dissect_ber_octet_string(implicit_tag, pinfo, tree, tvb, =
+C: offset, hf_index,=0A=
+C: +                                       NULL);=0A=
+C:  =0A=
+C: +#line 32 "ldap.cnf"=0A=
+C: +	PROTO_ITEM_SET_URL(get_ber_last_created_item());=0A=
+C: +=0A=
+C: +=0A=
+C:    return offset;=0A=
+C:  }=0A=
+C:  static in
+C: t dissect_Referral_item(packet_info *pinfo, proto_tree *tree, =
+C: tvbuff_t *tvb, int offset) {=0A=
+C: @@ -1119,7 +1124,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_ServerSaslCreds(gboolean implicit_tag _U_, tvbuff_t *tvb, =
+C: int offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 179 "ldap.cnf"=0A=
+C: +#line 182 "ldap.cnf"=0A=
+C:  =0A=
+C:  tvbuff_t	*parameter_tvb;=0A=
+C:  ldap_conv_info_t *ldap_info;=0A=
+C: @@ -1213,7 +1218,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_UnbindRequest(gboolean implicit_tag _U_, tvbuff_t *tvb, =
+C: int offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 436 "ldap.cnf"=0A=
+C: +#line 439 "ldap.cnf"=0A=
+C:  =0A=
+C:   implicit_tag =3D TRUE; /* correct problem with asn2wrs */=0A=
+C:  =0A=
+C: @@ -1245,7 +1250,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_T_scope(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 316 "ldap.cnf"=0A=
+C: +#line 319 "ldap.cnf"=0A=
+C:  =0A=
+C:    gint 	scope;=0A=
+C:    const gchar *valstr;=0A=
+C: @@ -1313,7 +1318,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_BOOLEAN(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 529 "ldap.cnf"=0A=
+C: +#line 532 "ldap.cnf"=0A=
+C:  	gboolean val;=0A=
+C:  =0A=
+C:  	offset =3D dissect_ber_boolean_value(implicit_tag, pinfo, tree, tvb, =
+C: offset, hf_index, &val);=0A=
+C: @@
+C:  -1345,7 +1350,7 @@=0A=
+C:  dissect_ldap_T_and_item(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C:    offset =3D dissect_ldap_Filter(implicit_tag, tvb, offset, pinfo, =
+C: tree, hf_index);=0A=
+C:  =0A=
+C: -#line 470 "ldap.cnf"=0A=
+C: +#line 473 "ldap.cnf"=0A=
+C:  	if(and_filter_string){=0A=
+C:  		=
+C: and_filter_string=3Dep_strdup_printf("(&%s%s)",and_filter_string,Filter_s=
+C: tring);=0A=
+C:  	} else {=0A=
+C: @@ -1366,7 +1371,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_T_and(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 477 "ldap.cnf"=0A=
+C: +#line 480 "ldap.cnf"=0A=
+C:  	const ber_sequence_t and_set_of[1] =3D {  { BER_CLASS_ANY/*choice*/, =
+C: -1/*choice*/, BER_FLAGS_NOOWNTAG|BER_FLAGS_NOTCHKTAG, dissect_and_item },=0A=
+C:  };=0A=
+C:  	proto_tree *tr=3DNULL;=0A=
+C: @@ -1399,7 +1404,7 @@=0A=
+C:  dissect_ldap_T_or_item(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C:    offset =3D dissect_ldap_Filter(implicit_tag, tvb, offset, pinfo, =
+C: tree, hf_index);=0A=
+C:  =0A=
+C: -#line 496 "ldap.cnf"=0A=
+C: +#line 499 "ldap.cnf"=0A=
+C:  	if(or_filter_string){=0A=
+C:  		=
+C: or_filter_string=3Dep_strdup_printf("(|%s%s)",or_filter_string,Filter_str=
+C: ing);=0A=
+C:  	} else {=0A=
+C: @@ -1421,7 +1426,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_T_or(gboolean impl
+C: icit_tag _U_, tvbuff_t *tvb, int offset, =
+C: packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 504 "ldap.cnf"=0A=
+C: +#line 507 "ldap.cnf"=0A=
+C:  	const ber_sequence_t or_set_of[1] =3D {  { BER_CLASS_ANY/*choice*/, =
+C: -1/*choice*/, BER_FLAGS_NOOWNTAG|BER_FLAGS_NOTCHKTAG, dissect_or_item },=0A=
+C:  };=0A=
+C:  	proto_tree *tr=3DNULL;=0A=
+C: @@ -1454,7 +1459,7 @@=0A=
+C:  dissect_ldap_T_not(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C:    offset =3D dissect_ldap_Filter(implicit_tag, tvb, offset, pinfo, =
+C: tree, hf_index);=0A=
+C:  =0A=
+C: -#line 526 "ldap.cnf"=0A=
+C: +#line 529 "ldap.cnf"=0A=
+C:  	Filter_string=3Dep_strdup_printf("(!%s)",Filter_string);=0A=
+C:  =0A=
+C:  =0A=
+C: @@ -1516,7 +1521,7 @@=0A=
+C:  dissect_ldap_T_equalityMatch(gboolean implicit_tag _U_, tvbuff_t *tvb, =
+C: int offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C:    offset =3D dissect_ldap_AttributeValueAssertion(implicit_tag, tvb, =
+C: offset, pinfo, tree, hf_index);=0A=
+C:  =0A=
+C: -#line 455 "ldap.cnf"=0A=
+C: +#line 458 "ldap.cnf"=0A=
+C:  	=
+C: Filter_string=3Dep_strdup_printf("(%s=3D%s)",attributedesc_string,asserti=
+C: onvalue_string);=0A=
+C:  =0A=
+C:  =0A=
+C: @@ -1548,7 +1553,7 @@=0A=
+C:                                   =
+C: T_substringFilter_substrings_item_choice, hf_index, =
+C: ett_ldap_T_substringFilter_substrings_item,=0A=
+C:                                   NULL);=0A=
+C:  =0A=
+C: -#line 552 "
+C: ldap.cnf"=0A=
+C: +#line 555 "ldap.cnf"=0A=
+C:  	if (substring_item_final) {=0A=
+C:  		substring_value=3Dep_strdup_printf("%s%s",=0A=
+C:  						 (substring_value?substring_value:"*"),=0A=
+C: @@ -1594,7 +1599,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_SubstringFilter(gboolean implicit_tag _U_, tvbuff_t *tvb, =
+C: int offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 566 "ldap.cnf"=0A=
+C: +#line 569 "ldap.cnf"=0A=
+C:  	proto_tree *tr=3DNULL;=0A=
+C:  	proto_item *it=3DNULL;=0A=
+C:  	char *old_substring_value=3Dsubstring_value;=0A=
+C: @@ -1629,7 +1634,7 @@=0A=
+C:  dissect_ldap_T_greaterOrEqual(gboolean implicit_tag _U_, tvbuff_t *tvb, =
+C: int offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C:    offset =3D dissect_ldap_AttributeValueAssertion(implicit_tag, tvb, =
+C: offset, pinfo, tree, hf_index);=0A=
+C:  =0A=
+C: -#line 459 "ldap.cnf"=0A=
+C: +#line 462 "ldap.cnf"=0A=
+C:  	=
+C: Filter_string=3Dep_strdup_printf("(%s>=3D%s)",attributedesc_string,assert=
+C: ionvalue_string);=0A=
+C:  =0A=
+C:  =0A=
+C: @@ -1646,7 +1651,7 @@=0A=
+C:  dissect_ldap_T_lessOrEqual(gboolean implicit_tag _U_, tvbuff_t *tvb, =
+C: int offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C:    offset =3D dissect_ldap_AttributeValueAssertion(implicit_tag, tvb, =
+C: offset, pinfo, tree, hf_index);=0A=
+C:  =0A=
+C: -#line 463 "ldap.cnf"=0A=
+C: +#line 466 "ldap.cnf"=0A=
+C:  	=
+C: Filter_string=3Dep_strdup_printf("(%s<=3D%s)",attributedesc_string,assert=
+C: ionvalu
+C: e_string);=0A=
+C:  =0A=
+C:  =0A=
+C: @@ -1663,7 +1668,7 @@=0A=
+C:  dissect_ldap_T_present(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C:    offset =3D dissect_ldap_AttributeDescription(implicit_tag, tvb, =
+C: offset, pinfo, tree, hf_index);=0A=
+C:  =0A=
+C: -#line 523 "ldap.cnf"=0A=
+C: +#line 526 "ldap.cnf"=0A=
+C:  	Filter_string=3Dep_strdup_printf("(%s=3D*)",Filter_string);=0A=
+C:  =0A=
+C:  =0A=
+C: @@ -1679,7 +1684,7 @@=0A=
+C:  dissect_ldap_T_approxMatch(gboolean implicit_tag _U_, tvbuff_t *tvb, =
+C: int offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C:    offset =3D dissect_ldap_AttributeValueAssertion(implicit_tag, tvb, =
+C: offset, pinfo, tree, hf_index);=0A=
+C:  =0A=
+C: -#line 467 "ldap.cnf"=0A=
+C: +#line 470 "ldap.cnf"=0A=
+C:  	=
+C: Filter_string=3Dep_strdup_printf("(%s~=3D%s)",attributedesc_string,assert=
+C: ionvalue_string);=0A=
+C:  =0A=
+C:  =0A=
+C: @@ -1722,7 +1727,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_T_extensibleMatch(gboolean implicit_tag _U_, tvbuff_t =
+C: *tvb, int offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index =
+C: _U_) {=0A=
+C: -#line 538 "ldap.cnf"=0A=
+C: +#line 541 "ldap.cnf"=0A=
+C:  	attr_type=3DNULL;=0A=
+C:  	matching_rule_string=3DNULL;=0A=
+C:  	assertionvalue_string=3DNULL;=0A=
+C: @@ -1731,7 +1736,7 @@=0A=
+C:  =0A=
+C:    offset =3D dissect_ldap_MatchingRuleAssertion(implicit_tag, tvb, =
+C: offset, pinfo, tree, hf_index);=0A=
+C:  =0A=
+C: -#line 544 "ldap.cnf"=0A=
+C: +#line 547 "ldap.cnf"=0A=
+C:  	Filter_string=3Dep_strdup_printf("(%s:%s%s%s=3D%s)",=0A=
+C:  					(attr_type?attr_type:""),=0A=
+C:  					(matching_rule_dnattr?"dn:":""),=0A=
+C: @@ -1777,7 +1782,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_Filter(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 587 "ldap.cnf"=0A=
+C: +#line 590 "ldap.cnf"=0A=
+C:  	proto_tree *tr=3DNULL;=0A=
+C:  	proto_item *it=3DNULL;=0A=
+C:  =0A=
+C: @@ -1800,13 +1805,13 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_T_filter(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 448 "ldap.cnf"=0A=
+C: +#line 451 "ldap.cnf"=0A=
+C:  	Filter_string=3DNULL;=0A=
+C:  =0A=
+C:  =0A=
+C:    offset =3D dissect_ldap_Filter(implicit_tag, tvb, offset, pinfo, =
+C: tree, hf_index);=0A=
+C:  =0A=
+C: -#line 451
+C:  "ldap.cnf"=0A=
+C: +#line 454 "ldap.cnf"=0A=
+C:  	Filter_string=3DNULL;=0A=
+C:  	and_filter_string=3DNULL;=0A=
+C:  =0A=
+C: @@ -1861,7 +1866,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_AttributeValue(gboolean implicit_tag _U_, tvbuff_t *tvb, =
+C: int offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 378 "ldap.cnf"=0A=
+C: +#line 381 "ldap.cnf"=0A=
+C:  =0A=
+C:    tvbuff_t	*next_tvb;=0A=
+C:    gchar		*string;=0A=
+C: @@ -2021,7 +2026,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_T_resultCode(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 335 "ldap.cnf"=0A=
+C: +#line 338 "ldap.cnf"=0A=
+C:  =0A=
+C:    const gchar *valstr;=0A=
+C:  =0A=
+C: @@ -2376,7 +2381,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_LDAPOID(gboolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 33 "ldap.cnf"=0A=
+C: +#line 36 "ldap.cnf"=0A=
+C:  =0A=
+C:  	tvbuff_t	*parameter_tvb;=0A=
+C:  	const gchar *name;=0A=
+C: @@ -2387,7 +2392,7 @@=0A=
+C:    offset =3D dissect_ber_octet_string(implicit_tag, pinfo, tree, tvb, =
+C: offset, hf_index,=0A=
+C:                                         &parameter_tvb);=0A=
+C:  =0A=
+C: -#line 40 "ldap.cnf"=0A=
+C: +#line 43 "ldap.cnf"=0A=
+C:  	if (!parameter_tvb)=0A=
+C:  		return offset;=0A=
+C:  	item =3D get_ber_last_created_item();=0A=
+C: @@ -2583,7 +2588,7 @@=0A=
+C:  =0A=
+C:  static int=0A=
+C:  dissect_ldap_ProtocolOp(g
+C: boolean implicit_tag _U_, tvbuff_t *tvb, int =
+C: offset, packet_info *pinfo _U_, proto_tree *tree, int hf_index _U_) {=0A=
+C: -#line 61 "ldap.cnf"=0A=
+C: +#line 64 "ldap.cnf"=0A=
+C:  =0A=
+C:    ldap_call_response_t *lcrp;=0A=
+C:    ldap_conv_info_t *ldap_info =3D (ldap_conv_info_t =
+C: *)pinfo->private_data;=0A=
+C: @@ -2594,7 +2599,7 @@=0A=
+C:                                   ProtocolOp_choice, hf_index, =
+C: ett_ldap_ProtocolOp,=0A=
+C:                                   &ProtocolOp);=0A=
+C:  =0A=
+C: -#line 67 "ldap.cnf"=0A=
+C: +#line 70 "ldap.cnf"=0A=
+C:  =0A=
+C:    lcrp=3Dldap_match_call_response(tvb, pinfo, tree, MessageID, =
+C: ProtocolOp);=0A=
+C:    if(lcrp){=0A=
+C: Index: epan/dissectors/packet-x509ce.c=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/dissectors/packet-x509ce.c	(revision 18688)=0A=
+C: +++ epan/dissectors/packet-x509ce.c	(working copy)=0A=
+C: @@ -1,6 +1,6 @@=0A=
+C:  /* Do not modify this file.                                             =
+C:       */=0A=
+C:  /* It is created automatically by the ASN.1 to Wireshark dissector =
+C: compiler   */=0A=
+C: -/* .\packet-x509ce.c                                                    =
+C:       */=0A=
+C: +/* ./packet-x509ce.c                                                    =
+C:       */=0A=
+C:  /* ../../tools/asn2wrs.py -b -e -p x509ce -c x509ce.cnf -s =
+C: pa
+C: cket-x509ce-template CertificateExtensions.asn */=0A=
+C:  =0A=
+C:  /* Input file: packet-x509ce-template.c */=0A=
+C: @@ -38,6 +38,7 @@=0A=
+C:  #include <glib.h>=0A=
+C:  #include <epan/packet.h>=0A=
+C:  #include <epan/conversation.h>=0A=
+C: +#include <epan/related.h>=0A=
+C:  =0A=
+C:  #include <stdio.h>=0A=
+C:  #include <string.h>=0A=
+C: @@ -213,7 +214,7 @@=0A=
+C:  static int hf_x509ce_ReasonFlags_aACompromise =3D -1;=0A=
+C:  =0A=
+C:  /*--- End of included file: packet-x509ce-hf.c ---*/=0A=
+C: -#line 55 "packet-x509ce-template.c"=0A=
+C: +#line 56 "packet-x509ce-template.c"=0A=
+C:  =0A=
+C:  /* Initialize the subtree pointers */=0A=
+C:  =0A=
+C: @@ -265,7 +266,7 @@=0A=
+C:  static gint ett_x509ce_PkiPathMatchSyntax =3D -1;=0A=
+C:  =0A=
+C:  /*--- End of included file: packet-x509ce-ett.c ---*/=0A=
+C: -#line 58 "packet-x509ce-template.c"=0A=
+C: +#line 59 "packet-x509ce-template.c"=0A=
+C:  =0A=
+C:  static const char *object_identifier_id;=0A=
+C:  =0A=
+C: @@ -1657,7 +1658,7 @@=0A=
+C:  =0A=
+C:  =0A=
+C:  /*--- End of included file: packet-x509ce-fn.c ---*/=0A=
+C: -#line 62 "packet-x509ce-template.c"=0A=
+C: +#line 63 "packet-x509ce-template.c"=0A=
+C:  =0A=
+C:  =0A=
+C:  static void=0A=
+C: @@ -2289,7 +2290,7 @@=0A=
+C:          "", HFILL }},=0A=
+C:  =0A=
+C:  /*--- End of included file: packet-x509ce-hfarr.c ---*/=0A=
+C: -#line 97 "packet-x509ce-template.c"=0A=
+C: +#line 98 "packet-x509ce-template.c"=0A=
+C:    };=0A=
+C:  =0A=
+C:    /* List of subtrees */=0A=
+C: @@ -2343,7 +2344,7 @@=0A=
+C:      &ett_x509ce_PkiPathMatchSyntax,=0A=
+C:  =0A=
+C:  /*--- En
+C: d of included file: packet-x509ce-ettarr.c ---*/=0A=
+C: -#line 102 "packet-x509ce-template.c"=0A=
+C: +#line 103 "packet-x509ce-template.c"=0A=
+C:    };=0A=
+C:  =0A=
+C:    /* Register protocol */=0A=
+C: @@ -2391,8 +2392,11 @@=0A=
+C:  =0A=
+C:  =0A=
+C:  /*--- End of included file: packet-x509ce-dis-tab.c ---*/=0A=
+C: -#line 117 "packet-x509ce-template.c"=0A=
+C: +#line 118 "packet-x509ce-template.c"=0A=
+C:  	register_ber_oid_dissector("2.5.29.24", =
+C: dissect_x509ce_invalidityDate_callback, proto_x509ce, =
+C: "id-ce-invalidityDate");=0A=
+C:  	register_ber_oid_dissector("2.5.29.51", =
+C: dissect_x509ce_baseUpdateTime_callback, proto_x509ce, =
+C: "id-ce-baseUpdateTime");=0A=
+C: +=0A=
+C: +	register_related_hfid_callback("GeneralName URL", =
+C: hf_x509ce_uniformResourceIdentifier, related_url_cb);=0A=
+C: +=0A=
+C:  }=0A=
+C:  =0A=
+C: Index: epan/dissectors/packet-logotypecertextn.c=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/dissectors/packet-logotypecertextn.c	(revision 18688)=0A=
+C: +++ epan/dissectors/packet-logotypecertextn.c	(working copy)=0A=
+C: @@ -1,6 +1,6 @@=0A=
+C:  /* Do not modify this file.                                             =
+C:       */=0A=
+C:  /* It is created automatically by the ASN.1 to Wireshark dissector =
+C: compiler   */=0A=
+C: -/* .\packet-logotypecertextn.c                                      
+C:     =
+C:       */=0A=
+C: +/* ./packet-logotypecertextn.c                                          =
+C:       */=0A=
+C:  /* ../../tools/asn2wrs.py -b -e -p logotypecertextn -c =
+C: logotype-cert-extn.cnf -s packet-logotype-cert-extn-template =
+C: LogotypeCertExtn.asn */=0A=
+C:  =0A=
+C:  /* Input file: packet-logotype-cert-extn-template.c */=0A=
+C: @@ -144,6 +144,13 @@=0A=
+C:                                              pinfo, tree, tvb, offset, =
+C: hf_index,=0A=
+C:                                              NULL);=0A=
+C:  =0A=
+C: +#line 18 "logotype-cert-extn.cnf"=0A=
+C: +	if((hf_index =3D=3D hf_logotypecertextn_logotypeURI_item) ||=0A=
+C: +	   (hf_index =3D=3D hf_logotypecertextn_refStructURI_item)) =0A=
+C: +	   PROTO_ITEM_SET_URL(get_ber_last_created_item());=0A=
+C: +=0A=
+C: +=0A=
+C: +=0A=
+C:    return offset;=0A=
+C:  }=0A=
+C:  static int dissect_mediaType(packet_info *pinfo, proto_tree *tree, =
+C: tvbuff_t *tvb, int offset) {=0A=
+C: @@ -311,8 +318,8 @@=0A=
+C:  };=0A=
+C:  =0A=
+C:  static const ber_choice_t LogotypeImageResolution_choice[] =3D {=0A=
+C: -  {   1, BER_CLASS_CON, 1, 0, dissect_numBits_impl },=0A=
+C: -  {   2, BER_CLASS_CON, 2, 0, dissect_tableSize_impl },=0A=
+C: +  {   1, BER_CLASS_CON, 1, BER_FLAGS_IMPLTAG, dissect_numBits_impl },=0A=
+C: +  {   2, BER_CLASS_CON, 2, BER_FLAGS_IMPLTAG, dissect_tableSize_impl },=0A=
+C:    { 0, 0, 0, 0, NULL }=0A=
+C:  };=0A=
+C:  =0A=
+C: @@ -499,8 +506,8 @@=0A=
+C:  };=0A=
+C:  =0A=
+C:  static const ber_choice_t LogotypeInfo_choice[] =3D {=0A=
+C: -  {   0, BER_CLASS_CON,
+C:  0, 0, dissect_direct_impl },=0A=
+C: -  {   1, BER_CLASS_CON, 1, 0, dissect_indirect_impl },=0A=
+C: +  {   0, BER_CLASS_CON, 0, BER_FLAGS_IMPLTAG, dissect_direct_impl },=0A=
+C: +  {   1, BER_CLASS_CON, 1, BER_FLAGS_IMPLTAG, dissect_indirect_impl },=0A=
+C:    { 0, 0, 0, 0, NULL }=0A=
+C:  };=0A=
+C:  =0A=
+C: Index: epan/dissectors/packet-x509ce.h=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/dissectors/packet-x509ce.h	(revision 18688)=0A=
+C: +++ epan/dissectors/packet-x509ce.h	(working copy)=0A=
+C: @@ -1,6 +1,6 @@=0A=
+C:  /* Do not modify this file.                                             =
+C:       */=0A=
+C:  /* It is created automatically by the ASN.1 to Wireshark dissector =
+C: compiler   */=0A=
+C: -/* .\packet-x509ce.h      
+C:                                               =
+C:       */=0A=
+C: +/* ./packet-x509ce.h                                                    =
+C:       */=0A=
+C:  /* ../../tools/asn2wrs.py -b -e -p x509ce -c x509ce.cnf -s =
+C: packet-x509ce-template CertificateExtensions.asn */=0A=
+C:  =0A=
+C:  /* Input file: packet-x509ce-template.h */=0A=
+C: Index: epan/dissectors/packet-logotypecertextn.h=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/dissectors/packet-logotypecertextn.h	(revision 18688)=0A=
+C: +++ epan/dissectors/packet-logotypecertextn.h	(working copy)=0A=
+C: @@ -1,6 +1,6 @@=0A=
+C:  /* Do not modify this file.                                             =
+C:       */=0A=
+C:  /* It is created automatically by the ASN.1 to Wireshark dissector =
+C: compiler   */=0A=
+C: -/* .\packet-logotypecertextn.h                                          =
+C:       */=0A=
+C: +/* ./packet-logotypecertextn.h                                          =
+C:       */=0A=
+C:  /* ../../tools/asn2wrs.py -b -e -p logotypecertextn -c =
+C: logotype-cert-extn.cnf -s packet-logotype-cert-extn-template =
+C: LogotypeCertExtn.asn */=0A=
+C:  =0A=
+C:  /* Input file: packet-logotype-cert-extn-template.h */=0A=
+C: Index: epan/oid_resolv.c=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/oid_resolv.c	(revision 18688)=0A=
+C: +++ epan/oid_resolv.c	(working copy)=0A=
+C: @@ -32,11 +32,44 @@=0A=
+C:  #include "to_str.h"=0A=
+C:  #include "strutil.h"=0A=
+C:  #include "epan/dissectors/format-oid.h"=0A=
+C: +#include "related.h"=0A=
+C:  =0A=
+C:  static GHashTable *oid_table =3D NULL;=0A=
+C:  =0A=
+C: +/* this should be configurable - but where ? */=0A=
+C: +static const gchar *oid_url_template =3D =
+C: "http://www.alvestrand.no/objectid/%s.html";=0A=
+C: +=0A=
+C: +static gboolean oid_related_cb(field_info *finfo, gboolean doit, const =
+C: gchar **ret_url)=0A=
+C: +{=0A=
+C: +  const char *oid;=0A=
+C: +  =0A=
+C: +  if(finfo && (finfo->hfinfo->type =3D=3D FT_OID) && =0A=
+C: +     (oid_url_template !=3D NULL) && (*oid_url_template !=3D '\0')) {=0A=
+C: +    if(doit && ret_url) {=0A=
+C: +      /* return the URL */=0A=
+C: +      oid =3D oid_to_str(tvb_get_ptr(finfo->ds_tvb, finfo->start, =
+C: finfo->length),=0A=
+C: +		       finfo->length);=0A=
+C: +=0A=
+C: +      /* the URL will be freed */=0A=
+C: +      *ret_url =3D g_strdup_printf(oid_url_template, oid);=0A=
+C: +      return TRUE;=0A=
+C: +    } else {=0A=
+C: +      /* return TRUE if we are configured to return URLs */=0A=
+C: +=0A=
+C: +      if((oid_url_template !=3D NULL) && (*oid_url_template !=3D '\0')) =0A=
+C: +	return TRUE;=0A=
+C: +      =0A=
+C: +    }=0A=
+C: +  }=0A=
+C: +=0A=
+C: +  return FALSE;=0A=
+C: +}=0A=
+C: +=0A=
+C:  void oid_resolv_init(voi
+C: d) {=0A=
+C:    oid_table =3D g_hash_table_new(g_str_hash, g_str_equal);=0A=
+C: +  =0A=
+C: +  register_related_type_callback("OID Ref", FT_OID, oid_related_cb);=0A=
+C: +=0A=
+C:  }=0A=
+C:  =0A=
+C:  static void free_oid_str(gpointer key, gpointer value _U_,=0A=
+C: Index: epan/epan.c=0A=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+C: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
+C: --- epan/epan.c	(revision 18688)=0A=
+C: +++ epan/epan.c	(working copy)=0A=
+C: @@ -24,6 +24,7 @@=0A=
+C:  #include "oid_resolv.h"=0A=
+C:  #include "emem.h"=0A=
+C:  #include "expert.h"=0A=
+C: +#include "related.h"=0A=
+C:  =0A=
+C:  static void (*report_failure_func)(const char *, va_list);=0A=
+C:  static void (*report_open_failure_func)(const char *, int, gboolean);=0A=
+C: @@ -75,6 +76,7 @@=0A=
+C:  	final_registration_all_protocols();=0A=
+C:  	host_name_lookup_init();=0A=
+C:  	expert_init();=0A=
+C: +	related_init();=0A=
+C:  }=0A=
+C:  =0A=
+C:  void=0A=
+C: ------=_NextPart_000_0012_01C7B64E.426C8120--
+C: .
+S: 250 ok 1182675387 qp 77793
+C: QUIT
+S: 221 smtp006.mail.xxx.xxxxx.com

@@ -1,0 +1,48 @@
+# SMTP session log  (run: smtp_plaintext_0001)
+=== Connected to 192.168.1.1 (SMTP) ===
+S: 220 domex ESMTP Postfix
+C: EHLO [192.168.1.104]
+S: 250-domex
+S: 250-PIPELINING
+S: 250-SIZE 10485760
+S: 250-VRFY
+S: 250-ETRN
+S: 250-AUTH LOGIN PLAIN CRAM-MD5 GSSAPI
+S: 250-STARTTLS
+S: 250-ENHANCEDSTATUSCODES
+S: 250-8BITMIME
+S: 250 DSN
+C: MAIL FROM:<charlie@m57.biz> SIZE=923
+S: 250 2.1.0 Ok
+C: RCPT TO:<pat@m57.biz>
+S: 250 2.1.5 Ok
+C: DATA
+S: 354 End data with <CR><LF>.<CR><LF>
+C: Message-ID: <4B0451D7.6080508@m57.biz>
+C: Date: Wed, 18 Nov 2009 11:58:15 -0800
+C: From: Charlie <charlie@m57.biz>
+C: User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+C: MIME-Version: 1.0
+C: To: Pat McGoo <pat@m57.biz>
+C: Subject: Re: COFFEE
+C: References: <98CC40FE46EA4F9CB82A95B0E7634C9A@m57pat>
+C: In-Reply-To: <98CC40FE46EA4F9CB82A95B0E7634C9A@m57pat>
+C: Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+C: Content-Transfer-Encoding: 7bit
+C: Pat McGoo wrote:
+C: > Charlie, Terry,
+C: >  
+C: >     just checking up on your preferences for coffee - jo is going 
+C: > shopping tomorrow, let us know what you want.
+C: >  
+C: > Jo, I like my coffee cinnamon apple flavor with just a whisper of 
+C: > cream - be sure to get the heavy whipping cream, NOT the half and 
+C: > half.  See if they have any of those nice pumpkin muffins, too.
+C: >  
+C: > Pat
+C: Can I just get hot chocolate instead?  I like the little sprinkles and 
+C: whipped cream with it.
+C: .
+S: 250 2.0.0 Ok: queued as 3B2C92AF471
+C: QUIT
+S: 221 2.0.0 Bye

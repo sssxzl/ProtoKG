@@ -1,0 +1,118 @@
+Sending request: OPTIONS rtsp://stream.zoovision.com/soma/somasexy/somasexy_Jasmine.3gp RTSP/1.0
+Cseq: 1
+User-Agent: CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213
+
+Received a complete response:
+RTSP/1.0 200 OK
+Server: DSS/6.0.3 (Build/526.3; Platform/Linux; Release/Darwin Streaming Server; State/Development; )
+Cseq: 1
+Public: DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE, OPTIONS, ANNOUNCE, RECORD
+
+Sending request: DESCRIBE rtsp://stream.zoovision.com/soma/somasexy/somasexy_Jasmine.3gp RTSP/1.0
+Cseq: 2
+Accept: application/sdp
+User-Agent: CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213
+
+Received a complete response:
+RTSP/1.0 200 OK
+Server: DSS/6.0.3 (Build/526.3; Platform/Linux; Release/Darwin Streaming Server; State/Development; )
+Cseq: 2
+Last-Modified: Mon, 26 Jan 2009 16:23:57 GMT
+Cache-Control: must-revalidate
+Content-Length: 635
+Date: Mon, 06 Apr 2009 10:44:36 GMT
+Expires: Mon, 06 Apr 2009 10:44:36 GMT
+Content-Type: application/sdp
+X-Accept-Retransmit: our-retransmit
+X-Accept-Dynamic-Rate: 1
+Content-Base: rtsp://stream.zoovision.com/soma/somasexy/somasexy_Jasmine.3gp/
+
+v=0
+o=StreamingServer 3448003529 1232987037000 IN IP4 174.36.223.58
+s=/soma/somasexy/somasexy_Jasmine.3gp
+u=http:///
+e=admin@
+c=IN IP4 0.0.0.0
+b=AS:151
+t=0 0
+a=control:*
+a=maxprate:15.000000
+a=range:npt=0-  62.14400
+m=video 0 RTP/AVP 96
+b=AS:119
+b=TIAS:116
+a=3GPP-Adaptation-Support:1
+a=maxprate:13
+a=rtpmap:96 H263-2000/90000
+a=control:trackID=3
+a=cliprect:0,0,144,176
+a=framesize:96 176-144
+a=fmtp:96  
+m=audio 0 RTP/AVP 97
+b=AS:35
+b=TIAS:32
+a=3GPP-Adaptation-Support:1
+a=maxprate:15
+a=rtpmap:97 MP4A-LATM/16000/2
+a=control:trackID=4
+a=fmtp:97 profile-level-id=15;object=2;cpresent=0;config=400028203FC0
+
+
+Sending request: SETUP rtsp://stream.zoovision.com/soma/somasexy/somasexy_Jasmine.3gp/trackID=3 RTSP/1.0
+Cseq: 3
+Transport: RTP/AVP/TCP;unicast;interleaved=0-1
+User-Agent: CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213
+
+Received a complete response:
+RTSP/1.0 200 OK
+Server: DSS/6.0.3 (Build/526.3; Platform/Linux; Release/Darwin Streaming Server; State/Development; )
+Cseq: 3
+Last-Modified: Mon, 26 Jan 2009 16:23:57 GMT
+Cache-Control: must-revalidate
+Session: 7477886380351771441
+Date: Mon, 06 Apr 2009 10:44:36 GMT
+Expires: Mon, 06 Apr 2009 10:44:36 GMT
+Transport: RTP/AVP/TCP;unicast;interleaved=0-1;ssrc=03EAB4AD
+
+Sending request: SETUP rtsp://stream.zoovision.com/soma/somasexy/somasexy_Jasmine.3gp/trackID=4 RTSP/1.0
+Cseq: 4
+Session: 7477886380351771441
+Transport: RTP/AVP/TCP;unicast;interleaved=2-3
+User-Agent: CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213
+
+Received a complete response:
+RTSP/1.0 200 OK
+Server: DSS/6.0.3 (Build/526.3; Platform/Linux; Release/Darwin Streaming Server; State/Development; )
+Cseq: 4
+Session: 7477886380351771441
+Last-Modified: Mon, 26 Jan 2009 16:23:57 GMT
+Cache-Control: must-revalidate
+Date: Mon, 06 Apr 2009 10:44:36 GMT
+Expires: Mon, 06 Apr 2009 10:44:36 GMT
+Transport: RTP/AVP/TCP;unicast;interleaved=2-3;ssrc=52908770
+
+Sending request: PLAY rtsp://stream.zoovision.com/soma/somasexy/somasexy_Jasmine.3gp/ RTSP/1.0
+Cseq: 5
+Session: 7477886380351771441
+Range: npt=0.000-
+User-Agent: CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213
+
+Received a complete response:
+RTSP/1.0 200 OK
+Server: DSS/6.0.3 (Build/526.3; Platform/Linux; Release/Darwin Streaming Server; State/Development; )
+Cseq: 5
+Session: 7477886380351771441
+Range: npt=0.00000-62.14400
+Rtp-Info: url=rtsp://stream.zoovision.com/soma/somasexy/somasexy_Jasmine.3gp/trackID=3;seq=55233;rtptime=1830050570,url=rtsp://stream.zoovision.com/soma/somasexy/somasexy_Jasmine.3gp/trackID=4;seq=15585;rtptime=1176181987
+
+Sending request: TEARDOWN rtsp://stream.zoovision.com/soma/somasexy/somasexy_Jasmine.3gp/ RTSP/1.0
+Cseq: 7
+Session: 7477886380351771441
+User-Agent: CorePlayer/1.0 (PocketPC 5.02; ARM 926E; ch) CorePlayer/1.3.0_6213
+
+Received a complete response:
+RTSP/1.0 200 OK
+Server: DSS/6.0.3 (Build/526.3; Platform/Linux; Release/Darwin Streaming Server; State/Development; )
+Cseq: 7
+Session: 7477886380351771441
+Connection: Close

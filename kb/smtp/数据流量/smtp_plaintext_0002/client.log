@@ -1,0 +1,46 @@
+# SMTP session log  (run: smtp_plaintext_0002)
+=== Connected to 192.168.1.1 (SMTP) ===
+S: 220 domex ESMTP Postfix
+C: EHLO [192.168.1.104]
+S: 250-domex
+S: 250-PIPELINING
+S: 250-SIZE 10485760
+S: 250-VRFY
+S: 250-ETRN
+S: 250-AUTH LOGIN PLAIN CRAM-MD5 GSSAPI
+S: 250-STARTTLS
+S: 250-ENHANCEDSTATUSCODES
+S: 250-8BITMIME
+S: 250 DSN
+C: MAIL FROM:<charlie@m57.biz> SIZE=663
+S: 250 2.1.0 Ok
+C: RCPT TO:<pat@m57.biz>
+S: 250 2.1.5 Ok
+C: DATA
+S: 354 End data with <CR><LF>.<CR><LF>
+C: Message-ID: <4B045EE7.2000405@m57.biz>
+C: Date: Wed, 18 Nov 2009 12:53:59 -0800
+C: From: Charlie <charlie@m57.biz>
+C: User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+C: MIME-Version: 1.0
+C: To: Pat McGoo <pat@m57.biz>
+C: Subject: Re: Google patent
+C: References: <941C9DB33FCE45B7848E97D30E37ABD2@m57pat>
+C: In-Reply-To: <941C9DB33FCE45B7848E97D30E37ABD2@m57pat>
+C: Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+C: Content-Transfer-Encoding: 7bit
+C: Pat McGoo wrote:
+C: > Jo, Charlie,
+C: >  
+C: >    I'm sure you already are using it, but check out google patent beta 
+C: > for searches...   good stuff.
+C: >  
+C: > Pat
+C: Thanks!  This looks like a great resource.
+C:  
+C: Charlie
+C: .
+C: g6/|
+S: 250 2.0.0 Ok: queued as BF9192AF931
+C: QUIT
+S: 221 2.0.0 Bye
