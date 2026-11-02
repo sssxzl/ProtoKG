@@ -1091,7 +1091,10 @@ def main() -> int:
               f"（基准层 {before} 条不变，⑤ {len(action_seq_seeds)} 条纯追加）")
 
     out = Path(args.out)
-    written = write_seeds(seeds, out)
+    # ★ P2-5：文件名宽度按**基准层条数**算（⑤ 是纯追加，总条数变大不应改动
+    #   基准层的文件名）⇒ ⑤ 层另用 ``M`` 前缀的独立编号空间。
+    base_count = len(seeds) - len(action_seq_seeds)
+    written = write_seeds(seeds, out, base_count=base_count)
     print(f"落盘: {len(written)} 个 .raw 到 {out}")
 
     # 种子数自检（防止层③被意外跳过这类静默错误）
@@ -1158,7 +1161,7 @@ def main() -> int:
             manifest_cfg["action_seq"] = dict(action_seq_info)
         manifest = build_manifest(seeds, out, protocol=protocol,
                                   group=focus_group, seedgen_cfg=manifest_cfg,
-                                  dictionary=dict_info)
+                                  dictionary=dict_info, base_count=base_count)
         mpath = write_manifest(manifest, out / "manifest.json")
         print(f"manifest: {manifest['seed_count']} 条 → {mpath}")
 

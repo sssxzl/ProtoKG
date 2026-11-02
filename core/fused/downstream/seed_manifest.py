@@ -131,7 +131,8 @@ def build_manifest(seeds: list, out_dir, *,
                    group: Optional[str] = None,
                    seedgen_cfg: Optional[dict] = None,
                    dictionary: Optional[dict] = None,
-                   generated_at: Optional[str] = None) -> dict:
+                   generated_at: Optional[str] = None,
+                   base_count: Optional[int] = None) -> dict:
     """构建 manifest 字典（不落盘）。
 
     Args:
@@ -142,12 +143,13 @@ def build_manifest(seeds: list, out_dir, *,
         seedgen_cfg: 记录本次生成参数（focus_group / layers / order / dict_kind…）。
         dictionary: 字典元信息（path / token_count / md5）。
         generated_at: ISO 8601 时间戳；None 时取当前时间。
+        base_count: 基准层条数（P2-5：文件名宽度按它算 ⇒ 基准层文件名稳定）。
 
     Returns:
         manifest 字典（可直接 json.dump）。
     """
     out = Path(out_dir)
-    names = plan_seed_filenames(seeds)
+    names = plan_seed_filenames(seeds, base_count=base_count)
     entries: list = []
     for idx, (seed, name) in enumerate(zip(seeds, names), start=1):
         path = out / name

@@ -1476,20 +1476,36 @@ def generate_seeds_react(bundle: dict, llm, *, protocol: str = "rtsp",
 # 第二步（3/3）：.raw 落盘
 # ===========================================================================
 
-def plan_seed_filenames(seeds: list) -> list[str]:
+def plan_seed_filenames(seeds: list, *, base_count: Optional[int] = None
+                         ) -> list[str]:
     """规划 .raw 文件名（与 write_seeds 的命名规则完全一致，供 manifest 复用）。
 
     ★ 宽度自适应：种子数 > 99 时改用 3 位/4 位，保证「文件名字母序 == 排序下标序」
       （AFL 用 scandir(alphasort) 入队，前缀宽度不一致会破坏字母序↔数值序对应）。
       n ≤ 99 时宽度恒为 2 → 与历史产物逐字节一致（向后兼容）。
 
+    ★★ P2-5：宽度必须由**基准层条数**决定，**不能**由「总条数」决定。
+      ⑤（action-seq 变异层）是**纯追加** ⇒ 总条数变大 ⇒ 超过 99 时宽度会从
+      2 位变 3 位 ⇒ **基准层的文件名整体从 ``01_`` 变成 ``001_``**
+      （实测 smtp/B：ON 态 61 → 131 条）⇒ 内容 md5 不变但**文件名变了**
+      ⇒ 任何按文件名索引的历史产物/脚本会失配。
+      ⇒ 修法：``base_count`` 给出基准层条数 ⇒ 宽度按它算（基准层文件名与
+        OFF 态**逐字节相同**）；⑤ 层用**独立编号空间**（``M`` 前缀，
+        宽度取「够放下总条数」的那个）⇒ AFL 的 ``scandir(alphasort)`` 仍是
+        「基准层在前、⑤ 层在后」，组内等宽 ⇒ 字母序 == 数值序。
+
     Args:
-        seeds: 待落盘的 SeedCorpus 列表（顺序即落盘顺序）。
+        seeds:      待落盘的 SeedCorpus 列表（顺序即落盘顺序）。
+        base_count: 基准层（前 N 条）条数；``None`` ⇒ 全部按基准层处理
+                    （**向后兼容**：行为与旧实现完全一致）。
 
     Returns:
         与 seeds 等长的文件名列表。
     """
-    width = 2 if len(seeds) <= 99 else len(str(len(seeds)))
+    n_base = len(seeds) if base_count is None else int(base_count)
+    width = 2 if n_base <= 99 else len(str(n_base))
+    # ⑤ 层独立编号空间的宽度：必须够放下**总条数**（否则组内字母序 ≠ 数值序）
+    mut_width = max(width, len(str(len(seeds))))
     names: list = []
     for i, s in enumerate(seeds, start=1):
         methods = "+".join(s.target_methods) or \
@@ -1502,18 +1518,26 @@ def plan_seed_filenames(seeds: list) -> list[str]:
         # 文件名带上流名（目标资源），便于识别覆盖了哪个媒体格式
         stream = (s.selected_url or "").rstrip("/").split("/")[-1]
         stream = stream if stream and stream != "track1" else ""
-        names.append(f"{i:0{width}d}_{stream}_{methods}.raw" if stream
-                     else f"{i:0{width}d}_{methods}.raw")
+        if base_count is not None and i > base_count:
+            prefix = f"M{i:0{mut_width}d}"
+        else:
+            prefix = f"{i:0{width}d}"
+        names.append(f"{prefix}_{stream}_{methods}.raw" if stream
+                     else f"{prefix}_{methods}.raw")
     return names
 
 
-def write_seeds(seeds: list, out_dir, *, url: Optional[str] = None) -> list:
-    """把 SeedCorpus 列表落盘成 ProFuzzBench .raw，返回写入的文件名列表。"""
+def write_seeds(seeds: list, out_dir, *, url: Optional[str] = None,
+                base_count: Optional[int] = None) -> list:
+    """把 SeedCorpus 列表落盘成 ProFuzzBench .raw，返回写入的文件名列表。
+
+    ★ ``base_count``：基准层条数（见 :func:`plan_seed_filenames` 的 P2-5 说明）。
+    """
     from core.raw_writers import seedcorpus_to_raw
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     written: list = []
-    names = plan_seed_filenames(seeds)
+    names = plan_seed_filenames(seeds, base_count=base_count)
     for name, s in zip(names, seeds):
         raw = seedcorpus_to_raw(s, url=url) if url else seedcorpus_to_raw(s)
         if not raw:
