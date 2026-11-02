@@ -109,7 +109,7 @@ def _snapshot(seed: SeedCorpus) -> dict:
 def test_add_header_creates_new_field():
     seed = _seed()
     seq = ActionSequence(actions=(Action(OP_ADD, 1, "headers.Session", "999"),))
-    out = apply_actions(seed, seq)
+    out = apply_actions(seed, seq, ledger=ActionLedger())
     assert out.messages[1].headers["Session"] == "999"
     assert "Session" not in seed.messages[1].headers, "输入种子不得被改"
 
@@ -127,7 +127,7 @@ def test_add_header_is_case_insensitive_on_existing():
 def test_update_header_keeps_original_spelling_and_position():
     seed = _seed()
     seq = ActionSequence(actions=(Action(OP_UPDATE, 0, "headers.cseq", "42"),))
-    out = apply_actions(seed, seq)
+    out = apply_actions(seed, seq, ledger=ActionLedger())
     headers = out.messages[0].headers
     assert headers["CSeq"] == "42", "应改**原有拼写**的键（CSeq），不新建 cseq"
     assert "cseq" not in headers
@@ -137,7 +137,7 @@ def test_update_header_keeps_original_spelling_and_position():
 def test_remove_header_drops_key():
     seed = _seed()
     seq = ActionSequence(actions=(Action(OP_REMOVE, 0, "headers.ACCEPT"),))
-    out = apply_actions(seed, seq)
+    out = apply_actions(seed, seq, ledger=ActionLedger())
     assert "Accept" not in out.messages[0].headers
     assert out.messages[0].headers == {"CSeq": "1"}
 
@@ -156,45 +156,45 @@ def test_url_field_add_update_remove():
     new_url = "rtsp://127.0.0.1:8554/other"
 
     added = apply_actions(seed, ActionSequence(
-        actions=(Action(OP_ADD, 0, "url", new_url),)))
+        actions=(Action(OP_ADD, 0, "url", new_url),)), ledger=ActionLedger())
     assert added.messages[0].url == new_url
 
     updated = apply_actions(seed, ActionSequence(
-        actions=(Action(OP_UPDATE, 0, "url", new_url),)))
+        actions=(Action(OP_UPDATE, 0, "url", new_url),)), ledger=ActionLedger())
     assert updated.messages[0].url == new_url
 
     removed = apply_actions(seed, ActionSequence(
-        actions=(Action(OP_REMOVE, 0, "url"),)))
+        actions=(Action(OP_REMOVE, 0, "url"),)), ledger=ActionLedger())
     assert removed.messages[0].url == ""
 
 
 def test_argument_field_add_update_remove():
     seed = _seed()
     added = apply_actions(seed, ActionSequence(
-        actions=(Action(OP_ADD, 1, "argument", "NEW-ARG"),)))
+        actions=(Action(OP_ADD, 1, "argument", "NEW-ARG"),)), ledger=ActionLedger())
     assert added.messages[1].argument == "NEW-ARG"
 
     updated = apply_actions(seed, ActionSequence(
-        actions=(Action(OP_UPDATE, 1, "argument", "UPDATED"),)))
+        actions=(Action(OP_UPDATE, 1, "argument", "UPDATED"),)), ledger=ActionLedger())
     assert updated.messages[1].argument == "UPDATED"
 
     removed = apply_actions(seed, ActionSequence(
-        actions=(Action(OP_REMOVE, 1, "argument"),)))
+        actions=(Action(OP_REMOVE, 1, "argument"),)), ledger=ActionLedger())
     assert removed.messages[1].argument == ""
 
 
 def test_body_field_add_update_remove():
     seed = _seed()
     added = apply_actions(seed, ActionSequence(
-        actions=(Action(OP_ADD, 1, "body", "new-body"),)))
+        actions=(Action(OP_ADD, 1, "body", "new-body"),)), ledger=ActionLedger())
     assert added.messages[1].body == "new-body"
 
     updated = apply_actions(seed, ActionSequence(
-        actions=(Action(OP_UPDATE, 1, "body", "upd-body"),)))
+        actions=(Action(OP_UPDATE, 1, "body", "upd-body"),)), ledger=ActionLedger())
     assert updated.messages[1].body == "upd-body"
 
     removed = apply_actions(seed, ActionSequence(
-        actions=(Action(OP_REMOVE, 1, "body"),)))
+        actions=(Action(OP_REMOVE, 1, "body"),)), ledger=ActionLedger())
     assert removed.messages[1].body == ""
 
 
@@ -226,7 +226,7 @@ def test_apply_actions_does_not_mutate_input():
                  Action(OP_REMOVE, 0, "headers.Accept"),
                  Action(OP_UPDATE, 1, "url", "rtsp://x/y")),
         intent="test")
-    apply_actions(seed, seq)
+    apply_actions(seed, seq, ledger=ActionLedger())
     assert _snapshot(seed) == before, "输入种子必须逐字段不变"
 
 
@@ -238,8 +238,8 @@ def test_apply_actions_is_deterministic():
                  Action(OP_ADD, 1, "headers.Session", "1"),
                  Action(OP_REMOVE, 0, "headers.Accept")),
         intent="det")
-    first = apply_actions(seed, seq)
-    second = apply_actions(seed, seq)
+    first = apply_actions(seed, seq, ledger=ActionLedger())
+    second = apply_actions(seed, seq, ledger=ActionLedger())
     assert json.dumps(_snapshot(first), sort_keys=True, ensure_ascii=False) == \
         json.dumps(_snapshot(second), sort_keys=True, ensure_ascii=False)
     # 落盘字节也必须一致
@@ -252,7 +252,7 @@ def test_apply_actions_keeps_action_order_semantics():
     seed = _seed()
     seq = ActionSequence(actions=(Action(OP_ADD, 0, "headers.Temp", "1"),
                                   Action(OP_REMOVE, 0, "headers.Temp")))
-    out = apply_actions(seed, seq)
+    out = apply_actions(seed, seq, ledger=ActionLedger())
     assert "Temp" not in out.messages[0].headers
 
 
@@ -355,8 +355,8 @@ def test_remove_with_value_is_rejected():
 def test_plan_actions_is_rule_based_and_deterministic():
     seed = _seed()
     bundle = _bundle()
-    first = plan_actions(seed, bundle, protocol="rtsp")
-    second = plan_actions(seed, bundle, protocol="rtsp")
+    first = plan_actions(seed, bundle, protocol="rtsp", ledger=ActionLedger())
+    second = plan_actions(seed, bundle, protocol="rtsp", ledger=ActionLedger())
     assert first.actions, "规则应给出至少一个动作"
     assert first.actions == second.actions
     assert first.intent == second.intent
@@ -364,8 +364,8 @@ def test_plan_actions_is_rule_based_and_deterministic():
 
 def test_plan_actions_rules_land_on_the_seed():
     seed = _seed()
-    seq = plan_actions(seed, _bundle(), protocol="rtsp")
-    out = apply_actions(seed, seq)
+    seq = plan_actions(seed, _bundle(), protocol="rtsp", ledger=ActionLedger())
+    out = apply_actions(seed, seq, ledger=ActionLedger())
     # 必填头 User-Agent 缺失 ⇒ 规则补齐（add）
     assert "User-Agent" in out.messages[0].headers
     # 会话头搬运需要**前序消息里真有该头**；此处没有 ⇒ 规则不触发（不造假值）
@@ -376,8 +376,8 @@ def test_plan_actions_session_header_repair_copies_real_value():
     """会话头搬运：从**前序消息的真实值**复制（不发明值）。"""
     seed = _seed()
     seed.messages[0].headers["Session"] = "12345678"
-    seq = plan_actions(seed, _bundle(), protocol="rtsp")
-    out = apply_actions(seed, seq)
+    seq = plan_actions(seed, _bundle(), protocol="rtsp", ledger=ActionLedger())
+    out = apply_actions(seed, seq, ledger=ActionLedger())
     assert out.messages[1].headers.get("Session") == "12345678"
 
 
@@ -399,7 +399,7 @@ def test_plan_actions_llm_fallback_used_when_rules_empty():
                                  "field_path": "headers.X-LLM", "value": "1"}]}
 
     llm = _LLM()
-    seq = plan_actions(seed, bundle, protocol="x", llm=llm)
+    seq = plan_actions(seed, bundle, protocol="x", llm=llm, ledger=ActionLedger())
     assert llm.calls == 1, "规则为空时应调用 LLM"
     assert seq.intent == "add header"
     assert seq.actions[0].field_path == "headers.X-LLM"
@@ -432,7 +432,7 @@ def test_plan_actions_llm_failure_degrades_to_rules():
         def chat_json(self, **kwargs):
             raise RuntimeError("llm down")
 
-    seq = plan_actions(seed, _bundle(), protocol="rtsp", llm=_BrokenLLM())
+    seq = plan_actions(seed, _bundle(), protocol="rtsp", llm=_BrokenLLM(), ledger=ActionLedger())
     assert seq.actions, "LLM 挂掉时仍应给出规则结果"
 
 
@@ -574,7 +574,7 @@ def test_actions_land_on_seedcorpus_fields():
         Action(OP_UPDATE, 0, "argument", "FROM:<c@d>"),
         Action(OP_UPDATE, 0, "body", "new-body"),
     ), intent="all-kinds")
-    out = apply_actions(seed, seq)
+    out = apply_actions(seed, seq, ledger=ActionLedger())
     msg = out.messages[0]
     assert msg.headers["X-A"] == "2"
     assert msg.url == "sip://x/y"

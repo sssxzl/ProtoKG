@@ -81,6 +81,22 @@ REJECT_VALUE_HAS_CONTROL_CHARS = "value_has_control_chars"
 #:   合法端点集合与 ``scripts/corpus_gate.py`` 的 G1 **共用同一份实现**
 #:   （``core.fused.downstream.target_env.allowed_endpoints``）。
 REJECT_ENDPOINT_NOT_ALLOWED = "endpoint_not_allowed"
+#: ★ R-2：``value`` 是**空串** ⇒ 拒绝。
+#:   实测（QA 第二段复验）：``missing-required-header`` 规则用知识中枢取值池的
+#:   兜底值补齐**必填**头，而兜底值 **18/29（62%）是空串** ⇒ 落盘成 ``CSeq: ``
+#:   ⇒ 服务端**必然拒收** ⇒ **零价值却占掉契约名额**
+#:   （对 SemFuzz「36%→87%」是**负贡献**，不是正贡献）。
+#:   ⇒ 空串**不是**合法的新头值；真要清空某字段请用 ``remove``。
+REJECT_EMPTY_VALUE = "empty_value"
+#: ★ P2-3：``value`` 超过长度上限 ⇒ 拒绝（防止 LLM 产出 MB 级字段把语料撑爆）。
+REJECT_VALUE_TOO_LONG = "value_too_long"
+#: ★ P2-2：删除**必填**头 ⇒ 拒绝并记台账。
+#:   必填头由知识中枢 ``required_headers`` 声明（按方法分组）；
+#:   删掉它 ⇒ 服务端必然拒收 ⇒ **零价值**，且此前**零台账**（静默）。
+REJECT_HEADER_IS_REQUIRED = "header_is_required"
+
+#: 单个字段值的**长度上限**（P2-3；超长 ⇒ 拒绝）。
+MAX_VALUE_LENGTH = 4096
 
 #: action-seq 种子在 :class:`~core.models.SeedCorpus` 上的 ``generated_by`` 标记。
 ACTION_SEQ_GENERATED_BY = "rule-based:action-seq"
@@ -88,8 +104,14 @@ ACTION_SEQ_GENERATED_BY = "rule-based:action-seq"
 #: 单条种子的动作序列长度上限（序列太长会让单条种子偏离真实会话太远）。
 MAX_PLAN_ACTIONS = 3
 
-#: 头部名合法性（RFC 7230 token 子集：字母数字 + ``-`` / ``_`` / ``.``）。
-_HEADER_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+#: 头部名合法性（RFC 7230 token 子集：字母数字 + ``-`` / ``_``）。
+#: ★ P2-1：**不含 ``.``** —— 本模块的 field_path 是**扁平**的（``headers.<Name>``），
+#:   若允许 ``.``，则 ``headers.A.B`` 会被解读成「头名 A.B」，
+#:   而调用方（尤其 LLM）可能本意是「头 A 的子字段 B」⇒ **语义歧义**。
+#:   本仓三个协议（SIP / RTSP / SMTP）的**真实头名一个都不含 ``.``**
+#:   （已对 ``kb/*/spec/**`` 全量机检：0 命中）⇒ 收紧取值域**零误杀**，
+#:   且域外路径会走 ``field_path_out_of_domain`` 拒绝分支（**可观测**）。
+_HEADER_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 
 #: 「头部行」形态（抓包日志 / .raw 里的 ``Name: value``）。
 _HEADER_LINE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9._-]*\s*:")
@@ -246,6 +268,12 @@ def normalize_field_path(field_path: Any) -> Optional[tuple[str, str]]:
         ``("header", "<Name>")`` / ``("url", "")`` / ``("argument", "")`` /
         ``("body", "")``；**域外返回 ``None``**（调用方据此拒绝并记
         ``reject_reason="field_path_out_of_domain"``）。
+
+    ★ P2-1（无歧义）：``headers.<Name>`` 是**扁平**路径 —— ``<Name>`` 取
+      ``headers.`` 之后的**全部**文本，且**不允许含 ``.``**。
+      ⇒ ``headers.A.B`` 落在域外（被拒绝并记账），**不会**被当成
+      「头 A 的子字段 B」，也**不会**被当成「头名 A.B」而凭空建头。
+      子字段语义请用 ``body``（整段消息体）。
     """
     text = str(field_path or "").strip()
     if not text:
@@ -424,7 +452,8 @@ VALID_OPS: tuple[str, ...] = tuple(sorted(ACTION_OPS))
 # ===========================================================================
 
 def _reject_reason(action: Action, message: Optional[SeedMessage],
-                   allowed_endpoints: Optional[set[str]] = None) -> Optional[str]:
+                   allowed_endpoints: Optional[set[str]] = None,
+                   required_headers: Optional[dict] = None) -> Optional[str]:
     """判定一个动作是否该被拒绝；合法返回 ``None``。
 
     校验顺序（固定 ⇒ 拒绝原因可复现）：
@@ -433,8 +462,11 @@ def _reject_reason(action: Action, message: Optional[SeedMessage],
         3. ``field_path`` 是否在封闭取值域内；
         4. 值语义（``remove`` 不得带值；``add``/``update`` 必须带值）；
         5. ★ **值不含控制字符**（P1-1：CR/LF/NUL ⇒ 头注入 / 消息截断）；
-        6. op 专属校验（头部的存在性）；
-        7. ★ **端点在合法端点集合内**（P0-1 纵深防御；仅当调用方给了白名单）。
+        6. ★ **值非空**（R-2：``CSeq: `` ⇒ 服务端必拒收 ⇒ 零价值）；
+        7. ★ **值长度不超限**（P2-3）；
+        8. op 专属校验（头部的存在性）；
+        9. ★ **不得删必填头**（P2-2；需 ``required_headers`` 上下文）；
+       10. ★ **端点在合法端点集合内**（P0-1 纵深防御；仅当调用方给了白名单）。
     """
     op = getattr(action, "op", None)
     if not isinstance(op, str) or op not in ACTION_OPS:
@@ -458,10 +490,25 @@ def _reject_reason(action: Action, message: Optional[SeedMessage],
     # ★ P1-1：控制字符 ⇒ 拒绝（生成侧 fail-closed，不等落盘后再查）
     if op != OP_REMOVE and _has_control_chars(value):
         return REJECT_VALUE_HAS_CONTROL_CHARS
+    # ★ R-2：空串不是合法的新值（落盘 ``CSeq: `` ⇒ 服务端必拒收 ⇒ 零价值）。
+    if op != OP_REMOVE and not value.strip():
+        return REJECT_EMPTY_VALUE
+    # ★ P2-3：值长度上限（防止 LLM 产出 MB 级字段把语料撑爆）。
+    if op != OP_REMOVE and len(value) > MAX_VALUE_LENGTH:
+        return REJECT_VALUE_TOO_LONG
     spec = ACTION_OPS[op]
     reason = spec.validate(action, message)
     if reason is not None:
         return reason
+    # ★ P2-2：删**必填**头 ⇒ 拒绝（服务端必然拒收 ⇒ 零价值；此前零台账）。
+    if op == OP_REMOVE and required_headers:
+        kind, name = normalize_field_path(getattr(action, "field_path", ""))
+        if kind == "header":
+            method = str(getattr(message, "method", "") or "").upper()
+            reqs = {str(r).lower()
+                    for r in (required_headers.get(method) or [])}
+            if name.lower() in reqs:
+                return REJECT_HEADER_IS_REQUIRED
     # ★ P0-1 纵深防御：``url`` 字段的端点必须在**合法端点集合**内。
     #   合法端点集合与 ``corpus_gate`` 的 G1 **共用一份实现**
     #   （``core.fused.downstream.target_env.allowed_endpoints``）⇒ 口径不会漂移。
@@ -475,15 +522,21 @@ def _reject_reason(action: Action, message: Optional[SeedMessage],
 
 
 def apply_actions(seed: SeedCorpus, seq: ActionSequence,
-                  *, ledger: Optional[ActionLedger] = None,
-                  profile: Optional[dict] = None) -> SeedCorpus:
+                  *, ledger: ActionLedger,
+                  profile: Optional[dict] = None,
+                  required_headers: Optional[dict] = None) -> SeedCorpus:
     """把动作序列**确定性地**作用到一个真实种子上，返回新种子（**不原地改**）。
 
     Args:
         seed:   输入种子（**不会被修改**）。
         seq:    动作序列。
-        ledger: 可选的拒绝台账；域外 ``field_path`` / 越界 ``msg_index`` /
+        ledger: **必需的**拒绝台账；域外 ``field_path`` / 越界 ``msg_index`` /
                 缺值等**一律拒绝并登记 reject_reason**（不抛异常、不静默忽略）。
+                ★ P1-2：台账是**必传**的 —— 早前它是可选参数、默认 ``None``，
+                  于是「拒绝了但没人接」的拒绝被**静默吞掉**，直接违反本模块的
+                  硬性约束①「拒绝必须可观测」。现在**不给台账就调不动**。
+        required_headers: 可选的**必填头表**（``{方法: [头名…]}``）；
+                给了 ⇒ ``remove`` 必填头会被拒绝并记账（P2-2）。
 
     Returns:
         新的 :class:`~core.models.SeedCorpus`：
@@ -509,10 +562,9 @@ def apply_actions(seed: SeedCorpus, seq: ActionSequence,
         if isinstance(index, int) and not isinstance(index, bool) \
                 and 0 <= index < len(new_seed.messages):
             message = new_seed.messages[index]
-        reason = _reject_reason(action, message, allowed)
+        reason = _reject_reason(action, message, allowed, required_headers)
         if reason is not None:
-            if ledger is not None:
-                ledger.reject(action, reason, _reject_detail(action))
+            ledger.reject(action, reason, _reject_detail(action))
             continue
         ACTION_OPS[action.op].apply(action, message)
         applied += 1
@@ -569,9 +621,17 @@ def _header_pool(bucket: Optional[dict], name: str) -> list[str]:
 
 
 def _default_header_value(bucket: Optional[dict], name: str) -> str:
-    """字段兜底值：只取知识中枢 headers 取值池首值（非协议硬编码），无则空串。"""
-    pool = _header_pool(bucket, name)
-    return pool[0] if pool else ""
+    """字段兜底值：取知识中枢 headers 取值池里的**首个非空**取值（非协议硬编码）。
+
+    ★ R-2：池首值可能是**空串**（知识中枢里该头只有空取值）⇒ 直接用它会落盘成
+      ``CSeq: `` ⇒ 服务端必然拒收 ⇒ 零价值。
+      ⇒ 这里**跳过空值**继续找下一个非空取值；池里全空 ⇒ 返回空串
+      （调用方据此**拒绝该动作并记台账**，而不是写空串）。
+    """
+    for value in _header_pool(bucket, name):
+        if str(value).strip():
+            return str(value)
+    return ""
 
 
 def _replayed_cseq(current: str, following: str) -> str:
@@ -591,7 +651,8 @@ def _replayed_cseq(current: str, following: str) -> str:
 
 
 def _rule_plan(seed: SeedCorpus, bundle: dict, *, protocol: str,
-               profile: Optional[dict] = None) -> ActionSequence:
+               profile: Optional[dict] = None,
+               ledger: Optional[ActionLedger] = None) -> ActionSequence:
     """**规则打底**：从知识中枢（bundle）+ 种子自身内容推导字段级动作。
 
     规则（按优先级依次尝试；**每条规则最多产出一个动作**，不同规则可叠加 ⇒
@@ -647,9 +708,19 @@ def _rule_plan(seed: SeedCorpus, bundle: dict, *, protocol: str,
         for header in required_headers.get(str(message.method).upper()) or []:
             if find_header(message.headers, header) is not None:
                 continue
+            value = _default_header_value(headers_bucket, header)
+            if not value:
+                # ★ R-2：知识中枢里**取不到非空兜底值** ⇒ **不产出这个动作**。
+                #   落盘 ``CSeq: `` ⇒ 服务端必然拒收 ⇒ 零价值却占掉契约名额
+                #   （对 SemFuzz「36%→87%」是负贡献）。
+                #   ⇒ 记一条拒绝台账（**可观测**，不是静默跳过），
+                #     并**继续试下一个必填头**（不占用动作名额）。
+                if ledger is not None:
+                    ledger.reject(None, REJECT_EMPTY_VALUE,
+                                  f"rule=missing-required-header header={header}")
+                continue
             _take("missing-required-header",
-                  Action(OP_ADD, index, f"{HEADER_PATH_PREFIX}{header}",
-                         _default_header_value(headers_bucket, header)))
+                  Action(OP_ADD, index, f"{HEADER_PATH_PREFIX}{header}", value))
             break
         if _rule_done(before):
             break
@@ -753,8 +824,9 @@ def _rule_plan(seed: SeedCorpus, bundle: dict, *, protocol: str,
 
 
 def _sanitize_actions(seed: SeedCorpus, actions: tuple[Action, ...],
-                       ledger: Optional[ActionLedger],
-                       allowed_endpoints: Optional[set[str]] = None
+                       ledger: ActionLedger,
+                       allowed_endpoints: Optional[set[str]] = None,
+                       required_headers: Optional[dict] = None
                        ) -> tuple[Action, ...]:
     """剔除对当前种子**不合法**的动作（越界 / 域外 / 缺值 …），并登记拒绝原因。
 
@@ -769,10 +841,10 @@ def _sanitize_actions(seed: SeedCorpus, actions: tuple[Action, ...],
         if isinstance(index, int) and not isinstance(index, bool) \
                 and 0 <= index < len(shadow.messages):
             message = shadow.messages[index]
-        reason = _reject_reason(action, message, allowed_endpoints)
+        reason = _reject_reason(action, message, allowed_endpoints,
+                                required_headers)
         if reason is not None:
-            if ledger is not None:
-                ledger.reject(action, reason, _reject_detail(action))
+            ledger.reject(action, reason, _reject_detail(action))
             continue
         kept.append(action)
         ACTION_OPS[action.op].apply(action, message)
@@ -840,8 +912,7 @@ def render_action_prompt(seed: SeedCorpus, bundle: dict, *, protocol: str,
 
 
 def parse_action_sequence(raw: Any, bundle: dict, *,
-                          ledger: Optional[ActionLedger] = None
-                          ) -> ActionSequence:
+                          ledger: ActionLedger) -> ActionSequence:
     """解析 LLM 输出为 :class:`ActionSequence`（**域外动作一律拒绝**）。
 
     ★ LLM **不允许产出字节**：本函数只接受「动作描述」形态的 dict；
@@ -881,7 +952,7 @@ def parse_action_sequence(raw: Any, bundle: dict, *,
 
 def plan_actions(seed: SeedCorpus, bundle: dict, *, protocol: str,
                  llm: Any = None, profile: Optional[dict] = None,
-                 ledger: Optional[ActionLedger] = None) -> ActionSequence:
+                 ledger: ActionLedger) -> ActionSequence:
     """为一个真实种子规划动作序列。
 
     ★ **规则打底、LLM 兜底**（与 B-6 同构）：
@@ -898,16 +969,20 @@ def plan_actions(seed: SeedCorpus, bundle: dict, *, protocol: str,
                   ``None`` ⇒ **纯规则**（确定性）。
         profile: 可选的协议 profile（``url_placeholders`` 等）；``None`` ⇒
                   相关规则不触发。
-        ledger:  可选的拒绝台账。
+        ledger:  **必需的**拒绝台账（P1-2：不给台账 ⇒ 拒绝会被静默吞掉）。
 
     Returns:
         :class:`ActionSequence`（**动作均已通过合法性校验**）。
     """
-    rules = _rule_plan(seed, bundle, protocol=protocol, profile=profile)
-    # ★ P0-1 纵深防御：合法端点集合（与 corpus_gate 的 G1 共用一份实现）
+    # ★ P2-2：必填头表（按方法分组）⇒ ``remove`` 必填头会被拒绝并记账。
+    required_headers = (bundle or {}).get("required_headers") or None
+    rules = _rule_plan(seed, bundle, protocol=protocol, profile=profile,
+                       ledger=ledger)
+    # ★ P0-1 纵深防御：合法端点集合（与 corpus_gate 的 G1 共用同一份实现）
     allowed = _allowed_endpoint_set(profile)
     rules = ActionSequence(
-        actions=_sanitize_actions(seed, rules.actions, ledger, allowed),
+        actions=_sanitize_actions(seed, rules.actions, ledger, allowed,
+                                   required_headers),
         intent=rules.intent,
         expected_class=rules.expected_class,
     )
@@ -924,7 +999,8 @@ def plan_actions(seed: SeedCorpus, bundle: dict, *, protocol: str,
         return rules
     planned = parse_action_sequence(raw, bundle, ledger=ledger)
     planned = ActionSequence(
-        actions=_sanitize_actions(seed, planned.actions, ledger, allowed),
+        actions=_sanitize_actions(seed, planned.actions, ledger, allowed,
+                                   required_headers),
         intent=planned.intent,
         expected_class=planned.expected_class,
     )
@@ -1247,7 +1323,7 @@ def load_real_base_seeds(protocol: str, profile: dict, *,
 
 def mutate_seed(seed: SeedCorpus, bundle: dict, *, protocol: str,
                 llm: Any = None, profile: Optional[dict] = None,
-                ledger: Optional[ActionLedger] = None
+                ledger: ActionLedger
                 ) -> tuple[SeedCorpus, ActionSequence]:
     """对一颗真实种子做一次字段级变异（规划 + 执行）。
 
@@ -1256,7 +1332,10 @@ def mutate_seed(seed: SeedCorpus, bundle: dict, *, protocol: str,
     """
     seq = plan_actions(seed, bundle, protocol=protocol, llm=llm,
                        profile=profile, ledger=ledger)
-    return apply_actions(seed, seq, ledger=ledger), seq
+    return apply_actions(seed, seq, ledger=ledger,
+                         profile=profile,
+                         required_headers=(bundle or {}).get("required_headers")
+                         or None), seq
 
 
 __all__ = [
@@ -1282,6 +1361,12 @@ __all__ = [
     "REJECT_HEADER_ALREADY_EXISTS",
     "REJECT_EXPECTED_CLASS_OUT_OF_VOCAB",
     "REJECT_MALFORMED_ACTION",
+    "REJECT_VALUE_HAS_CONTROL_CHARS",
+    "REJECT_ENDPOINT_NOT_ALLOWED",
+    "REJECT_EMPTY_VALUE",
+    "REJECT_VALUE_TOO_LONG",
+    "REJECT_HEADER_IS_REQUIRED",
+    "MAX_VALUE_LENGTH",
     "normalize_field_path",
     "find_header",
     "apply_actions",

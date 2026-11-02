@@ -318,7 +318,13 @@ def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
         if not seq.actions:
             zero_mutation += 1
             continue
-        out.append(apply_actions(base, seq, ledger=ledger))
+        # ★ P2-2：把**必填头表**传给执行器 ⇒ 「删必填头」在**执行期**也会被拒
+        #   （`plan_actions` 的清洗期已拒过一次，这里是**纵深防御**：
+        #   万一将来有别的调用方绕过 `plan_actions` 直接 `apply_actions`，
+        #   「删必填头」仍然被拒并记账，而不是静默生效）。
+        out.append(apply_actions(
+            base, seq, ledger=ledger, profile=profile,
+            required_headers=(bundle or {}).get("required_headers") or None))
     info["mutated_count"] = len(out)
     info["zero_mutation_skipped"] = zero_mutation
     if ledger is not None:
@@ -947,6 +953,17 @@ def main() -> int:
         if action_seq_seeds:
             action_seq_seeds = _apply_url_placeholders(
                 action_seq_seeds, profile, protocol, env_cfg)
+            # ★ R-1（P0）：⑤ 种子**也必须跑**「响应回传地址重写」。
+            #   ⑤ 在流程**末尾**追加 ⇒ 若不单独跑，它会**绕过基准层的全部后处理链**
+            #   （`_apply_url_placeholders` / `_rewrite_client_headers`）⇒ 真实抓包
+            #   底料里的**源侧端点**（实测 SIP 的 ``Via: SIP/2.0/UDP 192.168.1.2:5060``）
+            #   原样留在 ``.raw`` 字节里 ⇒ `corpus_gate` 的 G1 判违规（退出码 1
+            #   ⇒ **语料无法发布**）；语义后果更重：服务端把响应回传到**错地址**
+            #   ⇒ AFLNet **收不到响应** ⇒ 该种子零价值。
+            #   ★ 与基准层**完全同款**处理（协议无关；无 client_side 声明则原样返回）
+            #   ⇒ 修完 ⑤ 与基准层的头部语义一致。
+            action_seq_seeds = _rewrite_client_headers(
+                action_seq_seeds, profile, protocol)
             action_seq_seeds = dedupe_seeds(action_seq_seeds)
         print(f"⑤ 字段级 action-sequence 变异: {len(action_seq_seeds)} 条种子"
               f"（底料来源: {action_seq_info.get('source') or '（无）'}, "
