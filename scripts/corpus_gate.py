@@ -584,7 +584,20 @@ def check_g5(profile: dict, protocol: str, group: Optional[str],
         return _skip("G5", f"profile 未声明 focus_group.{group}.seeds 契约 → G5 不适用",
                      contract_source=None, expected=None, actual=len(seed_files))
 
+    # ★ P0-4：契约条数是「**基准层**（①~④）」的约定 ⇒ G5 **只查基准层**。
+    #   ⑤（action-seq 变异层）的条数**单独记账**（manifest 的 `mutation_count`），
+    #   **不受 G5 约束** ⇒ ⑤ 的存在**不会**掩盖基准层的契约漂移，
+    #   也不会让「总条数 ≠ 契约」被误报成漂移。
+    #   ★ manifest 缺失 / 无 layer 信息 ⇒ **回退到总数**（保守，不误判）。
     actual = len(seed_files)
+    mutation_count = 0
+    base_actual = actual
+    entries = (manifest or {}).get("seeds") or []
+    layers = [str(e.get("layer") or "") for e in entries if isinstance(e, dict)]
+    if entries and any(layers):
+        mutation_count = sum(1 for lay in layers if lay == "L5")
+        base_actual = len(entries) - mutation_count
+        actual = base_actual
     passed = expected == actual
     result: dict[str, Any] = {
         "name": GATE_NAMES["G5"],
@@ -595,6 +608,12 @@ def check_g5(profile: dict, protocol: str, group: Optional[str],
         "actual": actual,
         "pass": passed,
     }
+    if mutation_count:
+        result["base_seed_count"] = base_actual
+        result["mutation_count"] = mutation_count
+        result["scope"] = "base-layers-only"
+    else:
+        result["scope"] = "all-seeds" if not layers else "base-layers-only"
     if not passed:
         # 分级：默认只告警（契约漂移有时是预期的），--strict 才阻断。
         result["warning"] = (

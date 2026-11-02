@@ -22,6 +22,7 @@ from core.models import SeedCorpus
 from .edge_cover import edge_cover
 from .generic_danger import generic_danger
 from .boundary_probe import derive_vuln_pattern_candidates
+from .action_seq import ACTION_SEQ_GENERATED_BY
 from .strategy import classify_all, dedupe_reqs, generate_attack_seeds
 
 # 序列型漏洞 action（精简模式保留），对应状态机「边序列」类漏洞（UAF/断言/重放），
@@ -264,6 +265,7 @@ def seed_layer(seed: SeedCorpus) -> tuple[str, str]:
     | `rule-based:generic-danger`             | L2    | generic_danger  |
     | `rule-based:canonical-session`          | L4    | canonical       |
     | `rule-based:boundary-probe*`            | L3    | vuln_boundary   |
+    | `rule-based:action-seq`                 | L5    | action_seq      |
     | 其他                                     | L0    | unknown         |
 
     Args:
@@ -281,6 +283,13 @@ def seed_layer(seed: SeedCorpus) -> tuple[str, str]:
         return ("L4", "canonical")
     if gb.startswith("rule-based:boundary-probe"):
         return ("L3", "vuln_boundary")
+    # ★ P1-3：第 5 层（字段级 action-sequence 变异）。
+    #   不加这一条 ⇒ 该层的种子**全部落成 L0/unknown**
+    #   （QA 实测 L0 条数 == L5 条数，100%），而 manifest 顶层又宣称有第 5 层
+    #   ⇒ 「顶层宣称与实际不一致」⇒ ③ 层归因（MHR_B）直接失效
+    #   （selector.py 自述：层归属是 MHR_B 的**唯一依据**）。
+    if gb == ACTION_SEQ_GENERATED_BY:
+        return ("L5", "action_seq")
     return ("L0", "unknown")
 
 

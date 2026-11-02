@@ -530,26 +530,32 @@ def test_action_seq_switch_off_yields_zero_seeds():
     assert isinstance(info, dict)
 
 
-def test_converge_to_contract_keeps_action_seq_seeds():
-    """契约收敛：⑤ 种子优先保留，其余名额按漏洞接近度补齐（保序）。"""
+def test_action_seq_seeds_are_appended_not_converged():
+    """★ P0-4 语义：⑤ 种子**纯追加**，**不裁剪任何既有层**。
+
+    ★ 旧语义（已废止）：按 profile 契约条数**裁剪总数**且「⑤ 优先保留」
+      ⇒ 实测 rtsp/B `91 → 50`，① 结构覆盖 6 + ③ 漏洞边界 18 **被丢弃**；
+      且总数被凑到契约 ⇒ **掩盖了批次 1 之前就存在的契约漂移**。
+    ★ 新语义：契约条数是**基准层**的约定；基准层条数是既有行为（⑤ 关闭时
+      **不裁剪**）⇒ ⑤ 开启时也**不得裁剪** ⇒ 基准层条数 OFF/ON **完全相同**。
+    ★ 契约漂移照旧由 G5 报出（已改为只查基准层）—— **不许被掩盖**。
+    """
     import scripts.seedgen as seedgen_mod
     from core.fused.downstream.action_seq import ACTION_SEQ_GENERATED_BY
-    weak = SeedCorpus(protocol="p", generated_by="rule-based:edge-cover",
-                      messages=[SeedMessage(method="A")])
-    strong = SeedCorpus(protocol="p",
-                        generated_by="rule-based:boundary-probe",
-                        messages=[SeedMessage(method="B")])
-    action = SeedCorpus(protocol="p", generated_by=ACTION_SEQ_GENERATED_BY,
-                        messages=[SeedMessage(method="C")])
-    out = seedgen_mod._converge_to_contract([weak, strong, action], 2)
-    assert len(out) == 2
-    assert any(s.generated_by == ACTION_SEQ_GENERATED_BY for s in out)
-
-
-def test_converge_to_contract_noop_when_within_contract():
-    import scripts.seedgen as seedgen_mod
-    seeds = [SeedCorpus(protocol="p", messages=[SeedMessage(method="A")])]
-    assert seedgen_mod._converge_to_contract(seeds, 5) is seeds
+    base = [
+        SeedCorpus(protocol="p", generated_by="rule-based:edge-cover",
+                   messages=[SeedMessage(method="A")]),
+        SeedCorpus(protocol="p", generated_by="rule-based:boundary-probe",
+                   messages=[SeedMessage(method="B")]),
+    ]
+    action = [SeedCorpus(protocol="p", generated_by=ACTION_SEQ_GENERATED_BY,
+                         messages=[SeedMessage(method="C")])]
+    out = seedgen_mod._append_action_seq_seeds(base, action)
+    # 基准层一条不丢、⑤ 一条不丢、顺序为「基准层在前」
+    assert len(out) == 3
+    assert [s.messages[0].method for s in out] == ["A", "B", "C"]
+    # 无 ⑤ 时原样返回（不复制、不改动）
+    assert seedgen_mod._append_action_seq_seeds(base, []) is base
 
 
 # ===========================================================================

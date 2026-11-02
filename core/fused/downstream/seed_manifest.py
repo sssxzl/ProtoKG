@@ -180,6 +180,14 @@ def build_manifest(seeds: list, out_dir, *,
         "seed_count": len(entries),
         "seeds": entries,
     }
+    # ★ P0-4：⑤（action-seq 变异层）的条数**单独记账**，**不受 G5 契约约束**
+    #   （契约条数是**基准层**的约定）。
+    #   ★ **条件性添加**：只有真的存在 ⑤ 种子时才写这两个键
+    #     ⇒ ⑤ 关闭时 manifest **逐字节不变**（回滚手段必须成立）。
+    mutation_count = sum(1 for e in entries if e.get("layer") == "L5")
+    if mutation_count:
+        manifest["mutation_count"] = mutation_count
+        manifest["base_seed_count"] = len(entries) - mutation_count
     return manifest
 
 

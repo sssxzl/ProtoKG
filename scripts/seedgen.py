@@ -49,7 +49,7 @@ from core.fused.downstream.boundary_probe import (  # noqa: E402
     generate_targeted_dict, load_base_dict_tokens,
 )
 from core.fused.downstream.selector import (  # noqa: E402
-    dedupe_seeds, prioritize_seeds, vuln_proximity_score,
+    dedupe_seeds, prioritize_seeds,
 )
 from core.fused.downstream.action_seq import (  # noqa: E402
     ACTION_SEQ_GENERATED_BY, ActionLedger, apply_actions,
@@ -304,35 +304,46 @@ def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
     if not base_seeds:
         return [], info
     out: list = []
+    zero_mutation = 0
     for base in base_seeds:
         seq = plan_actions(base, bundle, protocol=protocol, profile=profile,
                            ledger=ledger)
+        # ★ 零变异（**没有任何动作实际生效**）的种子**直接丢弃**。
+        #   理由：`apply_actions` 对零变异**不改** `generated_by`/`description`
+        #   （P1-4：不得把没变的东西标成 ⑤ 层）⇒ 于是它的 `generated_by`
+        #   仍是底料原值 ⇒ `seed_layer()` 判不出 L5 ⇒ **落成 L0/unknown**
+        #   ⇒ 混进「基准层」统计（实测 smtp/B 基准层 61 → 68，多出 7 条 L0）。
+        #   而零变异的 ⑤ 种子**本身也没有价值**（既没改任何字段，也不是 ⑤ 层）
+        #   ⇒ 丢弃是唯一自洽的选择。
+        if not seq.actions:
+            zero_mutation += 1
+            continue
         out.append(apply_actions(base, seq, ledger=ledger))
     info["mutated_count"] = len(out)
+    info["zero_mutation_skipped"] = zero_mutation
     if ledger is not None:
         info["reject_reasons"] = ledger.reason_counts()
     return out, info
 
 
-def _converge_to_contract(seeds: list, expect: Optional[int]) -> list:
-    """把语料条数**收敛到 profile 契约条数**（⑤ 种子优先保留）。
+def _append_action_seq_seeds(seeds: list, action_seeds: list) -> list:
+    """把 ⑤（action-seq 变异层）种子**追加**到基准层之后。
 
-    ★ 只在 ⑤ 路径产出种子时调用（否则**逐字节不变**）。
-    ★ 契约条数是 profile 的**硬约束**（G5 契约闸）：⑤ 的种子是「真实抓包底料 +
-      字段级变异」，**优先保留**；其余名额按漏洞接近度取高分者补齐（**保序** ⇒
-      语料的排序语义不变）。
+    ★ P0-4（语义修正）：**开启 ⑤ 不得裁剪任何既有层**。
+      原实现在 ⑤ 开启时按 profile 契约条数**裁剪总数**且「⑤ 优先保留」
+      ⇒ 实测 rtsp/B `91 → 50`，① 结构覆盖 6 + ③ 漏洞边界 18 **被丢弃**；
+      且总数被凑到契约 ⇒ **掩盖了批次 1 之前就存在的契约漂移**
+      （QA 实测 4/12 组 G5 关系 drift→ok）。
+
+    ★ 新语义：**契约条数是「基准层」的约定**，而基准层的条数是**既有行为**
+      （⑤ 关闭时**不裁剪**，该漂移照旧由 G5 报出）⇒ ⑤ 开启时也**不得裁剪**
+      ⇒ 基准层条数在 OFF / ON 两种状态下**完全相同**（这是批次 1 的验收项）。
+    ★ 契约漂移**照旧由 G5 报出**（该漂移仍漂移，**不许被掩盖**）：
+      `scripts/corpus_gate.py::check_g5` 已改为**只查基准层**条数。
     """
-    if expect is None or len(seeds) <= expect:
+    if not action_seeds:
         return seeds
-    action_idx = [i for i, s in enumerate(seeds)
-                  if s.generated_by == ACTION_SEQ_GENERATED_BY]
-    other_idx = [i for i, s in enumerate(seeds)
-                 if s.generated_by != ACTION_SEQ_GENERATED_BY]
-    room = max(int(expect) - len(action_idx), 0)
-    ranked = sorted(other_idx, key=lambda i: vuln_proximity_score(seeds[i]),
-                    reverse=True)
-    keep = set(action_idx) | set(ranked[:room])
-    return [s for i, s in enumerate(seeds) if i in keep]
+    return list(seeds) + list(action_seeds)
 
 
 def _apply_url_placeholders(seeds: list, profile: dict, protocol: str,
@@ -486,7 +497,16 @@ def _renumber_cseq(seed: SeedCorpus) -> None:
     """把一条种子所有消息的 CSeq 头重排为 1..N（SIP 渲染为「序号 + 方法」）。
 
     仅在前置 prologue 改变消息条数后调用；对原本就递增的种子幂等。
+
+    ★ P0-3：**action_seq 种子跳过重编号**。
+      它的 CSeq 可能是**刻意的变异意图**（如「重放上一条的 CSeq 制造重放」），
+      统一重编号会把该意图**静默抹掉**。
+      QA 实测：SIP C/D 组 **22/23（96%）** 的 CSeq 变异被抹
+      （触发源是 prologue 插入，不是 `MAX_PLAN_ACTIONS`）。
+      ⇒ 判据用 `generated_by`（不新增字段 ⇒ 不改序列化 ⇒ 不影响任何既有字节）。
     """
+    if (seed.generated_by or "").strip() == ACTION_SEQ_GENERATED_BY:
+        return          # ★ 变异意图优先于「序号连续」
     for i, msg in enumerate(seed.messages, start=1):
         for k in list(msg.headers):
             if k.lower() == "cseq":
@@ -913,7 +933,21 @@ def main() -> int:
         action_seq_seeds, action_seq_info = _build_action_seq_seeds(
             bundle, profile, protocol, group=focus_group,
             ledger=action_seq_ledger)
-        seeds += action_seq_seeds
+        # ★ 追加动作**延后到基准层去重之后**（见下方 `_append_action_seq_seeds` 调用）：
+        #   若 ⑤ 先加入再统一去重，⑤ 与基准层的**近重复**会被判重 ⇒
+        #   基准层里被判重的那条被 ⑤ 的副本顶替 ⇒ **基准层集合发生变化**
+        #   （实测 rtsp/B 基准层 65 → 66、smtp/B 61 → 73）
+        #   ⇒ 违反「ON 时基准层条数与 OFF 完全相同」。
+        # ★ ⑤ 单独做**与基准层同等的后处理**（端点归一化 + 资源归一化 + 自去重），
+        #   但**单独调用** ⇒ 不与基准层的多资源轮转互相影响。
+        #   ★ 为什么必须做：⑤ 在流程末尾追加 ⇒ 若不单独做，它会**绕过**
+        #     `_apply_url_placeholders` ⇒ 底料自带的**外网端点**与**不可播会话**
+        #     原样留在字节里 ⇒ 实测 rtsp/A 的 G1 违规从 0 变 2、
+        #     G2（不可播会话）**不降反升** ⇒ SemFuzz 的「36%→87%」效果**未复现**。
+        if action_seq_seeds:
+            action_seq_seeds = _apply_url_placeholders(
+                action_seq_seeds, profile, protocol, env_cfg)
+            action_seq_seeds = dedupe_seeds(action_seq_seeds)
         print(f"⑤ 字段级 action-sequence 变异: {len(action_seq_seeds)} 条种子"
               f"（底料来源: {action_seq_info.get('source') or '（无）'}, "
               f"底料条数: {action_seq_info.get('base_count', 0)}）")
@@ -924,6 +958,9 @@ def main() -> int:
         print("⑤ 字段级 action-sequence 变异: 跳过"
               "（profile.seedgen.action_seq.enabled 未开启）")
 
+    # ★ 去重**只在基准层内**做；⑤ 在此之后**纯追加**（不参与去重）。
+    #   理由见上方注释：⑤ 若参与去重，会顶替基准层里的近重复种子
+    #   ⇒ 基准层集合变化 ⇒ 违反「ON 时基准层条数与 OFF 完全相同」。
     seeds = dedupe_seeds(seeds)
     print(f"去重后: {len(seeds)} 条")
 
@@ -952,16 +989,18 @@ def main() -> int:
         seeds = prioritize_seeds(seeds)
         print(f"漏洞接近度排序后: {len(seeds)} 条（全量，漏洞边界候选排前）")
 
-    # ★ 契约收敛（**仅当 ⑤ 路径产出了种子**）：profile 的 focus_group 契约条数
-    #   是硬约束（G5 契约闸）——⑤ 的种子是「真实抓包底料 + 字段级变异」，优先
-    #   保留；其余名额按漏洞接近度取高分者补齐（保序）。关闭 ⑤ 时**不触碰** ⇒
-    #   产物与批次 1 之前逐字节一致。
+    # ★ P0-4（语义修正）：**开启 ⑤ 不得改变基准层的条数**。
+    #   原实现在 ⑤ 开启时调用 `_converge_to_contract` ⇒ **顺带把基准层也收敛了**
+    #   （实测 rtsp/A 基准层 52 → 38）⇒ 「开关注入了额外行为变化」，
+    #   违反「ON 时基准层条数与 OFF 完全相同」这条验收。
+    #   ⇒ 现在：**不做任何收敛** —— ⑤ 种子纯追加，基准层一条不动。
+    #   契约漂移**照旧由 G5 报出**（该漂移仍漂移，**不许被掩盖**）：
+    #   G5 已改为只查**基准层**条数，与 OFF 态的判定关系完全一致。
     if action_seq_seeds:
         before = len(seeds)
-        seeds = _converge_to_contract(seeds, cfg.get("expect_seeds"))
-        if len(seeds) != before:
-            print(f"契约收敛: {before} → {len(seeds)} 条"
-                  f"（契约 {cfg.get('expect_seeds')}，⑤ 种子优先保留）")
+        seeds = _append_action_seq_seeds(seeds, action_seq_seeds)
+        print(f"⑤ 追加: {before} → {len(seeds)} 条"
+              f"（基准层 {before} 条不变，⑤ {len(action_seq_seeds)} 条纯追加）")
 
     out = Path(args.out)
     written = write_seeds(seeds, out)

@@ -502,6 +502,7 @@ def apply_actions(seed: SeedCorpus, seq: ActionSequence,
     #     控制字符校验**始终**生效（纯安全规则，不需要上下文）。
     allowed = _allowed_endpoint_set(profile)
 
+    applied = 0
     for action in actions:
         index = getattr(action, "msg_index", -1)
         message = None
@@ -514,6 +515,16 @@ def apply_actions(seed: SeedCorpus, seq: ActionSequence,
                 ledger.reject(action, reason, _reject_detail(action))
             continue
         ACTION_OPS[action.op].apply(action, message)
+        applied += 1
+
+    # ★ P1-4 / P2-4：**没有任何动作实际生效** ⇒ **原样返回**。
+    #   · 零变异（applied == 0）却把 `generated_by` 改写成 ⑤ 层
+    #     ⇒ 它会被当作「⑤ 种子」优先保留、挤掉基准层（QA 实测 8/238 = 3%）；
+    #   · 空 `ActionSequence` 仍改写 description / generated_by
+    #     ⇒ 与 `mutate_seed` docstring 的「等价」承诺矛盾。
+    #   ⇒ 判据：**实际生效的动作数 == 0** ⇒ 一个字段都不改。
+    if applied == 0:
+        return new_seed
 
     intent = str(getattr(seq, "intent", "") or "")
     expected = str(getattr(seq, "expected_class", "") or "")
@@ -1017,6 +1028,23 @@ def parse_raw_seed(text: str, profile: dict, *, protocol: str = "",
     )
 
 
+def _dir_has_action_seq_layer(directory: Path) -> bool:
+    """该语料目录是否是**含 action_seq 层**的目录（即本层自己的产物）。
+
+    判据：读该目录的 ``manifest.json``，看 ``layers`` 里是否含 ``action_seq``。
+    manifest 缺失/损坏 ⇒ **不排除**（保守：宁可多取也不静默丢底料）。
+    """
+    manifest = directory / "manifest.json"
+    if not manifest.is_file():
+        return False
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    layers = data.get("layers") or []
+    return any(str(x).strip() == "action_seq" for x in layers)
+
+
 def _published_group_dirs(protocol: str, group: Optional[str],
                           root: Optional[Path]) -> list[Path]:
     """列出 ``derived/seeds/<protocol>/`` 下与聚焦组匹配的语料目录（按新→旧）。
@@ -1035,6 +1063,14 @@ def _published_group_dirs(protocol: str, group: Optional[str],
             continue
         raws = list(child.glob("*.raw"))
         if not raws:
+            continue
+        # ★ P0-2（断自喂）：**排除本层自己产出的目录**。
+        #   自喂闭环的成因：action_seq 的产物与基准层**写在同一个目录**，
+        #   而该目录的 manifest 带 `focus_group` ⇒ `_published_group_dirs` 给它
+        #   最高匹配优先级 ⇒ **下一轮把自己的产物当底料** ⇒ 变异的变异
+        #   （QA 实测：连跑 3 次底料条数 39 → 50 → 98，指数膨胀）。
+        #   ⇒ 底料只取「**不含 action_seq 层**」的目录（= 已发表的基准语料）。
+        if _dir_has_action_seq_layer(child):
             continue
         match = 0
         if wanted:
