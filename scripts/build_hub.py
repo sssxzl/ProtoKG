@@ -10,6 +10,10 @@
 产出::
 
     derived/per_source/<protocol>/<source>/facts/<source>.jsonl   v2 Fact (六元组, 单源)
+    derived/per_source/<protocol>/facts/<aspect>.jsonl            ★ 批次 1.6 步 1：
+        **新中枢布局** —— 按 aspect（知识维度）统一存放；「源」退化为事实内部的
+        ``all_claims[].authority`` 字段，不再是目录层级。旧布局**保留**（回退保险），
+        读取端优先读新布局、缺失时自动降级读旧布局。
 
 ★ 每次构建默认【清空】该协议上次实验的 facts（derived/per_source/<protocol>/），
   避免旧 facts 残留污染本次抽取/种子生成；用 --no-clean 可保留旧数据做增量抽取。
@@ -36,6 +40,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 from datetime import datetime
 import sys
@@ -271,6 +276,16 @@ def _purge_hub_for_batch(protocol: str, *, purge_semantic: bool = True
     if skel_dir.is_dir():
         shutil.rmtree(skel_dir, ignore_errors=True)
         purged.append(SKELETON_SOURCE_NAME)
+    # ★ 批次 1.6 步 1：**新布局**（按 aspect 统一存放）也要清空
+    #   —— 否则「构建失败/中断」时中枢里会残留上一批次的 aspect 文件
+    #   ⇒ 读取端（优先读新布局）会把**上一批次的知识**当成本次的。
+    aspect_dir = root / "facts"
+    if aspect_dir.is_dir():
+        for child in aspect_dir.iterdir():
+            if child.is_dir():
+                shutil.rmtree(child, ignore_errors=True)
+            else:
+                child.unlink(missing_ok=True)
     for source in paths.SOURCES:
         d = root / source
         if not d.is_dir():
@@ -305,7 +320,8 @@ def _purge_hub_for_batch(protocol: str, *, purge_semantic: bool = True
 
 def _write_source_manifest(protocol: str, sources: list[str],
                             build_ids: dict[str, str],
-                            skeleton_count: int = 0) -> Path:
+                            skeleton_count: int = 0,
+                            aspect_counts: dict | None = None) -> Path:
     """写中枢的**本次源集合**清单（``per_source/<协议>/sources.json``）。
 
     ★ 它是「本次实验的知识来源清单」的**唯一权威**：
@@ -326,6 +342,13 @@ def _write_source_manifest(protocol: str, sources: list[str],
             "note": "协议骨架（状态机/消息实例/方法存在性/头取值/频次/配对）"
                     "由 source+traffic 源抽取后固化为入库资产，构建时物化进中枢"
                     "⇒ 单源调试时链路不断。",
+        },
+        "hub_layout": {
+            "scheme": "aspect-v1",
+            "note": "★ 批次 1.6 步 1：中枢**按 aspect 统一存放**"
+                    "（facts/<aspect>.jsonl）；「源」退化为事实内部的 "
+                    "all_claims[].authority 字段，不再是目录层级。",
+            "aspect_counts": dict(sorted((aspect_counts or {}).items())),
         },
     }
     path = root / "sources.json"
@@ -424,6 +447,121 @@ def _materialize_skeleton(protocol: str) -> int:
     print(f"[骨架] 已物化 {len(facts)} facts → "
           f"{shown}（authority={SKELETON_SOURCE_NAME}）")
     return len(facts)
+
+
+#: ★ 批次 1.6 步 1：aspect → 文件名的安全字符集（非 [A-Za-z0-9_.-] 一律换 _）。
+_ASPECT_UNSAFE = re.compile(r"[^A-Za-z0-9_.-]+")
+
+#: ★ 批次 1.6 步 1：aspect 为空时的兜底文件名（不丢事实，只是不分类）。
+_ASPECT_FALLBACK = "unknown"
+
+#: ★ 批次 1.6 步 1：**顺序索引**（相对 aspect 目录）。
+#:   ``facts/_index/order.jsonl`` —— 每行 ``{"file": "<aspect 文件名>",
+#:   "positions": [<该文件各条事实在全局序列中的下标>, ...]}``。
+#:   ★ 为什么需要：源文件里的 aspect 是**交错**的（实测 rfc 源 90 个 run /
+#:     2 个 aspect）⇒ 「某条事实在全局序列中的位置」**不可从事实字段还原**
+#:     （fact_id 是哈希、非序号）⇒ 必须显式记录，否则读取端只能按
+#:     「aspect 文件名序」拼接 ⇒ ``methods``/``headers`` 的**键插入序**变化
+#:     ⇒ 种子编号漂移（实测：rtsp 58 条种子的 MD5 集合全变）。
+ASPECT_ORDER_INDEX = "_index/order.jsonl"
+
+
+def _aspect_filename(aspect: str) -> str:
+    """aspect → 中枢 aspect 文件名（安全化 + 兜底）。"""
+    safe = _ASPECT_UNSAFE.sub("_", (aspect or "").strip())
+    return f"{safe or _ASPECT_FALLBACK}.jsonl"
+
+
+def _write_aspect_layout(protocol: str) -> dict[str, int]:
+    """★ 批次 1.6 步 1：把中枢里的事实按 **aspect** 统一落盘（新布局）。
+
+    布局变化（方案 §3.1.10.2「统一按中枢结构存放」）：
+        旧：derived/per_source/<p>/<source>/facts/<source>.jsonl   （按源分目录）
+        新：derived/per_source/<p>/facts/<aspect>.jsonl             （按知识维度）
+            ＋ facts/_index/order.jsonl                            （顺序索引）
+
+    ★ 「源」退化为**事实内部的一个字段**（``all_claims[].authority``），
+      不再是目录层级 ⇒ 中枢里**不按源组织**，而是按中枢的知识结构组织。
+
+    ★★ **顺序契约（本函数能保持「默认路径逐字节不变」的关键）**：
+      每个 aspect 文件内的事实顺序 = **旧布局全局顺序的稳定子序列**
+      （旧顺序 = 源目录名字典序 → 源内行号），并用
+      :data:`ASPECT_ORDER_INDEX` 记录每条事实在**全局序列**中的下标 ⇒
+      读取端可**无损还原**旧全局顺序。
+      ★ 为什么必须还原：``assemble_bundle`` 的 ``methods`` / ``headers``
+        是 **dict** ⇒ 键的**插入序**取决于 fact 的遍历序 ⇒ 键序一变，
+        下游种子生成顺序就变 ⇒ 种子文件名（编号 + 资源后缀）全变。
+        （实测：bundle **内容**逐字节一致，但 ``methods`` 键序不同 ⇒
+        rtsp 58 条种子的 **MD5 集合全变**。）
+
+    ★ 排除 ``RUNTIME_ENRICH_DIRS``（boundary_probe）：那是**运行时回写**的
+      富化知识，不是权威事实（改进v2 问题⑤的旧路径残留）。
+
+    Returns:
+        ``{aspect: 条数}``。
+    """
+    root = paths.per_source_root(protocol)
+    aspect_dir = paths.per_source_aspect_facts_dir(protocol)
+    buckets: dict[str, list[str]] = {}
+    positions: dict[str, list[int]] = {}
+    order = 0
+    if root.is_dir():
+        # ★ 源目录按名字典序 = 旧 glob（``*/facts/*.jsonl``）的路径序
+        src_dirs = sorted(d for d in root.iterdir()
+                           if d.is_dir() and d.name not in RUNTIME_ENRICH_DIRS)
+        for src_dir in src_dirs:
+            facts_dir = src_dir / "facts"
+            if not facts_dir.is_dir():
+                continue
+            for jsonl in sorted(facts_dir.glob("*.jsonl")):
+                for line in jsonl.read_text(encoding="utf-8").splitlines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        view = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    aspect = ((view.get("fact_key") or {}).get("aspect")) or ""
+                    buckets.setdefault(aspect, []).append(line)
+                    positions.setdefault(aspect, []).append(order)
+                    order += 1
+
+    # ★ 先清空目标目录（避免残留上一批次的 aspect 文件）⇒ 目录即「本次中枢」的真相
+    if aspect_dir.is_dir():
+        for child in aspect_dir.iterdir():
+            if child.is_dir():
+                shutil.rmtree(child, ignore_errors=True)
+            else:
+                child.unlink(missing_ok=True)
+    aspect_dir.mkdir(parents=True, exist_ok=True)
+
+    written: dict[str, int] = {}
+    index_rows: list[dict] = []
+    for aspect in sorted(buckets):
+        lines = buckets[aspect]
+        filename = _aspect_filename(aspect)
+        dest = aspect_dir / filename
+        with dest.open("w", encoding="utf-8") as fh:
+            fh.write("\n".join(lines) + "\n")
+        index_rows.append({"file": filename, "positions": positions[aspect]})
+        written[aspect] = len(lines)
+
+    # ★ 顺序索引（读端据此还原旧全局序 ⇒ 产物逐字节不变）
+    index_path = aspect_dir / ASPECT_ORDER_INDEX
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    with index_path.open("w", encoding="utf-8") as fh:
+        for row in index_rows:
+            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+    total = sum(written.values())
+    try:
+        shown = _repo_rel(aspect_dir)
+    except ValueError:
+        shown = aspect_dir
+    print(f"[布局] 已按 aspect 落盘 {total} facts → {len(written)} 个 aspect 文件 "
+          f"（+顺序索引 {len(index_rows)} 条）→ {shown}")
+    return written
 
 
 def _load_norms(protocol: str) -> list[dict]:
@@ -837,6 +975,11 @@ def main(argv=None) -> int:
     # ---- ③' 物化协议骨架（★ 单源调试时链路不断的前提）----------------------
     skeleton_count = _materialize_skeleton(protocol)
 
+    # ---- ③'' 按 aspect 统一落盘（★ 批次 1.6 步 1：新中枢布局）--------------
+    #   旧布局（按源分目录）**保留**（回退保险）；新布局（按 aspect）是读取端
+    #   的**优先**来源 ⇒ 「统一按中枢结构存放」落地。
+    aspect_counts = _write_aspect_layout(protocol)
+
     # ---- ④ 语义规则纳入本批次（D-7 选项 A）----------------------------------
     if args.with_rules:
         _republish_rules(protocol)
@@ -847,7 +990,8 @@ def main(argv=None) -> int:
 
     # ---- ⑤ 写本次源集合清单（唯一权威）-------------------------------------
     _write_source_manifest(protocol, sources, build_ids,
-                            skeleton_count=skeleton_count)
+                            skeleton_count=skeleton_count,
+                            aspect_counts=aspect_counts)
     return 0
 
 

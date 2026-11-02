@@ -75,6 +75,21 @@ def per_source_facts_dir(protocol: str, source: str) -> Path:
     return per_source_root(protocol) / source / "facts"
 
 
+def per_source_aspect_facts_dir(protocol: str) -> Path:
+    """★ 批次 1.6 步 1：**新布局** —— 中枢按 aspect 统一存放。
+
+    derived/per_source/<protocol>/facts/<aspect>.jsonl
+
+    设计意图（方案 §3.1.10.2）：「统一按中枢结构存放」= **按 aspect 落盘**；
+    「源」退化为**事实内部的一个字段**（``all_claims[].authority``），
+    不再作为目录层级。⇒ 中枢里**不按源分目录**，而按知识维度分文件。
+
+    兼容期：旧的「按源分目录」布局 ``<protocol>/<source>/facts/<source>.jsonl``
+    **仍然保留**（回退保险），读取端优先读本目录、缺失时自动降级读旧布局。
+    """
+    return per_source_root(protocol) / "facts"
+
+
 def seeds_dir(protocol: str) -> Path:
     """种子输出 derived/seeds/<protocol>/。"""
     return derived_root() / "seeds" / protocol.lower()
@@ -124,6 +139,7 @@ __all__ = [
     "source_blocks_cache",
     "per_source_root",
     "per_source_facts_dir",
+    "per_source_aspect_facts_dir",
     "seeds_dir",
     "targets_root",
     "target_profile",

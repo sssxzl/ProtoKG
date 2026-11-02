@@ -34,19 +34,69 @@ from core.fused.llm_ensemble import semantic_rules_enabled
 DEFAULT_FACTS_ROOT = paths.derived_root() / "per_source"
 
 
+#: ★ 批次 1.6 步 1：中枢 aspect 布局的**顺序索引**（相对 aspect 目录）。
+ASPECT_ORDER_INDEX = "_index/order.jsonl"
+
+
+def _load_aspect_order(aspect_dir: Path) -> dict[str, list[int]]:
+    """读 aspect 布局的顺序索引 ``{文件名: [全局下标, ...]}``。
+
+    ★ 为什么必须有它：源文件里的 aspect 是**交错**的 ⇒ 「某条事实在全局序列
+      中的位置」不可从事实字段还原（fact_id 是哈希）⇒ 读取端若只按
+      「aspect 文件名序」拼接，``methods``/``headers`` 的**键插入序**就会变
+      ⇒ 下游种子编号漂移（实测 rtsp 58 条种子 MD5 全变）。
+    """
+    index_path = aspect_dir / ASPECT_ORDER_INDEX
+    order: dict[str, list[int]] = {}
+    if not index_path.is_file():
+        return order
+    for line in index_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        name = row.get("file")
+        positions = row.get("positions")
+        if name and isinstance(positions, list):
+            order[name] = positions
+    return order
+
+
 def load_fact_views(protocol: str = "rtsp",
                     facts_root: Optional[Path] = None) -> list[dict]:
-    """读五源 derived/per_source/<protocol>/*/facts/*.jsonl 的 fact view。
+    """读中枢的 fact view。
 
-    协议 × 源二维解耦：per_source/<protocol>/ 下每源一个子目录（rfc/expert_note/
-    traffic/vuln/source），本函数读该协议的全部五源 facts。facts_root 缺省走统一
-    paths 解析；显式传入时在其下追加 <protocol>/。protocol 默认 "rtsp"（向后兼容）。
+    ★ 批次 1.6 步 1（中枢布局改 aspect）：**新布局优先、旧布局降级**。
+
+    - 新布局 ``derived/per_source/<protocol>/facts/<aspect>.jsonl``
+      —— 中枢按 **aspect**（知识维度）统一存放；「源」退化为事实内部的
+      ``all_claims[].authority`` 字段，不再是目录层级。
+    - 旧布局 ``derived/per_source/<protocol>/*/facts/*.jsonl``
+      —— 按源分目录（协议 × 源二维解耦）；**保留**作回退保险。
+
+    两种布局**不会**互相重复读到：旧 glob ``*/facts/*.jsonl`` 需要三层路径
+    （源目录 / facts / 文件），而新布局只有两层（facts / 文件）⇒ 不命中。
+
+    ★ 存在新布局时**只读新布局**（它是本次中枢的权威视图）；新布局缺失或为空
+      ⇒ 自动降级读旧布局（不破坏既有产物）。
+
+    ★★ 新布局的**顺序**由 ``facts/_index/order.jsonl`` 还原 ⇒ 与旧布局的
+      **全局遍历序完全一致** ⇒ 下游 bundle 的键插入序不变 ⇒ 种子逐字节不变。
+      索引缺失时按「aspect 文件名序」拼接（降级，不崩）。
     """
     views: list[dict] = []
     root = Path(facts_root) / protocol.lower() if facts_root else \
         paths.per_source_root(protocol)
     if not root.is_dir():
         return views
+    # ★ 新布局优先
+    aspect_dir = root / "facts"
+    new_files = sorted(aspect_dir.glob("*.jsonl")) if aspect_dir.is_dir() else []
+    if new_files:
+        return _load_aspect_views(aspect_dir, new_files)
     for jsonl in sorted(root.glob("*/facts/*.jsonl")):
         for line in jsonl.read_text(encoding="utf-8").splitlines():
             line = line.strip()
@@ -57,6 +107,33 @@ def load_fact_views(protocol: str = "rtsp",
             except json.JSONDecodeError:
                 continue
     return views
+
+
+def _load_aspect_views(aspect_dir: Path, files: list[Path]) -> list[dict]:
+    """读新布局的 fact view，并按顺序索引**还原全局遍历序**。"""
+    order = _load_aspect_order(aspect_dir)
+    items: list[tuple[Optional[int], int, dict]] = []
+    seq = 0
+    for jsonl in files:
+        positions = order.get(jsonl.name) or []
+        idx = 0
+        for line in jsonl.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                view = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            pos = positions[idx] if idx < len(positions) else None
+            items.append((pos, seq, view))
+            idx += 1
+            seq += 1
+    # 有下标的按下标排；无下标的（索引缺失/不匹配）稳定排在其后
+    known = [it for it in items if it[0] is not None]
+    unknown = [it for it in items if it[0] is None]
+    known.sort(key=lambda it: (it[0], it[1]))
+    return [it[2] for it in known] + [it[2] for it in unknown]
 
 
 # ===========================================================================
