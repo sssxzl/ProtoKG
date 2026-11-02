@@ -321,7 +321,8 @@ def _purge_hub_for_batch(protocol: str, *, purge_semantic: bool = True
 def _write_source_manifest(protocol: str, sources: list[str],
                             build_ids: dict[str, str],
                             skeleton_count: int = 0,
-                            aspect_counts: dict | None = None) -> Path:
+                            aspect_counts: dict | None = None,
+                            required_headers_count: int = 0) -> Path:
     """写中枢的**本次源集合**清单（``per_source/<协议>/sources.json``）。
 
     ★ 它是「本次实验的知识来源清单」的**唯一权威**：
@@ -349,6 +350,12 @@ def _write_source_manifest(protocol: str, sources: list[str],
                     "（facts/<aspect>.jsonl）；「源」退化为事实内部的 "
                     "all_claims[].authority 字段，不再是目录层级。",
             "aspect_counts": dict(sorted((aspect_counts or {}).items())),
+        },
+        "required_headers": {
+            "fact_count": required_headers_count,
+            "note": "★ 批次 1.6 步 4：必填头清单**已物化进中枢**"
+                    "（aspect=required_headers, authority=profile）"
+                    "⇒ 组装端不再直读 profile.json 的这份知识。",
         },
     }
     path = root / "sources.json"
@@ -447,6 +454,74 @@ def _materialize_skeleton(protocol: str) -> int:
     print(f"[骨架] 已物化 {len(facts)} facts → "
           f"{shown}（authority={SKELETON_SOURCE_NAME}）")
     return len(facts)
+
+
+def _materialize_required_headers(protocol: str) -> int:
+    """★ 批次 1.6 步 4：把 profile.json 的**必填头清单**物化进中枢。
+
+    ★ 为什么：D-6 要求「五类知识源只对接结构化知识中枢，消费端与源互不接触」
+      ⇒ ``required_headers`` 这份**知识**必须住在中枢里，而不是消费端
+      直读 profile.json（§3.1.10.1 的 D-6 澄清）。
+    ★ **只**物化 ``required_headers``：``precondition`` / ``session_header`` /
+      ``url_template`` **同时**是 facts 的 aspect（facts 会叠加/覆盖 profile）
+      ⇒ 只有 required_headers 需要单独物化。
+    ★ authority 标 ``profile`` ⇒ 与「本次抽取的源」在 ``available_sources``
+      里**分得开**（并在 ``bucket_origin`` 里单独标注 origin）。
+
+    Returns:
+        物化出的事实条数（= 方法数）。
+    """
+    prof = paths.target_profile(protocol)
+    if not prof.is_file():
+        print(f"[必填头] ★ {protocol} 无 profile.json ⇒ 跳过物化")
+        return 0
+    try:
+        data = json.loads(prof.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        print(f"[必填头] profile.json 解析失败: {exc} ⇒ 跳过物化")
+        return 0
+    rh = ((data.get("seedgen") or {}).get("required_headers") or {})
+    if not rh:
+        print(f"[必填头] {protocol} profile.json 无 required_headers ⇒ 跳过")
+        return 0
+
+    dest_dir = paths.per_source_facts_dir(protocol, SKELETON_SOURCE_NAME)
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / f"{SKELETON_SOURCE_NAME}.jsonl"
+    lines: list[str] = []
+    for method in sorted(rh):
+        headers = list(rh[method] or [])
+        view = {
+            "fact_key": {
+                "protocol": protocol, "version": "1.0",
+                "subject": {"type": "method", "name": method,
+                            "qualifiers": {}, "path": []},
+                "aspect": "required_headers",
+                "condition": {"type": "always"},
+            },
+            "resolution": None,
+            "all_claims": [{
+                "claim_id": f"c2_rh_{method}",
+                "fact_id": f"f2_rh_{method}",
+                "value": {"type": "struct", "data": {"headers": headers}},
+                "epistemic_type": "normative",
+                "authority": SKELETON_SOURCE_NAME,
+                "scope": None,
+                "evidence_summary": [f"profile:{method}.required_headers"],
+                "confidence": None,
+            }],
+        }
+        lines.append(json.dumps(view, ensure_ascii=False))
+    # ★ 追加（骨架已用 "w" 写过该文件 ⇒ 每次构建都是「重写 + 追加」⇒ 幂等）
+    with dest.open("a", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+    try:
+        shown = _repo_rel(dest)
+    except ValueError:
+        shown = dest
+    print(f"[必填头] 已物化 {len(lines)} 条必填头事实 → {shown}"
+          f"（authority={SKELETON_SOURCE_NAME}）")
+    return len(lines)
 
 
 #: ★ 批次 1.6 步 1：aspect → 文件名的安全字符集（非 [A-Za-z0-9_.-] 一律换 _）。
@@ -975,7 +1050,12 @@ def main(argv=None) -> int:
     # ---- ③' 物化协议骨架（★ 单源调试时链路不断的前提）----------------------
     skeleton_count = _materialize_skeleton(protocol)
 
-    # ---- ③'' 按 aspect 统一落盘（★ 批次 1.6 步 1：新中枢布局）--------------
+    # ---- ③'' 物化必填头清单（★ 批次 1.6 步 4）-----------------------------
+    #   `required_headers` 是**知识** ⇒ 必须住在中枢里 ⇒ 组装端不再直读
+    #   profile.json 的这份知识（仍保留兼容期回退）。
+    required_headers_count = _materialize_required_headers(protocol)
+
+    # ---- ③''' 按 aspect 统一落盘（★ 批次 1.6 步 1：新中枢布局）--------------
     #   旧布局（按源分目录）**保留**（回退保险）；新布局（按 aspect）是读取端
     #   的**优先**来源 ⇒ 「统一按中枢结构存放」落地。
     aspect_counts = _write_aspect_layout(protocol)
@@ -991,7 +1071,8 @@ def main(argv=None) -> int:
     # ---- ⑤ 写本次源集合清单（唯一权威）-------------------------------------
     _write_source_manifest(protocol, sources, build_ids,
                             skeleton_count=skeleton_count,
-                            aspect_counts=aspect_counts)
+                            aspect_counts=aspect_counts,
+                            required_headers_count=required_headers_count)
     return 0
 
 

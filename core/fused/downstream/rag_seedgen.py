@@ -712,6 +712,9 @@ _BUCKET_BY_KIND: dict[tuple[str, str], str] = {
     ("method", "definition"): "methods",
     ("method", "existence"): "methods",
     ("method", "relation_to_other"): "required_headers",
+    # ★ 批次 1.6 步 4：`required_headers` **物化进中枢**后的 aspect
+    #   （由 profile.json 的必填头清单物化而来，authority=profile）
+    ("method", "required_headers"): "required_headers",
     ("method", "security_property"): "security",
     ("method", "precondition"): "precondition",
     ("method", "session_header"): "session_header",
@@ -874,9 +877,12 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
             break
     _struct = _load_profile_structure(protocol)
     _protocol_name = protocol  # 保存协议名（下方 protocol 变量被 protocol 桶 dict 覆盖）
-    required_headers: dict[str, list] = {
-        m: list(hs) for m, hs in (_struct.get("required_headers") or {}).items()
-    }
+    # ★ 批次 1.6 步 4：`required_headers` **物化进中枢** ⇒ 组装端**不再直读**
+    #   profile.json 的这份知识。
+    #   · 中枢里有物化事实（aspect=required_headers）⇒ **完全用 facts**；
+    #   · 没有（兼容期：中枢未重建）⇒ 回退读 profile.json（不破链）。
+    required_headers: dict[str, list] = {}
+    _has_required_facts = False
     transitions: list = []
     method_sequences: list = []
     security: list = []
@@ -897,9 +903,6 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     vuln_patterns: dict[str, list] = {}  # 漏洞模式（GLMFuzz 式，vuln 源）
     message_instances: dict = {}  # {(from, method, to): [(field, value), ...]}
     available_sources: set = set()  # P0：参与的事实来源
-    # profile 兜底的客观结构知识也计入可用源（供降级决策识别「有结构知识」）
-    if required_headers or preconditions or url_templates or _state_changing_profile:
-        available_sources.add("profile")
 
     # ★ 批次 1.6 步 3：**溯源保留**（只加字段、不改旧字段 ⇒ 旧消费者零影响）
     #   by_source       桶级统计：{桶名: {源名: 事实条数}}
@@ -908,14 +911,6 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     by_source: dict[str, dict[str, int]] = {}
     bucket_fact_ids: dict[str, list[str]] = {}
     fact_index: dict[str, dict] = {}
-    # ★ profile 兜底的存在性（**只取 profile 侧**，facts 叠加后仍要能分列）
-    _profile_has: dict[str, bool] = {
-        "required_headers": bool(_struct.get("required_headers")),
-        "precondition": bool(_struct.get("precondition")),
-        "session_header": bool(_struct.get("session_header")),
-        "url_template": bool(_struct.get("url_template")),
-        "methods": bool(_state_changing_profile),
-    }
 
     # ★ 批次 1.6 步 2：**组装期源过滤**（双保险）。
     #   批次级「清空整个中枢」已保证中枢里只有本次的源；这里再加一道 ——
@@ -975,7 +970,15 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                     "bucket": _bucket,
                 })
 
-        if stype == "method":
+        if stype == "method" and aspect == "required_headers":
+            # ★ 批次 1.6 步 4：物化进来的必填头清单。
+            #   ★ **必须走独立分支**：若落到下面的 `methods.setdefault(sname, {})`
+            #     ⇒ 会给 `methods` 桶**新增空条目** ⇒ methods 键集变化 ⇒
+            #     prompt 渲染变化 ⇒ 种子漂移。
+            _has_required_facts = True
+            required_headers.setdefault(sname, []).extend(
+                list((val or {}).get("headers") or []))
+        elif stype == "method":
             info = methods.setdefault(sname, {})
             if aspect == "state_changing":
                 # P2a：累积所有 claim，遍历后统一用 resolver precedence 消解
@@ -1080,6 +1083,29 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         elif stype == "actor":
             if aspect == "value_enum":
                 actors.setdefault(sname, []).extend(list(val or []))
+
+    # ★ 批次 1.6 步 4：`required_headers` 的**兼容期回退**。
+    #   中枢里有物化事实 ⇒ 已由 facts 提供（**不读** profile.json 的这份知识）；
+    #   没有 ⇒ 回退读 profile.json（中枢未重建时也不破链）。
+    #   ★ 回退必须是**合并**而不是覆盖：facts 的 ``relation_to_other`` 会往
+    #     required_headers **追加**头名 ⇒ 覆盖会把它抹掉
+    #     ⇒ 与步 4 之前（profile 基线 + facts 追加）不等价。
+    if not _has_required_facts:
+        for _m, _hs in (_struct.get("required_headers") or {}).items():
+            required_headers.setdefault(_m, []).extend(list(_hs))
+    # profile 兜底的客观结构知识也计入可用源（供降级决策识别「有结构知识」）
+    if required_headers or preconditions or url_templates or _state_changing_profile:
+        available_sources.add("profile")
+
+    # ★ profile 兜底的存在性（**只取 profile 侧**，facts 叠加后仍要能分列）
+    _profile_has: dict[str, bool] = {
+        "required_headers": bool(_struct.get("required_headers"))
+                            and not _has_required_facts,
+        "precondition": bool(_struct.get("precondition")),
+        "session_header": bool(_struct.get("session_header")),
+        "url_template": bool(_struct.get("url_template")),
+        "methods": bool(_state_changing_profile),
+    }
 
     # 去重（多源可能重复，保持稳定序）
     transitions = sorted(set(transitions))
