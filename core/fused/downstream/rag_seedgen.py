@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 from core import paths
 from core.fused.llm_ensemble import semantic_rules_enabled
@@ -697,8 +697,14 @@ def _resolve_semantic_rules(semantic_rules: Optional[list],
     return out
 
 
+#: ★ 批次 1.6 步 2：协议骨架在中枢里的 authority（骨架**不是**抽取源，
+#:   而是跨实验复用的协议结构 ⇒ 组装期过滤时**恒允许**）。
+SKELETON_AUTHORITY = "profile"
+
+
 def assemble_bundle(views: list[dict], protocol: str = "rtsp",
-                    *, semantic_rules: Optional[list] = None) -> dict:
+                    *, semantic_rules: Optional[list] = None,
+                    source_set: Optional[Iterable[str]] = None) -> dict:
     """把 fact views 按 aspect 分桶成「种子生成知识」。
 
     产出:
@@ -759,6 +765,13 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
             **缺省（None）= 未显式传参** ⇒ 听开关（OFF ⇒ 完全不引入；ON ⇒ 从
             **authoritative 规则库**读，`rule_store.load_rules`）；显式给定
             （含空列表）⇒ 调用方显式授权 ⇒ 照常装载 + 投影，不读规则库。
+        source_set: ★ 批次 1.6 步 2 —— **本次参与的知识源集合**（来自中枢的
+            ``sources.json``）。给定 ⇒ 组装期**按 claim 的 authority 过滤**：
+            非集合内的 claim **直接不进桶**（不是「进去再标记」）。
+            **缺省（None）= 不过滤** ⇒ 与本参数引入前**逐字节一致**。
+            ★ 协议骨架（authority = ``profile``）**恒允许** —— 它是跨实验复用的
+              协议结构（状态机 / 消息实例 / 方法存在性 / 头取值），
+              **不是**某次抽取的源派生知识 ⇒ 单源调试时链路不断。
 
     五源分工传导（P0）：分桶时保留 provenance——
       - methods[*].declared_by：哪些源「声明」了该方法（definition/state_changing 等）
@@ -805,6 +818,17 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     if required_headers or preconditions or url_templates or _state_changing_profile:
         available_sources.add("profile")
 
+    # ★ 批次 1.6 步 2：**组装期源过滤**（双保险）。
+    #   批次级「清空整个中枢」已保证中枢里只有本次的源；这里再加一道 ——
+    #   「非本次源集合的 claim **根本不进桶**」（不是「进去再标记」）。
+    #   source_set 缺省（None）⇒ **不过滤** ⇒ 与本参数引入前逐字节一致。
+    _allowed: Optional[set] = None
+    if source_set is not None:
+        _allowed = {str(s).strip().lower() for s in source_set
+                    if str(s).strip()}
+        # ★ 协议骨架恒允许（跨实验复用的协议结构，不是源派生知识）
+        _allowed.add(SKELETON_AUTHORITY)
+
     for v in views:
         fk = v.get("fact_key") or {}
         subj = fk.get("subject") or {}
@@ -812,6 +836,12 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         sname = subj.get("name", "")
         aspect = fk.get("aspect", "")
         claims = v.get("all_claims") or []
+        if _allowed is not None:
+            # ★ claim 级裁剪：不属于本次源集合的 claim **直接剔除**
+            claims = [c for c in claims
+                      if str(c.get("authority") or "").strip().lower() in _allowed]
+            if not claims:
+                continue
         val = None
         main_auth = ""    # P0：主 claim 的来源
         main_epi = ""     # P0：主 claim 的认识论类型
