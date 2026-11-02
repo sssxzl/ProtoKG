@@ -51,6 +51,7 @@ sys.path.insert(0, str(ROOT))
 from core import paths  # noqa: E402
 from core.fused.downstream.rag_seedgen import (  # noqa: E402
     load_fact_views, assemble_bundle, write_seeds, load_semantic_rules,
+    load_source_manifest,
 )
 from core.fused.downstream.edge_cover import (  # noqa: E402
     edge_cover, build_message,
@@ -817,6 +818,28 @@ def _write_dictionary(out: Path, protocol: str, dict_kind: str,
     raise ValueError(f"未知字典种类: {dict_kind}")
 
 
+def resolve_source_set(protocol: str,
+                       cli_sources: list | None = None) -> tuple[list[str], str]:
+    """★ 批次 1.6 步 5：解析「本次消费的知识源集合」。
+
+    Returns:
+        ``(source_set, 来源说明)``。
+
+    规则：
+      · ``cli_sources`` 给了 ⇒ 用它（调用方**显式授权**，覆盖中枢声明）；
+      · 否则 ⇒ 用中枢 ``sources.json`` 的 ``source_set``（**唯一权威**）；
+      · 中枢没声明清单（兼容期：中枢尚未按批次 1.6 流程重建）
+        ⇒ 返回空列表 ⇒ 调用方按「**不过滤**」处理（保持旧行为）。
+    """
+    if cli_sources:
+        picked = [str(s).strip() for s in cli_sources if str(s).strip()]
+        return picked, "命令行 --sources（显式覆盖中枢声明）"
+    manifest = load_source_manifest(protocol)
+    declared = [str(s).strip() for s in (manifest.get("source_set") or [])
+                if str(s).strip()]
+    return declared, "中枢 sources.json 声明"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="统一种子生成入口（协议 × 源二维解耦）")
@@ -862,6 +885,13 @@ def main() -> int:
                          "（SIP：AFLNet 分区器只认 REGISTER/INVITE/ACK/BYE）。"
                          "不指定且 profile 未声明默认环境 → 不施加环境级约束"
                          "（历史语料仍可逐字节复现）。")
+    # ★ 批次 1.6 步 5（D-5 解法）：消费端的**过滤口**（**双保险**）。
+    #   缺省 = 中枢 `sources.json` 声明的源集合（唯一权威）⇒ 消费端只消费
+    #   本次参与的源；显式传参 = 调用方的**显式授权**（覆盖中枢声明）。
+    ap.add_argument("--sources", nargs="+", default=None, metavar="SRC",
+                    help="★ 批次 1.6 步 5：本次消费的知识源（**双保险**）。"
+                         "缺省 = 中枢 sources.json 声明的源集合；"
+                         "显式传参则覆盖中枢声明（调用方显式授权）。")
     args = ap.parse_args()
 
     cfg, err = _resolve_config(args)
@@ -929,7 +959,18 @@ def main() -> int:
     #   ★ 效果：RFC 源抽出的语义规则 ⇒ 投影出 ``legal_boundary`` /
     #     ``response_expectation`` ⇒ 「源 A 第四类」约束边界候选**从 0 变非 0**。
     semantic_rules = load_semantic_rules(protocol)
-    bundle = assemble_bundle(views, semantic_rules=semantic_rules)
+    # ★ 批次 1.6 步 5：消费端**据中枢清单**确定本次参与的源，并打印清单。
+    #   · 缺省 = 中枢 `sources.json` 的 `source_set`（**唯一权威**）
+    #   · `--sources` 显式传参 = 调用方**显式授权**（覆盖中枢声明）
+    #   · 中枢没声明清单（兼容期）⇒ 不过滤（保持旧行为）
+    source_set, _src_origin = resolve_source_set(protocol, args.sources)
+    print(f"本次知识来源清单: {source_set or '(中枢未声明 ⇒ 不过滤)'}  ← {_src_origin}")
+    _manifest = load_source_manifest(protocol)
+    if _manifest:
+        print(f"  中枢构建: build_ids={_manifest.get('build_ids')} "
+              f"built_at={_manifest.get('built_at')}")
+    bundle = assemble_bundle(views, semantic_rules=semantic_rules,
+                              source_set=source_set or None)
     if semantic_rules:
         print(f"语义规则: 装载 {len(semantic_rules)} 条 → "
               f"legal_boundary {sum(len(v) for v in (bundle.get('legal_boundary') or {}).values())} 条 / "

@@ -109,6 +109,27 @@ def load_fact_views(protocol: str = "rtsp",
     return views
 
 
+def load_source_manifest(protocol: str = "rtsp",
+                         facts_root: Optional[Path] = None) -> dict:
+    """读中枢的**本次源集合清单**（``sources.json``）—— **唯一权威**。
+
+    ★ 批次 1.6 步 5：消费端据它判断「本次参与了哪些源」；
+      组装侧与消费端**都**只看这个清单 ⇒ 源集合只有一个真相来源。
+    ★ 缺失 / 解析失败 ⇒ 返回 ``{}`` ⇒ 调用方按「**不过滤**」处理（兼容期：
+      中枢尚未按批次 1.6 的流程重建）。
+    """
+    root = Path(facts_root) / protocol.lower() if facts_root else \
+        paths.per_source_root(protocol)
+    path = root / "sources.json"
+    if not path.is_file():
+        return {}
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return doc if isinstance(doc, dict) else {}
+
+
 def _load_aspect_views(aspect_dir: Path, files: list[Path]) -> list[dict]:
     """读新布局的 fact view，并按顺序索引**还原全局遍历序**。"""
     order = _load_aspect_order(aspect_dir)
