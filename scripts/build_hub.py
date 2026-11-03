@@ -234,9 +234,21 @@ SEMANTIC_BACKUP_ROOT = Path(os.environ.get(
 
 
 def _backup_semantic_before_purge(protocol: str) -> str:
-    """清空前把语义四库备份到**仓库外**（不可再生资产 ⇒ 必须可恢复）。"""
+    """清空前把语义四库备份到**仓库外**。
+
+    ★ 批次 2.5（D20-丁）的重要区分 —— 语义四库**不是铁板一块**：
+
+      · **可再生**（``rules.jsonl`` / ``candidates.jsonl``）：
+        可从**冻结入库**的 B-10 源产物经「质量闸 + 分流」重建
+        （**不需 LLM**；实测删除后重发布**逐字节一致**）
+        ⇒ 清空后**自动重发布**即可 ⇒ 不必依赖这份备份。
+      · **不可再生**（``feedback.jsonl`` / ``revoked.jsonl``）：
+        是实验反馈与撤销记录的**累积** ⇒ 无源可重建
+        ⇒ **必须**备份（它们不参与消费端，但会丢实验痕迹）。
+    """
     root = paths.per_source_root(protocol)
     backups: list[str] = []
+    irreproducible: list[str] = []
     for source_dir in sorted(root.glob("*/semantic")):
         if not source_dir.is_dir():
             continue
@@ -246,10 +258,47 @@ def _backup_semantic_before_purge(protocol: str) -> str:
             shutil.copy2(f, dst / f.name)
             # ★ 备份在**仓库外** ⇒ 不能用 relative_to(REPO_ROOT)
             backups.append(f"{protocol}/{source_dir.parent.name}/{f.name}")
+            if f.name in ("feedback.jsonl", "revoked.jsonl"):
+                irreproducible.append(f"{protocol}/{source_dir.parent.name}/{f.name}")
     if backups:
         print(f"[清空] 语义四库已备份到仓库外（可恢复）: "
               f"{SEMANTIC_BACKUP_ROOT / protocol}  ({len(backups)} 个文件)")
+    if irreproducible:
+        print(f"[清空] ★ 其中 **{len(irreproducible)} 个文件不可再生**"
+              f"（feedback / revoked：实验反馈累积，无源可重建）：{irreproducible}")
     return SEMANTIC_BACKUP_ROOT / protocol and str(SEMANTIC_BACKUP_ROOT / protocol)
+
+
+def _auto_republish_rules(protocol: str) -> bool:
+    """★ 批次 2.5（D20-丁）：清空后**自动重发布**语义规则 ⇒ 语义四库变成
+    **可再生的派生资产**。
+
+    ★★ 为什么这可行（2026-11-03 实测推翻「需 LLM」的旧判断）：
+      · 语义规则的**源产物** ``derived/exp_semantic_gain/group_E{1,2}/rules.jsonl``
+        **已冻结入库**（git 跟踪）⇒ 离线可取；
+      · ``_republish_rules`` **不调 LLM**（只是「质量闸 + 分流」的纯 CPU 操作）
+        ⇒ 秒级完成；
+      · 实测（3/3 协议 × 2 文件）：**删除 semantic/ 后重发布 ⇒ 逐字节一致**
+        ⇒ purge + 重发布 = **可逆操作**；
+      · 候选库按 ``candidate_id`` **去重** ⇒ 反复重发布不会无限增长；
+      · 消费端唯一入口 ``load_semantic_rules`` **只读 rules.jsonl**
+        （candidate/revoked/feedback 三库不在路径上）⇒
+        **只有 rules.jsonl 影响生成结果**，而它可重建。
+    ⇒ 所以「每次实验都重新生成语义四库」**不需要 LLM、不需要人工、不需要备份**。
+
+    ★ 唯一不可再生的是 ``feedback.jsonl`` / ``revoked.jsonl``
+      （实验反馈与撤销记录累积）⇒ 它们**不参与消费端**，但仍单独备份
+      （见 :func:`_backup_semantic_before_purge`）。
+
+    Returns:
+        是否成功重发布。
+    """
+    if not any((REPO_ROOT / rel).is_file() for rel in SEMANTIC_RULE_SOURCES):
+        print("[规则] ★ 无可重发布的源产物（B-10 实验目录不存在）"
+              "⇒ 本次中枢**不含**语义规则")
+        return False
+    _republish_rules(protocol)
+    return True
 
 
 def _repo_rel(path) -> str:
@@ -1013,8 +1062,16 @@ def main(argv=None) -> int:
                              "抽取产物 + 语义四库）⇒ 增量/多源联合调试时保留其它源")
     parser.add_argument("--with-rules", action="store_true",
                         help="★ 批次 1.6（D-7 选项 A）：把**语义规则的发布**纳入"
-                             "本批次 ⇒ 清空语义四库后重新发布（否则规则随清空消失，"
-                             "而它**不能从 kb 重建**，需 LLM）")
+                             "本批次 ⇒ 清空语义四库后重新发布")
+    parser.add_argument("--auto-republish-rules", action="store_true",
+                        help="★ 批次 2.5（D20-丁）：清空后**自动重发布**语义规则 "
+                             "⇒ 语义四库变成**可再生的派生资产**。"
+                             "★ **无需 LLM**：源产物 "
+                             "`derived/exp_semantic_gain/group_E{1,2}/rules.jsonl` "
+                             "已冻结入库，重发布只是「质量闸 + 分流」的纯 CPU 操作；"
+                             "实测删除后重发布**逐字节一致**。"
+                             "（与 --with-rules 的差别：本开关在**未**传 "
+                             "--with-rules 时也生效）")
     # ★★ 协议显式化：不传则报错，避免「默认 rtsp」的隐式误跑/批量。
     parser.add_argument("--protocol", required=True,
                         help="本次处理的目标协议（**单个**），如 rtsp / sip / smtp")
@@ -1173,10 +1230,16 @@ def main(argv=None) -> int:
     # ---- ④ 语义规则纳入本批次（D-7 选项 A）----------------------------------
     if args.with_rules:
         _republish_rules(protocol)
+    elif args.auto_republish_rules:
+        # ★ 批次 2.5（D20-丁）：清空后**自动重发布** ⇒ 语义四库是可再生派生资产
+        print("[规则] ★ 自动重发布（语义四库可从**冻结入库**的 B-10 源产物重建，"
+              "**无需 LLM**；实测删除后重发布逐字节一致）")
+        _auto_republish_rules(protocol)
     elif not args.no_purge:
         print("[规则] ★ 语义四库已随中枢清空而清空，且**未**指定 --with-rules "
-              "⇒ 本次中枢**不含**语义规则（legal_boundary / response_expectation "
-              "为空）。规则**不能从 kb 重建**（需 LLM）⇒ 需要时请加 --with-rules。")
+              "/ --auto-republish-rules ⇒ 本次中枢**不含**语义规则"
+              "（legal_boundary / response_expectation 为空）。"
+              "★ 可加 --auto-republish-rules 免 LLM 重建（源产物已冻结入库）。")
 
     # ---- ⑤ 各源的状态机贡献统计（★ 批次 2.3）-----------------------------
     #   ★ 各源的状态机知识**全部保留**进中枢；消解/择一留给后期 LLM 判别
