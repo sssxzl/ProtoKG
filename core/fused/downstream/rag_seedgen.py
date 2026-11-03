@@ -821,7 +821,8 @@ def _select_active_transitions(by_source: dict[str, list]) -> list:
 
 def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                     *, semantic_rules: Optional[list] = None,
-                    source_set: Optional[Iterable[str]] = None) -> dict:
+                    source_set: Optional[Iterable[str]] = None,
+                    apply_allowed_methods: bool = True) -> dict:
     """把 fact views 按 aspect 分桶成「种子生成知识」。
 
     产出:
@@ -1177,7 +1178,13 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     # 协议方法白名单过滤：source 源 LLM 先验会产出垃圾方法名（中文功能词、带空格的
     # "AUTH TLS"/"SITE CPFR"、非标准命令 CAP/ALIAS），用 profile.allowed_methods 过滤
     # methods 桶 + transitions 桶，保证后续种子生成只用协议真实命令。
-    _allowed_methods = _load_allowed_methods(_protocol_name)
+    # ★★ **单源实验的信息泄漏**（批次 2.3 实测）：``profile.allowed_methods`` 是
+    #   **人工撰写**、源自**源码实现**的方法子集（rtsp 8 个），而 RFC 源**确实**
+    #   抽到了 11 个方法 ⇒ 差集 ``ANNOUNCE`` / ``RECORD`` / ``REDIRECT`` 是
+    #   **真实 RTSP 方法**却被裁掉 ⇒ RFC 单源实验的「方法召回」被人为封顶。
+    #   ⇒ ``apply_allowed_methods=False`` 可关闭该过滤（严格单源模式用）。
+    _allowed_methods = (_load_allowed_methods(_protocol_name)
+                        if apply_allowed_methods else set())
     if _allowed_methods:
         methods = {k: v for k, v in methods.items() if k in _allowed_methods}
         transitions = [t for t in transitions

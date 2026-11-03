@@ -1,0 +1,148 @@
+[
+  {
+    "档": "S0",
+    "含义": "S0 = 全量骨架 + 默认旁路（★ 历史基线口径）",
+    "种子数": 85,
+    "层分布": {
+      "canonical": 18,
+      "edge_cover": 6,
+      "generic_danger": 28,
+      "vuln_boundary": 6,
+      "action_seq": 27
+    },
+    "⑤层底料来源": "published-corpus",
+    "⑤层底料含vuln种子数": 12,
+    "G1违规": 0,
+    "G2违规": 31,
+    "G2比率(基准层)": 0.5345,
+    "每层知识来源": {
+      "canonical": {
+        "count": 18,
+        "knowledge_origin": "★source(资源清单 rtsp_streams.json=源码侧)"
+      },
+      "edge_cover": {
+        "count": 6,
+        "knowledge_origin": "rfc+bundle(骨架)"
+      },
+      "generic_danger": {
+        "count": 28,
+        "knowledge_origin": "rfc+bundle(骨架)"
+      },
+      "vuln_boundary": {
+        "count": 6,
+        "knowledge_origin": "rfc(语义规则；可能跨协议)"
+      },
+      "action_seq": {
+        "count": 27,
+        "knowledge_origin": "★混合(vuln 12 条 + 基准层)"
+      }
+    }
+  },
+  {
+    "档": "S1",
+    "含义": "S1 = 全量骨架 + 关旁路",
+    "种子数": 79,
+    "层分布": {
+      "canonical": 18,
+      "edge_cover": 6,
+      "generic_danger": 28,
+      "vuln_boundary": 6,
+      "action_seq": 21
+    },
+    "⑤层底料来源": "published-corpus",
+    "⑤层底料含vuln种子数": 12,
+    "G1违规": 0,
+    "G2违规": 31,
+    "G2比率(基准层)": 0.5345,
+    "每层知识来源": {
+      "canonical": {
+        "count": 18,
+        "knowledge_origin": "★source(资源清单 rtsp_streams.json=源码侧)"
+      },
+      "edge_cover": {
+        "count": 6,
+        "knowledge_origin": "rfc+bundle(骨架)"
+      },
+      "generic_danger": {
+        "count": 28,
+        "knowledge_origin": "rfc+bundle(骨架)"
+      },
+      "vuln_boundary": {
+        "count": 6,
+        "knowledge_origin": "rfc(语义规则；可能跨协议)"
+      },
+      "action_seq": {
+        "count": 21,
+        "knowledge_origin": "基准层语料（已滤 vuln）；但其中含 canonical 底料 ⇒ 资源清单=源码侧"
+      }
+    }
+  },
+  {
+    "档": "S2",
+    "含义": "S2 = 纯 RFC 骨架 + 默认旁路（= 上轮消融 C 档）",
+    "种子数": 43,
+    "层分布": {
+      "edge_cover": 2,
+      "generic_danger": 8,
+      "vuln_boundary": 6,
+      "action_seq": 27
+    },
+    "⑤层底料来源": "published-corpus",
+    "⑤层底料含vuln种子数": 12,
+    "G1违规": 0,
+    "G2违规": 6,
+    "G2比率(基准层)": 0.375,
+    "每层知识来源": {
+      "edge_cover": {
+        "count": 2,
+        "knowledge_origin": "rfc+bundle(骨架)"
+      },
+      "generic_danger": {
+        "count": 8,
+        "knowledge_origin": "rfc+bundle(骨架)"
+      },
+      "vuln_boundary": {
+        "count": 6,
+        "knowledge_origin": "rfc(语义规则；可能跨协议)"
+      },
+      "action_seq": {
+        "count": 27,
+        "knowledge_origin": "★混合(vuln 12 条 + 基准层)"
+      }
+    }
+  },
+  {
+    "档": "S3",
+    "含义": "S3 = 纯 RFC 骨架 + 关旁路（★ 真·纯净 RFC）",
+    "种子数": 37,
+    "层分布": {
+      "edge_cover": 2,
+      "generic_danger": 8,
+      "vuln_boundary": 6,
+      "action_seq": 21
+    },
+    "⑤层底料来源": "published-corpus",
+    "⑤层底料含vuln种子数": 12,
+    "G1违规": 0,
+    "G2违规": 6,
+    "G2比率(基准层)": 0.2727,
+    "每层知识来源": {
+      "edge_cover": {
+        "count": 2,
+        "knowledge_origin": "rfc+bundle(骨架)"
+      },
+      "generic_danger": {
+        "count": 8,
+        "knowledge_origin": "rfc+bundle(骨架)"
+      },
+      "vuln_boundary": {
+        "count": 6,
+        "knowledge_origin": "rfc(语义规则；可能跨协议)"
+      },
+      "action_seq": {
+        "count": 21,
+        "knowledge_origin": "基准层语料（已滤 vuln）；但其中含 canonical 底料 ⇒ 资源清单=源码侧"
+      }
+    }
+  }
+]

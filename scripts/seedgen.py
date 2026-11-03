@@ -315,7 +315,9 @@ def _action_seq_enabled(profile: dict) -> bool:
 def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
                             *, group: Optional[str] = None,
                             ledger: Optional[ActionLedger] = None,
-                            env_cfg: Optional[dict] = None
+                            env_cfg: Optional[dict] = None,
+                            strict_source_only: bool = False,
+                            source_set: Optional[list] = None
                             ) -> tuple[list, dict]:
     """⑤ 在**真实抓包种子**上做字段级变异，返回 ``(种子列表, 溯源信息)``。
 
@@ -328,7 +330,9 @@ def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
       （需要 LLM 兜底时走 ``action_seq.plan_actions(..., llm=...)``）。
     ★ 协议差异全部下沉到 profile（底料解析、字段取值池都由 profile/bundle 驱动）。
     """
-    base_seeds, source = load_real_base_seeds(protocol, profile, group=group)
+    base_seeds, source = load_real_base_seeds(
+        protocol, profile, group=group,
+        strict_source_only=strict_source_only, source_set=source_set)
     info = {
         "source": source,
         "base_count": len(base_seeds),
@@ -901,6 +905,14 @@ def main() -> int:
                     help="★ 批次 1.6 步 5：本次消费的知识源（**双保险**）。"
                          "缺省 = 中枢 sources.json 声明的源集合；"
                          "显式传参则覆盖中枢声明（调用方显式授权）。")
+    ap.add_argument("--strict-source-only", action="store_true",
+                    help="★ 批次 2.3：**严格单源模式** —— 关掉所有"
+                         "「绕过 source_set」的跨源旁路："
+                         "① ⑤ 层底料排除 vuln_boundary（vuln 源）种子，"
+                         "traffic ∉ 源集合时禁用真实抓包兜底；"
+                         "② 不启用 profile.allowed_methods 白名单"
+                         "（它是**源码侧**人工白名单，会裁掉 RFC 抽到的真实方法）。"
+                         "★ 默认**关闭** ⇒ 不改变既有产物字节。")
     args = ap.parse_args()
 
     cfg, err = _resolve_config(args)
@@ -979,7 +991,8 @@ def main() -> int:
         print(f"  中枢构建: build_ids={_manifest.get('build_ids')} "
               f"built_at={_manifest.get('built_at')}")
     bundle = assemble_bundle(views, semantic_rules=semantic_rules,
-                              source_set=source_set or None)
+                              source_set=source_set or None,
+                              apply_allowed_methods=not args.strict_source_only)
     if semantic_rules:
         print(f"语义规则: 装载 {len(semantic_rules)} 条 → "
               f"legal_boundary {sum(len(v) for v in (bundle.get('legal_boundary') or {}).values())} 条 / "
@@ -1117,7 +1130,9 @@ def main() -> int:
     if _action_seq_enabled(profile):
         action_seq_seeds, action_seq_info = _build_action_seq_seeds(
             bundle, profile, protocol, group=focus_group,
-            ledger=action_seq_ledger, env_cfg=env_cfg)
+            ledger=action_seq_ledger, env_cfg=env_cfg,
+            strict_source_only=args.strict_source_only,
+            source_set=source_set or None)
         # ★ 追加动作**延后到基准层去重之后**（见下方 `_append_action_seq_seeds` 调用）：
         #   若 ⑤ 先加入再统一去重，⑤ 与基准层的**近重复**会被判重 ⇒
         #   基准层里被判重的那条被 ⑤ 的副本顶替 ⇒ **基准层集合发生变化**

@@ -39,7 +39,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Iterable, Optional
 
 from core import paths
 from core.fused.downstream.target_env import (  # noqa: E402
@@ -1295,11 +1295,44 @@ def _published_group_dirs(protocol: str, group: Optional[str],
 
 def _load_published_seeds(protocol: str, profile: dict, *,
                           group: Optional[str] = None,
-                          root: Optional[Path] = None) -> list[SeedCorpus]:
-    """来源 ①：``derived/seeds/<protocol>/<组>/*.raw``（已发表的语料）。"""
+                          root: Optional[Path] = None,
+                          strict_source_only: bool = False,
+                          source_set: Optional[Iterable[str]] = None
+                          ) -> list[SeedCorpus]:
+    """来源 ①：``derived/seeds/<protocol>/<组>/*.raw``（已发表的语料）。
+
+    ★★ **严格单源模式**（``strict_source_only``）：底料语料本身可能含**其它源**
+      的知识（实测：``derived/seeds/rtsp/rq4_B`` 里有 **12 条 ``vuln_boundary``
+      种子** = vuln 源的漏洞模式）⇒ 单源实验必须把它们排除。
+      判据：读该目录 ``manifest.json`` 的 ``seeds[].layer_name``
+      → ``vuln_boundary`` 层在 ``vuln`` ∉ source_set 时**排除**；
+      → manifest **缺失** ⇒ 无法证明干净 ⇒ **整目录排除**（保守）。
+    """
     seeds: list[SeedCorpus] = []
+    src_set = {str(s).strip().lower() for s in (source_set or ())}
     for directory in _published_group_dirs(protocol, group, root):
+        _skip: set[str] = set()
+        if strict_source_only:
+            _mf = directory / "manifest.json"
+            if not _mf.is_file():
+                print("[⑤ 严格单源] 排除无 manifest 的语料目录（无法证明干净）: "
+                      f"{directory.name}")
+                continue
+            try:
+                _doc = json.loads(_mf.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            _by_name = {str(s.get("filename") or ""): str(s.get("layer_name") or "")
+                        for s in (_doc.get("seeds") or [])}
+            if "vuln" not in src_set:
+                _skip = {n for n, lay in _by_name.items()
+                         if lay == "vuln_boundary"}
+            if _skip:
+                print(f"[⑤ 严格单源] {directory.name}: 排除 {len(_skip)} 条 "
+                      "vuln_boundary 底料（vuln 源知识）")
         for raw_path in sorted(directory.glob("*.raw")):
+            if raw_path.name in _skip:
+                continue
             try:
                 text = raw_path.read_text(encoding="utf-8", errors="replace")
             except OSError:
@@ -1420,7 +1453,10 @@ def _load_capture_seeds(protocol: str, profile: dict, *,
 def load_real_base_seeds(protocol: str, profile: dict, *,
                          group: Optional[str] = None,
                          derived_root: Optional[Path] = None,
-                         kb_root: Optional[Path] = None) -> tuple[list[SeedCorpus], str]:
+                         kb_root: Optional[Path] = None,
+                         strict_source_only: bool = False,
+                         source_set: Optional[Iterable[str]] = None
+                         ) -> tuple[list[SeedCorpus], str]:
     """按优先级取「**真实抓包底料**」（不是从零构造）。
 
     优先级：
@@ -1434,9 +1470,16 @@ def load_real_base_seeds(protocol: str, profile: dict, *,
         ``{"published-corpus", "traffic-capture", ""}``。
     """
     seeds = _load_published_seeds(protocol, profile, group=group,
-                                  root=derived_root)
+                                  root=derived_root,
+                                  strict_source_only=strict_source_only,
+                                  source_set=source_set)
     if seeds:
         return seeds, "published-corpus"
+    # ★ 严格单源模式：``traffic`` ∉ source_set ⇒ **禁用**真实抓包兜底
+    #   （``kb/<协议>/数据流量/`` 是 traffic 源的原始输入 ⇒ 属跨源污染）
+    if strict_source_only and "traffic" not in {
+            str(s).strip().lower() for s in (source_set or ())}:
+        return [], ""
     seeds = _load_capture_seeds(protocol, profile, root=kb_root)
     if seeds:
         return seeds, "traffic-capture"
