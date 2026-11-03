@@ -997,6 +997,32 @@ def main() -> int:
         print(f"语义规则: 装载 {len(semantic_rules)} 条 → "
               f"legal_boundary {sum(len(v) for v in (bundle.get('legal_boundary') or {}).values())} 条 / "
               f"response_expectation {sum(len(v) for v in (bundle.get('response_expectation') or {}).values())} 条")
+
+    # ★★ 批次 2.5（F4）：**知识台账 + 护栏断言**
+    #   · 台账 = 每个桶的 {class, owner, count, allowed} ⇒ 单源实验**自证纯净**
+    #   · **严格单源模式**下：台账里出现「owner ∉ 本次源集合」的 L1/L2 知识
+    #     ⇒ **直接报错退出**（不是告警）⇒ 跨源污染无法悄悄溜过
+    _ledger = bundle.get("knowledge_ledger") or {}
+    if _ledger.get("buckets"):
+        print(f"知识台账: {len(_ledger['buckets'])} 个桶 / "
+              f"违规 {(_ledger or {}).get('violation_count', 0)} 条"
+              f"（源集合={_ledger.get('source_set')}）")
+        _sk = _ledger.get("skeleton_dims") or {}
+        if _sk:
+            print(f"  协议骨架: 已排除维度 {_sk.get('excluded_dims') or '（未排除）'}"
+                  f" / 物化 {_sk.get('fact_count')} 条")
+    if args.strict_source_only:
+        _viol = _ledger.get("violations") or []
+        if _viol:
+            print("!! ★★ 严格单源模式：知识台账检出**跨源污染** ⇒ 中止生成！",
+                  file=sys.stderr)
+            for _v in _viol[:12]:
+                print(f"   · 桶 {_v.get('bucket')}: 源 {_v.get('source')} "
+                      f"({_v.get('class')}/owner={_v.get('owner')}) "
+                      f"{_v.get('count')} 条", file=sys.stderr)
+            print("!! ⇒ 请检查：该源的产物是否进了中枢、或通道归属标注是否正确。",
+                  file=sys.stderr)
+            return 3
     # 注入 profile.seedgen.default_headers 到 headers 桶（兜底默认头值）。
     # 某些协议的方法（如 SIP 的 REGISTER 是 Idle→Idle 自环）AutoSeeder 只抽到
     # 少量字段实例、headers 桶也为空，导致必填头（Via/From/To/Contact/Max-Forwards）

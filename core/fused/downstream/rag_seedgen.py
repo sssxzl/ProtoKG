@@ -1328,6 +1328,31 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         bundle["bundle_schema_version"] = BUNDLE_SCHEMA_VERSION
         project_semantic_rules(bundle)
     # ③ 开关 OFF + 未显式传参 ⇒ 上面两个分支都不走 ⇒ bundle 保持 B-8 之前形态。
+
+    try:
+        from core import knowledge_channels as _kc
+        bundle["knowledge_ledger"] = _kc.build_ledger(
+            by_source, _protocol_name,
+            source_set=set(source_set) if source_set is not None else None)
+        # ★ 投影桶（legal_boundary / response_expectation）**不走 by_source**
+        #   （它们由语义规则投影而来）⇒ 单独补进台账（归属 = rfc / L1）
+        for _pb, _pv in (("legal_boundary", bundle.get("legal_boundary")),
+                         ("response_expectation",
+                          bundle.get("response_expectation"))):
+            _n = sum(len(v) for v in (_pv or {}).values())
+            _ent = bundle["knowledge_ledger"]["buckets"].setdefault(
+                _pb, {"by_source": {}, "count": 0})
+            _ent["count"] = _n
+            _ent.pop("empty", None)
+            if _n:
+                _ent["by_source"] = {"rfc": {"count": _n, "class": "L1",
+                                             "owner": "rfc", "allowed": True}}
+            else:
+                _ent["empty"] = True
+    except Exception as _exc:      # noqa: BLE001 —— 台账不得影响主流程
+        bundle["knowledge_ledger"] = {"error": str(_exc), "buckets": {},
+                                      "violations": [], "violation_count": 0,
+                                      "pure": None}
     return bundle
 
 

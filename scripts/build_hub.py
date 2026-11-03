@@ -381,7 +381,8 @@ def _write_source_manifest(protocol: str, sources: list[str],
                             aspect_counts: dict | None = None,
                             required_headers_count: int = 0,
                             state_machine_counts: dict | None = None,
-                            session_semantics_count: int = 0) -> Path:
+                            session_semantics_count: int = 0,
+                            skeleton_excluded_dims: list | None = None) -> Path:
     """写中枢的**本次源集合**清单（``per_source/<协议>/sources.json``）。
 
     ★ 它是「本次实验的知识来源清单」的**唯一权威**：
@@ -399,6 +400,9 @@ def _write_source_manifest(protocol: str, sources: list[str],
         "skeleton": {
             "source": SKELETON_SOURCE_NAME,
             "fact_count": skeleton_count,
+            # ★ 批次 2.5（F4）：**实际排除的来源维度** ⇒ 知识台账据此判定
+            #   协议骨架（混合知识）是否干净 ⇒ 审计可判
+            "excluded_dims": list(skeleton_excluded_dims or []),
             "note": "协议骨架（状态机/消息实例/方法存在性/头取值/频次/配对）"
                     "由 source+traffic 源抽取后固化为入库资产，构建时物化进中枢"
                     "⇒ 单源调试时链路不断。",
@@ -1326,6 +1330,7 @@ def main(argv=None) -> int:
     # ---- ③' 物化协议骨架（★ 单源调试时链路不断的前提）----------------------
     skeleton_count = _materialize_skeleton(
         protocol, exclude_dims=tuple(args.exclude_skeleton_dims or ()))
+    _skeleton_excluded_dims = list(args.exclude_skeleton_dims or ())
 
     # ---- ③'' 物化**会话语义三段**（★ 批次 2.5 F3）---------------------------
     #   ★ **只在构建 expert_note 源时物化** ⇒ 「知识产出与谁构建它绑定」
@@ -1456,6 +1461,7 @@ def main(argv=None) -> int:
     # ---- ⑥ 写本次源集合清单（唯一权威）-------------------------------------
     _write_source_manifest(protocol, sources, build_ids,
                             session_semantics_count=session_semantics_count,
+                            skeleton_excluded_dims=_skeleton_excluded_dims,
                             skeleton_count=skeleton_count,
                             aspect_counts=aspect_counts,
                             required_headers_count=required_headers_count,

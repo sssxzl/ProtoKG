@@ -33,6 +33,32 @@ CLASS_SPEC = "L1"        # 协议规范知识
 CLASS_IMPL = "L2"        # 目标实现知识
 CLASS_ENV = "L3"         # 目标环境事实
 
+#: **源 → 类别**（台账按源判定「这条知识是不是本次源集合的」）。
+#:   ★ ``rfc`` = L1（规范知识）；其余四源都是 L2（实现/观测/漏洞/专家知识）；
+#:   ``profile`` = 协议骨架（**混合** ⇒ 其内部按 origin 维度再分，
+#:   由 ``build_hub --exclude-skeleton-dims`` 控制）。
+SOURCE_CLASS: dict[str, str] = {
+    "rfc": CLASS_SPEC,
+    "expert_note": CLASS_IMPL,
+    "traffic": CLASS_IMPL,
+    "vuln": CLASS_IMPL,
+    "source": CLASS_IMPL,
+    "profile": "MIXED",
+}
+
+#: **桶 → 通道**（桶的内容来自哪条知识通道 ⇒ 台账给它 class/owner）。
+#:   只列**不由 facts 直接派生**的桶；facts 派生的桶按 ``by_source`` 逐源判定。
+BUCKET_CHANNEL: dict[str, str] = {
+    "precondition": "seedgen.precondition",
+    "session_header": "seedgen.session_header",
+    "url_template": "seedgen.url_template",
+    "required_headers": "seedgen.required_headers",
+    "legal_boundary": "seedgen.required_headers",      # 语义规则投影（L1/rfc）
+    "response_expectation": "seedgen.required_headers",
+    "vulnerability": "vuln",
+    "statuses": "seedgen.required_headers",
+}
+
 #: 通道键 → 类别/归属 的**默认**（profile.json 的 ``knowledge_channels``
 #: 段可覆盖；缺省时用这张表 ⇒ 老 profile 不加段也能工作）。
 DEFAULT_CHANNELS: dict[str, dict[str, str]] = {
@@ -125,8 +151,122 @@ def summarize(protocol: str) -> dict:
     }
 
 
+def source_class(source: str) -> str:
+    """某个知识源的类别（``rfc``→L1；其余→L2；``profile``→MIXED）。"""
+    return SOURCE_CLASS.get(str(source or "").strip().lower(), CLASS_IMPL)
+
+
+def owner_allowed(owner: str, source_set: Optional[set[str]] = None) -> bool:
+    """归属源在本次 ``source_set`` 下是否允许（``-``/空 ⇒ 恒允许）。"""
+    ow = str(owner or "-").strip().lower()
+    if ow in ("", "-"):
+        return True
+    if source_set is None:
+        return True
+    return ow in {str(s).strip().lower() for s in source_set}
+
+
+#: **应存在的桶全集**（台账要连「应该有但当前为空」的桶也列出来
+#: ⇒ 审计时能看出「本该由 expert_note 支撑的会话语义，在纯 RFC 档是空的」）。
+BUCKET_UNIVERSE: tuple[str, ...] = (
+    "methods", "headers", "transitions", "method_sequences",
+    "message_instances", "required_headers", "precondition",
+    "session_header", "url_template", "statuses", "legal_boundary",
+    "response_expectation", "vulnerability",
+)
+
+
+def build_ledger(bucket_sources: dict, protocol: str,
+                 source_set: Optional[set[str]] = None) -> dict:
+    """构造**知识台账**：每个桶的 {class, owner, count, allowed}。
+
+    ★ 参数 ``bucket_sources`` = ``{桶名: {源名: 条数}}``（即 ``bundle["by_source"]``）。
+
+    ★ 台账的价值：**单源实验可自证纯净** —— 不用人工逐条判定，
+      直接看「哪个桶、由哪个源贡献、这次允不允许」。
+    """
+    chans = load_channels(protocol)
+    ledger: dict[str, dict] = {}
+    violations: list[dict] = []
+    # ★ 先铺「应有但为空」的桶（count=0）⇒ 台账完整 ⇒ 缺口可见
+    for _b in BUCKET_UNIVERSE:
+        if _b in (bucket_sources or {}):
+            continue
+        _chan = BUCKET_CHANNEL.get(_b)
+        ledger[_b] = {
+            "by_source": {}, "count": 0, "empty": True,
+            **({"channel": _chan,
+                "class": str(chans.get(_chan, {}).get("class") or ""),
+                "owner": str(chans.get(_chan, {}).get("owner") or "")}
+               if _chan else {}),
+        }
+    for bucket, src_counts in sorted((bucket_sources or {}).items()):
+        chan = BUCKET_CHANNEL.get(bucket)
+        per_src: dict[str, dict] = {}
+        total = 0
+        for src, cnt in sorted((src_counts or {}).items()):
+            cls = source_class(src)
+            owner = src
+            # profile（协议骨架）是**混合** ⇒ 其内部按 origin 维度区分，
+            # 由 build_hub --exclude-skeleton-dims 控制 ⇒ 台账只标 MIXED。
+            if chan and src == "profile":
+                cls = str(chans.get(chan, {}).get("class") or cls)
+                owner = str(chans.get(chan, {}).get("owner") or owner)
+            ok = owner_allowed(owner, source_set)
+            if cls == "MIXED":
+                # ★ 协议骨架是**混合**知识（source 侧 + traffic 侧）
+                #   ⇒ 能否用由 **构建参数** ``--exclude-skeleton-dims`` 控制
+                #   ⇒ 台账**不猜**，标 allowed=None（待定）并在 skeleton_dims 里
+                #     给出实际的排除维度 ⇒ 审计时一眼可判。
+                ok = None
+            per_src[src] = {"count": cnt, "class": cls, "owner": owner,
+                            "allowed": ok}
+            total += cnt
+            if ok is False and cls in (CLASS_SPEC, CLASS_IMPL):
+                violations.append({"bucket": bucket, "source": src,
+                                   "class": cls, "owner": owner,
+                                   "count": cnt})
+        entry = {"by_source": per_src, "count": total}
+        if chan:
+            entry["channel"] = chan
+            entry["class"] = str(chans.get(chan, {}).get("class") or "")
+            entry["owner"] = str(chans.get(chan, {}).get("owner") or "")
+        ledger[bucket] = entry
+    return {
+        "protocol": protocol,
+        "source_set": sorted(source_set) if source_set is not None else None,
+        "skeleton_dims": _skeleton_dims(protocol),
+        "buckets": ledger,
+        "violations": violations,
+        "violation_count": len(violations),
+        "pure": not violations,
+    }
+
+
+def _skeleton_dims(protocol: str) -> dict:
+    """中枢记录的**骨架来源维度**（谁构建时排除了哪些维度）。
+
+    ★ 协议骨架是**混合**知识 ⇒ 台账无法从桶级信息判定它是否干净
+      ⇒ 由 ``build_hub --exclude-skeleton-dims`` 在**构建时**决定，
+      并记进中枢 ``sources.json`` ⇒ 台账读它 ⇒ 审计可判。
+    """
+    from core import paths as P
+    f = P.per_source_root(protocol) / "sources.json"
+    if not f.is_file():
+        return {}
+    try:
+        doc = json.loads(f.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    sk = doc.get("skeleton") or {}
+    return {"excluded_dims": sk.get("excluded_dims") or [],
+            "fact_count": sk.get("fact_count")}
+
+
 __all__ = [
     "CLASS_SPEC", "CLASS_IMPL", "CLASS_ENV",
+    "SOURCE_CLASS", "BUCKET_CHANNEL",
     "DEFAULT_CHANNELS", "load_profile", "load_channels",
     "channel_class", "channel_owner", "channel_allowed", "summarize",
+    "source_class", "owner_allowed", "build_ledger",
 ]
