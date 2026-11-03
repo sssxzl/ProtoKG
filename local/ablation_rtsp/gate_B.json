@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.0",
+  "protocol": "rtsp",
+  "env": "rq2-live555",
+  "group": "B",
+  "seed_dir": "E:\\科研\\想法idea\\rag-chatafl\\out\\abl_B",
+  "seed_files": 70,
+  "gates": {
+    "G1": {
+      "name": "target_endpoint_correctness",
+      "applicable": true,
+      "skipped_reason": null,
+      "allowed_endpoints": [
+        "127.0.0.1:8554"
+      ],
+      "endpoints_found": {
+        "127.0.0.1:8554": 267
+      },
+      "violations": [],
+      "violation_count": 0,
+      "threshold": 0,
+      "pass": true
+    },
+    "G2": {
+      "name": "playable_resource_ratio",
+      "applicable": true,
+      "skipped_reason": null,
+      "allowed_resources": [
+        "aacAudioTest",
+        "ac3AudioTest",
+        "matroskaFileTest",
+        "mp3AudioTest",
+        "mpeg1or2AudioVideoTest",
+        "wavAudioTest",
+        "webmFileTest"
+      ],
+      "resources_found": {
+        "mp3AudioTest": 64,
+        "mpeg1or2AudioVideoTest": 53,
+        "webmFileTest": 37,
+        "wavAudioTest": 31,
+        "aacAudioTest": 26,
+        "matroskaFileTest": 25,
+        "ac3AudioTest": 12,
+        "h264ESVideoTest": 4,
+        "mpeg4ESVideoTest": 4,
+        "mpeg1or2ESVideoTest": 4,
+        "oggFileTest": 3,
+        "vobTest": 2,
+        "h265ESVideoTest": 2
+      },
+      "violations": [
+        {
+          "resource": "vobTest",
+          "occurrences": 1,
+          "files": [
+            "02_SETUP+TEARDOWN.raw"
+          ]
+        },
+        {
+          "resource": "oggFileTest",
+          "occurrences": 1,
+          "files": [
+            "05_SETUP+PLAY+PLAY.raw"
+          ]
+        },
+        {
+          "resource": "h264ESVideoTest",
+          "occurrences": 1,
+          "files": [
+            "06_SETUP+PLAY+SETUP+SETUP.raw"
+          ]
+        },
+        {
+          "resource": "h265ESVideoTest",
+          "occurrences": 1,
+          "files": [
+            "07_SETUP+SETUP.raw"
+          ]
+        },
+        {
+          "resource": "mpeg4ESVideoTest",
+          "occurrences": 1,
+          "files": [
+            "08_SETUP+TEARDOWN+SETUP+TEARDOWN.raw"
+          ]
+        },
+        {
+          "resource": "mpeg1or2ESVideoTest",
+          "occurrences": 1,
+          "files": [
+            "09_SETUP+PLAY+PAUSE+PLAY.raw"
+          ]
+        }
+      ],
+      "violation_count": 6,
+      "seed_count": 70,
+      "violation_ratio": 0.0857,
+      "by_layer": {
+        "base": {
+          "seed_count": 43,
+          "violation_count": 6,
+          "violation_ratio": 0.1395
+        },
+        "mutation": {
+          "seed_count": 27,
+          "violation_count": 0,
+          "violation_ratio": 0.0
+        }
+      },
+      "threshold": 0,
+      "pass": false
+    },
+    "G5": {
+      "name": "corpus_contract_consistency",
+      "applicable": true,
+      "skipped_reason": null,
+      "contract_source": "profile.seedgen.environments.rq2-live555.focus_group.B.seeds",
+      "expected": 74,
+      "actual": 17,
+      "pass": false,
+      "base_seed_count": 17,
+      "scope": "base-layers-only",
+      "mutation_count": 27,
+      "warning": "契约漂移：期望 74 != 实际 17（默认仅告警，不阻断）"
+    }
+  },
+  "overall_pass": false
+}

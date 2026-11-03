@@ -94,3 +94,9 @@ _crlf_probe_*/
 !derived/exp_semantic_gain/candidates_frozen.jsonl
 !derived/exp_semantic_gain/llm_cache.jsonl
 !derived/exp_semantic_gain/results.json
+
+# 消融/实验的运行时输出目录（种子 .raw + 构建日志）⇒ 可重建，不入库。
+/out/
+
+# 消融脚本的运行时中间工件目录（最终工件已归档到 local/ablation_rtsp/）。
+tools/qa/ablation/_out/

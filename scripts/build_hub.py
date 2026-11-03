@@ -423,22 +423,51 @@ def _republish_rules(protocol: str) -> None:
 SKELETON_SOURCE_NAME = "profile"
 
 
-def _materialize_skeleton(protocol: str) -> int:
+#: ★ 批次 2.3：骨架各 aspect 的**来源维度**（消融用）。
+#:   · ``source``  —— 源码分析（AutoSeeder）：message_instance / target_state
+#:   · ``traffic`` —— 真实流量观测：existence / method_sequence / occurrence / value_enum
+SKELETON_ORIGIN_FALLBACK: dict = {
+    "source": ["message_instance", "target_state"],
+    "traffic": ["existence", "method_sequence", "occurrence", "value_enum"],
+}
+
+
+def _skeleton_aspect_origin(doc: dict) -> dict:
+    """骨架 fact 的 aspect → 来源维度（``source`` / ``traffic``）。
+
+    优先读骨架 JSON 顶层 ``origin`` 声明；缺失时用
+    :data:`SKELETON_ORIGIN_FALLBACK` 兜底。
+    """
+    out: dict = {}
+    for dim, aspects in (doc.get("origin") or {}).items():
+        for asp in aspects:
+            out[asp] = dim
+    for dim, aspects in SKELETON_ORIGIN_FALLBACK.items():
+        for asp in aspects:
+            out.setdefault(asp, dim)
+    return out
+
+
+def _materialize_skeleton(protocol: str, *, exclude_dims: tuple = ()) -> int:
     """把 ``fused_hub/targets/<协议>/skeleton.json`` 物化进中枢的 ``profile/`` 源。
 
     ★ 为什么必须有：种子生成本质是「**状态机边的遍历**」
-      ⇒ 只抽 RFC 源时 ``transitions`` 为 0 ⇒ **一条种子都生不出来**
-      （实测：「!! 无状态机转移，无法生成种子」）。
+      ⇒ 骨架提供「跨实验复用的协议结构」，保证**任何单源构建**时
+      中枢里都有可用的协议骨架（而不是空壳）。
+      ★ 更正（旧注释已过时）：批次 1.6 步 0 之后「只抽 RFC 源 ⇒ transitions=0
+        ⇒ 一条种子都生不出来」**已不成立** —— 批次 2.1/2.2 把 RFC 源自己的
+        状态机抽出来了（纯 RFC 档实测 43 条种子、G1=0）。
     ★ 骨架是「**跨实验复用的协议结构**」，不是「本次抽取的结果」
       ⇒ 固化为**入库资产**，每次构建**重新物化**进中枢
       ⇒ 中枢自洽（里面的一切都是本次的）+ 单源调试时链路不断。
     ★ ``authority`` 改标 ``profile``：让「本次抽取的源」与「骨架」在
       ``available_sources`` 里**分得开**（否则骨架会带着 source/traffic 的
       authority 混进来，破坏「本次源集合」的语义）。
+    ★ 批次 2.3：``exclude_dims`` 支持按**来源维度**排除骨架的一部分
+      （``source`` = 源码分析侧 / ``traffic`` = 流量观测侧）
+      ⇒ 用于测「纯规范单源能撑起多少」。
     """
-    src = paths.target_profile_path(protocol) if hasattr(
-        paths, "target_profile_path") else (
-            REPO_ROOT / "fused_hub" / "targets" / protocol / "skeleton.json")
+    src = paths.target_skeleton(protocol)
     if not src.is_file():
         print(f"[骨架] ★ {protocol} 无 skeleton.json（协议骨架缺失）"
               "⇒ 单源构建可能因无状态机而无法生成种子")
@@ -447,6 +476,18 @@ def _materialize_skeleton(protocol: str) -> int:
     facts = doc.get("facts") or []
     if not facts:
         return 0
+    _origin_map = _skeleton_aspect_origin(doc)
+    _kept: list = []
+    for f in facts:
+        _asp = ((f.get("fact_key") or {}).get("aspect")) or ""
+        _dim = _origin_map.get(_asp, "")
+        if _dim and _dim in exclude_dims:
+            continue
+        _kept.append(f)
+    facts = _kept
+    if exclude_dims:
+        print(f"[骨架] ★ 消融：排除来源维度 {list(exclude_dims)} ⇒ "
+              f"保留 {len(facts)} facts")
     for f in facts:
         for claim in (f.get("all_claims") or []):
             claim["authority"] = SKELETON_SOURCE_NAME
@@ -934,6 +975,11 @@ def main(argv=None) -> int:
                         choices=sorted(KNOWN_SOURCES),
                         help="本次处理的知识源（可多个；默认 rfc）。"
                              "例：--sources rfc expert_note")
+    parser.add_argument("--exclude-skeleton-dims", nargs="*", default=[],
+                        choices=["source", "traffic"],
+                        help="★ 消融用：排除协议骨架里的某些**来源维度**"
+                             "（source=源码分析产物；traffic=流量观测产物）"
+                             "⇒ 用于「规范单源能撑起多少」的消融实验")
     parser.add_argument("--no-purge", action="store_true",
                         help="★ 批次 1.6：**不清空**整个中枢（默认清空该协议的五源"
                              "抽取产物 + 语义四库）⇒ 增量/多源联合调试时保留其它源")
@@ -1083,7 +1129,8 @@ def main(argv=None) -> int:
         print(f"[{source}] -> {_repo_rel(dest)}")
 
     # ---- ③' 物化协议骨架（★ 单源调试时链路不断的前提）----------------------
-    skeleton_count = _materialize_skeleton(protocol)
+    skeleton_count = _materialize_skeleton(
+        protocol, exclude_dims=tuple(args.exclude_skeleton_dims or ()))
 
     # ---- ③'' 物化必填头清单（★ 批次 1.6 步 4）-----------------------------
     #   `required_headers` 是**知识** ⇒ 必须住在中枢里 ⇒ 组装端不再直读

@@ -404,3 +404,54 @@ def test_source_manifest_records_hub_layout(hub):
     assert doc["hub_layout"]["scheme"] == "aspect-v1"
     assert doc["hub_layout"]["aspect_counts"] == {"definition": 71,
                                                   "syntax": 45}
+
+
+# ===========================================================================
+# 批次 2.3：骨架来源维度消融开关（--exclude-skeleton-dims）
+# ===========================================================================
+
+def test_skeleton_aspect_origin_maps_dimensions():
+    """★ 骨架各 aspect → 来源维度（source=源码分析 / traffic=流量观测）。
+
+    ★ 这是「规范单源能撑起多少」消融实验的基础：只有能**按维度**排除
+      骨架的一部分，才能分别测出「实现侧知识」与「观测侧知识」的贡献。
+    """
+    from scripts.build_hub import (
+        SKELETON_ORIGIN_FALLBACK, _skeleton_aspect_origin,
+    )
+    # ① 显式声明优先
+    doc = {"origin": {"source": ["target_state"],
+                      "traffic": ["existence"]}}
+    m = _skeleton_aspect_origin(doc)
+    assert m["target_state"] == "source"
+    assert m["existence"] == "traffic"
+    # ② 声明缺失 ⇒ 用兜底表补全
+    m2 = _skeleton_aspect_origin({})
+    for asp in SKELETON_ORIGIN_FALLBACK["source"]:
+        assert m2[asp] == "source", asp
+    for asp in SKELETON_ORIGIN_FALLBACK["traffic"]:
+        assert m2[asp] == "traffic", asp
+
+
+def test_skeleton_materialize_can_exclude_dims(tmp_path, monkeypatch):
+    """★ 排除某个来源维度 ⇒ 该维度的 facts 不进中枢（消融档位）。"""
+    import json as _json
+    from scripts import build_hub as _bh
+    root = tmp_path / "per_source" / "rtsp"
+    (root / "profile" / "facts").mkdir(parents=True, exist_ok=True)
+    skel = {"origin": {"source": ["target_state"], "traffic": ["existence"]},
+            "facts": [
+                {"fact_key": {"aspect": "target_state"}, "all_claims": []},
+                {"fact_key": {"aspect": "existence"}, "all_claims": []},
+            ]}
+    src = tmp_path / "skeleton.json"
+    src.write_text(_json.dumps(skel), encoding="utf-8")
+    monkeypatch.setattr(_bh.paths, "target_skeleton", lambda p: src)
+    monkeypatch.setattr(_bh.paths, "per_source_facts_dir",
+                        lambda p, s: root / s / "facts")
+    n_all = _bh._materialize_skeleton("rtsp")
+    n_excl = _bh._materialize_skeleton("rtsp", exclude_dims=("traffic",))
+    assert n_all == 2
+    assert n_excl == 1, "排除 traffic 维度后应只剩 1 条"
+
+

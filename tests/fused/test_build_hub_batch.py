@@ -96,6 +96,12 @@ def test_materialize_skeleton_writes_profile_facts(tmp_path, monkeypatch):
         }],
     }, ensure_ascii=False), encoding="utf-8")
     monkeypatch.setattr(build_hub, "REPO_ROOT", tmp_path)
+    # ★ 批次 2.3 起骨架路径统一走 core.paths.target_skeleton（不再在
+    #   build_hub 内拼 REPO_ROOT）⇒ 同步 patch 该解析入口。
+    monkeypatch.setattr(
+        paths_mod, "target_skeleton",
+        lambda p: tmp_path / "fused_hub" / "targets" / p.lower()
+        / "skeleton.json")
     monkeypatch.setattr(paths_mod, "per_source_facts_dir",
                         lambda p, s: tmp_path / "derived" / "per_source" / p / s
                         / "facts")
@@ -113,6 +119,11 @@ def test_materialize_skeleton_writes_profile_facts(tmp_path, monkeypatch):
 def test_missing_skeleton_is_reported_not_silent(tmp_path, monkeypatch, capsys):
     """★ 骨架缺失必须**显式提示**（否则单源构建会因无状态机而悄悄失败）。"""
     monkeypatch.setattr(build_hub, "REPO_ROOT", tmp_path)
+    # ★ 同上：骨架路径统一走 core.paths.target_skeleton。
+    monkeypatch.setattr(
+        paths_mod, "target_skeleton",
+        lambda p: tmp_path / "fused_hub" / "targets" / p.lower()
+        / "skeleton.json")
     assert build_hub._materialize_skeleton("rtsp") == 0
     assert "skeleton.json" in capsys.readouterr().out
 

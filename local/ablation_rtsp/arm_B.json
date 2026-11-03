@@ -1,0 +1,93 @@
+{
+  "arm": "B",
+  "protocol": "rtsp",
+  "exclude_dims": [
+    "source"
+  ],
+  "hub_facts": {
+    "total": 223,
+    "by_aspect": {
+      "definition": 71,
+      "existence": 10,
+      "method_sequence": 5,
+      "occurrence": 24,
+      "required_headers": 8,
+      "syntax": 45,
+      "target_state": 14,
+      "value_enum": 46
+    },
+    "dir": "E:\\科研\\想法idea\\rag-chatafl\\derived\\per_source\\rtsp\\facts"
+  },
+  "skeleton_materialized": {
+    "profile_source_total": 77,
+    "skeleton_only": 69,
+    "required_headers_only": 8,
+    "legacy_exists": true
+  },
+  "skeleton_expected": {
+    "skeleton_total": 145,
+    "kept": 69,
+    "per_dim": {
+      "source": 0,
+      "traffic": 69,
+      "other": 0
+    }
+  },
+  "bundle": {
+    "views": 223,
+    "transitions": 12,
+    "message_instances": 0,
+    "methods": 8,
+    "headers": 58,
+    "method_sequences": 5,
+    "available_sources": [
+      "profile",
+      "rfc"
+    ]
+  },
+  "state_machine_candidates": {
+    "rfc:llm": 14,
+    "rfc:table": 14
+  },
+  "seeds": {
+    "seed_count": 44,
+    "by_layer": {
+      "L1": 3,
+      "L2": 8,
+      "L3": 6,
+      "L5": 27
+    },
+    "by_layer_name": {
+      "edge_cover": 3,
+      "generic_danger": 8,
+      "vuln_boundary": 6,
+      "action_seq": 27
+    },
+    "raw_files": 70,
+    "manifest": true,
+    "dict_tokens": 24
+  },
+  "gate": {
+    "gates": {
+      "G1": {
+        "status": null,
+        "violation_count": 0,
+        "pass": true,
+        "applicable": true
+      },
+      "G2": {
+        "status": null,
+        "violation_count": 6,
+        "pass": false,
+        "applicable": true
+      },
+      "G5": {
+        "status": null,
+        "violation_count": null,
+        "pass": false,
+        "applicable": true
+      }
+    },
+    "overall_pass": false
+  }
+}

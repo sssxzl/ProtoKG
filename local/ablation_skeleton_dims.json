@@ -1,0 +1,134 @@
+[
+  {
+    "档": "A",
+    "含义": "全量骨架（source+traffic）",
+    "排除维度": [],
+    "中枢facts总数": 299,
+    "profile源物化(骨架+必填头)": 153,
+    "其中骨架": 145,
+    "其中必填头": 8,
+    "骨架理论条数": 145,
+    "骨架按维度": {
+      "source": 76,
+      "traffic": 69,
+      "other": 0
+    },
+    "transitions": 38,
+    "message_instances": 38,
+    "headers": 58,
+    "种子数": 85,
+    "G1违规": 0,
+    "G1比率": null,
+    "G2违规": 31,
+    "G2比率": 0.2793,
+    "层分布": {
+      "canonical": 18,
+      "edge_cover": 6,
+      "generic_danger": 28,
+      "vuln_boundary": 6,
+      "action_seq": 27
+    },
+    "G2按层": {
+      "base": {
+        "seed_count": 84,
+        "violation_count": 31,
+        "violation_ratio": 0.369
+      },
+      "mutation": {
+        "seed_count": 27,
+        "violation_count": 0,
+        "violation_ratio": 0.0
+      }
+    },
+    "闸门通过": false
+  },
+  {
+    "档": "B",
+    "含义": "去 source 侧（仅 traffic 观测）",
+    "排除维度": [
+      "source"
+    ],
+    "中枢facts总数": 223,
+    "profile源物化(骨架+必填头)": 77,
+    "其中骨架": 69,
+    "其中必填头": 8,
+    "骨架理论条数": 69,
+    "骨架按维度": {
+      "source": 0,
+      "traffic": 69,
+      "other": 0
+    },
+    "transitions": 12,
+    "message_instances": 0,
+    "headers": 58,
+    "种子数": 44,
+    "G1违规": 0,
+    "G1比率": null,
+    "G2违规": 6,
+    "G2比率": 0.0857,
+    "层分布": {
+      "edge_cover": 3,
+      "generic_danger": 8,
+      "vuln_boundary": 6,
+      "action_seq": 27
+    },
+    "G2按层": {
+      "base": {
+        "seed_count": 43,
+        "violation_count": 6,
+        "violation_ratio": 0.1395
+      },
+      "mutation": {
+        "seed_count": 27,
+        "violation_count": 0,
+        "violation_ratio": 0.0
+      }
+    },
+    "闸门通过": false
+  },
+  {
+    "档": "C",
+    "含义": "纯 RFC（骨架全排除）",
+    "排除维度": [
+      "source",
+      "traffic"
+    ],
+    "中枢facts总数": 154,
+    "profile源物化(骨架+必填头)": 8,
+    "其中骨架": 0,
+    "其中必填头": 8,
+    "骨架理论条数": 0,
+    "骨架按维度": {
+      "source": 0,
+      "traffic": 0,
+      "other": 0
+    },
+    "transitions": 12,
+    "message_instances": 0,
+    "headers": 45,
+    "种子数": 43,
+    "G1违规": 0,
+    "G1比率": null,
+    "G2违规": 6,
+    "G2比率": 0.087,
+    "层分布": {
+      "edge_cover": 2,
+      "generic_danger": 8,
+      "vuln_boundary": 6,
+      "action_seq": 27
+    },
+    "G2按层": {
+      "base": {
+        "seed_count": 42,
+        "violation_count": 6,
+        "violation_ratio": 0.1429
+      },
+      "mutation": {
+        "seed_count": 27,
+        "violation_count": 0,
+        "violation_ratio": 0.0
+      }
+    },
+    "闸门通过": false
+  }
+]
