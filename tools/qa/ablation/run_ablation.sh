@@ -15,11 +15,30 @@
 set -u
 
 PY="E:/app/Anaconda3/python.exe"
-cd "E:/科研/想法idea/rag-chatafl" || exit 1
+
+# ★ 仓库根**从脚本自身位置推导**（不能硬编码绝对路径）
+#   —— 否则在**副本**里跑这个脚本时，实际 cd 到了主仓库
+#      ⇒ 「副本里跑通」是假的（产物落在主仓库、副本的 out/ 里什么都没有）。
+#   ★ 已踩过一次：本轮副本自测时 build/seedgen 全在主仓库执行，
+#     而副本的 derived/per_source 根本没被碰过。
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+cd "$REPO_ROOT" || exit 1
 
 OUT=tools/qa/ablation/_out
 PROTO=rtsp
-BACKUP_ROOT="E:/科研/想法idea/ProtoRAG_快照_20261102/semantic_backup"
+
+# 语义四库备份根：环境变量 > 仓库内 .semantic_backup（副本用）> 仓库外默认（主仓库用）
+BACKUP_ROOT="${PROTORAG_SEMANTIC_BACKUP:-}"
+if [ -z "$BACKUP_ROOT" ]; then
+  if [ -d "$REPO_ROOT/.semantic_backup" ]; then
+    BACKUP_ROOT="$REPO_ROOT/.semantic_backup"
+  else
+    BACKUP_ROOT="E:/科研/想法idea/ProtoRAG_快照_20261102/semantic_backup"
+  fi
+fi
+# ★ 让 build_hub.py 的备份也落到同一个根（否则副本跑构建会污染主仓库的备份）
+export PROTORAG_SEMANTIC_BACKUP="$BACKUP_ROOT"
+
 mkdir -p "$OUT" out
 
 restore_semantic () {
@@ -57,7 +76,7 @@ run_arm () {
   $PY scripts/corpus_gate.py --protocol "$PROTO" --seed-dir "out/abl_$name" \
       --group B --json > "$OUT/gate_$name.json" 2> "$OUT/gate_$name.err"
   echo "[gate rc=$?]  日志: $OUT/gate_$name.json"
-  $PY "$OUT/stats.py" --protocol "$PROTO" --seed-dir "out/abl_$name" \
+  $PY tools/qa/ablation/stats.py --protocol "$PROTO" --seed-dir "out/abl_$name" \
       --arm "$name" --gate "$OUT/gate_$name.json" \
       --exclude-dims $dims \
       --out "$OUT/arm_$name.json" > /dev/null 2> "$OUT/stats_$name.err"

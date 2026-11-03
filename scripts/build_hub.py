@@ -225,7 +225,12 @@ RUNTIME_ENRICH_DIRS: tuple[str, ...] = ("boundary_probe",)
 #:   规则库由 LLM 从 RFC 源产出 ⇒ **不能从 kb 重建**（需 120 次 LLM 调用）
 #:   ⇒ 清空前必须留一份**可恢复**副本（这不是「归档到 derived/」，
 #:   而是**备份**——用户明确否掉了 `derived/per_source_archive/<ts>/` 那种归档）。
-SEMANTIC_BACKUP_ROOT = Path(r"E:\科研\想法idea\ProtoRAG_快照_20261102\semantic_backup")
+#: 语义四库（不可再生资产）的**仓库外**备份根。
+#: ★ 可用环境变量 ``PROTORAG_SEMANTIC_BACKUP`` 覆盖 ⇒ **副本**跑构建时
+#:   备份落到自己的目录，不会污染主仓库的备份（副本自测时踩到）。
+SEMANTIC_BACKUP_ROOT = Path(os.environ.get(
+    "PROTORAG_SEMANTIC_BACKUP",
+    r"E:\科研\想法idea\ProtoRAG_快照_20261102\semantic_backup"))
 
 
 def _backup_semantic_before_purge(protocol: str) -> str:
