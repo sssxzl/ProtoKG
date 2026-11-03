@@ -428,5 +428,62 @@
       }
     }
   },
+    "knowledge_channels": {
+    "seedgen.precondition": {
+      "class": "L2",
+      "owner": "expert_note",
+      "note": "协议会话语义（方法前置条件）—— 实现/专家知识，规范文本未给出"
+    },
+    "seedgen.session_header": {
+      "class": "L2",
+      "owner": "expert_note",
+      "note": "会话头注入规则（Session 从第几次出现起带）—— 实现/专家知识"
+    },
+    "seedgen.url_template": {
+      "class": "L2",
+      "owner": "expert_note",
+      "note": "URL 结构模板（{stream}/track{N}）—— 实现/专家知识"
+    },
+    "seedgen.state_changing": {
+      "class": "L2",
+      "owner": "expert_note",
+      "note": "状态变更方法集合 —— 实现/专家知识"
+    },
+    "seedgen.required_headers": {
+      "class": "L1",
+      "owner": "rfc",
+      "note": "★ RFC 本身规定必须出现的头 ⇒ 规范知识"
+    },
+    "allowed_methods": {
+      "class": "L2",
+      "owner": "source",
+      "note": "★ profile.note 自述：目标程序实际实现的方法子集 ⇒ 源码侧；用它裁剪 RFC 抽集会砍掉 ANNOUNCE/RECORD/REDIRECT（真实 RTSP 方法）"
+    },
+    "vuln": {
+      "class": "L2",
+      "owner": "vuln",
+      "note": "漏洞模式提示（stream_hints / crash_streams）—— 漏洞库侧"
+    },
+    "traffic_schema": {
+      "class": "L2",
+      "owner": "traffic",
+      "note": "真实抓包的日志/CSV 格式 —— 观测侧"
+    },
+    "boundary_probe.transport_tokens": {
+      "class": "L1",
+      "owner": "-",
+      "note": "协议特有 Transport 组合串（既是协议语义、也从实现观测到）⇒ 折中标 L1"
+    },
+    "resources_file": {
+      "class": "L3",
+      "owner": "-",
+      "note": "★ 目标实例的资源清单（这个服务器有哪些流）= 环境事实，非协议知识"
+    },
+    "templates_file": {
+      "class": "L2",
+      "owner": "traffic",
+      "note": "真实请求模板（从 kb/数据流量 pcap 抽取）—— 观测侧"
+    }
+  },
   "note": "协议 Profile：换协议时只需新增一份 <protocol>/profile.json + 对应资源清单/请求模板，raw_writer 与 prompt 渲染代码零改动。raw_format 定义报文格式：request_line=请求行模板(占位符 method/url/version/argument)，header_line=头部行模板(占位符 key/value)，trailing_blank_line=每条消息后是否追加空行(消息分隔)。allowed_methods=目标程序 testOnDemandRTSPServer 实际实现的方法子集（8 个），用于过滤 LLM 从完整 live555 库推断出的协议方法全集（REGISTER/DEREGISTER/RECORD/ANNOUNCE/REDIRECT 会 405）。url_placeholders 把 LLM 生成的 <server>/<stream> 占位符替换成真实地址。seedgen.canonical_flow 定义 RTSP 黄金路径（规范完整会话）。seedgen.state_changing/required_headers/precondition/session_header/url_template = 协议客观结构知识（原 expert_note v2 客观维度 + 会话语义），迁移到 profile（不再由主观 expert_note 承载，也不被 build_hub 清理）。"
 }

@@ -380,7 +380,8 @@ def _write_source_manifest(protocol: str, sources: list[str],
                             skeleton_count: int = 0,
                             aspect_counts: dict | None = None,
                             required_headers_count: int = 0,
-                            state_machine_counts: dict | None = None) -> Path:
+                            state_machine_counts: dict | None = None,
+                            session_semantics_count: int = 0) -> Path:
     """写中枢的**本次源集合**清单（``per_source/<协议>/sources.json``）。
 
     ★ 它是「本次实验的知识来源清单」的**唯一权威**：
@@ -420,6 +421,14 @@ def _write_source_manifest(protocol: str, sources: list[str],
                     "（aspect=required_headers, authority=profile）"
                     "⇒ 组装端不再直读 profile.json 的这份知识。",
         },
+        "session_semantics": {
+            "count": session_semantics_count,
+            "source": "expert_note",
+            "note": "★ 批次 2.5 F3：profile 的会话语义三段"
+                    "（precondition/session_header/url_template）已物化进中枢"
+                    "（authority=expert_note）⇒ 只在构建 expert_note 源时产生"
+                    "⇒ RFC 单源实验自动为空"},
+
     }
     path = root / "sources.json"
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n",
@@ -586,6 +595,103 @@ def _materialize_skeleton(protocol: str, *, exclude_dims: tuple = ()) -> int:
     print(f"[骨架] 已物化 {len(facts)} facts → "
           f"{shown}（authority={SKELETON_SOURCE_NAME}）")
     return len(facts)
+
+
+def _materialize_profile_semantics(protocol: str) -> int:
+    """★ 批次 2.5（F3）：把 profile.json 的**会话语义三段**物化进中枢。
+
+    ★ 为什么：``precondition`` / ``session_header`` / ``url_template`` 原本是
+      **消费端直读 profile.json** 的 ⇒ 它们**不经过** ``source_set`` 过滤
+      ⇒ **即使做 RFC 单源实验，这三段专家知识也会混进来**（实测
+      ``bucket_origin`` = ``{facts: False, profile: True}``）。
+      ⇒ 改为**物化进中枢**、``authority=expert_note``
+      ⇒ 走 claim 级 authority 过滤 ⇒ **RFC 单源时自动为空**（纯净）。
+
+    ★ **只在构建 expert_note 源时调用** ⇒ 「知识产出与谁构建它绑定」
+      ⇒ 纯 RFC 构建的中枢里**根本没有**这三段 ⇒ 消费端只管读中枢
+      ⇒ **单一入口**成立（不再有 profile 直读旁路）。
+
+    ★ 三段的取值形态必须与消费端的 facts 分发逻辑对齐：
+      · ``precondition``  ⇒ 消费端 ``preconditions[sname].append(val)``
+        ⇒ **每个前置方法一条** fact（val = 前置方法名，字符串）
+      · ``session_header`` ⇒ 消费端 ``session_headers[sname].append(val)``
+        ⇒ **每条注入规则一条** fact（val = ``{header, from_occurrence}``）
+      · ``url_template`` ⇒ 消费端 ``url_templates[sname] = val``
+        ⇒ **每个方法一条** fact（val = 模板字符串）
+
+    Returns:
+        物化出的事实条数。
+    """
+    prof = paths.target_profile(protocol)
+    if not prof.is_file():
+        print("[会话语义] ★ %s 无 profile.json ⇒ 跳过物化" % protocol)
+        return 0
+    try:
+        data = json.loads(prof.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        print("[会话语义] profile.json 解析失败: %s ⇒ 跳过物化" % exc)
+        return 0
+    sg = data.get("seedgen") or {}
+    pre = sg.get("precondition") or {}
+    sess = sg.get("session_header") or {}
+    urls = sg.get("url_template") or {}
+    if not (pre or sess or urls):
+        print("[会话语义] %s profile.json 无三段 ⇒ 跳过" % protocol)
+        return 0
+
+    def _view(method: str, aspect: str, value: dict, idx: int) -> dict:
+        return {
+            "fact_key": {
+                "protocol": protocol, "version": "1.0",
+                "subject": {"type": "method", "name": method,
+                            "qualifiers": {}, "path": []},
+                "aspect": aspect,
+                "condition": {"type": "always"},
+            },
+            "resolution": None,
+            "all_claims": [{
+                "claim_id": "c2_ps_%s_%s_%d" % (aspect, method, idx),
+                "fact_id": "f2_ps_%s_%s_%d" % (aspect, method, idx),
+                "value": value,
+                "epistemic_type": "normative",
+                "authority": "expert_note",
+                "scope": None,
+                "evidence_summary": ["profile.seedgen.%s" % aspect],
+                "confidence": None,
+            }],
+        }
+
+    lines: list[str] = []
+    for method in sorted(pre):
+        for i, prereq in enumerate(pre[method] or []):
+            lines.append(json.dumps(_view(
+                method, "precondition",
+                {"type": "str", "data": str(prereq)}, i),
+                ensure_ascii=False))
+    for method in sorted(sess):
+        for i, rule in enumerate(sess[method] or []):
+            lines.append(json.dumps(_view(
+                method, "session_header",
+                {"type": "struct", "data": dict(rule or {})}, i),
+                ensure_ascii=False))
+    for method in sorted(urls):
+        lines.append(json.dumps(_view(
+            method, "url_template",
+            {"type": "str", "data": str(urls[method] or "")}, 0),
+            ensure_ascii=False))
+
+    dest_dir = paths.per_source_facts_dir(protocol, "expert_note")
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / "expert_note.jsonl"
+    with dest.open("a", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+    try:
+        shown = _repo_rel(dest)
+    except ValueError:
+        shown = dest
+    print("[会话语义] 已物化 %d 条会话语义事实 → %s（authority=expert_note）"
+          % (len(lines), shown))
+    return len(lines)
 
 
 def _materialize_required_headers(protocol: str) -> int:
@@ -1068,16 +1174,15 @@ def main(argv=None) -> int:
     parser.add_argument("--with-rules", action="store_true",
                         help="★ 批次 1.6（D-7 选项 A）：把**语义规则的发布**纳入"
                              "本批次 ⇒ 清空语义四库后重新发布")
-    parser.add_argument("--auto-republish-rules", action="store_true",
-                        help="★ 批次 2.5（D20-丁）：清空后**自动重发布**语义规则 "
-                             "⇒ 语义四库变成**可再生的派生资产**。"
-                             "★ **无需 LLM**：源产物 "
-                             "`derived/exp_semantic_gain/group_E{1,2}/rules.jsonl` "
-                             "已冻结入库，重发布只是「质量闸 + 分流」的纯 CPU 操作；"
-                             "实测删除后重发布**逐字节一致**。"
-                             "（与 --with-rules 的差别：本开关在**未**传 "
-                             "--with-rules 时也生效）")
-    # ★★ 协议显式化：不传则报错，避免「默认 rtsp」的隐式误跑/批量。
+    parser.add_argument("--no-republish-rules", action="store_true",
+                        help="★ 批次 2.5（D20-丁+）：**不要**在清空后自动重发布语义规则 "
+                             "⇒ 本次中枢**不含**语义四库"
+                             "（legal_boundary / response_expectation 为空）。"
+                             "★ 默认**会**自动重发布 —— 语义四库是**可再生的派生资产**"
+                             "（源产物 `derived/exp_semantic_gain/group_E{1,2}/rules.jsonl` "
+                             "已冻结入库；重发布只是「质量闸 + 分流」的纯 CPU 操作，**无需 LLM**；"
+                             "实测删除后重发布**逐字节一致**）⇒ 「中枢里的一切都是本次的」"
+                             "不变量成立，语义规则**永不丢失**。")
     parser.add_argument("--protocol", required=True,
                         help="本次处理的目标协议（**单个**），如 rtsp / sip / smtp")
     parser.add_argument("--no-clean", action="store_true",
@@ -1222,6 +1327,17 @@ def main(argv=None) -> int:
     skeleton_count = _materialize_skeleton(
         protocol, exclude_dims=tuple(args.exclude_skeleton_dims or ()))
 
+    # ---- ③'' 物化**会话语义三段**（★ 批次 2.5 F3）---------------------------
+    #   ★ **只在构建 expert_note 源时物化** ⇒ 「知识产出与谁构建它绑定」
+    #     ⇒ 纯 RFC 构建的中枢里**没有**这三段 ⇒ 消费端只读中枢
+    #     ⇒ **消除 profile 直读旁路**（RFC 单源实验的纯净性）
+    session_semantics_count = 0
+    if "expert_note" in sources:
+        session_semantics_count = _materialize_profile_semantics(protocol)
+    else:
+        print("[会话语义] 本次未构建 expert_note 源 ⇒ **不物化**会话语义三段"
+              "（⇒ RFC 单源实验里 precondition/session_header/url_template 为空）")
+
     # ---- ③'' 物化必填头清单（★ 批次 1.6 步 4）-----------------------------
     #   `required_headers` 是**知识** ⇒ 必须住在中枢里 ⇒ 组装端不再直读
     #   profile.json 的这份知识（仍保留兼容期回退）。
@@ -1235,16 +1351,15 @@ def main(argv=None) -> int:
     # ---- ④ 语义规则纳入本批次（D-7 选项 A）----------------------------------
     if args.with_rules:
         _republish_rules(protocol)
-    elif args.auto_republish_rules:
-        # ★ 批次 2.5（D20-丁）：清空后**自动重发布** ⇒ 语义四库是可再生派生资产
+    elif args.no_republish_rules:
+        if not args.no_purge:
+            print("[规则] ★ 已指定 --no-republish-rules ⇒ 本次中枢**不含**语义规则"
+                  "（legal_boundary / response_expectation 为空）")
+    else:
+        # ★ 批次 2.5（D20-丁+）：清空后**默认自动重发布** ⇒ 语义四库是可再生派生资产
         print("[规则] ★ 自动重发布（语义四库可从**冻结入库**的 B-10 源产物重建，"
               "**无需 LLM**；实测删除后重发布逐字节一致）")
         _auto_republish_rules(protocol)
-    elif not args.no_purge:
-        print("[规则] ★ 语义四库已随中枢清空而清空，且**未**指定 --with-rules "
-              "/ --auto-republish-rules ⇒ 本次中枢**不含**语义规则"
-              "（legal_boundary / response_expectation 为空）。"
-              "★ 可加 --auto-republish-rules 免 LLM 重建（源产物已冻结入库）。")
 
     # ---- ⑤ 各源的状态机贡献统计（★ 批次 2.3）-----------------------------
     #   ★ 各源的状态机知识**全部保留**进中枢；消解/择一留给后期 LLM 判别
@@ -1340,6 +1455,7 @@ def main(argv=None) -> int:
 
     # ---- ⑥ 写本次源集合清单（唯一权威）-------------------------------------
     _write_source_manifest(protocol, sources, build_ids,
+                            session_semantics_count=session_semantics_count,
                             skeleton_count=skeleton_count,
                             aspect_counts=aspect_counts,
                             required_headers_count=required_headers_count,

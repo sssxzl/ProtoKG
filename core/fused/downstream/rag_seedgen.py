@@ -931,15 +931,18 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     statuses: dict[str, str] = {}
     protocol: dict[str, list] = {}
     actors: dict[str, list] = {}
-    preconditions: dict[str, list] = {
-        m: list(ps) for m, ps in (_struct.get("precondition") or {}).items()
-    }
-    session_headers: dict[str, list] = {
-        m: [dict(x) for x in rs]
-        for m, rs in (_struct.get("session_header") or {}).items()
-    }
-    url_templates: dict[str, str] = dict(_struct.get("url_template") or {})
-    _state_changing_profile = set(_struct.get("state_changing") or [])
+    # ★★ 批次 2.5（F3）：**会话语义三段不再直读 profile.json** ⇒ 改为
+    #   **只从中枢 facts 来**（三个 aspect 在 facts 分发里已有分支）
+    #   ⇒ 走 claim 级 authority 过滤 ⇒ **RFC 单源实验里这三段自动为空**
+    #   （专家知识不再混入）。它们由 ``build_hub`` 在**构建 expert_note 源时**
+    #   物化进中枢（authority=expert_note）⇒「知识产出与谁构建它绑定」。
+    preconditions: dict[str, list] = {}
+    session_headers: dict[str, list] = {}
+    url_templates: dict[str, str] = {}
+    # ★ 批次 2.5（F3）：``state_changing`` 也**不再直读 profile**
+    #   ⇒ 改为**从 facts 的 target_state 推导**（出现在具体状态转移里的方法
+    #   ⇒ 规范知识）⇒ 随源集合自然变化，不再是专家知识旁路。
+    _state_changing_from_facts: set[str] = set()
     legal_boundaries: dict[str, list] = {}
     response_expectations: dict[str, list] = {}  # 处理期望（SemFuzz 的 P）
     vuln_patterns: dict[str, list] = {}  # 漏洞模式（GLMFuzz 式，vuln 源）
@@ -1101,6 +1104,11 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                 dst = _normalize_state(dst)
                 if src and src != "*" and dst and dst != "$current":
                     transitions.append((src, method, dst))
+                    # ★ 批次 2.5（F3）：出现在**具体转移**里的方法 ⇒ 改变状态
+                    #   ⇒ 由**规范状态机**推导，不再直读 profile 的
+                    #   ``state_changing``（专家知识旁路）
+                    if method:
+                        _state_changing_from_facts.add(str(method).upper())
                     # ★ 批次 2.1（P1）：记录来源（用于「源派生优先、骨架兜底」）
                     _transitions_auth.append(
                         (claims[0].get("authority", "") if claims else ""))
@@ -1139,17 +1147,17 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         for _m, _hs in (_struct.get("required_headers") or {}).items():
             required_headers.setdefault(_m, []).extend(list(_hs))
     # profile 兜底的客观结构知识也计入可用源（供降级决策识别「有结构知识」）
-    if required_headers or preconditions or url_templates or _state_changing_profile:
+    if required_headers or preconditions or url_templates:
         available_sources.add("profile")
 
     # ★ profile 兜底的存在性（**只取 profile 侧**，facts 叠加后仍要能分列）
     _profile_has: dict[str, bool] = {
         "required_headers": bool(_struct.get("required_headers"))
                             and not _has_required_facts,
-        "precondition": bool(_struct.get("precondition")),
-        "session_header": bool(_struct.get("session_header")),
-        "url_template": bool(_struct.get("url_template")),
-        "methods": bool(_state_changing_profile),
+        "precondition": bool(preconditions),
+        "session_header": bool(session_headers),
+        "url_template": bool(url_templates),
+        "methods": bool(_state_changing_from_facts),
     }
 
     # ★★ 批次 2.3：**各源的状态机全部保留**，消解/择一留给**后期 LLM**。
@@ -1225,11 +1233,11 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     # 客观结构知识兜底：state_changing 从 profile 注入（fact 若显式给则已覆盖）。
     # 仅当 profile 声明了 state_changing 才注入（不臆断其他协议的改状态语义）；
     # 方法全集 = 已见 methods ∪ profile 声明集（保证 OPTIONS 等也判 False）。
-    if _state_changing_profile:
-        for name in sorted(set(methods) | _state_changing_profile):
+    if _state_changing_from_facts:
+        for name in sorted(set(methods) | _state_changing_from_facts):
             info = methods.setdefault(name, {})
             if "state_changing" not in info:
-                info["state_changing"] = name in _state_changing_profile
+                info["state_changing"] = name in _state_changing_from_facts
     # P0：provenance set → sorted list（可序列化、稳定序）
     for info in methods.values():
         if "declared_by" in info:

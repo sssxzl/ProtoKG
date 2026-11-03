@@ -262,6 +262,63 @@
       "_enabled_20261103": "★ 2026-11-03 开启：取值池已补齐（批次 2.0）、必填头不再空 ⇒ ⑤ 层 value-pool-boundary / cseq-replay 规则**第一次有输入**。底料实测：rtsp/B 39、smtp/B 78、sip/A~D 21~25 条（published-corpus）；rtsp/A,C,D 3 条、smtp/A,C,D 6 条（traffic-capture）。"
     }
   },
+    "knowledge_channels": {
+    "seedgen.precondition": {
+      "class": "L2",
+      "owner": "expert_note",
+      "note": "协议会话语义（方法前置条件）—— 实现/专家知识，规范文本未给出"
+    },
+    "seedgen.session_header": {
+      "class": "L2",
+      "owner": "expert_note",
+      "note": "会话头注入规则（Session 从第几次出现起带）—— 实现/专家知识"
+    },
+    "seedgen.url_template": {
+      "class": "L2",
+      "owner": "expert_note",
+      "note": "URL 结构模板（{stream}/track{N}）—— 实现/专家知识"
+    },
+    "seedgen.state_changing": {
+      "class": "L2",
+      "owner": "expert_note",
+      "note": "状态变更方法集合 —— 实现/专家知识"
+    },
+    "seedgen.required_headers": {
+      "class": "L1",
+      "owner": "rfc",
+      "note": "★ RFC 本身规定必须出现的头 ⇒ 规范知识"
+    },
+    "allowed_methods": {
+      "class": "L2",
+      "owner": "source",
+      "note": "★ profile.note 自述：目标程序实际实现的方法子集 ⇒ 源码侧；用它裁剪 RFC 抽集会砍掉 ANNOUNCE/RECORD/REDIRECT（真实 RTSP 方法）"
+    },
+    "vuln": {
+      "class": "L2",
+      "owner": "vuln",
+      "note": "漏洞模式提示（stream_hints / crash_streams）—— 漏洞库侧"
+    },
+    "traffic_schema": {
+      "class": "L2",
+      "owner": "traffic",
+      "note": "真实抓包的日志/CSV 格式 —— 观测侧"
+    },
+    "boundary_probe.transport_tokens": {
+      "class": "L1",
+      "owner": "-",
+      "note": "协议特有 Transport 组合串（既是协议语义、也从实现观测到）⇒ 折中标 L1"
+    },
+    "resources_file": {
+      "class": "L3",
+      "owner": "-",
+      "note": "★ 目标实例的资源清单（这个服务器有哪些流）= 环境事实，非协议知识"
+    },
+    "templates_file": {
+      "class": "L2",
+      "owner": "traffic",
+      "note": "真实请求模板（从 kb/数据流量 pcap 抽取）—— 观测侧"
+    }
+  },
   "note": "SIP 协议 Profile（RFC 3261）：文本头部协议（请求行 + 头部 + 空行 + 可选 body）。raw_format.request_line=\"{method} {url} {version}\"（version=SIP/2.0）；header_line=\"{key}: {value}\"；trailing_blank_line=true（消息间空行分隔）。seedgen.canonical_flow=REGISTER→INVITE→ACK→BYE 黄金路径。state_changing=会改变 dialog/会话状态的方法（REGISTER 注册、INVITE 建 dialog、BYE 结束、CANCEL 取消、SUBSCRIBE 订阅）。required_headers=SIP 每个方法必需头部（Via/From/To/Call-ID/CSeq/Max-Forwards）。precondition=ACK/BYE/CANCEL 需先 INVITE（dialog 内方法依赖）。session_header=Call-ID 标识同一 dialog（跨消息复用）。",
   "traffic_schema": {
     "log_files": [
