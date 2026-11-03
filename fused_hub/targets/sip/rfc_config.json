@@ -1,5 +1,6 @@
 {
   "protocol": "sip",
+  "spec_version": "RFC 3261",
   "method_sections": [
     "7.1",
     "9",

@@ -166,7 +166,8 @@ def save_rules(protocol: str, rules: Iterable[SemanticRule]) -> Path:
 
 
 def publish_rules(protocol: str, rows: Iterable[Any], *,
-                    replace: bool = True) -> dict:
+                    replace: bool = True,
+                    spec_versions: Optional[Iterable[str]] = None) -> dict:
     """把规则**分流**发布进四库（**受控通道**：实验产物 → 生产库）。
 
     ★ 分流规则（两层模型的正确用法）：
@@ -195,6 +196,18 @@ def publish_rules(protocol: str, rows: Iterable[Any], *,
     def _count(reason: str) -> None:
         rejects[reason] = rejects.get(reason, 0) + 1
 
+    # ★★ 批次 2.5（F1）：**按协议过滤**规则（防跨协议污染）。
+    #   背景：B-10 实验产物 ``group_E{1,2}/rules.jsonl`` 是**多协议混合**的
+    #   （实测 RFC 2326:11 / RFC 3261:9 / RFC 5321:1）⇒ 若不过滤，
+    #   **SIP 的 RFC 3261 规则会进 RTSP 的库** ⇒ 投影出「Supported/Via 必须
+    #   存在」这类与 RTSP 无关的约束（RTSP 库实测 5 条里 3 条是 SIP 的）。
+    #   判据：``rule.evidence.spec_version`` ∈ 允许集合
+    #   （允许集合来自 ``fused_hub/targets/<协议>/rfc_config.json`` 的
+    #   ``spec_version``；缺省 = **不过滤**，保持旧行为）。
+    _allowed_specs: Optional[set[str]] = None
+    if spec_versions is not None:
+        _allowed_specs = {str(s).strip() for s in spec_versions if str(s).strip()}
+
     for row in rows:
         rule: Any = row
         if isinstance(row, dict):
@@ -206,6 +219,12 @@ def publish_rules(protocol: str, rows: Iterable[Any], *,
         if not isinstance(rule, SemanticRule):
             _count("not_a_rule")
             continue
+        # ★★ 跨协议过滤（见上文 F1 说明）：spec_version 不在允许集合 ⇒ 拒绝
+        if _allowed_specs is not None:
+            _sv = str(getattr(rule.evidence, "spec_version", "") or "").strip()
+            if _sv not in _allowed_specs:
+                _count("cross_protocol")
+                continue
         if rule.constraint is None:
             _count("no_constraint")
             demoted.append(KnowledgeCandidate(

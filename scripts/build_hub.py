@@ -390,6 +390,24 @@ SEMANTIC_RULE_SOURCES: tuple[str, ...] = (
 )
 
 
+def _protocol_spec_versions(protocol: str) -> list[str] | None:
+    """本协议的**规范号**（如 ``["RFC 2326"]``）；声明缺失 ⇒ 返回 None（不过滤）。
+
+    ★ 批次 2.5（F1）：语义规则必须按协议过滤 —— B-10 的实验产物是多协议混合的
+      （实测 RFC 2326:11 / RFC 3261:9 / RFC 5321:1）⇒ 不过滤会把 SIP 的
+      RFC 3261 规则灌进 RTSP 库（实测 RTSP 库 5 条里 3 条是 SIP 的）。
+    """
+    cfg_path = paths.target_rfc_config(protocol)
+    if not cfg_path.is_file():
+        return None
+    try:
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    sv = str(cfg.get("spec_version") or "").strip()
+    return [sv] if sv else None
+
+
 def _republish_rules(protocol: str) -> None:
     """把 B-10 实验产出的规则**重新发布**进中枢的语义四库（D-7 选项 A）。
 
@@ -418,9 +436,14 @@ def _republish_rules(protocol: str) -> None:
         print("[规则] ★ 未找到可发布的规则产物（B-10 实验目录不存在）"
               "⇒ 本次中枢**不含**语义规则")
         return
-    report = publish_rules(protocol, rows, replace=True)
+    report = publish_rules(protocol, rows, replace=True,
+                           spec_versions=_protocol_spec_versions(protocol))
     print(f"[规则] 已重新发布进中枢语义四库：权威 {report['authoritative']} 条 / "
           f"候选 {report['candidate']} 条 / 拒绝 {report['rejects']}")
+    if (report.get("rejects") or {}).get("cross_protocol"):
+        print(f"[规则] ★ 已按协议过滤掉 "
+              f"{report['rejects']['cross_protocol']} 条**跨协议**规则"
+              f"（{_protocol_spec_versions(protocol)}）—— 批次 2.5 F1")
 
 
 #: ★ 批次 1.6（步 0.5）：中枢里的**骨架源目录名**。

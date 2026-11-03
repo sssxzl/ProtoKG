@@ -1,5 +1,6 @@
 {
   "protocol": "smtp",
+  "spec_version": "RFC 5321",
   "method_sections": [
     "4.1.1",
     "3",

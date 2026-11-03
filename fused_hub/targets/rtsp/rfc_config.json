@@ -1,5 +1,6 @@
 {
   "protocol": "rtsp",
+  "spec_version": "RFC 2326",
   "method_sections": [
     "10"
   ],
