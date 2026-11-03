@@ -141,10 +141,12 @@ def test_focus_group_config_shape():
     for g in ("A", "B", "D"):
         assert FOCUS_GROUP_CONFIG[g]["dict_kind"] == "base"
     assert FOCUS_GROUP_CONFIG["C"]["dict_kind"] == "targeted"
-    # 期望条数（★ 2026-11-03 按实测重新标定，见 test_rq3_common 的同名用例）
-    assert FOCUS_GROUP_CONFIG["A"]["expect_seeds"] == 52
-    for g in ("B", "C", "D"):
-        assert FOCUS_GROUP_CONFIG[g]["expect_seeds"] == 58
+    # 期望条数（★ 2026-11-03 按实测重新标定，见 test_rq3_common 的同名用例；
+    #            批次 2.4 ⑤ 层 action_seq 开启后再次重标定）
+    assert FOCUS_GROUP_CONFIG["A"]["expect_seeds"] == 55
+    assert FOCUS_GROUP_CONFIG["B"]["expect_seeds"] == 85
+    assert FOCUS_GROUP_CONFIG["C"]["expect_seeds"] == 61
+    assert FOCUS_GROUP_CONFIG["D"]["expect_seeds"] == 61
 
 
 def test_resolve_config_focus_groups():

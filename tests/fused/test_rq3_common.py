@@ -70,12 +70,15 @@ def test_config_group_expectations_match_spec():
     ★ 2026-11-03（批次 2.0 / P0）**按实测重新标定**：RFC 源补齐字段取值
       ⇒ 知识中枢 headers 取值池变化 ⇒ 种子内容与字典 token 数变化
       ⇒ 原值（38/50/123）与实测脱节 ⇒ 重新标定为 52/58/226。
+    ★ 2026-11-03 批次 2.4（⑤ 层 action_seq 开启）后再次重标定为
+      55/85/61/61（字典 token 24/24/226/24 不变）。
       详见 `local/RQ3_技术方案_20261024.md` 的「重新标定」小节。
     """
     cfg = C.load_config()
-    assert cfg["groups"]["A"]["expect_seeds"] == 52
-    for g in ("B", "C", "D"):
-        assert cfg["groups"][g]["expect_seeds"] == 58
+    assert cfg["groups"]["A"]["expect_seeds"] == 55
+    assert cfg["groups"]["B"]["expect_seeds"] == 85
+    assert cfg["groups"]["C"]["expect_seeds"] == 61
+    assert cfg["groups"]["D"]["expect_seeds"] == 61
     for g in ("A", "B", "D"):
         assert cfg["groups"][g]["expect_dict_tokens"] == 24
     assert cfg["groups"]["C"]["expect_dict_tokens"] == 226

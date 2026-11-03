@@ -106,21 +106,23 @@ ACTION_SEQ_LAYER_NAME = "action_seq"
 #:   ``fused_hub/targets/<协议>/profile.json`` 的 ``seedgen.focus_group``
 #:   （指定 ``--target-env`` 时则用 ``seedgen.environments.<env>.focus_group``）
 #:   ⇒ 见 `main()` 里读 `seedgen_cfg.get("focus_group")` 的那段。
-#:   ★ 2026-11-03（批次 2.0 / P0）按实测**重新标定**（RFC 源补齐字段取值
-#:     ⇒ 取值池变化 ⇒ 种子内容与字典 token 数变化）。
+#:   ★ 2026-11-03 两次按实测**重新标定**：
+#:     ① 批次 2.0（P0，RFC 源补齐字段取值）⇒ 52/58/58/58
+#:     ② 批次 2.4（⑤ 层 action_seq 开启）⇒ **55/85/61/61**
+#:        （字典 token 24/24/226/24 不变；⑤ 层是**追加**的 L5 变异种子）。
 FOCUS_GROUP_CONFIG: dict = {
     "A": dict(layers=["edge_cover", "generic_danger", "canonical"],
               order="natural", dict_kind="base",
-              expect_seeds=52, expect_dict_tokens=24),
+              expect_seeds=55, expect_dict_tokens=24),
     "B": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="natural", dict_kind="base",
-              expect_seeds=58, expect_dict_tokens=24),
+              expect_seeds=85, expect_dict_tokens=24),
     "C": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="vuln-proximity", dict_kind="targeted",
-              expect_seeds=58, expect_dict_tokens=226),
+              expect_seeds=61, expect_dict_tokens=226),
     "D": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="vuln-proximity", dict_kind="base",
-              expect_seeds=58, expect_dict_tokens=24),
+              expect_seeds=61, expect_dict_tokens=24),
 }
 
 

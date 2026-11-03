@@ -17,7 +17,9 @@ kind 的 traffic norm，喂给 traffic.py 的 traffic_norm_to_facts → observed
 """
 from __future__ import annotations
 
+import json
 import re
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -37,6 +39,22 @@ _DEFAULT_TRAFFIC_SCHEMA = {
     "header_pattern": r"^([A-Za-z][A-Za-z-]*):\s*(.+)$",  # header 行（通用默认）
     "csv_fields": {},          # csv 字段名映射（如 {"method": "rtsp.method", "status": "rtsp.status"}）
 }
+
+
+#: ★ 形态合法的命令名（全大写 token，长度 2..24）
+_RE_CMD = re.compile(r"^[A-Z][A-Z0-9_-]{1,23}$")
+
+
+def _profile_allowed(protocol: str) -> set[str]:
+    """profile.json 的 allowed_methods（协议实现真实支持的命令集）。"""
+    prof = paths.target_profile(protocol)
+    if not prof.is_file():
+        return set()
+    try:
+        data = json.loads(prof.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return set()
+    return {str(m).upper() for m in (data.get("allowed_methods") or [])}
 
 
 def _load_traffic_schema(protocol: str) -> dict:
@@ -115,7 +133,8 @@ def _compile_schema_re(schema: dict) -> dict:
 
 
 def _extract_client_log(log_path: Path, run_id: str, protocol: str,
-                        schema: dict) -> list[dict]:
+                        schema: dict,
+                        known_methods: Optional[set[str]] = None) -> list[dict]:
     """从文本日志抽取 message/state_machine/outcome/field norm（正则来自 schema）。"""
     re_ = _compile_schema_re(schema)
     text = log_path.read_text(encoding="utf-8", errors="ignore")
@@ -155,6 +174,24 @@ def _extract_client_log(log_path: Path, run_id: str, protocol: str,
     src = str(log_path)
     # message：实际调用 ∪ 服务器声明（方法存在性）
     all_methods = sorted(set(methods) | set(public))
+    # ★★ 批次 2.4：**与「规范权威」求交集**（观测知识用规范知识校验）
+    #   ★ 问题：SMTP 的流量是**邮件**（正文 + base64 附件）⇒ 邮件正文里的
+    #     词被当成「方法名」⇒ 实测 smtp 抽出 **442 个伪方法**
+    #     （'0KCVZP6UZZ2UY5UTY5…'、'DISSECT_LDAP_*'），只有 11 个是真命令。
+    #   ★ 为什么不能用形态判据：邮件头（CONTENT / DATE / FROM / TO…）
+    #     **也是全大写**⇒ 形态挡不住。
+    #   ★ 为什么用规范方法集：RFC 是**规范权威**⇒ 观测到的方法名必须在
+    #     规范里存在 ⇒ 交集天然准确。
+    #   ★ 无规范方法集可用（该协议未抽 rfc 源）⇒ **不过滤**（保持现状）。
+    if known_methods:
+        _before = len(all_methods)
+        _valid = protocol_command_names(protocol, known_methods)
+        all_methods = [m for m in all_methods if m.upper() in _valid]
+        if len(all_methods) != _before:
+            print(f"[traffic] {protocol}: 方法名与规范求交集 ⇒ "
+                  f"{_before} → {len(all_methods)}（剔除 "
+                  f"{_before - len(all_methods)} 个非规范方法名）",
+                  file=sys.stderr)
     for method in all_methods:
         norms.append(_norm(
             run_id, "message", method,
@@ -368,7 +405,25 @@ def extract_packet_fields(protocol: str) -> list[dict]:
     return norms
 
 
-def extract_traffic_norms(protocol: str) -> list[dict]:
+def protocol_command_names(protocol: str,
+                           rfc_methods: Optional[set[str]] = None) -> set[str]:
+    """该协议的**合法命令名集合**（观测知识必须落在里面）。
+
+    ★ 组成：**规范（rfc 源抽出的方法名）∪ profile.allowed_methods**
+      ⇒ 只用 rfc 方法集不够（SIP 的 INFO/SUBSCRIBE 等真实方法，rfc 源因
+        章节判定漏抽 ⇒ 会误杀）；只用 allowed_methods 也不够（配置可能滞后）。
+    ★ 再加**形态**约束：全大写 token、长度 2..24
+      ⇒ 挡掉 base64 乱码（'0KCVZP6UZZ2UY5UTY5…'、'DISSECT_LDAP_*'）。
+    """
+    names = {str(m).upper() for m in (rfc_methods or set())}
+    names |= _profile_allowed(protocol)
+    return {n for n in names if _RE_CMD.match(n)}
+
+
+def extract_traffic_norms(
+        protocol: str,
+        known_methods: Optional[set[str]] = None,
+) -> list[dict]:
     """遍历 kb/<protocol>/数据流量/ 的每个 run，抽取 traffic norm（按 traffic_schema）。
 
     以 schema 声明的日志文件（log_files）所在目录为一个 run（目录名作 run_id，
@@ -396,7 +451,8 @@ def extract_traffic_norms(protocol: str) -> list[dict]:
             if name.endswith(".csv"):
                 norms.extend(_extract_csv(p, run_id, protocol, schema))
             else:
-                norms.extend(_extract_client_log(p, run_id, protocol, schema))
+                norms.extend(_extract_client_log(p, run_id, protocol, schema,
+                                                known_methods))
             break  # 优先主日志文件
     # P4-a：从 packets.ndjson 抽取应用层真实字段值（协议无关），让种子字段用真实流量值
     norms.extend(extract_packet_fields(protocol))

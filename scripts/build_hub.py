@@ -674,7 +674,8 @@ def _load_norms(protocol: str) -> list[dict]:
 
 def _build_source(source: str, norms: list[dict], registry,
                   protocol: str = "rtsp", constraints: bool = False,
-                  vuln_llm: bool = False) -> tuple[list, int]:
+                  vuln_llm: bool = False,
+                  known_methods: set | None = None) -> tuple[list, int]:
     """对某源跑 v2 映射, 返回 (facts, skipped)。constraints=True 时 rfc 源额外抽语义约束；
     vuln_llm=True 时 vuln 源做 LLM 补全（Phase 2：trigger_sequence/mutation_hint）。"""
     if source == "expert_note":
@@ -694,7 +695,10 @@ def _build_source(source: str, norms: list[dict], registry,
         # 映射 observed fact。不再依赖 norms.jsonl（v1 extractor 产物）。
         from core.fused.traffic_extractor import extract_traffic_norms
         from core.fused.traffic import traffic_norms_to_facts
-        traffic_norms = extract_traffic_norms(protocol)
+        # ★ 批次 2.4：传入**规范（rfc）的方法集**⇒ 观测到的方法名要与
+        #   规范求交集（否则 SMTP 邮件正文会被当成「方法」⇒ 442 个伪方法）
+        traffic_norms = extract_traffic_norms(
+            protocol, known_methods=known_methods)
         return traffic_norms_to_facts(traffic_norms)
     if source == "rfc":
         # rfc 源：从 kb/<protocol>/spec/*.txt 确定性抽取 rfc norm（method/field/outcome），
@@ -1040,11 +1044,26 @@ def main(argv=None) -> int:
     # ---- ① 逐源独立抽取（每次一个源；各自过闸）-----------------------------
     pending: dict[str, tuple[list, str | None]] = {}
     build_ids: dict[str, str] = {}
+    # ★ 批次 2.4：**规范（rfc）抽出的方法名集合**⇒ 传给后续源做「观测 × 规范」
+    #   求交（traffic 源用）⇒ 观测知识必须被规范知识认可。
+    known_methods: set = set()
     for source in sources:
         _LAST_BUILD_IDS.pop(protocol, None)
         facts, skipped = _build_source(source, norms, registry, protocol,
                                        constraints=args.constraints,
-                                       vuln_llm=args.vuln_llm)
+                                       vuln_llm=args.vuln_llm,
+                                       known_methods=known_methods or None)
+        if source == "rfc":
+            known_methods = {
+                str(getattr(f.fact_key.subject, "name", "")).upper()
+                for f in facts
+                if getattr(f.fact_key.subject, "type", "") == "method"
+                and getattr(f.fact_key.subject, "name", "")
+            }
+            if known_methods:
+                print(f"[规范] rfc 源给出 {len(known_methods)} 个方法名"
+                      f" ⇒ 作为后续源的校验基准: "
+                      f"{sorted(known_methods)[:10]}")
         build_id = _LAST_BUILD_IDS.pop(protocol, None)
         build_ids[source] = build_id or ""
         pending[source] = (facts, skipped, build_id)  # type: ignore[assignment]

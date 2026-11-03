@@ -8,58 +8,122 @@
     "_note": "批次 2.0（P0）重新标定：RFC 源补齐字段取值 ⇒ 知识中枢 headers 取值池变化 ⇒ 种子内容与字典 token 数变化 ⇒ 按实测重新标定（2026-11-03）。",
     "_before_p0": {
       "groups": {
-        "A": {"expect_seeds": 38, "expect_dict_tokens": 24},
-        "B": {"expect_seeds": 50, "expect_dict_tokens": 24},
-        "C": {"expect_seeds": 50, "expect_dict_tokens": 123},
-        "D": {"expect_seeds": 50, "expect_dict_tokens": 24}
+        "A": {
+          "expect_seeds": 38,
+          "expect_dict_tokens": 24
+        },
+        "B": {
+          "expect_seeds": 50,
+          "expect_dict_tokens": 24
+        },
+        "C": {
+          "expect_seeds": 50,
+          "expect_dict_tokens": 123
+        },
+        "D": {
+          "expect_seeds": 50,
+          "expect_dict_tokens": 24
+        }
       },
       "dict_kinds": {
-        "base": {"token_count": 24, "md5": "464351f88db6c3f0bdac0de01859316b"},
-        "protocol": {"token_count": 102, "md5": "77d47b7b76139212c86a84ae771c4784"},
-        "targeted": {"token_count": 123, "md5": null},
-        "targeted-compact": {"token_count": 32, "md5": null}
+        "base": {
+          "token_count": 24,
+          "md5": "464351f88db6c3f0bdac0de01859316b"
+        },
+        "protocol": {
+          "token_count": 102,
+          "md5": "77d47b7b76139212c86a84ae771c4784"
+        },
+        "targeted": {
+          "token_count": 123,
+          "md5": null
+        },
+        "targeted-compact": {
+          "token_count": 32,
+          "md5": null
+        }
       },
       "note": "base 的 md5 是仓库内固定副本 fused_hub/targets/rtsp/rtsp_base.dict 的 MD5 ⇒ P0 未影响 ⇒ 仍是当前值。"
+    },
+    "_before_20261103_batch24": {
+      "groups": {
+        "A": {
+          "expect_seeds": 38,
+          "expect_dict_tokens": 24
+        },
+        "B": {
+          "expect_seeds": 50,
+          "expect_dict_tokens": 24
+        },
+        "C": {
+          "expect_seeds": 50,
+          "expect_dict_tokens": 123
+        },
+        "D": {
+          "expect_seeds": 50,
+          "expect_dict_tokens": 24
+        }
+      },
+      "note": "2026-11-03 批次 2.4：⑤ 层 action_seq 开启（rtsp/B +27、smtp/B +70、sip/C +24 条）⇒ 种子数与字典 token 数重新标定"
     }
   },
   "groups": {
     "A": {
       "label": "A 守正",
-      "layers": ["edge_cover", "generic_danger", "canonical"],
+      "layers": [
+        "edge_cover",
+        "generic_danger",
+        "canonical"
+      ],
       "order": "natural",
       "dict_kind": "base",
       "dict_file": "rtsp_base.dict",
-      "expect_seeds": 52,
+      "expect_seeds": 55,
       "expect_dict_tokens": 24,
       "in_paper_table18": true
     },
     "B": {
       "label": "B 漏洞导向",
-      "layers": ["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
+      "layers": [
+        "edge_cover",
+        "generic_danger",
+        "vuln_boundary",
+        "canonical"
+      ],
       "order": "natural",
       "dict_kind": "base",
       "dict_file": "rtsp_base.dict",
-      "expect_seeds": 58,
+      "expect_seeds": 85,
       "expect_dict_tokens": 24,
       "in_paper_table18": true
     },
     "C": {
       "label": "C 完整聚焦",
-      "layers": ["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
+      "layers": [
+        "edge_cover",
+        "generic_danger",
+        "vuln_boundary",
+        "canonical"
+      ],
       "order": "vuln-proximity",
       "dict_kind": "targeted",
       "dict_file": "c_targeted.dict",
-      "expect_seeds": 58,
+      "expect_seeds": 61,
       "expect_dict_tokens": 226,
       "in_paper_table18": true
     },
     "D": {
       "label": "D 解耦（附录）",
-      "layers": ["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
+      "layers": [
+        "edge_cover",
+        "generic_danger",
+        "vuln_boundary",
+        "canonical"
+      ],
       "order": "vuln-proximity",
       "dict_kind": "base",
       "dict_file": "rtsp_base.dict",
-      "expect_seeds": 58,
+      "expect_seeds": 61,
       "expect_dict_tokens": 24,
       "in_paper_table18": false
     }
@@ -105,7 +169,13 @@
       "note": "AFLNet 无 enrich_* 逻辑（镜像内 grep 命中 0）；仍用 --network none 以保持网络拓扑为控制变量"
     }
   },
-  "reps": [1, 2, 3, 4, 5],
+  "reps": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
   "duration_hours": 24,
   "bootstrap_budget_hours": 6,
   "ports": {
@@ -122,10 +192,33 @@
   },
   "container_template": "rq3_{group}_{fuzzer}_r{rep}",
   "fuzzer_args": [
-    "-d", "-i", "/seeds_work", "-x", "{DICT}", "-o", "/out",
-    "-N", "tcp://127.0.0.1/8560", "-P", "RTSP", "-D", "10000",
-    "-q", "3", "-s", "3", "-E", "-K", "-R", "-m", "none", "-t", "1000",
-    "--", "./testOnDemandRTSPServer", "8560"
+    "-d",
+    "-i",
+    "/seeds_work",
+    "-x",
+    "{DICT}",
+    "-o",
+    "/out",
+    "-N",
+    "tcp://127.0.0.1/8560",
+    "-P",
+    "RTSP",
+    "-D",
+    "10000",
+    "-q",
+    "3",
+    "-s",
+    "3",
+    "-E",
+    "-K",
+    "-R",
+    "-m",
+    "none",
+    "-t",
+    "1000",
+    "--",
+    "./testOnDemandRTSPServer",
+    "8560"
   ],
   "vm": {
     "host": "192.168.37.130",
@@ -146,12 +239,22 @@
     "assert_enriched_seeds_zero": true,
     "assert_enriched_queue_zero": true,
     "assert_chat_times_zero": true,
-    "snapshot_seconds": [3600, 7200]
+    "snapshot_seconds": [
+      3600,
+      7200
+    ]
   },
   "docx": {
     "file": "local/实验方案_详细版.docx",
     "table_index": 18,
-    "table_header": ["聚焦组", "种子数", "dry-run 通过率%", "分支覆盖%", "崩溃数", "变异命中率"],
+    "table_header": [
+      "聚焦组",
+      "种子数",
+      "dry-run 通过率%",
+      "分支覆盖%",
+      "崩溃数",
+      "变异命中率"
+    ],
     "table_rows": 4,
     "table_cols": 6,
     "preceding_paragraph": "Live555（RTSP，text）",
