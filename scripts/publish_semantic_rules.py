@@ -54,6 +54,23 @@ def _read_rows(path: Path) -> list[dict]:
     return rows
 
 
+def _protocol_spec_versions(protocol: str) -> list[str] | None:
+    """本协议的规范号（来自 ``fused_hub/targets/<协议>/rfc_config.json``）。
+
+    ★ 批次 2.5（F1）：语义规则必须按协议过滤 —— B-10 的实验产物是
+      **多协议混合**的（实测 RFC 2326:11 / RFC 3261:9 / RFC 5321:1）。
+    """
+    cfg = REPO_ROOT / "fused_hub" / "targets" / protocol / "rfc_config.json"
+    if not cfg.is_file():
+        return None
+    try:
+        data = json.loads(cfg.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    sv = str(data.get("spec_version") or "").strip()
+    return [sv] if sv else None
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         description="把语义规则分流发布进权威库/候选库")
@@ -65,6 +82,11 @@ def main(argv: list[str] | None = None) -> int:
                     help="覆盖权威库（默认**追加**并按 rule_id 去重）")
     ap.add_argument("--dry-run", action="store_true",
                     help="只跑质量闸并打印报告，**不写盘**")
+    ap.add_argument("--all-specs", action="store_true",
+                    help="**不按协议过滤**（默认按 fused_hub/targets/<协议>/"
+                         "rfc_config.json 的 spec_version 过滤）—— "
+                         "批次 2.5 F1：跨协议规则必须过滤，否则 SIP 的 "
+                         "RFC 3261 规则会进 RTSP 库")
     args = ap.parse_args(argv)
 
     protocol = args.protocol
@@ -84,16 +106,28 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         rows = load_rules(path)
 
+    # ★ 批次 2.5（F1）：默认**按协议过滤**（spec_version 来自 rfc_config）
+    specs = None
+    if not args.all_specs:
+        specs = _protocol_spec_versions(protocol)
+        if specs is None:
+            print("★ 本协议未声明 spec_version（rfc_config.json）"
+                  "⇒ **不按协议过滤**（如需强制过滤请手动指定）")
+        else:
+            print(f"★ 按协议过滤：只接受 {specs} 的规则")
+
     if args.dry_run:
         # 干跑：只做质量闸（不写盘）—— 用临时目录承载
         import tempfile
         with tempfile.TemporaryDirectory():
-            report = publish_rules(protocol, rows, replace=True)
+            report = publish_rules(protocol, rows, replace=True,
+                                   spec_versions=specs)
         report = dict(report)
         report["dry_run"] = True
         report["source"] = str(args.src or library_path(protocol, "authoritative"))
     else:
-        report = publish_rules(protocol, rows, replace=args.replace)
+        report = publish_rules(protocol, rows, replace=args.replace,
+                               spec_versions=specs)
         report["source"] = str(args.src or library_path(protocol, "authoritative"))
 
     print("=== 发布报告 ===")

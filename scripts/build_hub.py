@@ -433,10 +433,15 @@ def _write_source_manifest(protocol: str, sources: list[str],
 
 
 #: ★ 批次 1.6：语义规则的来源候选（B-10 实验产物；发布进中枢的语义四库）。
-SEMANTIC_RULE_SOURCES: tuple[str, ...] = (
-    "derived/exp_semantic_gain/group_E1/rules.jsonl",
-    "derived/exp_semantic_gain/group_E2/rules.jsonl",
-)
+#: ★ 批次 2.5（D20-丁+）：**可用环境变量覆盖** ⇒ 能从「重抽后的新批次」发布，
+#:   而不必改代码。分隔符 = ``;``（路径本身不含分号）。
+#:   例：``PROTORAG_RULE_SOURCES="derived/exp_semantic_gain/group_E3/rules.jsonl"``
+SEMANTIC_RULE_SOURCES: tuple[str, ...] = tuple(
+    p.strip() for p in os.environ.get(
+        "PROTORAG_RULE_SOURCES",
+        "derived/exp_semantic_gain/group_E1/rules.jsonl;"
+        "derived/exp_semantic_gain/group_E2/rules.jsonl",
+    ).split(";") if p.strip())
 
 
 def _protocol_spec_versions(protocol: str) -> list[str] | None:
