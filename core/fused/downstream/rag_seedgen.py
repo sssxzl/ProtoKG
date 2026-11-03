@@ -905,6 +905,8 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     required_headers: dict[str, list] = {}
     _has_required_facts = False
     transitions: list = []
+    # ★ 批次 2.1（P1）：每条转移的来源（用于「源派生优先、骨架兜底」规则）
+    _transitions_auth: list = []
     method_sequences: list = []
     security: list = []
     statuses: dict[str, str] = {}
@@ -1080,6 +1082,9 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                 dst = _normalize_state(dst)
                 if src and src != "*" and dst and dst != "$current":
                     transitions.append((src, method, dst))
+                    # ★ 批次 2.1（P1）：记录来源（用于「源派生优先、骨架兜底」）
+                    _transitions_auth.append(
+                        (claims[0].get("authority", "") if claims else ""))
             elif aspect == "method_sequence":
                 # 方法序列边（method -> method 相邻对，traffic 源产出）：
                 # 语义与状态机边显式区分（不再靠 source.type 隐式分流）
@@ -1127,6 +1132,17 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         "url_template": bool(_struct.get("url_template")),
         "methods": bool(_state_changing_profile),
     }
+
+    # ★ 批次 2.1（P1）：**源派生优先、协议骨架仅兜底**。
+    #   协议骨架的 target_state 本是 source 源（源码分析）产物的**冗余固化**，
+    #   而它**实测命名有误**（rtsp 骨架的状态名是 SIP 式 Idle/Registered/…，
+    #   RFC 原生是 Init/Ready/Playing/…）⇒ 两套并存会把状态机**割裂**成
+    #   两张不相容的图（实测 50 条 = 骨架 38 + RFC 14）。
+    #   ⇒ 只要有**源派生**的 target_state，就**丢弃**骨架那份。
+    #   ★ 单源调试态 ⇒ 用 RFC 的原生状态机；多源态 ⇒ 用 source 源那份。
+    if any(a and a != SKELETON_AUTHORITY for a in _transitions_auth):
+        transitions = [t for t, a in zip(transitions, _transitions_auth)
+                       if a != SKELETON_AUTHORITY]
 
     # 去重（多源可能重复，保持稳定序）
     transitions = sorted(set(transitions))

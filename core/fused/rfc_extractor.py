@@ -52,6 +52,16 @@ _RE_FIELD_NAME = re.compile(r"^[A-Z][A-Za-z0-9\-]*$")
 #: 任意标题（含多词/括号，用于 LLM 兜底收集）：`N.N(...) 任意文本`。
 #: 比 _RE_ANY_SECTION 宽松，能匹配「Extended HELLO (EHLO)」这类带空格/括号标题，
 #: 这些正则识别不了的标题交给 infer_structures 的 LLM 兜底。
+# ★ 批次 2.1（P1）：**支持字母附录**（`A.1` / `B.2`）——
+#   原正则只认**数字**开头 ⇒ RFC 的 `Appendix A`（RTSP 的状态机就在
+#   附录 A！）**完全不被识别为章节** ⇒ 附录里的知识（状态机 / ABNF /
+#   示例报文）**全部抽不到**。⇒ 字母前缀只允许**单个大写字母**（`A.1`）
+#   ⇒ 数字章节的判定完全不变 ⇒ 既有抽取结果零影响。
+# ★ 批次 2.1（P1）注：**字母附录**（`A.1`）**刻意不识别为章节标题** ——
+#   识别它会改变章节树 ⇒ 连带改变 `section_no_path`（既有契约：号链每段
+#   都是数字章节号、且末级 == section_no）⇒ 代价大于收益。
+#   ⇒ 改为**全文扫状态转移表**（见 `_extract_transition_table`），
+#     不依赖章节划分 ⇒ 章节树与既有契约**完全不动**。
 _RE_ANY_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2})+)\.?\s+(.+?)\s*$")
 #: 一级标题：`N. Title` 或 `N Title`（RTSP 的 `5 General Header Fields` 无点号）
 _RE_TOP_HEADING = re.compile(r"^(\d{1,2})\.?\s+(\S.*?)\s*$")
@@ -141,6 +151,8 @@ _RFC_CONFIG_LIST_KEYS: tuple[str, ...] = (
     "method_sections",
     "field_sections",
     "status_sections",
+    # ★ 批次 2.1（P1）：状态机章节（状态转移表所在章节号前缀）
+    "transition_sections",
     "method_excludes",
     "numeric_bounds",
     "expected_response_classes",
@@ -654,6 +666,10 @@ def _section_kind(window: dict, cfg: dict) -> Optional[str]:
     s = _match(cfg.get("status_sections"))
     if s is not None:
         return "status"
+    # ★ 批次 2.1（P1）：状态机章节（状态转移表）
+    t = _match(cfg.get("transition_sections"))
+    if t is not None:
+        return "transition"
     return None
 
 
@@ -722,6 +738,13 @@ def _load_rfc_config(protocol: str) -> dict:
         "method_sections": [],
         "field_sections": [],
         "status_sections": [],
+        # ★ 批次 2.1（P1）：状态机抽取开关（**默认关闭**）
+        #   开启后从 RFC 正文**全文扫**状态转移表 ⇒ RFC 源自己贡献 target_state。
+        #   ⚠ 实测代价：rtsp 开启后 transitions 38 → 12 条、种子 58 → 17 条
+        #     （RFC 的**客户端**状态机只有 12 条边；**服务端**状态机是散文、
+        #      表格抽不到）⇒ 覆盖**显著变小** ⇒ 需要先补齐服务端状态机
+        #     （P1b：LLM 抽自然语言状态机）才宜开启。
+        "enable_transitions": False,
         "method_excludes": [],
         "numeric_bounds": [],
         "expected_response_classes": [],
@@ -740,6 +763,9 @@ def _load_rfc_config(protocol: str) -> dict:
             value = data.get(key)
             if isinstance(value, list):
                 cfg[key] = [str(x) for x in value]
+        # ★ 布尔键（不属列表白名单）
+        if isinstance(data.get("enable_transitions"), bool):
+            cfg["enable_transitions"] = data["enable_transitions"]
         # method_excludes 统一大写（与旧路径语义一致）
         cfg["method_excludes"] = [str(x).upper() for x in cfg["method_excludes"]]
         return cfg
@@ -821,6 +847,87 @@ _MAX_SAMPLE_VALUE_LEN = 160
 
 #: 取值池内部分隔符（取值里几乎不会出现 ⇒ 解析无歧义）
 VALUE_SAMPLE_SEP = " |~| "
+
+
+# ===========================================================================
+# ★ P1（批次 2.1）：RFC 状态机（**状态转移表**）抽取
+# ===========================================================================
+#
+# ★ 为什么需要：RFC 源此前**不产** `kind="transition"` 的 norm
+#   （`norm.py::transition_norm_to_fact` 的 docstring 明写「无数据源（死代码）」）
+#   ⇒ 状态机一直由 source 源（源码分析）提供 ⇒ **协议骨架借来的**。
+#   而骨架的状态命名**实测有误**：rtsp 的骨架状态名是
+#   Idle/Registered/Invited/Confirmed（**SIP 的体系**）却配着 RTSP 的方法
+#   ⇒ RFC 原生的状态名（Init/Ready/Playing/Recording）才是对的。
+#
+# ★ 为什么**不用 LLM**：RFC 的状态机是**三列定宽表格**，可**确定性**抽取：
+#     state       message sent     next state after response
+#     Init        SETUP            Ready
+#                    TEARDOWN         Init
+#     Ready       PLAY             Playing
+#   ⇒ 状态名有**继承**语义（留空 = 沿用上一行）⇒ 解析可靠、可复现、零成本。
+
+#: 状态转移表的**表头**特征（同时含「消息列」与「下一状态列」）
+_RE_TRANSITION_HEADER = re.compile(
+    r"message\s+sent", re.IGNORECASE)
+
+
+#: 状态名里的**修饰后缀**（如 "Playing (changed transport)"）⇒ 剥掉
+_RE_STATE_SUFFIX = re.compile(r"\s*\([^)]*\)\s*$")
+
+
+def _extract_transition_table(text: str) -> list[dict]:
+    """从 RFC 正文抽「状态转移表」。
+
+    ★ 表格形态（三列定宽 + 状态名继承）::
+
+        state       message sent     next state after response
+        Init        SETUP            Ready
+                       TEARDOWN         Init
+        Ready       PLAY             Playing
+
+    Returns:
+        ``[{"from":..., "method":..., "to":...}, ...]``（按出现序）。
+    """
+    lines = (text or "").splitlines()
+    out: list[dict] = []
+    cur_state = ""
+    cols: tuple[int, int, int] | None = None
+    for raw in lines:
+        if not raw.strip():
+            continue
+        # ---- 表头：按**列位置**确定三列边界（定宽表格 ⇒ 最稳）----
+        if cols is None:
+            if not _RE_TRANSITION_HEADER.search(raw):
+                continue
+            m_msg = re.search(r"message\s+sent", raw, re.IGNORECASE)
+            m_next = re.search(r"next\s+state", raw, re.IGNORECASE)
+            m_state = re.search(r"\bstate\b", raw, re.IGNORECASE)
+            if not (m_msg and m_next and m_state):
+                continue
+            cols = (m_state.start(), m_msg.start(), m_next.start())
+            cur_state = ""
+            continue
+        c1_at, c2_at, c3_at = cols
+        # 表格外的正文（页眉/页脚/新段落）⇒ 结束表格
+        if not raw[:1].isspace():
+            cols = None
+            cur_state = ""
+            continue
+        if len(raw) <= c3_at:
+            continue
+        # ★ 按**列位置**切分（状态列留空 = 继承上一行 ⇒ 必须按位置，不能按内容）
+        state = raw[c1_at:c2_at].strip()
+        method = raw[c2_at:c3_at].strip()
+        to = _RE_STATE_SUFFIX.sub("", raw[c3_at:].strip()).strip()
+        if state:
+            cur_state = state
+        if not cur_state or not method or not to:
+            continue
+        if " " in method or " " in to:
+            continue
+        out.append({"from": cur_state, "method": method, "to": to})
+    return out
 
 
 def _parse_value_samples(content: str) -> list[str]:
@@ -1210,7 +1317,7 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
             norm = _norm("method", name, sem or name, protocol, src_name,
                          f"@{line_no}")
             method_names.add(name.upper())
-        else:  # field：标题本身就是字段名（如 `12.1 Accept`）
+        elif kind == "field":  # 标题本身就是字段名（如 `12.1 Accept`）
             name = _normalize_field_name(title)
             if not name:
                 continue
@@ -1231,6 +1338,29 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
             continue
         seen_ids.add(norm["norm_id"])
         norms.append(norm)
+
+    # ---- 通道 F：状态转移表（★ P1，批次 2.1）-------------------------------
+    #   ★ **全文扫**（不走窗口）—— 因为 RFC 的状态机表常在**附录**里
+    #   （RTSP 在 Appendix A），而附录**不是章节标题** ⇒ 走窗口抽不到。
+    #   ★ 表头特征足够特异（"message sent" + "next state"）⇒ 全文扫安全。
+    #   ★ content 格式对齐 `norm.py::parse_transition_content`
+    #     （"from=X method=Y to=Z"，按空格分隔的 key=value）。
+    _full_text = "\n".join(t for _, t in content_lines)
+    for _tr in (_extract_transition_table(_full_text)
+                if cfg.get("enable_transitions") else []):
+        _content = (f"from={_tr['from']} method={_tr['method']} "
+                    f"to={_tr['to']}")
+        _tn = _norm("transition", _tr["method"], _content, protocol, src_name,
+                    "@state-table")
+        # ★ norm_id 必须含 from/to：同一方法可有多条转移
+        #   （如 PLAY: Playing→Playing）⇒ 只用 method 会撞 id ⇒ 状态机残缺。
+        _tn["norm_id"] = (
+            f"{protocol}.transition.{_tr['method']}."
+            f"{_tr['from'].lower()}_to_{_tr['to'].lower()}")
+        if _tn["norm_id"] in seen_ids:
+            continue
+        seen_ids.add(_tn["norm_id"])
+        norms.append(_tn)
 
     # ---- 通道 D：字段**取值样本**（★ P0，批次 2.0）------------------------
     #   RFC 规范里明确写着各头的合法取值（完整报文示例 / "Example of use" 段）
