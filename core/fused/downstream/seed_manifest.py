@@ -182,6 +182,17 @@ def build_manifest(seeds: list, out_dir, *,
         "seed_count": len(entries),
         "seeds": entries,
     }
+    # ★ 批次 2.5（F5）：**provenance** —— 本语料由哪些知识源生成
+    #   ⇒ ⑤ 层两段式底料可据此校验「底料的源集合 ⊆ 本次源集合」
+    #   ⇒ 跨源污染在**消费前**就被拦住。
+    #   ★ 从 ``seedgen_cfg`` 里取（seedgen 会把 source_set 放进去）。
+    _prov = seedgen_cfg or {}
+    if _prov.get("source_set"):
+        manifest["provenance"] = {
+            "source_set": list(_prov.get("source_set") or []),
+            "note": "★ 批次 2.5 F5：⑤ 层底料校验用"
+                    "（底料 manifest 的 provenance.source_set 必须 ⊆ 本次源集合）",
+        }
     # ★ P0-4：⑤（action-seq 变异层）的条数**单独记账**，**不受 G5 契约约束**
     #   （契约条数是**基准层**的约定）。
     #   ★ **条件性添加**：只有真的存在 ⑤ 种子时才写这两个键

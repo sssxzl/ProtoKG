@@ -317,7 +317,8 @@ def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
                             ledger: Optional[ActionLedger] = None,
                             env_cfg: Optional[dict] = None,
                             strict_source_only: bool = False,
-                            source_set: Optional[list] = None
+                            source_set: Optional[list] = None,
+                            base_corpus_from: Optional[str] = None
                             ) -> tuple[list, dict]:
     """⑤ 在**真实抓包种子**上做字段级变异，返回 ``(种子列表, 溯源信息)``。
 
@@ -332,7 +333,8 @@ def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
     """
     base_seeds, source = load_real_base_seeds(
         protocol, profile, group=group,
-        strict_source_only=strict_source_only, source_set=source_set)
+        strict_source_only=strict_source_only, source_set=source_set,
+        base_corpus_from=Path(base_corpus_from) if base_corpus_from else None)
     info = {
         "source": source,
         "base_count": len(base_seeds),
@@ -905,6 +907,17 @@ def main() -> int:
                     help="★ 批次 1.6 步 5：本次消费的知识源（**双保险**）。"
                          "缺省 = 中枢 sources.json 声明的源集合；"
                          "显式传参则覆盖中枢声明（调用方显式授权）。")
+    ap.add_argument("--no-action-seq", action="store_true",
+                    help="★ 批次 2.5（F5）：**关闭 ⑤ 层**（覆盖 profile 的 "
+                         "action_seq.enabled）⇒ 两段式的**阶段①**只需基准层语料，"
+                         "阶段②再拿它当 ⑤ 层底料（--base-corpus-from）。"
+                         "★ 缺省 = 维持 profile 开关。")
+    ap.add_argument("--base-corpus-from", default=None, metavar="DIR",
+                    help="★ 批次 2.5（F5）：⑤ 层底料**只**取这个目录"
+                         "（两段式：阶段①产基准层 → 阶段②拿它当底料）"
+                         "⇒ 底料来源**可证**；并校验该目录 manifest 的 "
+                         "provenance.source_set ⊆ 本次源集合，否则**拒绝**"
+                         "（跨源污染）。缺省 = 维持原行为（从历史批次里挑）。")
     ap.add_argument("--strict-source-only", action="store_true",
                     help="★ 批次 2.3：**严格单源模式** —— 关掉所有"
                          "「绕过 source_set」的跨源旁路："
@@ -1153,12 +1166,13 @@ def main() -> int:
     action_seq_ledger = ActionLedger()
     action_seq_info: dict = {}
     action_seq_seeds: list = []
-    if _action_seq_enabled(profile):
+    if _action_seq_enabled(profile) and not args.no_action_seq:
         action_seq_seeds, action_seq_info = _build_action_seq_seeds(
             bundle, profile, protocol, group=focus_group,
             ledger=action_seq_ledger, env_cfg=env_cfg,
             strict_source_only=args.strict_source_only,
-            source_set=source_set or None)
+            source_set=source_set or None,
+            base_corpus_from=args.base_corpus_from)
         # ★ 追加动作**延后到基准层去重之后**（见下方 `_append_action_seq_seeds` 调用）：
         #   若 ⑤ 先加入再统一去重，⑤ 与基准层的**近重复**会被判重 ⇒
         #   基准层里被判重的那条被 ⑤ 的副本顶替 ⇒ **基准层集合发生变化**
@@ -1281,6 +1295,9 @@ def main() -> int:
             manifest_layers.append(ACTION_SEQ_LAYER_NAME)
         manifest_cfg = {
             "focus_group": focus_group,
+            # ★ 批次 2.5（F5）：本次的**知识源集合** ⇒ 随 manifest 落盘
+            #   ⇒ ⑤ 层两段式底料可校验「底料的源集合 ⊆ 本次源集合」
+            "source_set": list(source_set or []),
             "layers": manifest_layers,
             "order": order,
             "dict_kind": dict_kind,

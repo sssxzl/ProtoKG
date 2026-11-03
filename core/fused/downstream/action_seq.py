@@ -1297,7 +1297,8 @@ def _load_published_seeds(protocol: str, profile: dict, *,
                           group: Optional[str] = None,
                           root: Optional[Path] = None,
                           strict_source_only: bool = False,
-                          source_set: Optional[Iterable[str]] = None
+                          source_set: Optional[Iterable[str]] = None,
+                          base_corpus_from: Optional[Path] = None
                           ) -> list[SeedCorpus]:
     """来源 ①：``derived/seeds/<protocol>/<组>/*.raw``（已发表的语料）。
 
@@ -1310,42 +1311,88 @@ def _load_published_seeds(protocol: str, profile: dict, *,
     """
     seeds: list[SeedCorpus] = []
     src_set = {str(s).strip().lower() for s in (source_set or ())}
+    # ★★ 批次 2.5（F5）：**两段式底料** —— 显式指定底料目录时
+    #   **只**用它（不再从「任意历史批次」里挑）⇒ 底料来源**可证**。
+    #   ★ 校验：底料 manifest 的 ``provenance.source_set`` 必须 ⊆ 本次源集合
+    #     ⇒ 否则**拒绝**（底料带别的源的知识 ⇒ 跨源污染）。
+    if base_corpus_from is not None:
+        _dir = Path(base_corpus_from)
+        if not _dir.is_absolute():
+            _dir = (Path(root).parent / _dir if root is not None
+                    else Path.cwd() / _dir)
+        if not _dir.is_dir():
+            print(f"[⑤ 底料] ★ 指定的底料目录不存在: {_dir} ⇒ 无底料")
+            return []
+        _mf = _dir / "manifest.json"
+        if not _mf.is_file():
+            print(f"[⑤ 底料] ★ 底料目录无 manifest（无法证明来源干净）: {_dir}"
+                  f" ⇒ 拒绝使用")
+            return []
+        try:
+            _doc = json.loads(_mf.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            print(f"[⑤ 底料] ★ 底料 manifest 解析失败: {_mf} ⇒ 拒绝使用")
+            return []
+        _prov = ((_doc.get("provenance") or {}).get("source_set") or [])
+        _prov_set = {str(s).strip().lower() for s in _prov}
+        if src_set and _prov_set and not _prov_set.issubset(src_set):
+            print(f"[⑤ 底料] ★ 底料的源集合 {sorted(_prov_set)} **不是**本次"
+                  f" {sorted(src_set)} 的子集 ⇒ **拒绝**（跨源污染）")
+            return []
+        print(f"[⑤ 底料] 使用显式指定的底料: {_dir.name}"
+              f"（源集合={sorted(_prov_set) or '（未声明）'}，{len(_prov_set & src_set)} 个源在本次集合内）")
+        return _read_published_dir(_dir, protocol, profile, strict_source_only,
+                                    src_set)
     for directory in _published_group_dirs(protocol, group, root):
-        _skip: set[str] = set()
-        if strict_source_only:
-            _mf = directory / "manifest.json"
-            if not _mf.is_file():
-                print("[⑤ 严格单源] 排除无 manifest 的语料目录（无法证明干净）: "
-                      f"{directory.name}")
-                continue
-            try:
-                _doc = json.loads(_mf.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, OSError):
-                continue
-            _by_name = {str(s.get("filename") or ""): str(s.get("layer_name") or "")
-                        for s in (_doc.get("seeds") or [])}
-            if "vuln" not in src_set:
-                _skip = {n for n, lay in _by_name.items()
-                         if lay == "vuln_boundary"}
-            if _skip:
-                print(f"[⑤ 严格单源] {directory.name}: 排除 {len(_skip)} 条 "
-                      "vuln_boundary 底料（vuln 源知识）")
-        for raw_path in sorted(directory.glob("*.raw")):
-            if raw_path.name in _skip:
-                continue
-            try:
-                text = raw_path.read_text(encoding="utf-8", errors="replace")
-            except OSError:
-                continue
-            parsed = parse_raw_seed(
-                text, profile, protocol=protocol,
-                description=f"action-seq base: {raw_path.name}")
-            if parsed is None:
-                continue
-            parsed.seed_id = f"aseq-{raw_path.stem}"
-            seeds.append(parsed)
+        seeds = _read_published_dir(directory, protocol, profile,
+                                    strict_source_only, src_set)
         if seeds:
             break        # 只取**最新**的匹配目录（避免重复底料）
+    return seeds
+
+
+def _read_published_dir(directory: Path, protocol: str, profile: dict,
+                        strict_source_only: bool,
+                        src_set: set[str]) -> list[SeedCorpus]:
+    """读一个语料目录下的 ``*.raw``（⑤ 层底料）。
+
+    ★ **严格单源模式**：排除 ``vuln_boundary`` 层的底料（vuln 源知识）；
+      manifest **缺失** ⇒ 无法证明干净 ⇒ **整目录排除**（保守）。
+    """
+    seeds: list[SeedCorpus] = []
+    _skip: set[str] = set()
+    if strict_source_only:
+        _mf = directory / "manifest.json"
+        if not _mf.is_file():
+            print("[⑤ 严格单源] 排除无 manifest 的语料目录（无法证明干净）: "
+                  f"{directory.name}")
+            return seeds
+        try:
+            _doc = json.loads(_mf.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return seeds
+        _by_name = {str(s.get("filename") or ""): str(s.get("layer_name") or "")
+                    for s in (_doc.get("seeds") or [])}
+        if "vuln" not in src_set:
+            _skip = {n for n, lay in _by_name.items()
+                     if lay == "vuln_boundary"}
+        if _skip:
+            print(f"[⑤ 严格单源] {directory.name}: 排除 {len(_skip)} 条 "
+                  "vuln_boundary 底料（vuln 源知识）")
+    for raw_path in sorted(directory.glob("*.raw")):
+        if raw_path.name in _skip:
+            continue
+        try:
+            text = raw_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        parsed = parse_raw_seed(
+            text, profile, protocol=protocol,
+            description=f"action-seq base: {raw_path.name}")
+        if parsed is None:
+            continue
+        parsed.seed_id = f"aseq-{raw_path.stem}"
+        seeds.append(parsed)
     return seeds
 
 
@@ -1455,7 +1502,8 @@ def load_real_base_seeds(protocol: str, profile: dict, *,
                          derived_root: Optional[Path] = None,
                          kb_root: Optional[Path] = None,
                          strict_source_only: bool = False,
-                         source_set: Optional[Iterable[str]] = None
+                         source_set: Optional[Iterable[str]] = None,
+                         base_corpus_from: Optional[Path] = None
                          ) -> tuple[list[SeedCorpus], str]:
     """按优先级取「**真实抓包底料**」（不是从零构造）。
 
@@ -1472,9 +1520,14 @@ def load_real_base_seeds(protocol: str, profile: dict, *,
     seeds = _load_published_seeds(protocol, profile, group=group,
                                   root=derived_root,
                                   strict_source_only=strict_source_only,
-                                  source_set=source_set)
+                                  source_set=source_set,
+                                  base_corpus_from=base_corpus_from)
     if seeds:
         return seeds, "published-corpus"
+    # ★ 批次 2.5（F5）：**显式指定了底料** ⇒ 它若被拒绝（来源不干净 / 不存在）
+    #   ⇒ **不再回退**到 traffic 抓包（那也是跨源污染，且违背「显式指定」的意图）
+    if base_corpus_from is not None:
+        return [], ""
     # ★ 严格单源模式：``traffic`` ∉ source_set ⇒ **禁用**真实抓包兜底
     #   （``kb/<协议>/数据流量/`` 是 traffic 源的原始输入 ⇒ 属跨源污染）
     if strict_source_only and "traffic" not in {
