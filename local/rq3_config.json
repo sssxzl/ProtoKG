@@ -4,6 +4,24 @@
   "protocol": "rtsp",
   "image": "rq2-live555:latest",
   "base_dict_md5": "464351f88db6c3f0bdac0de01859316b",
+  "historical_calibration": {
+    "_note": "批次 2.0（P0）重新标定：RFC 源补齐字段取值 ⇒ 知识中枢 headers 取值池变化 ⇒ 种子内容与字典 token 数变化 ⇒ 按实测重新标定（2026-11-03）。",
+    "_before_p0": {
+      "groups": {
+        "A": {"expect_seeds": 38, "expect_dict_tokens": 24},
+        "B": {"expect_seeds": 50, "expect_dict_tokens": 24},
+        "C": {"expect_seeds": 50, "expect_dict_tokens": 123},
+        "D": {"expect_seeds": 50, "expect_dict_tokens": 24}
+      },
+      "dict_kinds": {
+        "base": {"token_count": 24, "md5": "464351f88db6c3f0bdac0de01859316b"},
+        "protocol": {"token_count": 102, "md5": "77d47b7b76139212c86a84ae771c4784"},
+        "targeted": {"token_count": 123, "md5": null},
+        "targeted-compact": {"token_count": 32, "md5": null}
+      },
+      "note": "base 的 md5 是仓库内固定副本 fused_hub/targets/rtsp/rtsp_base.dict 的 MD5 ⇒ P0 未影响 ⇒ 仍是当前值。"
+    }
+  },
   "groups": {
     "A": {
       "label": "A 守正",
@@ -11,7 +29,7 @@
       "order": "natural",
       "dict_kind": "base",
       "dict_file": "rtsp_base.dict",
-      "expect_seeds": 38,
+      "expect_seeds": 52,
       "expect_dict_tokens": 24,
       "in_paper_table18": true
     },
@@ -21,7 +39,7 @@
       "order": "natural",
       "dict_kind": "base",
       "dict_file": "rtsp_base.dict",
-      "expect_seeds": 50,
+      "expect_seeds": 58,
       "expect_dict_tokens": 24,
       "in_paper_table18": true
     },
@@ -31,8 +49,8 @@
       "order": "vuln-proximity",
       "dict_kind": "targeted",
       "dict_file": "c_targeted.dict",
-      "expect_seeds": 50,
-      "expect_dict_tokens": 123,
+      "expect_seeds": 58,
+      "expect_dict_tokens": 226,
       "in_paper_table18": true
     },
     "D": {
@@ -41,7 +59,7 @@
       "order": "vuln-proximity",
       "dict_kind": "base",
       "dict_file": "rtsp_base.dict",
-      "expect_seeds": 50,
+      "expect_seeds": 58,
       "expect_dict_tokens": 24,
       "in_paper_table18": false
     }
@@ -60,13 +78,13 @@
     },
     "protocol": {
       "writes_file": true,
-      "token_count": 102,
-      "md5": "77d47b7b76139212c86a84ae771c4784",
+      "token_count": 202,
+      "md5": "1b260078f2eaff420790af3ede5f4a0e",
       "description": "generate_protocol_dict(...)（现状 102 token，不作 RQ3 变量）"
     },
     "targeted": {
       "writes_file": true,
-      "token_count": 123,
+      "token_count": 226,
       "description": "generate_targeted_dict(...)（C 组定向字典，必须是 base24 的严格超集）"
     },
     "targeted-compact": {

@@ -219,10 +219,10 @@
       ]
     },
     "focus_group": {
-      "A": {"dict": "protocol", "seeds": 15, "dict_tokens": 163},
-      "B": {"dict": "protocol", "seeds": 25, "dict_tokens": 163},
-      "C": {"dict": "targeted", "seeds": 25, "dict_tokens": 167},
-      "D": {"dict": "protocol", "seeds": 25, "dict_tokens": 163}
+      "A": {"dict": "protocol", "seeds": 11, "dict_tokens": 204},
+      "B": {"dict": "protocol", "seeds": 11, "dict_tokens": 204},
+      "C": {"dict": "targeted", "seeds": 11, "dict_tokens": 204},
+      "D": {"dict": "protocol", "seeds": 11, "dict_tokens": 204}
     },
     "client_side": {
       "server_addr": "127.0.0.1:5060",

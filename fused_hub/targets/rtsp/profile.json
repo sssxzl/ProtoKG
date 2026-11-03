@@ -60,22 +60,22 @@
         "focus_group": {
           "A": {
             "dict": "base",
-            "seeds": 27,
+            "seeds": 41,
             "dict_tokens": 24
           },
           "B": {
             "dict": "base",
-            "seeds": 39,
+            "seeds": 47,
             "dict_tokens": 24
           },
           "C": {
             "dict": "targeted",
-            "seeds": 39,
-            "dict_tokens": 114
+            "seeds": 47,
+            "dict_tokens": 215
           },
           "D": {
             "dict": "base",
-            "seeds": 39,
+            "seeds": 47,
             "dict_tokens": 24
           }
         }
@@ -185,22 +185,22 @@
     "focus_group": {
       "A": {
         "dict": "base",
-        "seeds": 38,
+        "seeds": 52,
         "dict_tokens": 24
       },
       "B": {
         "dict": "base",
-        "seeds": 50,
+        "seeds": 58,
         "dict_tokens": 24
       },
       "C": {
         "dict": "targeted",
-        "seeds": 50,
-        "dict_tokens": 123
+        "seeds": 58,
+        "dict_tokens": 226
       },
       "D": {
         "dict": "base",
-        "seeds": 50,
+        "seeds": 58,
         "dict_tokens": 24
       }
     },
