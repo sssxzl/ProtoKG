@@ -8,6 +8,12 @@
 #   变化来源: headers 桶取值池从 RFC 规范补齐 ⇒ default_headers 兜底不再注入
 #   ⇒ 种子里对应字段改用 RFC 的**真实取值**（而非兜底占位）。
 #
+# ★ 2026-11-03 批次 2.2（通道 E）更新：仅 **smtp 字典**变宽（18 → 46 token，
+#   补上 RFC 5322 的 19 个 ABNF 头字段）⇒ **种子内容与文件名全部未变**
+#   （实测 440/440 同名同内容）⇒ 本清单的 md5 **无需改动**。
+# ★ 2026-11-03 批次 2.2（通道 E）更新：仅 **smtp 字典**变宽（18 → 46 token，
+#   补上 RFC 5322 的 19 个 ABNF 头字段）⇒ **种子内容与文件名全部未变**
+#   （实测 440/440 同名同内容）⇒ 本清单的 md5 **无需改动**。
 025a305adde35ad156a22073906e7271  rtsp/A/05_OPTIONS+DESCRIBE+SETUP+PLAY+TEARDOWN.raw
 05dec6e6e5af2d466be1beb69be11b45  rtsp/A/51_DESCRIBE+TEARDOWN+DESCRIBE+TEARDOWN.raw
 0d09a67801e2448278ee156959e59be3  rtsp/A/23_TEARDOWN.raw

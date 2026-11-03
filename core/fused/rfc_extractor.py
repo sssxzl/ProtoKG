@@ -868,6 +868,72 @@ VALUE_SAMPLE_SEP = " |~| "
 #   ⇒ 状态名有**继承**语义（留空 = 沿用上一行）⇒ 解析可靠、可复现、零成本。
 
 #: 状态转移表的**表头**特征（同时含「消息列」与「下一状态列」）
+# ===========================================================================
+# ★ 批次 2.2：ABNF 形态的**字段定义**抽取（通道 E）
+# ===========================================================================
+#
+# ★ 为什么需要：SMTP 的 RFC 5322 把头字段定义成 **ABNF 规则**（§3.6
+#   Field Definitions），而**不是**章节标题：
+#       orig-date       =   "Date:" date-time CRLF
+#       from            =   "From:" mailbox-list CRLF
+#   ⇒ 现有三条通道都抓不到：
+#       · 章节标题式（RTSP "12.1 Accept"）—— SMTP 没有这种标题
+#       · 缩进条目式（"   byte"）—— SMTP 不是这种形态
+#       · `_section_kind` 的 field 判定 —— ★ **不可用**：SMTP 的
+#         `method_sections` 含 "3" ⇒ `_match` 把 §3.6 判成 **method**
+#         （method 优先于 field）⇒ 按 field_sections 定位拿不到
+#   ⇒ 解法：**全文扫** ABNF 形态（只认「引号内是带冒号的字段名」这一形态）
+#     ⇒ 天然精确：SIP 的 `Accept = "Accept" HCOLON ...`（引号内**无冒号**）
+#       不会被误伤；RTSP/SIP 的头字段是章节标题式，也不会重复。
+#
+#: ABNF 字段定义行：``   orig-date       =   "Date:" date-time CRLF``
+#:   ⇒ 捕获组 1 = **字段名**（`Date`）、捕获组 2 = 右侧 ABNF
+_RE_ABNF_FIELD = re.compile(
+    r'^\s+[a-z][a-z0-9-]*\s+=\s+"([A-Za-z][A-Za-z0-9_-]*):"'
+    r'(?P<rhs>[^"]*)$')
+
+#: ABNF 字段的**散文说明** —— 形态：
+#:   `The origination date field consists of the field name "Date" followed by`
+_RE_ABNF_PROSE = re.compile(
+    r'\bfield name\s+"([A-Za-z][A-Za-z0-9_-]*)"', re.IGNORECASE)
+
+
+def _extract_abnf_fields(text: str) -> list[dict]:
+    """从 RFC 正文抽「ABNF 形态的字段定义」。
+
+    Returns:
+        ``[{"name": 字段名, "abnf": 右侧 ABNF, "prose": 散文说明}, ...]``
+        （按出现序、字段名去重）。
+    """
+    out: list[dict] = []
+    seen: set[str] = set()
+    for raw in (text or "").splitlines():
+        m = _RE_ABNF_FIELD.match(raw)
+        if not m:
+            continue
+        name = m.group(1)
+        if name in seen:
+            continue
+        seen.add(name)
+        out.append({"name": name, "abnf": m.group("rhs").strip(),
+                    "prose": ""})
+    # 补散文说明（`the field name "X"` ⇒ X 的语义描述所在句）
+    flat = (text or "").replace("\n", " ")
+    sentences = re.split(r"(?<=[.;])\s+", flat)
+    prose_by_name: dict[str, str] = {}
+    for sent in sentences:
+        pm = _RE_ABNF_PROSE.search(sent)
+        if not pm:
+            continue
+        fname = pm.group(1)
+        half = sent[:pm.start()].strip() or sent.strip()
+        prose_by_name.setdefault(fname, half[:200])
+    for item in out:
+        item["prose"] = prose_by_name.get(item["name"], "")
+    return out
+
+
+
 _RE_TRANSITION_HEADER = re.compile(
     r"message\s+sent", re.IGNORECASE)
 
@@ -1339,13 +1405,35 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
         seen_ids.add(norm["norm_id"])
         norms.append(norm)
 
+    # ---- 通道 E：ABNF 形态的字段定义（★ 批次 2.2）--------------------------
+    #   全文扫（**不依赖** `_section_kind` ⇒ 不受 method/field 章节判定影响）
+    #   ⇒ SMTP 的 §3.6 Field Definitions 能被抽到（实测 22 个字段）。
+    _full_text = "\n".join(t for _, t in content_lines)
+    for _fld in _extract_abnf_fields(_full_text):
+        _fname = _fld["name"]
+        if _fname.upper() in _GENERIC_SECTION_WORDS:
+            continue
+        if _fname == _fname.lower() and _fname in _FIELD_STOPWORDS:
+            continue
+        if _fname.upper() in method_names:
+            continue
+        _sem = _fld["prose"] or _fld["abnf"]
+        _content = f"{_fname} | required: {_sem}" if _sem else _fname
+        _fn = _norm("field", _fname, _content, protocol, src_name,
+                    "@abnf-field")
+        if _fn["norm_id"] in seen_ids:
+            continue          # 章节标题式已抽到 ⇒ 保留首个
+        seen_ids.add(_fn["norm_id"])
+        norms.append(_fn)
+        field_names.setdefault(_fname.lower(), _fname)
+
+
     # ---- 通道 F：状态转移表（★ P1，批次 2.1）-------------------------------
     #   ★ **全文扫**（不走窗口）—— 因为 RFC 的状态机表常在**附录**里
     #   （RTSP 在 Appendix A），而附录**不是章节标题** ⇒ 走窗口抽不到。
     #   ★ 表头特征足够特异（"message sent" + "next state"）⇒ 全文扫安全。
     #   ★ content 格式对齐 `norm.py::parse_transition_content`
     #     （"from=X method=Y to=Z"，按空格分隔的 key=value）。
-    _full_text = "\n".join(t for _, t in content_lines)
     for _tr in (_extract_transition_table(_full_text)
                 if cfg.get("enable_transitions") else []):
         _content = (f"from={_tr['from']} method={_tr['method']} "
@@ -1688,6 +1776,213 @@ _FIELD_STOPWORDS = {
 
 
 
+
+# ===========================================================================
+# ★ 批次 2.2（P1b）：LLM 抽状态机（**服务端** / 散文 / ASCII 图）
+# ===========================================================================
+#
+# ★ 为什么需要：P1a（通道 F）只能抽**三列定宽表格** ⇒ 只覆盖 RTSP 的
+#   **客户端**状态机（A.1，14 条）。而：
+#     · RTSP A.2 **服务端**状态机是**散文描述**（"The server can assume
+#       the following states: Init: … Ready: …"）⇒ 表格抽不到
+#     · SIP RFC 3261 §17 的状态机是 **ASCII 状态图** ⇒ 表格抽不到
+#   ⇒ 实测开启通道 F 后 rtsp transitions 38 → 12 条、种子 58 → 17 条
+#     （**覆盖 -70%**）⇒ 只做 P1a 不够 ⇒ 需要 LLM 补齐。
+#
+# ★ 确定性保障：**磁盘缓存**（按候选段落的 block_hash 判定）
+#   ⇒ 同一份 RFC ⇒ 命中缓存 ⇒ **不调 LLM** ⇒ 产物逐字节可复现。
+#
+#: 状态机段落的定位：全文里含「state machine」的**行**⇒ 取其前后文本。
+_RE_STATE_MACHINE_HINT = re.compile(r"state\s+machines?", re.IGNORECASE)
+
+#: 单个候选段落的最大行数（前后各取多少行）
+_TRANSITION_CONTEXT_LINES = 60
+
+#: LLM 输出契约（JSON）
+_PROMPT_TRANSITION = """你是协议规范分析助手。下面的文本来自 {protocol} 协议的 RFC 规范，其中包含
+**状态机**描述（可能是自然语言描述、状态图、状态表）。
+
+请抽取其中**明确写出的状态转移**，输出 JSON：
+{{"transitions": [{{"from": "<源状态名>", "method": "<触发方法名>", "to": "<目标状态名>"}}]}}
+
+规则：
+1. 只抽**规范里明确写出**的转移，不要推测、不要补充 RFC 之外的常识。
+2. `method` 用规范里的**方法/命令名**（如 SETUP / PLAY / INVITE）。
+3. 状态名**照抄规范里的写法**，不要归一化大小写或改名。
+4. 抽不到就返回 {{"transitions": []}}。
+
+文本：
+{text}
+"""
+
+
+def extract_transition_candidates(protocol: str) -> list[dict]:
+    """定位 RFC 里的**状态机段落**（供 LLM 抽状态转移）。
+
+    ★ 定位方式：全文扫含「state machine」的行 ⇒ 取该行**前 60 行 / 后 60 行**
+      的上下文 ⇒ 拼成候选段落。
+      ⇒ RTSP 的 A.1/A.2、SIP 的 §17（ASCII 图）都能被覆盖。
+
+    Returns:
+        ``[{"text": 段落文本, "source": "file:...#@N", "hash": 段落哈希}, ...]``
+    """
+    import hashlib
+    spec_dir = paths.kb_source_dir(protocol, "rfc")
+    if not spec_dir.is_dir():
+        return []
+    out: list[dict] = []
+    for f in sorted(spec_dir.glob("*.txt")):
+        lines = f.read_text(encoding="utf-8", errors="ignore").splitlines()
+        hits = [i for i, ln in enumerate(lines)
+                if _RE_STATE_MACHINE_HINT.search(ln)]
+        if not hits:
+            continue
+        # 合并相邻命中（间隔 < 20 行 ⇒ 同一段落）
+        groups: list[list[int]] = []
+        for i in hits:
+            if groups and i - groups[-1][-1] < 20:
+                groups[-1].append(i)
+            else:
+                groups.append([i])
+        for g in groups:
+            lo = max(0, g[0] - _TRANSITION_CONTEXT_LINES)
+            hi = min(len(lines), g[-1] + _TRANSITION_CONTEXT_LINES)
+            text = "\n".join(lines[lo:hi]).strip()
+            if not text:
+                continue
+            out.append({
+                "text": text,
+                "source": f"file:{f.name}#@{g[0] + 1}",
+                "hash": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+                "_file": f.name, "_lo": lo, "_hi": hi,
+            })
+    # ★ 合并**重叠**的候选段落（相邻命中常在同一小节 ⇒ 文本高度重叠）
+    #   ⇒ 否则会重复调 LLM（成本浪费 + 重复转移）。
+    merged: list[dict] = []
+    for cand in sorted(out, key=lambda c: (c["_file"], c["_lo"])):
+        if (merged and merged[-1]["_file"] == cand["_file"]
+                and cand["_lo"] <= merged[-1]["_hi"]):
+            prev = merged[-1]
+            if cand["_hi"] > prev["_hi"]:
+                prev["_hi"] = cand["_hi"]
+                prev["_text_lo"] = prev["_lo"]
+            continue
+        merged.append(dict(cand))
+    out = []
+    for cand in merged:
+        lines_all = None
+        # 重新取合并后的文本
+        src_file = cand["_file"]
+        fpath = spec_dir / src_file
+        if fpath.is_file():
+            lines_all = fpath.read_text(encoding="utf-8",
+                                        errors="ignore").splitlines()
+        lo = cand.get("_text_lo", cand["_lo"])
+        hi = cand["_hi"]
+        if lines_all is not None:
+            cand["text"] = "\n".join(lines_all[lo:hi]).strip()
+            cand["source"] = f"file:{src_file}#@{lo + 1}"
+            cand["hash"] = hashlib.sha256(
+                cand["text"].encode("utf-8")).hexdigest()
+        cand.pop("_file", None)
+        cand.pop("_lo", None)
+        cand.pop("_hi", None)
+        cand.pop("_text_lo", None)
+        out.append(cand)
+    return out
+
+
+def infer_transitions(protocol: str, llm=None) -> list[dict]:
+    """LLM 抽状态转移（**带磁盘缓存** ⇒ 确定性 + 零重复成本）。
+
+    Returns:
+        ``[{"from":..., "method":..., "to":...}, ...]``。
+    """
+    candidates = extract_transition_candidates(protocol)
+    if not candidates:
+        return []
+    from core.fused.source_retrieval import CACHE_DIR
+    cache_file = CACHE_DIR / f"{protocol}.transitions.json"
+    block_hash = hashlib_sha256(
+        "|".join(c["hash"] for c in candidates))
+    if cache_file.exists():
+        try:
+            cached = json.loads(cache_file.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            cached = None
+        if isinstance(cached, dict) and cached.get("block_hash") == block_hash:
+            rows = cached.get("transitions")
+            if isinstance(rows, list):
+                return [r for r in rows if isinstance(r, dict)]
+
+    if llm is None:
+        from core.llm import DeepSeekClient
+        llm = DeepSeekClient()
+    out: list[dict] = []
+    for cand in candidates:
+        try:
+            r = llm.chat_json(
+                system="你输出 JSON。",
+                user=_PROMPT_TRANSITION.format(
+                    protocol=protocol.upper(), text=cand["text"]),
+                temperature=0.0, max_tokens=2000)
+        except Exception:  # noqa: BLE001
+            continue
+        if not isinstance(r, dict):
+            continue
+        for tr in (r.get("transitions") or []):
+            if not isinstance(tr, dict):
+                continue
+            frm = (tr.get("from") or "").strip()
+            mth = (tr.get("method") or "").strip()
+            to = (tr.get("to") or "").strip()
+            if not (frm and mth and to):
+                continue
+            if len(frm) > 40 or len(to) > 40 or len(mth) > 40:
+                continue
+            row = {"from": frm, "method": mth, "to": to}
+            if row not in out:
+                out.append(row)
+    try:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        cache_file.write_text(json.dumps(
+            {"block_hash": block_hash, "transitions": out},
+            ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    except OSError:
+        pass
+    return out
+
+
+def hashlib_sha256(text: str) -> str:
+    """sha256 助手（避免在函数体里 import hashlib 造成的循环依赖顾虑）。"""
+    import hashlib
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def extract_transition_norms(protocol: str, llm=None) -> list[dict]:
+    """LLM 状态机 ⇒ transition norm（content 对齐 parse_transition_content）。"""
+    norms: list[dict] = []
+    seen: set[str] = set()
+    for tr in infer_transitions(protocol, llm=llm):
+        nid = (f"{protocol}.transition.{tr['method']}."
+               f"{tr['from'].lower()}_to_{tr['to'].lower()}")
+        if nid in seen:
+            continue
+        seen.add(nid)
+        content = (f"from={tr['from']} method={tr['method']} to={tr['to']}")
+        norms.append({
+            "norm_id": nid,
+            "kind": "transition",
+            "name": tr["method"],
+            "content": content,
+            "kb_source_type": "rfc",
+            "source": "file:llm@state-machine",
+            "protocol": protocol,
+        })
+
+    return norms
+
+
 def extract_rfc_norms(protocol: str) -> list[dict]:
     """遍历 kb/<protocol>/spec/*.txt，抽取全部 rfc norm（method/field/outcome）。
 
@@ -1740,6 +2035,15 @@ def extract_rfc_norms(protocol: str) -> list[dict]:
                 continue
             seen_protocol_level.add(key)
             norms.append(norm)
+    # ---- 通道 G：LLM 状态机（★ P1b，批次 2.2）-------------------------
+    #   补齐通道 F（表格）抽不到的：服务端状态机（散文）、ASCII 状态图。
+    #   ★ 带磁盘缓存 ⇒ 同一份 RFC 命中缓存 ⇒ 不调 LLM ⇒ 产物逐字节可复现。
+    if cfg.get("enable_transitions"):
+        for _tn in extract_transition_norms(protocol):
+            if _tn["norm_id"] in seen_protocol_level:
+                continue
+            seen_protocol_level.add(_tn["norm_id"])
+            norms.append(_tn)
     return norms
 
 

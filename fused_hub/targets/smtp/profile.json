@@ -43,10 +43,10 @@
     ],
     "danger": false,
     "focus_group": {
-      "A": {"dict": "protocol", "seeds": 38, "dict_tokens": 18},
-      "B": {"dict": "protocol", "seeds": 44, "dict_tokens": 18},
-      "C": {"dict": "targeted", "seeds": 44, "dict_tokens": 18},
-      "D": {"dict": "protocol", "seeds": 44, "dict_tokens": 18}
+      "A": {"dict": "protocol", "seeds": 38, "dict_tokens": 46},
+      "B": {"dict": "protocol", "seeds": 44, "dict_tokens": 46},
+      "C": {"dict": "targeted", "seeds": 44, "dict_tokens": 46},
+      "D": {"dict": "protocol", "seeds": 44, "dict_tokens": 46}
     },
     "action_seq": {
       "enabled": false,

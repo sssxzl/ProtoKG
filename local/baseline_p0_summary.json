@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0",
-  "note": "批次 2.0（P0：RFC 源补齐字段取值）之后的种子语料基线摘要",
+  "schema_version": "1.1",
+  "note": "批次 2.2（P0 字段取值 + 通道 E ABNF 字段）之后的种子语料基线摘要",
   "hub_state": "RFC 单源 + 协议骨架 + 必填头物化（单源调试态）",
   "md5_manifest": "local/baseline_p0_seeds.md5",
   "groups": {
@@ -43,20 +43,24 @@
     "smtp": {
       "A": {
         "seed_count": 38,
-        "dict_tokens": 18
+        "dict_tokens": 46
       },
       "B": {
         "seed_count": 44,
-        "dict_tokens": 18
+        "dict_tokens": 46
       },
       "C": {
         "seed_count": 44,
-        "dict_tokens": 18
+        "dict_tokens": 46
       },
       "D": {
         "seed_count": 44,
-        "dict_tokens": 18
+        "dict_tokens": 46
       }
     }
+  },
+  "_changelog": {
+    "2026-11-03 批次 2.2（通道 E）": "通道 E 补上了 RFC 5322 的 19 个 ABNF 头字段 ⇒ smtp 的 headers 桶 1 → 20 个、字典 18 → 46 token；★ 种子**内容与文件名全部未变**（实测 440/440 同名同内容）",
+    "2026-11-03 批次 2.0（P0）": "RFC 源补齐字段取值 ⇒ headers 取值池变化 ⇒ default_headers 兜底不再注入 ⇒ 种子内容变（**本基线取代 P0 之前的基线**）"
   }
 }
