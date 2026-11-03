@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "note": "批次 2.0（P0：RFC 源补齐字段取值）之后的种子语料基线摘要",
+  "hub_state": "RFC 单源 + 协议骨架 + 必填头物化（单源调试态）",
+  "md5_manifest": "local/baseline_p0_seeds.md5",
+  "groups": {
+    "rtsp": {
+      "A": {
+        "seed_count": 52,
+        "dict_tokens": 24
+      },
+      "B": {
+        "seed_count": 58,
+        "dict_tokens": 24
+      },
+      "C": {
+        "seed_count": 58,
+        "dict_tokens": 226
+      },
+      "D": {
+        "seed_count": 58,
+        "dict_tokens": 24
+      }
+    },
+    "sip": {
+      "A": {
+        "seed_count": 11,
+        "dict_tokens": 204
+      },
+      "B": {
+        "seed_count": 11,
+        "dict_tokens": 204
+      },
+      "C": {
+        "seed_count": 11,
+        "dict_tokens": 204
+      },
+      "D": {
+        "seed_count": 11,
+        "dict_tokens": 204
+      }
+    },
+    "smtp": {
+      "A": {
+        "seed_count": 38,
+        "dict_tokens": 18
+      },
+      "B": {
+        "seed_count": 44,
+        "dict_tokens": 18
+      },
+      "C": {
+        "seed_count": 44,
+        "dict_tokens": 18
+      },
+      "D": {
+        "seed_count": 44,
+        "dict_tokens": 18
+      }
+    }
+  }
+}

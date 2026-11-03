@@ -786,6 +786,150 @@ def _norm(kind: str, name: str, content: str, protocol: str,
     }
 
 
+# ===========================================================================
+# ★ P0（批次 2.0）：RFC 字段**取值样本**抽取
+# ===========================================================================
+#
+# ★ 为什么需要：RFC 源此前只贡献 syntax + definition 两类知识 ⇒ 知识中枢的
+#   ``headers`` 桶**取值池大面积为空**（实测 rtsp 28/58 = 48%、sip 26/63 = 41%，
+#   其中 sip 的**必填头** Via/From/To/CSeq/Call-ID/Max-Forwards 全空）
+#   ⇒ 直接压制 ⑤ 层 ``value-pool-boundary`` 规则（没有另一个取值可换）
+#   ⇒ 也是批次 1 里 R-2（CSeq 取值池空）的根因。
+#   而 RFC 规范里**明确写着**这些头的合法取值（示例报文 / Example 段）⇒
+#   **是漏抽，不是规范里没有**。
+#
+# ★ 三道清洗（缺一不可，否则会被散文污染）：
+#   ① **语境判别**：只在两种可信语境里取值 ——
+#      A) "Example of use:" / "Example:" 引导段；
+#      B) **连续 ≥2 行**的 ``Name: value`` 块（⇒ 完整报文示例 / 头列表）。
+#      ⇒ 散文里的 "Server: A server is a network element…" 被滤掉。
+#   ② **头名归一**：头名大小写不敏感 ⇒ 归到 field 名集合的**规范形态**
+#      ⇒ 消除 Content-length / Content-type / CONTENT 等变体重复。
+#   ③ **值清洗**：去续行符、限长、排除散文形态（含空格且首 token 不像 token）。
+
+#: "Example of use:" 之类的举例引导词（单独成行）
+_RE_EXAMPLE_LEAD = re.compile(
+    r"^\s*(example of use|examples?|for example)\s*[:.]?\s*$",
+    re.IGNORECASE)
+
+#: 头值行：``Name: value``（Name 不含空格 ⇒ 不会把请求行 / URL 当头）
+_RE_HEADER_VALUE_LINE = re.compile(
+    r"^\s*([A-Za-z][A-Za-z0-9_-]*)\s*:\s*(.+?)\s*$")
+
+#: 取值样本长度上限（超长 ⇒ 多半是散文）
+_MAX_SAMPLE_VALUE_LEN = 160
+
+#: 取值池内部分隔符（取值里几乎不会出现 ⇒ 解析无歧义）
+VALUE_SAMPLE_SEP = " |~| "
+
+
+def _parse_value_samples(content: str) -> list[str]:
+    """解析 ``"<name> | values: v1 |~| v2"`` → ``[v1, v2]``。"""
+    body = content or ""
+    if "| values:" not in body:
+        return []
+    tail = body.split("| values:", 1)[1]
+    return [v.strip() for v in tail.split(VALUE_SAMPLE_SEP) if v.strip()]
+
+
+def _looks_like_token(tok: str) -> bool:
+    """判断一个 token 是否像「协议 token」（而不是散文词）。
+
+    ★ 判据要点：``A`` / ``The`` 这类**单/双字母虚词**不算 token
+      （否则 "A server is a network element" 会被当取值）。
+    """
+    tok = (tok or "").strip()
+    if not tok:
+        return False
+    if len(tok) <= 2 and tok.isalpha():
+        return False
+    if tok.endswith("/") or "=" in tok or tok.isupper():
+        return True
+    if tok.replace(".", "").replace("-", "").replace("_", "").isdigit():
+        return True
+    # 形如 application/sdp、text/parameters、multipart/signed
+    return bool(re.match(r"^[A-Za-z][A-Za-z0-9]*/", tok))
+
+
+def _clean_sample_value(val: str) -> str:
+    """清洗一条取值样本；不合格返回空串。
+
+    ★ 含空格时：**每个逗号分隔项**的首 token 都得像 token 才收
+      ⇒ 既放过多值取值（"application/rtsl, application/sdp;level=2"），
+        又挡住散文（"A server is a network element…"）。
+    """
+    val = (val or "").rstrip("\\").strip()
+    if not val or len(val) > _MAX_SAMPLE_VALUE_LEN:
+        return ""
+    if " " in val:
+        for part in val.split(","):
+            # ★ 先 strip 再取首 token（否则 "SETUP, PLAY" 的第二项首 token 是空串）
+            if not _looks_like_token(part.strip().split(" ", 1)[0]):
+                return ""
+    return val
+
+
+def _extract_field_value_samples(text_lines: list[str],
+                                  known: dict[str, str]) -> dict[str, list[str]]:
+    """从 RFC 正文抽「字段 → 取值样本」。
+
+    Args:
+        text_lines: **已清洗、已隔离 TOC** 的正文行（逐行）。
+        known: ``{小写头名: 规范头名}``（来自本文件已抽出的 field 名）。
+
+    Returns:
+        ``{规范头名: [取值样本, ...]}``（按出现序、去重）。
+    """
+    out: dict[str, list[str]] = {}
+
+    def _add(raw_name: str, raw_val: str) -> None:
+        canon = known.get(raw_name.lower())
+        if not canon:
+            return
+        val = _clean_sample_value(raw_val)
+        if not val:
+            return
+        bucket = out.setdefault(canon, [])
+        if val not in bucket:
+            bucket.append(val)
+
+    n = len(text_lines)
+    i = 0
+    while i < n:
+        line = text_lines[i]
+        # —— 语境 A：Example 引导段 ——
+        if _RE_EXAMPLE_LEAD.match(line):
+            i += 1
+            while i < n:
+                m = _RE_HEADER_VALUE_LINE.match(text_lines[i])
+                if m:
+                    _add(m.group(1), m.group(2))
+                    i += 1
+                    continue
+                if text_lines[i].strip():
+                    break
+                i += 1
+            continue
+        # —— 语境 B：连续 ≥2 行的头块（完整报文示例 / 头列表）——
+        m0 = _RE_HEADER_VALUE_LINE.match(line)
+        if m0 and m0.group(1).lower() in known:
+            j = i
+            block: list = []
+            while j < n:
+                mm = _RE_HEADER_VALUE_LINE.match(text_lines[j])
+                if not mm or mm.group(1).lower() not in known:
+                    break
+                block.append(mm)
+                j += 1
+            if len(block) >= 2:
+                for mm in block:
+                    _add(mm.group(1), mm.group(2))
+                i = j
+                continue
+        i += 1
+    return out
+
+
 def _doc_content_lines(raw_lines: list[str]) -> list[tuple[int, str]]:
     """① 文档清洗 + ② TOC 识别与隔离 → 内容行列表 [(原始行号, 行文本)]。
 
@@ -960,6 +1104,8 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
     # 已抽取的方法名（大写）—— field 抽取时排除，避免命令名重复当 field
     # （实测 SMTP 的 MAIL/RCPT/DATA 等既抽成 method 又抽成 field）。
     method_names: set[str] = set()
+    # ★ P0：已抽出的字段名（小写 → 规范形态）—— 供「取值样本」通道判定
+    field_names: dict[str, str] = {}
 
     def _add_field(name: str, sem_text: str, line_no: int) -> None:
         """加入一条 field norm（同文件内按 norm_id 去重）。"""
@@ -980,6 +1126,8 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
             return
         seen_ids.add(n["norm_id"])
         norms.append(n)
+        # ★ P0：登记字段名（供「取值样本」通道判定头名是否已知）
+        field_names.setdefault(name.lower(), name)
 
     # ---- 通道 A0：ABNF 方法枚举（SIP 的 `Method = INVITEm / ACKm / ...`）----
     #   SIP RFC 3261 的方法不是章节标题、也不是「全称（缩写）」条目，
@@ -1075,12 +1223,34 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
             content = f"{name} | required: {sem}" if sem else name
             norm = _norm("field", name, content, protocol, src_name,
                          f"@{line_no}")
+            # ★ P0：登记字段名（供「取值样本」通道判定头名是否已知）
+            field_names.setdefault(name.lower(), name)
 
         # 同一文件内去重（同一 norm_id 只保留首个 = 正文首个出现）
         if norm["norm_id"] in seen_ids:
             continue
         seen_ids.add(norm["norm_id"])
         norms.append(norm)
+
+    # ---- 通道 D：字段**取值样本**（★ P0，批次 2.0）------------------------
+    #   RFC 规范里明确写着各头的合法取值（完整报文示例 / "Example of use" 段）
+    #   ⇒ 此前**漏抽** ⇒ 知识中枢 headers 桶取值池大面积为空
+    #   ⇒ 压制 ⑤ 层 value-pool-boundary 规则。
+    #   ★ 全文扫描（不受窗口预算限制），但**只认已知字段名** ⇒ 精确无污染。
+    if field_names:
+        _samples = _extract_field_value_samples(
+            [t for _, t in content_lines], field_names)
+        for _fname, _vals in sorted(_samples.items()):
+            if not _vals:
+                continue
+            _content = (f"{_fname} | values: "
+                        + VALUE_SAMPLE_SEP.join(_vals))
+            _n = _norm("field_value", _fname, _content, protocol, src_name,
+                       "@samples")
+            if _n["norm_id"] in seen_ids:
+                continue
+            seen_ids.add(_n["norm_id"])
+            norms.append(_n)
 
     return norms
 
@@ -1407,6 +1577,9 @@ def extract_rfc_norms(protocol: str) -> list[dict]:
     cfg = _load_rfc_config(protocol)
     norms: list[dict] = []
     seen_protocol_level: set[str] = set()
+    # ★ P0：`field_value`（字段取值样本）**跨文件合并**而不是丢弃 ——
+    #   同名字段在多份 RFC 里各有取值（如 SMTP 的 4 份 RFC）⇒ 合并才完整。
+    merged_values: dict[str, list[str]] = {}
     for f in sorted(spec_dir.glob("*.txt")):
         for norm in _extract_rfc_file(f, protocol, cfg):
             # ★ P2-3（2026-11-01）：去重键改为**按 norm_id 判定**，与 norm_id 的
@@ -1419,6 +1592,20 @@ def extract_rfc_norms(protocol: str) -> list[dict]:
             #   `content_length` 的 norm_id 不同（`content-length` vs
             #   `content_length`）⇒ **不会**被误合并。
             key = norm["norm_id"]
+            if norm.get("kind") == "field_value":
+                _vals = _parse_value_samples(norm.get("content", ""))
+                _prev = merged_values.get(key)
+                if _prev is None:
+                    merged_values[key] = list(_vals)
+                    seen_protocol_level.add(key)
+                    norms.append(norm)
+                else:
+                    for _v in _vals:
+                        if _v not in _prev:
+                            _prev.append(_v)
+                    norm["content"] = (f"{norm['name']} | values: "
+                                        + VALUE_SAMPLE_SEP.join(_prev))
+                continue
             if key in seen_protocol_level:
                 continue
             seen_protocol_level.add(key)

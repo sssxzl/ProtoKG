@@ -208,6 +208,45 @@ def field_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
     return facts
 
 
+#: ★ 批次 2.0（P0）：取值样本在 norm content 里的分隔符（与 rfc_extractor 同源）
+VALUE_SAMPLE_SEP = " |~| "
+
+
+def parse_field_value_content(content: str) -> tuple[str, list[str]]:
+    """解析 ``"<字段名> | values: v1 |~| v2"`` → ``(字段名, [v1, v2])``。
+
+    ★ 批次 2.0（P0）：RFC 源补齐「字段取值」的专用载体。
+      此前 RFC 源只贡献 syntax + definition ⇒ 知识中枢 ``headers`` 桶
+      **取值池大面积为空**（rtsp 48% / sip 41%，含 sip 的**必填头**）
+      ⇒ 直接压制 ⑤ 层 ``value-pool-boundary`` 规则（没有另一个取值可换）。
+    """
+    body = content or ""
+    if "| values:" not in body:
+        name = body.split("|", 1)[0].strip()
+        return name, []
+    head, tail = body.split("| values:", 1)
+    name = head.split("|", 1)[0].strip()
+    values = [v.strip() for v in tail.split(VALUE_SAMPLE_SEP) if v.strip()]
+    return name, values
+
+
+def field_value_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
+    """rfc field_value norm → [value_enum fact]（字段的取值样本集合）。
+
+    ★ 批次 2.0（P0）：aspect 契约见 ``fused_hub/schema/aspect_registry.json`` ——
+      ``value_enum`` 的 ``value_type = "set"``、适用主体 = header/protocol/actor
+      ⇒ 这里用 ``header`` + ``Value(type="set", data=[...])``。
+    """
+    name, values = parse_field_value_content(norm.get("content", ""))
+    if not name or not values:
+        return []
+    subject = _qualified_subject("header", name, norm)
+    return [_make_fact(
+        subject, "value_enum",
+        Value(type="set", data=sorted(set(values))),
+        "normative_unspecified", norm)]
+
+
 def outcome_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
     """rfc outcome norm → [definition fact]（when 条件暂存 evidence.quote）。"""
     meaning, condition = parse_outcome_content(norm.get("content", ""))
@@ -334,6 +373,8 @@ def constraint_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
 RFC_KIND_MAP = {
     "transition": lambda n: [transition_norm_to_fact(n)],
     "field": field_norm_to_facts,
+    # ★ 批次 2.0（P0）：字段取值样本 → value_enum fact
+    "field_value": field_value_norm_to_facts,
     "outcome": outcome_norm_to_facts,
     "method": method_norm_to_facts,
     "constraint": constraint_norm_to_facts,
