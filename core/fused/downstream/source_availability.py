@@ -38,7 +38,8 @@ def has_source(bundle: dict, source: str) -> bool:
     return source in available_sources(bundle)
 
 
-def whitelist_methods(bundle: dict, profile: Optional[dict] = None) -> list[str]:
+def whitelist_methods(bundle: dict, profile: Optional[dict] = None, *,
+                     use_profile_whitelist: bool = True) -> list[str]:
     """方法白名单：按降级链取「目标支持的方法」。
 
     降级链（过渡期，未来 traffic extractor 就绪后补 server_announce / observed_called）:
@@ -58,9 +59,15 @@ def whitelist_methods(bundle: dict, profile: Optional[dict] = None) -> list[str]
     methods = bundle.get("methods") or {}
 
     # 1. profile 手配白名单（过渡期最可靠）
-    allowed = (profile or {}).get("allowed_methods")
-    if allowed:
-        return [m for m in allowed if m in methods]
+    #    ★ 批次 2.5（F6）：``profile.allowed_methods`` 是**源码侧**人工白名单
+    #      （profile.note 自述「目标程序实际实现的方法子集」）⇒ 用它裁剪会
+    #      砍掉 RFC 抽到的**真实方法**（rtsp 实测：ANNOUNCE/RECORD/REDIRECT）
+    #      ⇒ ``use_profile_whitelist=False`` 时**跳过这一步**，
+    #        改走第 2 步（observed ∪ declared ⇒ 来自 facts，随源集合自然变化）。
+    if use_profile_whitelist:
+        allowed = (profile or {}).get("allowed_methods")
+        if allowed:
+            return [m for m in allowed if m in methods]
 
     # 2. observed ∪ declared 并集（不缩水）：实测确认 + 源码声明全集
     declared = {m for m, info in methods.items() if info.get("declared_by")}

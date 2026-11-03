@@ -1003,9 +1003,22 @@ def main() -> int:
     if _manifest:
         print(f"  中枢构建: build_ids={_manifest.get('build_ids')} "
               f"built_at={_manifest.get('built_at')}")
+    # ★ 批次 2.5（F6）：``profile.allowed_methods`` 是**源码侧**人工白名单
+    #   （profile.note 自述：「目标程序实际实现的方法子集」）⇒ 用它裁剪 RFC
+    #   抽集会砍掉 ANNOUNCE/RECORD/REDIRECT（**真实 RTSP 方法**）⇒
+    #   **按 source_set 决定**是否启用：
+    #     · ``source`` ∈ 本次源集合 ⇒ 启用（它确实是源码侧知识，且能挡
+    #       source 源 LLM 产出的垃圾方法名）
+    #     · ``source`` ∉ 本次源集合 ⇒ **不启用**（否则用实现裁剪规范）
+    #     · 未声明 source_set（不过滤）⇒ 保持原行为（启用）
+    _src_set_l = {str(s).strip().lower() for s in (source_set or [])}
+    _apply_allowed = (not _src_set_l) or ("source" in _src_set_l)
+    if not _apply_allowed:
+        print("方法白名单: ★ 本次源集合不含 source ⇒ **不启用** "
+              "profile.allowed_methods（它是源码侧白名单，会裁掉 RFC 抽到的真实方法）")
     bundle = assemble_bundle(views, semantic_rules=semantic_rules,
                               source_set=source_set or None,
-                              apply_allowed_methods=not args.strict_source_only)
+                              apply_allowed_methods=_apply_allowed)
     if semantic_rules:
         print(f"语义规则: 装载 {len(semantic_rules)} 条 → "
               f"legal_boundary {sum(len(v) for v in (bundle.get('legal_boundary') or {}).values())} 条 / "
@@ -1061,7 +1074,10 @@ def main() -> int:
         available_sources, whitelist_methods,
     )
     srcs = available_sources(bundle)
-    whitelist = whitelist_methods(bundle, profile)
+    # ★ 批次 2.5（F6）：与 assemble_bundle 的白名单过滤**同口径**
+    #   （否则这里会用源码侧白名单裁剪 transitions ⇒ 绕过 F6）
+    whitelist = whitelist_methods(bundle, profile,
+                                    use_profile_whitelist=_apply_allowed)
     print(f"分桶: methods={sorted(bundle['methods'])}")
     print(f"  可用知识源: {sorted(srcs) or '(无)'}")
     print(f"  方法白名单({len(whitelist)}): {whitelist}")
