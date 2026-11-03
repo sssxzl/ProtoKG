@@ -1006,7 +1006,7 @@ def main() -> int:
     if _ledger.get("buckets"):
         print(f"知识台账: {len(_ledger['buckets'])} 个桶 / "
               f"违规 {(_ledger or {}).get('violation_count', 0)} 条"
-              f"（源集合={_ledger.get('source_set')}）")
+              f"（本次源集合={source_set or '（未声明⇒不过滤）'}）")
         _sk = _ledger.get("skeleton_dims") or {}
         if _sk:
             print(f"  协议骨架: 已排除维度 {_sk.get('excluded_dims') or '（未排除）'}"

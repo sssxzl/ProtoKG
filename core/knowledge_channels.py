@@ -234,7 +234,11 @@ def build_ledger(bucket_sources: dict, protocol: str,
         ledger[bucket] = entry
     return {
         "protocol": protocol,
-        "source_set": sorted(source_set) if source_set is not None else None,
+        # ★ **不记 source_set** —— 它是**调用入参**，不是知识属性
+        #   ⇒ 记进去会让「不传 source_set」与「显式传全量集合」两种调用
+        #     产出**不同的 bundle** ⇒ 破坏「默认路径逐字节不变」的不变量
+        #     （护栏 test_default_call_is_byte_identical_to_unfiltered 抓到过）。
+        #   ⇒ 需要看本次源集合时，由**调用方**（seedgen）打印即可。
         "skeleton_dims": _skeleton_dims(protocol),
         "buckets": ledger,
         "violations": violations,
