@@ -65,6 +65,9 @@
         }
       },
       "note": "2026-11-03 批次 2.4：⑤ 层 action_seq 开启（rtsp/B +27、smtp/B +70、sip/C +24 条）⇒ 种子数与字典 token 数重新标定"
+    },
+    "_before_20261103_batch25": {
+      "note": "2026-11-03 批次 2.5：排除 RFC 文档示例域名/地址实例 ⇒ 取值池变窄 ⇒ dict_tokens 重新标定（种子数不变）"
     }
   },
   "groups": {
@@ -109,7 +112,7 @@
       "dict_kind": "targeted",
       "dict_file": "c_targeted.dict",
       "expect_seeds": 61,
-      "expect_dict_tokens": 226,
+      "expect_dict_tokens": 217,
       "in_paper_table18": true
     },
     "D": {

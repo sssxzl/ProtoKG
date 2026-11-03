@@ -1,7 +1,7 @@
 {
-  "schema_version": "1.2",
-  "note": "批次 2.4（⑤ 层开启 + traffic 污染清理）之后的种子语料基线摘要",
-  "hub_state": "RFC 单源 + 协议骨架 + 必填头物化；⑤ 层 action_seq 已开启",
+  "schema_version": "1.3",
+  "note": "批次 2.5（排除 RFC 文档示例域名）之后的种子语料基线摘要",
+  "hub_state": "RFC 单源 + 协议骨架 + 必填头物化；⑤ 层已开启；示例域名已排除",
   "md5_manifest": "local/baseline_p0_seeds.md5",
   "groups": {
     "rtsp": {
@@ -15,7 +15,7 @@
       },
       "C": {
         "seed_count": 61,
-        "dict_tokens": 226
+        "dict_tokens": 217
       },
       "D": {
         "seed_count": 61,
@@ -25,37 +25,37 @@
     "sip": {
       "A": {
         "seed_count": 32,
-        "dict_tokens": 204
+        "dict_tokens": 175
       },
       "B": {
         "seed_count": 29,
-        "dict_tokens": 204
+        "dict_tokens": 175
       },
       "C": {
         "seed_count": 35,
-        "dict_tokens": 204
+        "dict_tokens": 175
       },
       "D": {
         "seed_count": 35,
-        "dict_tokens": 204
+        "dict_tokens": 175
       }
     },
     "smtp": {
       "A": {
         "seed_count": 40,
-        "dict_tokens": 46
+        "dict_tokens": 39
       },
       "B": {
         "seed_count": 114,
-        "dict_tokens": 46
+        "dict_tokens": 39
       },
       "C": {
         "seed_count": 46,
-        "dict_tokens": 46
+        "dict_tokens": 39
       },
       "D": {
         "seed_count": 46,
-        "dict_tokens": 46
+        "dict_tokens": 39
       }
     }
   }

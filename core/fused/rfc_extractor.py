@@ -1024,6 +1024,85 @@ def _looks_like_token(tok: str) -> bool:
     return bool(re.match(r"^[A-Za-z][A-Za-z0-9]*/", tok))
 
 
+#: ★ 批次 2.5：RFC **文档示例域名**（RFC 2606 保留域名 + 常见示例 TLD）
+_RESERVED_HOST_SUFFIX = (
+    ".example", ".invalid", ".localhost", ".test",
+)
+_RESERVED_HOSTS = frozenset({
+    "example.com", "example.net", "example.org",
+})
+
+#: 裸域名形态：``label(.label)+`` 且**末段是纯字母**（长度 ≥2）
+#:   ⇒ ``www.example.com`` 命中；``2.5`` / ``1.0`` **不**命中（TLD 是数字）
+_RE_BARE_DOMAIN = re.compile(
+    r"^(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+"
+    r"[A-Za-z](?:[A-Za-z-]*[A-Za-z])?$")
+
+
+def _is_example_host_value(val: str) -> bool:
+    """判断一个取值是否是「RFC 文档示例地址 / 示例域名」⇒ 不该进取值池。
+
+    ★ 为什么必须排除（三条理由）：
+      ① **语义**：取值池的用途是「字段的合法取值」⇒ 一个**完整的示例
+         地址实例**（``<sip:carol@chicago.com>``、``<1234@local.machine.example>``）
+         是**整条报文/地址**，不是「某个字段的一个取值」⇒ 粒度就错了。
+      ② **对 ⑤ 层无用**：把 URI 里的域名换成另一个示例域名 ⇒ 仍然是死信
+         ⇒ ⑤ 层 ``value-pool-boundary`` 拿它做变异**零收益**。
+      ③ **污染 G1**：这些域名会被写进 ``Contact``/``Via``/URI ⇒ 目标端点
+         变成示例域名 ⇒ **corpus_gate 的 G1（目标端点正确性）判违规**
+         ⇒ SIP 语料**不可发布**（实测 sip 全部种子违规，端点 ``chicago.com:5060``）。
+    """
+    v = (val or "").strip()
+    if not v:
+        return False
+    # ① 完整地址 / URI **实例**
+    #   ⚠ **不能**用「含 @ 就排除」——SIP 的 `Call-ID: a84b4c76e66710@192.0.2.1`
+    #     是**该头的合法取值**（RFC 3261 规定 Call-ID 形如 word@word）⇒ 误杀。
+    #   ⇒ 只排「**整体**是尖括号包裹的实例」或「带 scheme 的 URL」：
+    #     <sip:carol@chicago.com> / <http://...>  ⇒ 整条报文/地址实例
+    #   ⚠ 用「**含** `<` 且**含** `>`」而不是「整体被包裹」——实测 RFC 里还有
+    #     `'<sip:server10.biloxi.com;lr>,'`（带尾逗号）与
+    #     `'<sip:carol@chicago.com>;tag=93810874'`（带参数）两种形态。
+    if "://" in v or ("<" in v and ">" in v):
+        return True
+    # ② RFC 2606 保留域名
+    low = v.lower().rstrip(".")
+    if low in _RESERVED_HOSTS:
+        return True
+    if any(low.endswith(sfx) for sfx in _RESERVED_HOST_SUFFIX):
+        return True
+    # ③ 裸域名形态（含 ``www.example.com`` 这类）
+    if _RE_BARE_DOMAIN.match(v):
+        return True
+    # ④ **值里**的示例主机（实测形态：
+    #    `SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bK`（复合值）
+    #    `a84b4c76e66710@pc33.atlanta.com`（user@域名，无空格）
+    #    ⇒ 逐 token 查：任一 token 是示例主机 ⇒ 整个值排除
+    #    ⚠ 对**所有**值生效（不只含空格的）——否则无空格的 user@域名会漏网
+    if True:
+        for tok in v.split():
+            # ★ 剥掉 URI 参数与端口（``pc33.atlanta.com;branch=z9hG4bK``、
+            #   ``bobspc.biloxi.com:5060`` ⇒ 都取主机部分）
+            #   ⚠ IP 形态（``192.0.2.1:5060``）剥端口后末段是数字 ⇒
+            #     **不**命中裸域名判据 ⇒ IP 地址保留（正确）
+            tok = tok.split(";")[0].split("=")[0]
+            # ★ 含 ``@`` 时**先**取 host 部分（``user@pc33.atlanta.com`` ⇒
+            #   ``pc33.atlanta.com``；``sip:callee@u2.domain.com`` ⇒
+            #   ``u2.domain.com``）⇒ 才能识别「user@示例域名」
+            #   ⚠ 顺序要紧：先 @ 后 ``:``，否则 ``sip:callee@...`` 会被
+            #     剥端口时把 host 一起剥掉
+            if "@" in tok:
+                tok = tok.rsplit("@", 1)[-1]
+            tok = tok.split(":")[0].rstrip(",)")
+            low_tok = tok.lower().rstrip(".")
+            if (low_tok in _RESERVED_HOSTS
+                    or any(low_tok.endswith(sfx)
+                           for sfx in _RESERVED_HOST_SUFFIX)
+                    or _RE_BARE_DOMAIN.match(tok)):
+                return True
+    return False
+
+
 def _clean_sample_value(val: str) -> str:
     """清洗一条取值样本；不合格返回空串。
 
@@ -1033,6 +1112,11 @@ def _clean_sample_value(val: str) -> str:
     """
     val = (val or "").rstrip("\\").strip()
     if not val or len(val) > _MAX_SAMPLE_VALUE_LEN:
+        return ""
+    # ★ 批次 2.5：排除「RFC 文档示例地址 / 示例域名」
+    #   （理由见 `_is_example_host_value` 的 docstring：粒度错、对 ⑤ 层零收益、
+    #    且污染 corpus_gate 的 G1 ⇒ SIP 语料不可发布）
+    if _is_example_host_value(val):
         return ""
     if " " in val:
         for part in val.split(","):

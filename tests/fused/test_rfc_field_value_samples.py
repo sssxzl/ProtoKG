@@ -47,13 +47,15 @@ def test_example_lead_block_is_extracted():
 
 def test_contiguous_header_block_is_extracted():
     """★ 连续 ≥2 行的头块（完整报文示例）能抽到。"""
+    # ★ 用**非示例**的取值（RFC 的示例域名/地址实例已被批次 2.5 排除 ⇒
+    #   这里用保留 IP 形态，避免测试依赖「示例域名会被收」）
     text = (
-        "INVITE sip:alice@atlanta.com SIP/2.0\n"
-        "Via: SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bK776asdhds\n"
+        "INVITE sip:alice@10.0.0.1 SIP/2.0\n"
+        "Via: SIP/2.0/UDP 192.0.2.1;branch=z9hG4bK776asdhds\n"
         "Max-Forwards: 70\n"
-        "To: Alice <sip:alice@atlanta.com>\n"
+        "To: Alice <sip:alice@10.0.0.1>\n"
         "CSeq: 314159 INVITE\n"
-        "Call-ID: a84b4c76e66710@pc33.atlanta.com\n"
+        "Call-ID: a84b4c76e66710@192.0.2.1\n"
     )
     known = {"via": "Via", "max-forwards": "Max-Forwards", "to": "To",
              "cseq": "CSeq", "call-id": "Call-ID"}
@@ -61,7 +63,7 @@ def test_contiguous_header_block_is_extracted():
     assert out["Via"][0].startswith("SIP/2.0/UDP")
     assert out["Max-Forwards"] == ["70"]
     assert out["CSeq"] == ["314159 INVITE"]
-    assert out["Call-ID"] == ["a84b4c76e66710@pc33.atlanta.com"]
+    assert out["Call-ID"] == ["a84b4c76e66710@192.0.2.1"]
 
 
 # ===========================================================================
@@ -97,9 +99,13 @@ def test_value_cleaning_rejects_prose_with_spaces():
     assert RX._clean_sample_value("A server is a network element") == ""
     assert RX._clean_sample_value("application/sdp") == "application/sdp"
     assert RX._clean_sample_value("SETUP, PLAY") == "SETUP, PLAY"
+    # ★ 批次 2.5：**RFC 文档示例域名/地址实例被排除**
+    #   （否则会污染 corpus_gate 的 G1 ⇒ SIP 语料不可发布）
     assert RX._clean_sample_value(
-        "SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bK") == \
-        "SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bK"
+        "SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bK") == ""
+    assert RX._clean_sample_value(
+        "SIP/2.0/UDP 192.0.2.1;branch=z9hG4bK") == \
+        "SIP/2.0/UDP 192.0.2.1;branch=z9hG4bK"
     # 续行符要去掉
     assert RX._clean_sample_value("application/sdp \\") == "application/sdp"
     # 超长 ⇒ 拒
@@ -203,3 +209,54 @@ def test_value_enum_lands_in_headers_bucket():
                                                   "application/sdp"]
     # ★ 溯源可追到 rfc 源
     assert b["by_source"]["headers"] == {"rfc": 1}
+
+
+# ===========================================================================
+# 批次 2.5：RFC 文档示例域名 / 地址实例 的排除判据
+# ===========================================================================
+
+def test_example_host_values_are_rejected():
+    """★ 「RFC 文档示例域名 / 地址实例」一律不进取值池。
+
+    ★ 为什么要排（三条理由）：
+      ① **粒度错**：取值池的用途是「字段的合法取值」⇒ 一个**完整的示例
+         地址实例**是整条报文/地址，不是某个字段的一个取值；
+      ② **对 ⑤ 层零收益**：把 URI 里的示例域名换成另一个示例域名 ⇒ 仍是死信；
+      ③ **污染 G1**：写进 Contact/Via/URI ⇒ 目标端点变示例域名
+         ⇒ corpus_gate 的 G1 判违规 ⇒ SIP 语料不可发布。
+    """
+    rejected = [
+        "<sip:carol@chicago.com>",
+        "<sip:server10.biloxi.com;lr>,",
+        "<sip:carol@chicago.com>;tag=93810874",
+        "<1234@local.machine.example>",
+        "<http://www.example.com/sounds/moo.wav>",
+        "www.example.com",
+        "example.com",
+        "example.net",
+        "local.machine.example",
+        "a84b4c76e66710@pc33.atlanta.com",
+        "sip:callee@u2.domain.com",
+        "SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bK",
+        "SIP/2.0/UDP bobspc.biloxi.com:5060;branch=z9hG4bKnashds7",
+    ]
+    for v in rejected:
+        assert RX._is_example_host_value(v), f"应被判为示例取值：{v!r}"
+
+
+def test_legitimate_values_are_kept():
+    """★ **合法取值不被误杀**（尤其 Call-ID 的 word@word 形态）。"""
+    kept = [
+        "a84b4c76e66710@192.0.2.1",     # Call-ID 的合法形态（RFC 3261）
+        "843817637684230@998sdasdh09",
+        "SIP/2.0/UDP 192.0.2.1;branch=z9hG4bK",
+        "SIP/2.0/UDP 192.0.2.1:5060 ;received=192.0.2.207",
+        "SIP/2.0/UDP 10.0.0.1;branch=z9hG4bK",
+        "application/sdp", "application/rtsl, application/sdp;level=2",
+        "RTP/AVP/TCP", "npt=10-15", "4000", "100rel", "gzip",
+        "2.5", "1.0",                    # ★ 数字 TLD ⇒ 不是域名
+        "SETUP, PLAY, RECORD, SET_PARAMETER",
+        "Thu, 21 Nov 97 09:55:06 GMT",
+    ]
+    for v in kept:
+        assert not RX._is_example_host_value(v), f"合法取值被误杀：{v!r}"

@@ -46,22 +46,22 @@
       "A": {
         "dict": "protocol",
         "seeds": 40,
-        "dict_tokens": 46
+        "dict_tokens": 39
       },
       "B": {
         "dict": "protocol",
         "seeds": 114,
-        "dict_tokens": 46
+        "dict_tokens": 39
       },
       "C": {
         "dict": "targeted",
         "seeds": 46,
-        "dict_tokens": 46
+        "dict_tokens": 39
       },
       "D": {
         "dict": "protocol",
         "seeds": 46,
-        "dict_tokens": 46
+        "dict_tokens": 39
       }
     },
     "action_seq": {

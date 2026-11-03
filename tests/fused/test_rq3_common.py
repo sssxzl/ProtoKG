@@ -81,7 +81,7 @@ def test_config_group_expectations_match_spec():
     assert cfg["groups"]["D"]["expect_seeds"] == 61
     for g in ("A", "B", "D"):
         assert cfg["groups"][g]["expect_dict_tokens"] == 24
-    assert cfg["groups"]["C"]["expect_dict_tokens"] == 226
+    assert cfg["groups"]["C"]["expect_dict_tokens"] == 217
 
 
 def test_config_base_dict_md5():
