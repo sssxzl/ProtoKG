@@ -11,11 +11,9 @@ tests/fused/test_rq3_focus_group.py::test_default_output_unchanged
 tests/fused/test_rq3_focus_group.py::test_default_path_unchanged_without_target_env
 tests/fused/test_rq3_focus_group.py::test_focus_group_a_has_no_vuln_boundary_layer
 tests/fused/test_rq3_focus_group.py::test_focus_group_a_is_prefix_of_b
-tests/fused/test_rq3_focus_group.py::test_focus_group_bcd_have_vuln_boundary_layer
 tests/fused/test_rq3_focus_group.py::test_focus_group_bcd_same_md5_set
 tests/fused/test_rq3_focus_group.py::test_focus_group_c_matches_rq12_corpus
 tests/fused/test_rq3_focus_group.py::test_focus_group_no_seed_duplication
-tests/fused/test_rq3_focus_group.py::test_focus_group_order_natural_vs_proximity
 tests/fused/test_rq3_focus_group.py::test_focus_group_protocol_calibration[ftp]
 tests/fused/test_rq3_focus_group.py::test_focus_group_protocol_calibration[sip]
 tests/fused/test_rq3_focus_group.py::test_focus_group_protocol_calibration[smtp]
@@ -24,14 +22,11 @@ tests/fused/test_rq3_focus_group.py::test_focus_group_seed_count[A-38]
 tests/fused/test_rq3_focus_group.py::test_focus_group_seed_count[B-50]
 tests/fused/test_rq3_focus_group.py::test_focus_group_seed_count[C-50]
 tests/fused/test_rq3_focus_group.py::test_focus_group_seed_count[D-50]
-tests/fused/test_rq3_focus_group.py::test_rtsp_target_env_only_uses_playable_sessions
-tests/fused/test_rq3_focus_group.py::test_sip_target_env_only_boundary_methods_start_messages
 tests/fused/test_rq3_focus_group.py::test_target_env_calibration[rtsp-rq2-live555]
 tests/fused/test_rq3_focus_group.py::test_target_env_calibration[sip-rq2-kamailio]
 tests/fused/test_rq3_manifest.py::test_cli_manifest_complete[A-38]
 tests/fused/test_rq3_manifest.py::test_cli_manifest_complete[B-50]
 tests/fused/test_rq3_manifest.py::test_cli_manifest_complete[C-50]
 tests/fused/test_rq3_manifest.py::test_cli_manifest_complete[D-50]
-tests/fused/test_rq3_manifest.py::test_cli_manifest_md5_unique_per_group
 tests/fused/test_rq3_manifest.py::test_cli_manifest_records_dictionary
 tests/fused/test_strategy.py::test_generate_attack_seeds_filters_invalid

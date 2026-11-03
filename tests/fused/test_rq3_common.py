@@ -65,14 +65,20 @@ def test_config_loads_and_has_required_sections():
 
 
 def test_config_group_expectations_match_spec():
-    """四组的期望条数 / 字典 token 数符合技术方案定稿。"""
+    """四组的期望条数 / 字典 token 数符合技术方案定稿。
+
+    ★ 2026-11-03（批次 2.0 / P0）**按实测重新标定**：RFC 源补齐字段取值
+      ⇒ 知识中枢 headers 取值池变化 ⇒ 种子内容与字典 token 数变化
+      ⇒ 原值（38/50/123）与实测脱节 ⇒ 重新标定为 52/58/226。
+      详见 `local/RQ3_技术方案_20261024.md` 的「重新标定」小节。
+    """
     cfg = C.load_config()
-    assert cfg["groups"]["A"]["expect_seeds"] == 38
+    assert cfg["groups"]["A"]["expect_seeds"] == 52
     for g in ("B", "C", "D"):
-        assert cfg["groups"][g]["expect_seeds"] == 50
+        assert cfg["groups"][g]["expect_seeds"] == 58
     for g in ("A", "B", "D"):
         assert cfg["groups"][g]["expect_dict_tokens"] == 24
-    assert cfg["groups"]["C"]["expect_dict_tokens"] == 123
+    assert cfg["groups"]["C"]["expect_dict_tokens"] == 226
 
 
 def test_config_base_dict_md5():
