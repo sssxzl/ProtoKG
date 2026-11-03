@@ -51,6 +51,9 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from core.fused.norm import map_norm_to_facts                   # noqa: E402
+from core.fused.rfc_extractor import (                           # noqa: E402
+    _extract_transition_table, infer_transitions,
+)
 from core.fused.expert_note import expert_note_to_facts         # noqa: E402
 from core.fused.vuln import vuln_to_facts                       # noqa: E402
 from core.fused.registry import load_registry                  # noqa: E402
@@ -322,7 +325,8 @@ def _write_source_manifest(protocol: str, sources: list[str],
                             build_ids: dict[str, str],
                             skeleton_count: int = 0,
                             aspect_counts: dict | None = None,
-                            required_headers_count: int = 0) -> Path:
+                            required_headers_count: int = 0,
+                            state_machine_counts: dict | None = None) -> Path:
     """写中枢的**本次源集合**清单（``per_source/<协议>/sources.json``）。
 
     ★ 它是「本次实验的知识来源清单」的**唯一权威**：
@@ -350,6 +354,11 @@ def _write_source_manifest(protocol: str, sources: list[str],
                     "（facts/<aspect>.jsonl）；「源」退化为事实内部的 "
                     "all_claims[].authority 字段，不再是目录层级。",
             "aspect_counts": dict(sorted((aspect_counts or {}).items())),
+        },
+        "state_machines": {
+            "note": "★ 批次 2.3：各知识源贡献的状态机知识（**全部保留**；"
+                    "消解/择一留给后期 LLM 判别）",
+            "by_source": state_machine_counts,
         },
         "required_headers": {
             "fact_count": required_headers_count,
@@ -995,6 +1004,13 @@ def main(argv=None) -> int:
 
     norms = _load_norms(protocol)
     registry = load_registry()
+    # ★ 批次 2.3：各源状态机候选需要 RFC 正文（表格通道用）
+    _rfc_full_texts: dict = {}
+    _spec_dir = paths.kb_source_dir(protocol, "rfc")
+    if _spec_dir.is_dir():
+        _rfc_full_texts[protocol] = [
+            f.read_text(encoding="utf-8", errors="ignore")
+            for f in sorted(_spec_dir.glob("*.txt"))]
 
     if args.list_sources:
         print("知识库知识源识别结果（扫描 kb/ 目录，仅列出实际存在的源）:")
@@ -1068,11 +1084,104 @@ def main(argv=None) -> int:
               "⇒ 本次中枢**不含**语义规则（legal_boundary / response_expectation "
               "为空）。规则**不能从 kb 重建**（需 LLM）⇒ 需要时请加 --with-rules。")
 
-    # ---- ⑤ 写本次源集合清单（唯一权威）-------------------------------------
+    # ---- ⑤ 各源的状态机贡献统计（★ 批次 2.3）-----------------------------
+    #   ★ 各源的状态机知识**全部保留**进中枢；消解/择一留给后期 LLM 判别
+    #   ⇒ 这里只**如实记录**各源贡献了多少条（可审计）。
+    state_machine_counts: dict = {}
+    for _src, (_facts, _skipped, _bid) in pending.items():
+        for _f in _facts:
+            _asp = getattr(getattr(_f, "fact_key", None), "aspect", "")
+            if _asp not in ("target_state", "method_sequence"):
+                continue
+            _auth = ""
+            for _cl in (getattr(_f, "claims", None) or []):
+                _auth = getattr(_cl, "authority", "") or ""
+                break
+            _key = f"{_src}:{_asp}"
+            state_machine_counts[_key] = state_machine_counts.get(_key, 0) + 1
+    # 协议骨架（profile 源）里物化的那部分（只数状态机类 aspect）
+    _skel_dir = paths.per_source_facts_dir(protocol, SKELETON_SOURCE_NAME)
+    _skel_file = _skel_dir / f"{SKELETON_SOURCE_NAME}.jsonl"
+    if _skel_file.is_file():
+        for _ln in _skel_file.read_text(encoding="utf-8").splitlines():
+            _ln = _ln.strip()
+            if not _ln:
+                continue
+            try:
+                _v = json.loads(_ln)
+            except json.JSONDecodeError:
+                continue
+            _asp = ((_v.get("fact_key") or {}).get("aspect")) or ""
+            if _asp not in ("target_state", "method_sequence"):
+                continue
+            _key = f"profile:{_asp}"
+            state_machine_counts[_key] = state_machine_counts.get(_key, 0) + 1
+    print(f"[状态机] 各源贡献: "
+          f"{state_machine_counts if state_machine_counts else '(无)'}")
+
+    # ---- ⑤' 写「各源状态机候选」（★ 批次 2.3）-----------------------------
+    #   ★ 用户要求：「每个知识源获取的状态机信息也都保存到结构化知识中枢中，
+    #     后期让 LLM 依据我们定的规则进行判别」
+    #   ⇒ 这里把**各来源的状态机**原样落盘（含 RFC 表格 + LLM 抽取），
+    #     **不做消解** ⇒ 后期 LLM 判别时读它即可。
+    #   ★ 为什么单独成文件而不进 facts：`target_state` 的**语义契约**是
+    #     「由协议方法触发的状态转移」⇒ LLM 抽出的条目里 method 可能是
+    #     「provisional response」「Timer F」这类**触发事件**（实测 SIP）
+    #     ⇒ 混进 facts 会**污染语义** ⇒ 候选区单独存，语义清晰。
+    _sm_sources: dict = {}
+    # ① RFC 表格通道（语义确定：method 就是协议方法名）
+    for _tr in _extract_transition_table(
+            "\n".join(_lines for _lines in _rfc_full_texts.get(protocol, []))):
+        _sm_sources.setdefault("rfc:table", []).append(_tr)
+    # ② LLM 通道（语义待判别）
+    try:
+        for _tr in infer_transitions(protocol):
+            _sm_sources.setdefault("rfc:llm", []).append(_tr)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[状态机] LLM 通道跳过: {exc}", file=sys.stderr)
+    # ③ 协议骨架的状态机（已物化进 facts，这里**再存一份候选**⇒ 后期 LLM
+    #    判别时能把「规范原生（rfc）」与「协议骨架 / 源码分析」并列对照）
+    _skel_facts = paths.per_source_facts_dir(protocol, SKELETON_SOURCE_NAME)
+    _skel_file = _skel_facts / f"{SKELETON_SOURCE_NAME}.jsonl"
+    if _skel_file.is_file():
+        for _ln in _skel_file.read_text(encoding="utf-8").splitlines():
+            _ln = _ln.strip()
+            if not _ln:
+                continue
+            try:
+                _v = json.loads(_ln)
+            except json.JSONDecodeError:
+                continue
+            if ((_v.get("fact_key") or {}).get("aspect")) != "target_state":
+                continue
+            _q = (_v.get("fact_key") or {}).get("subject") or {}
+            _qq = _q.get("qualifiers") or {}
+            _sm_sources.setdefault("profile:skeleton", []).append({
+                "from": ((_qq.get("source") or {}).get("name") or ""),
+                "method": ((_qq.get("method") or {}).get("name") or ""),
+                "to": ((_qq.get("target") or {}).get("name") or ""),
+            })
+    _sm_dir = paths.per_source_root(protocol)
+    _sm_path = _sm_dir / "state_machines.json"
+    if _sm_sources:
+        _sm_path.write_text(json.dumps({
+            "protocol": protocol,
+            "note": ("★ 批次 2.3：各知识源获取的**状态机候选**（原样保存，"
+                     "**未做消解**）⇒ 后期由 LLM 依据规则判别并选出采用的一套。"
+                     "判别落点：core/fused/downstream/rag_seedgen.py"
+                     "::_select_active_transitions"),
+            "sources": {k: v for k, v in sorted(_sm_sources.items()) if v},
+            "by_source": state_machine_counts,
+        }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"[状态机] 候选已存中枢: {_sm_path.name} "
+              f"({ {k: len(v) for k, v in _sm_sources.items() if v} })")
+
+    # ---- ⑥ 写本次源集合清单（唯一权威）-------------------------------------
     _write_source_manifest(protocol, sources, build_ids,
                             skeleton_count=skeleton_count,
                             aspect_counts=aspect_counts,
-                            required_headers_count=required_headers_count)
+                            required_headers_count=required_headers_count,
+                            state_machine_counts=state_machine_counts)
     return 0
 
 

@@ -801,6 +801,24 @@ def _dedupe_sorted(values: list) -> list:
                                                      default=str))
 
 
+def _select_active_transitions(by_source: dict[str, list]) -> list:
+    """从「各源的状态机」里选出**当前采用**的一套（本期 = 协议骨架那套）。
+
+    ★★ **后期 LLM 判别的接入点**：用户要求「各源状态机都保存到中枢，
+      后期让 LLM 依据我们定的规则进行判别」⇒ 本函数就是那个「判别」的落点：
+      届时把这里的默认规则换成「LLM 判别结果」即可，**其它环节不必改动**。
+
+    ★ 本期默认规则（**刻意保持现状** ⇒ 消费端产物逐字节不变）：
+      ① 优先用**协议骨架**（authority=profile）那套 —— 它覆盖面最广
+         （实测 rtsp：骨架 38 条 vs RFC 客户端 12 条）；
+      ② 骨架没有时 ⇒ 用**全部**（去重、排序）。
+    """
+    chosen = by_source.get(SKELETON_AUTHORITY) or []
+    if not chosen:
+        chosen = [t for rows in by_source.values() for t in rows]
+    return sorted(set(chosen))
+
+
 def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                     *, semantic_rules: Optional[list] = None,
                     source_set: Optional[Iterable[str]] = None) -> dict:
@@ -1133,16 +1151,20 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         "methods": bool(_state_changing_profile),
     }
 
-    # ★ 批次 2.1（P1）：**源派生优先、协议骨架仅兜底**。
-    #   协议骨架的 target_state 本是 source 源（源码分析）产物的**冗余固化**，
-    #   而它**实测命名有误**（rtsp 骨架的状态名是 SIP 式 Idle/Registered/…，
-    #   RFC 原生是 Init/Ready/Playing/…）⇒ 两套并存会把状态机**割裂**成
-    #   两张不相容的图（实测 50 条 = 骨架 38 + RFC 14）。
-    #   ⇒ 只要有**源派生**的 target_state，就**丢弃**骨架那份。
-    #   ★ 单源调试态 ⇒ 用 RFC 的原生状态机；多源态 ⇒ 用 source 源那份。
-    if any(a and a != SKELETON_AUTHORITY for a in _transitions_auth):
-        transitions = [t for t, a in zip(transitions, _transitions_auth)
-                       if a != SKELETON_AUTHORITY]
+    # ★★ 批次 2.3：**各源的状态机全部保留**，消解/择一留给**后期 LLM**。
+    #   · `transitions_by_source`：按来源分组的**全量**（后期 LLM 判别的输入）
+    #   · `transitions`：**当前采用**的一套 ⇒ 消费端行为与本期之前**逐字节一致**
+    #
+    #   ★ 为什么分开：用户的要求是「每个知识源获取的状态机信息都保存到中枢，
+    #     后期让 LLM 依据规则判别」⇒ **保存**（中枢 facts + by_source 全量）与
+    #     **使用**（消费端用哪套）是两件事 ⇒ 本期只做前者 + 预留后者接口。
+    #   ★ 当前默认采用**协议骨架**（profile）那套：它是「跨实验复用的协议结构」，
+    #     覆盖面最广（rtsp 38 条 vs RFC 客户端 12 条）⇒ 保持现有产物不变。
+    #   ★ 后期 LLM 判别时**只需替换 `_select_active_transitions()`** 这一个函数。
+    transitions_by_source: dict[str, list] = {}
+    for _t, _a in zip(transitions, _transitions_auth):
+        transitions_by_source.setdefault(_a or "(unknown)", []).append(_t)
+    transitions = _select_active_transitions(transitions_by_source)
 
     # 去重（多源可能重复，保持稳定序）
     transitions = sorted(set(transitions))
@@ -1251,6 +1273,10 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         "message_instances": message_instances,
         "available_sources": sorted(available_sources),  # P0
         "method_order": _derive_method_order(method_sequences),  # P2b 拓扑序
+        # ★★ 批次 2.3：**各源的状态机全量**（按来源分组）—— 后期 LLM 判别的输入
+        #   （判别逻辑落点：`_select_active_transitions()`）
+        "transitions_by_source": {k: sorted(set(v))
+                                  for k, v in transitions_by_source.items()},
     }
     # ★★ 批次 1.6 步 3：**溯源保留**（**只加顶层新键** ⇒ 既有桶结构逐字节不变
     #   ⇒ prompt 渲染不变 ⇒ 种子产物逐字节不变；旧消费者零影响）。

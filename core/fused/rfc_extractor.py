@@ -1916,8 +1916,14 @@ def infer_transitions(protocol: str, llm=None) -> list[dict]:
                 return [r for r in rows if isinstance(r, dict)]
 
     if llm is None:
-        from core.llm import DeepSeekClient
-        llm = DeepSeekClient()
+        try:
+            from core.llm import DeepSeekClient
+            llm = DeepSeekClient()
+        except Exception as exc:  # noqa: BLE001
+            # ★ 无 LLM key（离线 / CI）⇒ **跳过 LLM 通道**，不阻断构建
+            print(f"[状态机] LLM 不可用（{exc}）⇒ 跳过 LLM 状态机抽取",
+                  file=sys.stderr)
+            return []
     out: list[dict] = []
     for cand in candidates:
         try:
