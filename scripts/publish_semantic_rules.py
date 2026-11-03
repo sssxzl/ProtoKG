@@ -117,11 +117,17 @@ def main(argv: list[str] | None = None) -> int:
             print(f"★ 按协议过滤：只接受 {specs} 的规则")
 
     if args.dry_run:
-        # 干跑：只做质量闸（不写盘）—— 用临时目录承载
+        # 干跑：只做质量闸（**不写生产库**）—— 落盘**重定向**到临时目录
+        # ★ 批次 2.5 修 bug：此前用 `TemporaryDirectory()` 包裹，但 publish_rules
+        #   写的是**绝对路径** ⇒ 临时目录根本没起作用 ⇒ **干跑真的改了生产库**
+        #   （实测把 rtsp 规则库从 5 条改成 2 条、smtp 从 5 条改成 0 条）。
+        #   ⇒ 必须用 `sink_dir=` 把落盘重定向。
         import tempfile
-        with tempfile.TemporaryDirectory():
+        with tempfile.TemporaryDirectory() as _td:
             report = publish_rules(protocol, rows, replace=True,
-                                   spec_versions=specs)
+                                   spec_versions=specs,
+                                   sink_dir=Path(_td))
+            _leaked = sorted(p.name for p in Path(_td).glob("*.jsonl"))
         report = dict(report)
         report["dry_run"] = True
         report["source"] = str(args.src or library_path(protocol, "authoritative"))

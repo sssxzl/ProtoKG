@@ -159,15 +159,25 @@ def _read_jsonl(path: Path) -> list[dict]:
 # 库 1：authoritative（rules.jsonl）—— 只有 SemanticRule
 # ===========================================================================
 
-def save_rules(protocol: str, rules: Iterable[SemanticRule]) -> Path:
-    """落盘权威规则库（**覆盖写**）。返回落盘路径。"""
+def save_rules(protocol: str, rules: Iterable[SemanticRule], *,
+               sink_dir: Optional[Path] = None) -> Path:
+    """落盘权威规则库（**覆盖写**）。返回落盘路径。
+
+    ★ 批次 2.5：``sink_dir`` 可把落盘**重定向**到别处 ⇒ **干跑隔离**用
+      （此前干跑用 ``TemporaryDirectory`` 包裹，但本函数写的是**绝对路径**
+      ⇒ 临时目录根本没起作用 ⇒ **干跑真的改了生产库**！实测踩到：
+      ``publish_semantic_rules.py --dry-run`` 把 rtsp 规则库从 5 条改成 2 条。
+    """
     rows = [{"kind": KIND_RULE, "rule": _rule_to_dict(r)} for r in rules]
-    return _write_jsonl(library_path(protocol, "authoritative"), rows)
+    dest = (Path(sink_dir) / "rules.jsonl" if sink_dir is not None
+            else library_path(protocol, "authoritative"))
+    return _write_jsonl(dest, rows)
 
 
 def publish_rules(protocol: str, rows: Iterable[Any], *,
                     replace: bool = True,
-                    spec_versions: Optional[Iterable[str]] = None) -> dict:
+                    spec_versions: Optional[Iterable[str]] = None,
+                    sink_dir: Optional[Path] = None) -> dict:
     """把规则**分流**发布进四库（**受控通道**：实验产物 → 生产库）。
 
     ★ 分流规则（两层模型的正确用法）：
@@ -262,26 +272,28 @@ def publish_rules(protocol: str, rows: Iterable[Any], *,
         seen.add(r.rule_id)
         uniq.append(r)
 
-    path = library_path(protocol, "authoritative")
+    path = (Path(sink_dir) / "rules.jsonl" if sink_dir is not None
+            else library_path(protocol, "authoritative"))
     if replace:
-        saved = save_rules(protocol, uniq)
+        saved = save_rules(protocol, uniq, sink_dir=sink_dir)
     else:
         existing = load_rules(path) if path.is_file() else []
         merged = list(existing)
         have = {r.rule_id for r in existing}
         merged += [r for r in uniq if r.rule_id not in have]
-        saved = save_rules(protocol, merged)
+        saved = save_rules(protocol, merged, sink_dir=sink_dir)
 
     # ★ 候选库**追加**（不得覆盖）：分批发布时，后一批的候选会把前一批**丢掉**
     #   ⇒ 候选是「不可转换者的去处」，丢了就**永久消失**（不可恢复）。
     cand_path = None
     if demoted:
-        cpath = library_path(protocol, "candidate")
+        cpath = (Path(sink_dir) / "candidates.jsonl" if sink_dir is not None
+                 else library_path(protocol, "candidate"))
         existing_c = load_candidates(cpath) if cpath.is_file() else []
         have_c = {c.candidate_id for c in existing_c}
         merged_c = list(existing_c)
         merged_c += [c for c in demoted if c.candidate_id not in have_c]
-        cand_path = save_candidates(protocol, merged_c)
+        cand_path = save_candidates(protocol, merged_c, sink_dir=sink_dir)
 
     return {
         "authoritative": len(uniq),
@@ -321,11 +333,17 @@ def load_rules(path: Path) -> list[SemanticRule]:
 # ===========================================================================
 
 def save_candidates(protocol: str,
-                    candidates: Iterable[KnowledgeCandidate]) -> Path:
-    """落盘候选库（**覆盖写**）。返回落盘路径。"""
+                    candidates: Iterable[KnowledgeCandidate], *,
+                    sink_dir: Optional[Path] = None) -> Path:
+    """落盘候选库（**覆盖写**）。返回落盘路径。
+
+    ★ 批次 2.5：``sink_dir`` 同 :func:`save_rules`（干跑隔离用）。
+    """
     rows = [{"kind": KIND_CANDIDATE, "candidate": _candidate_to_dict(c)}
             for c in candidates]
-    return _write_jsonl(library_path(protocol, "candidate"), rows)
+    dest = (Path(sink_dir) / "candidates.jsonl" if sink_dir is not None
+            else library_path(protocol, "candidate"))
+    return _write_jsonl(dest, rows)
 
 
 def load_candidates(path: Path) -> list[KnowledgeCandidate]:
