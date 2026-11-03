@@ -60,25 +60,26 @@
         "focus_group": {
           "A": {
             "dict": "base",
-            "seeds": 44,
+            "seeds": 75,
             "dict_tokens": 24
           },
           "B": {
             "dict": "base",
-            "seeds": 74,
+            "seeds": 79,
             "dict_tokens": 24
           },
           "C": {
             "dict": "targeted",
-            "seeds": 50,
-            "dict_tokens": 206
+            "seeds": 79,
+            "dict_tokens": 218
           },
           "D": {
             "dict": "base",
-            "seeds": 50,
+            "seeds": 79,
             "dict_tokens": 24
           }
-        }
+        },
+        "focus_group_note": "★ 批次 2.5 重标定：env 档（可播会话子集）与协议级档**条数不同** ⇒ 独立标定（协议级 86/90/90/90，env 级 75/79/79/79）"
       }
     },
     "required_headers": {
@@ -185,22 +186,22 @@
     "focus_group": {
       "A": {
         "dict": "base",
-        "seeds": 55,
+        "seeds": 86,
         "dict_tokens": 24
       },
       "B": {
         "dict": "base",
-        "seeds": 85,
+        "seeds": 90,
         "dict_tokens": 24
       },
       "C": {
         "dict": "targeted",
-        "seeds": 61,
-        "dict_tokens": 217
+        "seeds": 90,
+        "dict_tokens": 218
       },
       "D": {
         "dict": "base",
-        "seeds": 61,
+        "seeds": 90,
         "dict_tokens": 24
       }
     },
@@ -428,7 +429,7 @@
       }
     }
   },
-    "knowledge_channels": {
+  "knowledge_channels": {
     "seedgen.precondition": {
       "class": "L2",
       "owner": "expert_note",

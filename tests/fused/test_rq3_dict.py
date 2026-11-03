@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from core.fused.downstream.rag_seedgen import (  # noqa: E402
-    load_fact_views, assemble_bundle,
+    load_fact_views, assemble_bundle, load_source_manifest,
 )
 from core.fused.downstream.boundary_probe import (  # noqa: E402
     generate_protocol_dict, generate_targeted_dict, extract_session_candidates,
@@ -35,17 +35,55 @@ BASE_DICT = ROOT / "fused_hub" / "targets" / "rtsp" / "rtsp_base.dict"
 #: 镜像内基础字典 MD5（实测）
 BASE_DICT_MD5 = "464351f88db6c3f0bdac0de01859316b"
 
-#: 关键 token 集合（触发 Session 值 / track / Transport 边界）
-KEY_TOKENS = frozenset({
-    "track1", "track2", "000022B8", "Session: 000022B8",
+#: 关键 token 集合 —— **与源集合无关**的部分（Session 触发值 / Transport 边界）
+KEY_TOKENS_CORE = frozenset({
+    "000022B8", "Session: 000022B8",
     "interleaved=0-1", "client_port=50000-50001",
 })
+
+#: 关键 token 集合 —— 依赖**会话语义**（url_template ⇒ track 编号）的部分
+#:
+#: ★ 批次 2.5（F3）：会话语义三段（precondition / session_header / url_template）
+#:   **不再直读 profile.json**，改为只从中枢 facts 来，且由 ``build_hub``
+#:   **只在构建 expert_note 源时**物化 ⇒ 纯 RFC 单源档没有 track1/track2。
+KEY_TOKENS_SESSION = frozenset({"track1", "track2"})
+
+
+def _hub_source_set(protocol: str = "rtsp") -> list[str]:
+    """中枢本次参与的源集合（``sources.json`` = 唯一权威）。"""
+    doc = load_source_manifest(protocol) or {}
+    return [str(s).strip().lower() for s in (doc.get("source_set") or [])]
+
+
+def _apply_allowed_methods(src_set: list[str]) -> bool:
+    """是否启用 ``profile.allowed_methods`` 白名单（与 ``scripts/seedgen.py`` 同判据）。
+
+    ★ 批次 2.5（F6）：白名单是**源码侧**知识 ⇒ 只有 ``source`` 参与本次构建时启用。
+    """
+    return (not src_set) or ("source" in src_set)
+
+
+def _session_semantics_available(protocol: str = "rtsp") -> bool:
+    """会话语义（precondition / session_header / url_template）是否入中枢。
+
+    ★ 批次 2.5（F3）：三段只在**构建 expert_note 源时**由 ``build_hub`` 物化进中枢。
+    """
+    return "expert_note" in _hub_source_set(protocol)
+
+
+def _required_key_tokens(protocol: str = "rtsp") -> frozenset:
+    """本次**应**出现在字典里的关键 token 集合（按源集合分流）。"""
+    if _session_semantics_available(protocol):
+        return KEY_TOKENS_CORE | KEY_TOKENS_SESSION
+    return KEY_TOKENS_CORE
 
 
 @pytest.fixture(scope="module")
 def bundle():
-    """知识中枢 bundle（RTSP）。"""
-    return assemble_bundle(load_fact_views("rtsp"))
+    """知识中枢 bundle（RTSP）—— 与 ``scripts/seedgen.py`` 生产口径一致。"""
+    src_set = _hub_source_set("rtsp")
+    return assemble_bundle(load_fact_views("rtsp"), source_set=src_set or None,
+                           apply_allowed_methods=_apply_allowed_methods(src_set))
 
 
 @pytest.fixture(scope="module")
@@ -130,10 +168,14 @@ def test_targeted_dict_token_count(bundle, resources):
 
 
 def test_targeted_dict_contains_all_key_tokens(bundle, resources):
-    """定向字典覆盖全部 6 个关键触发 token。"""
+    """定向字典覆盖全部**本次适用**的关键触发 token。
+
+    ★ 批次 2.5（F3）：``track1/track2`` 由**会话语义**（url_template）派生 ⇒
+      仅在 expert_note 参与本次构建时才出现在字典里 ⇒ 按源集合分流断言。
+    """
     toks = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
                                            resources=resources))
-    assert KEY_TOKENS <= toks
+    assert _required_key_tokens() <= toks
 
 
 def test_targeted_dict_contains_session_candidates(bundle, resources):
@@ -154,12 +196,26 @@ def test_targeted_dict_all_tokens_pass_filter(bundle, resources):
 
 
 def test_targeted_dict_sorted_and_quoted(bundle, resources):
-    """输出格式：每行 "token"、字典序、末尾换行。"""
+    """输出格式：每行 "token"、字典序、末尾换行。
+
+    ★ 批次 2.5（协议级 C 档重标定）：定向字典实测 **218** token（旧 123）。
+
+    ★★ 已知 B 类失败（护栏基线已登记 ⇒ **不是**本轮回归）：
+      ``generate_targeted_dict`` 对**裸 token** 排序后再逐行加引号，而引号
+      （0x22）大于空格（0x20）⇒ 当一个 token 是另一个的前缀时（如
+      ``RTSP/1.0`` 与 ``RTSP/1.0 200 OK\\r\\n``），**渲染后的行序不再字典序**
+      ⇒ 下方 ``lines == sorted(lines)`` 当前必然失败。
+      ⇒ 这是**生产侧**的「排序键与渲染格式不一致」，属生产缺陷
+      （修法应改生产代码的排序键），**不在本测试侧放宽断言**
+      （放宽成「token 序递增」会把「输出文件本身有序」这个契约悄悄丢掉）。
+    """
     text = generate_targeted_dict(bundle, protocol="rtsp",
                                    resources=resources)
     lines = text.splitlines()
     assert all(ln.startswith('"') and ln.endswith('"') for ln in lines)
-    assert lines == sorted(lines)
+    assert lines == sorted(lines), (
+        "定向字典的行序非字典序（生产侧：按裸 token 排序 ⇒ 前缀 token 的"
+        "渲染行序反转）")
     assert text.endswith("\n")
     assert not text.endswith("\n\n")
 
@@ -192,10 +248,20 @@ def test_targeted_dict_without_trigger_fields(bundle, resources):
 # ===========================================================================
 
 def test_compact_dict_token_count(bundle, resources):
-    """C′ 精简档 32 token。"""
+    """C′ 精简档 token 数 —— **按源集合分流**。
+
+    ★ 批次 2.5（F3）：精简档会并入 ``url_template`` 派生的 track 编号
+      （``track1`` / ``track2``），而 ``url_template`` 属会话语义三段
+      ⇒ **只在 ``expert_note`` 参与本次中枢构建时**才有这两个 token。
+    ⇒ 纯 RFC 单源档：30（批次 2.5 重标定后为 30，旧值 32）；
+      含 expert_note 的多源档：32。
+    """
     toks = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
                                            resources=resources, compact=True))
-    assert len(toks) == 32
+    if _session_semantics_available("rtsp"):
+        assert len(toks) == 32
+    else:
+        assert len(toks) == 30  # 批次 2.5 重标定后为 30（旧值 32）
 
 
 def test_compact_dict_is_superset_of_base(bundle, resources, base_tokens):
@@ -206,23 +272,37 @@ def test_compact_dict_is_superset_of_base(bundle, resources, base_tokens):
 
 
 def test_compact_dict_keeps_all_key_tokens(bundle, resources):
-    """C′ 保留全部关键 token（关键密度更高 = 0.188 vs 0.049）。"""
+    """C′ 保留全部**本次适用**的关键 token（关键密度更高）。
+
+    ★ 批次 2.5（F3）：``track1`` / ``track2`` 来自会话语义（``url_template``）
+      ⇒ 纯 RFC 单源档**不应**要求它们存在，否则断言的是旧口径。
+    """
     toks = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
                                            resources=resources, compact=True))
-    assert KEY_TOKENS <= toks
+    assert _required_key_tokens() <= toks
 
 
 def test_compact_key_density_higher(bundle, resources):
-    """C′ 的关键 token 密度显著高于完整定向档（稀释风险对冲的前提）。"""
+    """C′ 的关键 token 密度显著高于完整定向档（稀释风险对冲的前提）。
+
+    ★ 批次 2.5（F3）：分子（命中关键 token 数）与分母（token 总数）都随
+      会话语义是否入中枢而变 ⇒ 阈值**按源集合分流**。
+      · 纯 RFC 单源档：4 / 30 ≈ 0.133（批次 2.5 重标定后为 0.133，旧值 0.18）
+      · 含 expert_note 多源档：6 / 32 = 0.188（旧值 0.18）
+    """
+    required = _required_key_tokens()
     full = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
                                            resources=resources))
     compact = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
                                               resources=resources,
                                               compact=True))
-    d_full = len(KEY_TOKENS & full) / len(full)
-    d_cmp = len(KEY_TOKENS & compact) / len(compact)
+    d_full = len(required & full) / len(full)
+    d_cmp = len(required & compact) / len(compact)
     assert d_cmp > d_full
-    assert d_cmp >= 0.18
+    if _session_semantics_available("rtsp"):
+        assert d_cmp >= 0.18
+    else:
+        assert d_cmp >= 0.13  # 批次 2.5 重标定后为 0.133（旧值 0.18）
 
 
 # ===========================================================================

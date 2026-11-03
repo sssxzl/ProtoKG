@@ -1,61 +1,138 @@
 {
-  "schema_version": "1.3",
-  "note": "批次 2.5（排除 RFC 文档示例域名）之后的种子语料基线摘要",
-  "hub_state": "RFC 单源 + 协议骨架 + 必填头物化；⑤ 层已开启；示例域名已排除",
+  "schema_version": "1.4",
+  "note": "批次 2.5（F1/F3/F5/F6 + D20-丁+）之后的种子语料基线摘要",
+  "hub_state": "纯 RFC 单源（--sources rfc）+ 协议骨架 + 必填头物化 + 会话语义不入中枢 + 语义四库自动重发布且按协议过滤 + 方法白名单按源集合决定 + ⑤ 层两段式底料",
+  "regen_script": "tools/qa/ablation/regen_baseline.py",
+  "generated_at": "2026-11-04T02:18:43.040405+08:00",
   "md5_manifest": "local/baseline_p0_seeds.md5",
   "groups": {
     "rtsp": {
       "A": {
-        "seed_count": 55,
-        "dict_tokens": 24
+        "seed_count": 86,
+        "dict_tokens": 24,
+        "layers": {
+          "canonical": 18,
+          "edge_cover": 6,
+          "generic_danger": 28,
+          "action_seq": 34
+        }
       },
       "B": {
-        "seed_count": 85,
-        "dict_tokens": 24
+        "seed_count": 90,
+        "dict_tokens": 24,
+        "layers": {
+          "canonical": 18,
+          "edge_cover": 6,
+          "generic_danger": 28,
+          "vuln_boundary": 3,
+          "action_seq": 35
+        }
       },
       "C": {
-        "seed_count": 61,
-        "dict_tokens": 217
+        "seed_count": 90,
+        "dict_tokens": 218,
+        "layers": {
+          "vuln_boundary": 3,
+          "generic_danger": 28,
+          "edge_cover": 6,
+          "canonical": 18,
+          "action_seq": 35
+        }
       },
       "D": {
-        "seed_count": 61,
-        "dict_tokens": 24
+        "seed_count": 90,
+        "dict_tokens": 24,
+        "layers": {
+          "vuln_boundary": 3,
+          "generic_danger": 28,
+          "edge_cover": 6,
+          "canonical": 18,
+          "action_seq": 35
+        }
       }
     },
     "sip": {
       "A": {
-        "seed_count": 32,
-        "dict_tokens": 175
+        "seed_count": 22,
+        "dict_tokens": 181,
+        "layers": {
+          "edge_cover": 5,
+          "generic_danger": 5,
+          "canonical": 1,
+          "action_seq": 11
+        }
       },
       "B": {
-        "seed_count": 29,
-        "dict_tokens": 175
+        "seed_count": 22,
+        "dict_tokens": 181,
+        "layers": {
+          "edge_cover": 5,
+          "generic_danger": 5,
+          "canonical": 1,
+          "action_seq": 11
+        }
       },
       "C": {
-        "seed_count": 35,
-        "dict_tokens": 175
+        "seed_count": 22,
+        "dict_tokens": 181,
+        "layers": {
+          "generic_danger": 5,
+          "edge_cover": 5,
+          "canonical": 1,
+          "action_seq": 11
+        }
       },
       "D": {
-        "seed_count": 35,
-        "dict_tokens": 175
+        "seed_count": 22,
+        "dict_tokens": 181,
+        "layers": {
+          "generic_danger": 5,
+          "edge_cover": 5,
+          "canonical": 1,
+          "action_seq": 11
+        }
       }
     },
     "smtp": {
       "A": {
-        "seed_count": 40,
-        "dict_tokens": 39
+        "seed_count": 62,
+        "dict_tokens": 43,
+        "layers": {
+          "edge_cover": 4,
+          "generic_danger": 33,
+          "canonical": 1,
+          "action_seq": 24
+        }
       },
       "B": {
-        "seed_count": 114,
-        "dict_tokens": 39
+        "seed_count": 62,
+        "dict_tokens": 43,
+        "layers": {
+          "edge_cover": 4,
+          "generic_danger": 33,
+          "canonical": 1,
+          "action_seq": 24
+        }
       },
       "C": {
-        "seed_count": 46,
-        "dict_tokens": 39
+        "seed_count": 62,
+        "dict_tokens": 43,
+        "layers": {
+          "generic_danger": 33,
+          "edge_cover": 4,
+          "canonical": 1,
+          "action_seq": 24
+        }
       },
       "D": {
-        "seed_count": 46,
-        "dict_tokens": 39
+        "seed_count": 62,
+        "dict_tokens": 43,
+        "layers": {
+          "generic_danger": 33,
+          "edge_cover": 4,
+          "canonical": 1,
+          "action_seq": 24
+        }
       }
     }
   }

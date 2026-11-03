@@ -142,11 +142,16 @@ def test_focus_group_config_shape():
         assert FOCUS_GROUP_CONFIG[g]["dict_kind"] == "base"
     assert FOCUS_GROUP_CONFIG["C"]["dict_kind"] == "targeted"
     # 期望条数（★ 2026-11-03 按实测重新标定，见 test_rq3_common 的同名用例；
-    #            批次 2.4 ⑤ 层 action_seq 开启后再次重标定）
-    assert FOCUS_GROUP_CONFIG["A"]["expect_seeds"] == 55
-    assert FOCUS_GROUP_CONFIG["B"]["expect_seeds"] == 85
-    assert FOCUS_GROUP_CONFIG["C"]["expect_seeds"] == 61
-    assert FOCUS_GROUP_CONFIG["D"]["expect_seeds"] == 61
+    #            批次 2.4 ⑤ 层 action_seq 开启后再次重标定；
+    #            批次 2.5 基线重标定（纯 RFC 单源档 + ⑤ 层两段式底料）第三次重标定）
+    # ★ 批次 2.5 重标定后为 86（旧值 55）
+    assert FOCUS_GROUP_CONFIG["A"]["expect_seeds"] == 86
+    # ★ 批次 2.5 重标定后为 90（旧值 85）
+    assert FOCUS_GROUP_CONFIG["B"]["expect_seeds"] == 90
+    # ★ 批次 2.5 重标定后为 90（旧值 61）
+    assert FOCUS_GROUP_CONFIG["C"]["expect_seeds"] == 90
+    # ★ 批次 2.5 重标定后为 90（旧值 61）
+    assert FOCUS_GROUP_CONFIG["D"]["expect_seeds"] == 90
 
 
 def test_resolve_config_focus_groups():
@@ -207,24 +212,56 @@ def test_resolve_config_atomic_switches():
 # ===========================================================================
 
 def test_default_output_unchanged(tmp_path):
-    """★ 向后兼容回归：默认输出与历史产物逐字节一致（种子 + 字典）。"""
+    """★ 向后兼容回归：默认输出与历史产物逐字节一致（种子 + 字典）。
+
+    ★ 批次 2.5 重标定后：默认路径（``--danger``，无 focus-group）实测
+      **90** 条种子（旧值 50）、字典 **194** token（旧值 102）
+      ⇒ 下面按**实测值**断言。
+
+    ★★ 与历史语料（``REFERENCE`` = RQ1.2 live555_20261024_110155，50 条 /
+      102 token）的**逐字节对比仍不成立**：重标定后**新旧语料不是同一口径的
+      两份产物** ⇒ 项目已确认「已跑的 RQ3 实验（2026-10-24）与新语料**不可
+      直接比较**」⇒ 须用历史语料重跑 RQ3，或在新旧语料间做对照。
+      ⇒ 该对比**刻意保留**（不删、不放宽）：它是「**RQ3 连续性缺口尚未闭合**」
+      的**可见标记**（护栏基线已登记为 B 类失败）—— 待 RQ3 用新语料重跑后，
+      本对比方可恢复为等值断言。
+      ⇒ 同时补上**当前口径成立**的不变式（条数 / 字典 token 数 / 两次运行
+        逐字节一致），使缺口未闭合期间本用例仍能钉住「默认路径没跑偏」。
+    """
     if not REFERENCE.exists():
         pytest.skip("历史参考语料不存在")
     out = tmp_path / "reg"
     r = _seedgen("--protocol", "rtsp", "--danger", "--out", str(out))
     assert r.returncode == 0, r.stderr
 
-    # 种子 50 条
-    assert len(list(out.glob("*.raw"))) == 50
-    # MD5 集合逐条相等
-    assert _md5s(out) == _md5s(REFERENCE)
-    # 文件名序列也相等（顺序未变）
-    assert list(_md5_map(out)) == list(_md5_map(REFERENCE))
-    # 字典逐字节相等
-    assert (out / "rtsp.dict").read_bytes() == \
-        (REFERENCE / "rtsp.dict").read_bytes()
+    # ── 当前口径成立的不变式 ─────────────────────────────────────────────
+    # 种子 90 条（★ 批次 2.5 重标定后为 90，旧值 50）
+    assert len(list(out.glob("*.raw"))) == 90
+    # 字典 194 token（★ 批次 2.5 重标定后为 194，旧值 102）
+    dtoks = [ln for ln in (out / "rtsp.dict").read_text(encoding="utf-8").splitlines()
+             if ln.strip()]
+    assert len(dtoks) == 194
     # 默认不产出 manifest.json
     assert not (out / "manifest.json").exists()
+    # 同一路径两次运行 ⇒ 逐字节一致（默认路径的确定性不变式）
+    out2 = tmp_path / "reg2"
+    r2 = _seedgen("--protocol", "rtsp", "--danger", "--out", str(out2))
+    assert r2.returncode == 0, r2.stderr
+    assert _md5s(out) == _md5s(out2)
+    assert list(_md5_map(out)) == list(_md5_map(out2))
+
+    # ── 与历史语料的逐字节对比（★ 未闭合缺口：刻意保留为可见标记）────────
+    # ★ 批次 2.5 重标定后，本对比**必然不成立**（新旧语料不同口径）：
+    #   当前 90 条 / 194 token  vs  历史 50 条 / 102 token（实测 MD5 交集仅 1 条）。
+    #   ⇒ 项目已确认须「用历史语料重跑 RQ3，或在新旧语料间做对照」。
+    #   ⇒ 断言保留（不删、不放宽成恒真）⇒ 缺口未闭合期间本用例持续报红，
+    #     正是护栏要看见的信号。
+    assert _md5s(out) == _md5s(REFERENCE), (
+        "RQ3 连续性缺口未闭合：批次 2.5 重标定后新语料与 RQ1.2 历史语料"
+        "不可直接比较（须用历史语料重跑 RQ3 或做新旧对照）")
+    assert list(_md5_map(out)) == list(_md5_map(REFERENCE))
+    assert (out / "rtsp.dict").read_bytes() == \
+        (REFERENCE / "rtsp.dict").read_bytes()
 
 
 def test_default_dict_is_102_tokens(tmp_path):
@@ -344,11 +381,26 @@ def test_rtsp_target_env_only_uses_playable_sessions(tmp_path):
     回归背景：rq2-live555:latest 镜像的 live/testProgs/ 只有 7 个媒体文件，
     源码级清单里的另外 11 个会话服务端一律返 404（实测 47.9% 的状态变更请求打空）。
     修复后生成的种子不得再引用那些不可播的会话。
+
+    ★ 批次 2.5：退出码**按失败原因分流**。
+      · 0   ⇒ 完全成功；
+      · 3   ⇒ seedgen 的「种子数与标定不符」分支（``scripts/seedgen.py`` D3：
+              先写完字典与 manifest 再返回 3），**语料仍完整落盘**。
+              ⚠ 该分支反映的是**环境级标定与 env 受限实际产出不一致**的生产侧
+                漂移（profile 标 90 / 实测 79），由 ``test_target_env_calibration``
+                单独跟踪 —— 本用例的被测不变式是「只引用可播会话」，故放行 3，
+                但**要求语料/manifest 必须真的落盘**，避免用 3 掩盖「压根没生成」。
+              ⇒ 其他任何非 0 退出码（参数错、崩溃等）仍判失败。
     """
     out = tmp_path / "rtsp_env"
     r = _seedgen("--protocol", "rtsp", "--focus-group", "B",
                  "--target-env", "rq2-live555", "--out", str(out))
-    assert r.returncode == 0, r.stderr
+    assert r.returncode in (0, 3), r.stderr
+    if r.returncode == 3:
+        # 只接受「种子数与标定不符」这一已知原因，且语料必须已落盘
+        assert "种子数不符" in r.stderr, r.stderr
+    assert list(out.glob("*.raw")), "env 档未落盘任何 .raw 种子"
+    assert (out / "manifest.json").exists(), "env 档未落盘 manifest.json"
 
     # 该环境可播的会话（来自 profile 声明的可播清单，非硬编码）
     from core.fused.downstream.target_env import playable_resource_names
@@ -495,13 +547,62 @@ def test_focus_group_bcd_same_md5_set(tmp_path):
 
 
 def test_focus_group_c_matches_rq12_corpus(tmp_path):
-    """C 组的 MD5 集合 == RQ1.2 protorag 语料（连续性）。"""
+    """★ C 组与 RQ1.2 protorag 语料的连续性 —— **该对比已失效**。
+
+    ★★ **本用例的历史对比已作废**（不可比 ⇒ 不能断言等值）：
+      项目已确认 —— 标定重标定后「已跑的 RQ3 实验（2026-10-24）与新语料
+      **不可直接比较**」⇒ RQ1.2 语料（50 条 / 102 token）与当前口径
+      （协议级 C 档：90 条 / 218 token）**不是同一口径的两份产物**，
+      MD5 集合本就不该相等（实测交集仅 1 条）。
+      ⇒ 保留一条逐字节等值断言 = 把「语料换代」伪装成代码回归 ⇒ **禁止**。
+
+    ⇒ 补上**当前口径下成立**的不变式（不放宽成恒真）：
+      ① C 组条数 == 协议级标定 90；
+      ② C 组字典 token 数 == 218（定向字典档）；
+      ③ C 组与 B/D 组的 MD5 集合**相等**（仅字典/顺序不同 ⇒ 内容同源）
+         —— 这是「C 组只是 D 组换字典」这一单变量前提的直接断言；
+      ④ C 组与 D 组的**文件名序列**相同（两者同为漏洞接近度序 ⇒ 同序）；
+         （C 与 B **不同序**是预期的：B 自然序 / C·D 漏洞接近度序。）
+      ★ 与历史语料的逐条对比**刻意保留**（见下）—— 它是「RQ3 连续性缺口
+        尚未闭合」的**可见标记**（护栏基线已登记为 B 类失败），缺口未闭合
+        期间本用例持续报红，正是护栏要看见的信号。
+    """
     if not REFERENCE.exists():
         pytest.skip("历史参考语料不存在")
     out = tmp_path / "C"
     assert _seedgen("--protocol", "rtsp", "--focus-group", "C",
                      "--out", str(out)).returncode == 0
-    assert _md5s(out) == _md5s(REFERENCE)
+    # ① C 组条数（★ 批次 2.5 协议级重标定后为 90，旧值 61）
+    assert len(list(out.glob("*.raw"))) == 90
+    # ② C 组定向字典 token 数（★ 批次 2.5 重标定后为 218，旧值 217）
+    dtoks = [ln for ln in (out / "rtsp.dict").read_text(encoding="utf-8").splitlines()
+             if ln.strip()]
+    assert len(dtoks) == 218
+
+    # ③ C 组与 B/D 组同源（内容相同 ⇒ 仅字典/顺序不同）
+    for other in ("B", "D"):
+        out_o = tmp_path / other
+        assert _seedgen("--protocol", "rtsp", "--focus-group", other,
+                         "--out", str(out_o)).returncode == 0
+        assert _md5s(out) == _md5s(out_o), \
+            f"C 组与 {other} 组内容应同源（仅字典/顺序不同）"
+    # ④ C 与 D 同序（漏洞接近度序）；C 与 B 不同序是预期的（B 为自然序）
+    out_d = tmp_path / "D"
+    assert _seedgen("--protocol", "rtsp", "--focus-group", "D",
+                     "--out", str(out_d)).returncode == 0
+    assert list(_md5_map(out)) == list(_md5_map(out_d)), \
+        "C 与 D 同为漏洞接近度序 ⇒ 文件名序列应相同"
+
+    # ── 与 RQ1.2 历史语料的逐条对比（★ 未闭合缺口：刻意保留为可见标记）────
+    # ★ 批次 2.5 重标定后本对比**必然不成立**（新旧语料不同口径）：
+    #   当前 C 档 90 条 / 218 token  vs  RQ1.2 历史语料 50 条 / 102 token
+    #   （实测 MD5 交集仅 1 条：同一条 DESCRIBE 种子）。
+    #   ⇒ 项目已确认「已跑的 RQ3 实验（2026-10-24）与新语料不可直接比较」
+    #     ⇒ 须用历史语料重跑 RQ3，或在新旧语料间做对照。
+    #   ⇒ 断言保留（不删、不放宽成恒真）⇒ 缺口未闭合期间本用例持续报红。
+    assert _md5s(out) == _md5s(REFERENCE), (
+        "RQ3 连续性缺口未闭合：批次 2.5 重标定后新语料与 RQ1.2 历史语料"
+        "不可直接比较（须用历史语料重跑 RQ3 或做新旧对照）")
 
 
 def test_focus_group_no_seed_duplication(tmp_path):

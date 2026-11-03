@@ -1234,8 +1234,10 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     # 仅当 profile 声明了 state_changing 才注入（不臆断其他协议的改状态语义）；
     # 方法全集 = 已见 methods ∪ profile 声明集（保证 OPTIONS 等也判 False）。
     if _state_changing_from_facts:
-        for name in sorted(set(methods) | _state_changing_from_facts):
-            info = methods.setdefault(name, {})
+        # ★ 只给**已在 methods 桶里的**方法补标记 ⇒ **不把**被白名单裁掉的
+        #   方法（如 RECORD）**加回**（否则 profile.allowed_methods 过滤失效）
+        for name in sorted(methods):
+            info = methods[name]
             if "state_changing" not in info:
                 info["state_changing"] = name in _state_changing_from_facts
     # P0：provenance set → sorted list（可序列化、稳定序）

@@ -1298,7 +1298,8 @@ def _load_published_seeds(protocol: str, profile: dict, *,
                           root: Optional[Path] = None,
                           strict_source_only: bool = False,
                           source_set: Optional[Iterable[str]] = None,
-                          base_corpus_from: Optional[Path] = None
+                          base_corpus_from: Optional[Path] = None,
+                          base_corpus_trusted: bool = False
                           ) -> list[SeedCorpus]:
     """来源 ①：``derived/seeds/<protocol>/<组>/*.raw``（已发表的语料）。
 
@@ -1503,7 +1504,8 @@ def load_real_base_seeds(protocol: str, profile: dict, *,
                          kb_root: Optional[Path] = None,
                          strict_source_only: bool = False,
                          source_set: Optional[Iterable[str]] = None,
-                         base_corpus_from: Optional[Path] = None
+                         base_corpus_from: Optional[Path] = None,
+                         base_corpus_trusted: bool = False
                          ) -> tuple[list[SeedCorpus], str]:
     """按优先级取「**真实抓包底料**」（不是从零构造）。
 
@@ -1521,7 +1523,8 @@ def load_real_base_seeds(protocol: str, profile: dict, *,
                                   root=derived_root,
                                   strict_source_only=strict_source_only,
                                   source_set=source_set,
-                                  base_corpus_from=base_corpus_from)
+                                  base_corpus_from=base_corpus_from,
+                                  base_corpus_trusted=base_corpus_trusted)
     if seeds:
         return seeds, "published-corpus"
     # ★ 批次 2.5（F5）：**显式指定了底料** ⇒ 它若被拒绝（来源不干净 / 不存在）

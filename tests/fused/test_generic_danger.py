@@ -2,11 +2,24 @@
 from __future__ import annotations
 
 from core.fused.downstream.generic_danger import generic_danger
-from core.fused.downstream.rag_seedgen import load_fact_views, assemble_bundle
+from core.fused.downstream.rag_seedgen import (
+    load_fact_views, assemble_bundle, load_source_manifest,
+)
 
 
 def _bundle():
     return assemble_bundle(load_fact_views())
+
+
+def _hub_source_set(protocol: str = "rtsp") -> set[str]:
+    """中枢本次参与的源集合（``sources.json`` = 唯一权威）。
+
+    ★ 批次 2.5（F3）：会话语义三段（precondition / session_header / url_template）
+      **不再直读 profile.json**，改为只从中枢 facts 来，且由 ``build_hub``
+      **只在构建 expert_note 源时**物化 ⇒ 纯 RFC 档这三桶为空。
+    """
+    doc = load_source_manifest(protocol) or {}
+    return {str(s).strip().lower() for s in (doc.get("source_set") or [])}
 
 
 def _seeds():
@@ -58,20 +71,38 @@ def test_lifecycle_produces_enter_exit_reenter():
 
 
 def test_self_loop_has_describe_prefix_and_session():
-    """修复验证：自环/生命周期种子应有 DESCRIBE 前缀，第二个及之后 SETUP 带 Session。"""
+    """②层自环种子的会话语义表现 —— **按源集合分流**。
+
+    ★ 批次 2.5（F3）：会话语义三段（precondition / session_header / url_template）
+      **不再直读 profile.json**，改为只从中枢 facts 来，且由 ``build_hub`` 在
+      **构建 expert_note 源时**才物化进中枢 ⇒ **纯 RFC 单源档这三桶为空**。
+
+    ⇒ 故「自环种子带 DESCRIBE 前缀 + 第 2 个 SETUP 带 Session 头」这一行为
+      **仅在 expert_note 参与时成立**；纯 RFC 档下应表现为：自环种子直接以
+      SETUP 开头（无 DESCRIBE 前缀）、且不注入 Session 头。
+    """
     seeds = _seeds()
-    # 找含 SETUP+SETUP 子序列的自环种子
-    for s in seeds:
-        seq = tuple(m.method for m in s.messages)
-        if _has_subseq(seq, ("SETUP", "SETUP")):
-            assert seq[0] == "DESCRIBE", f"自环种子应以 DESCRIBE 开头，实际 {seq}"
-            setups = [m for m in s.messages if m.method == "SETUP"]
-            assert len(setups) >= 2
-            # 第二个及之后的 SETUP 必须带 Session
-            keys = {k.lower() for k in setups[1].headers}
-            assert "session" in keys, "第二个 SETUP 应带 Session 头"
-            return
-    raise AssertionError("未找到含 SETUP+SETUP 的自环种子")
+    has_session_semantics = "expert_note" in _hub_source_set()
+    # 找「SETUP 自环重复」种子（按 description 定位，避免依赖生成顺序）
+    target = [s for s in seeds
+               if "self-loop repeat SETUP" in (s.description or "")]
+    assert target, "未找到 SETUP 自环重复种子"
+    s = target[0]
+    seq = tuple(m.method for m in s.messages)
+    setups = [m for m in s.messages if m.method == "SETUP"]
+    assert len(setups) >= 2
+    # 第二个及之后的 SETUP 的头
+    keys = {k.lower() for k in setups[1].headers}
+    if has_session_semantics:
+        assert seq[0] == "DESCRIBE", \
+            f"expert_note 参与 ⇒ 自环种子应以 DESCRIBE 开头，实际 {seq}"
+        assert "session" in keys, "第二个 SETUP 应带 Session 头"
+    else:
+        # 纯 RFC 档：会话语义不在中枢 ⇒ 无前置 DESCRIBE、也不注入 Session
+        assert seq[0] != "DESCRIBE", \
+            f"纯 RFC 档无会话语义 ⇒ 自环种子不应带 DESCRIBE 前缀，实际 {seq}"
+        assert "session" not in keys, \
+            "纯 RFC 档无 session_header 知识 ⇒ 第二个 SETUP 不应带 Session 头"
 
 
 def test_generic_danger_is_deterministic_and_rule_based():

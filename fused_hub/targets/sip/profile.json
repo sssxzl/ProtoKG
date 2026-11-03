@@ -221,23 +221,23 @@
     "focus_group": {
       "A": {
         "dict": "protocol",
-        "seeds": 32,
-        "dict_tokens": 175
+        "seeds": 22,
+        "dict_tokens": 181
       },
       "B": {
         "dict": "protocol",
-        "seeds": 29,
-        "dict_tokens": 175
+        "seeds": 22,
+        "dict_tokens": 181
       },
       "C": {
         "dict": "targeted",
-        "seeds": 35,
-        "dict_tokens": 175
+        "seeds": 22,
+        "dict_tokens": 181
       },
       "D": {
         "dict": "protocol",
-        "seeds": 35,
-        "dict_tokens": 175
+        "seeds": 22,
+        "dict_tokens": 181
       }
     },
     "client_side": {
@@ -262,7 +262,7 @@
       "_enabled_20261103": "★ 2026-11-03 开启：取值池已补齐（批次 2.0）、必填头不再空 ⇒ ⑤ 层 value-pool-boundary / cseq-replay 规则**第一次有输入**。底料实测：rtsp/B 39、smtp/B 78、sip/A~D 21~25 条（published-corpus）；rtsp/A,C,D 3 条、smtp/A,C,D 6 条（traffic-capture）。"
     }
   },
-    "knowledge_channels": {
+  "knowledge_channels": {
     "seedgen.precondition": {
       "class": "L2",
       "owner": "expert_note",

@@ -127,7 +127,15 @@ def test_source_set_none_keeps_everything():
 
 
 def test_empty_source_set_filters_everything_but_skeleton():
-    """★ 空集合 ⇒ 只剩骨架（profile）与 profile.json 兜底。"""
+    """★ 空集合 ⇒ 只剩骨架（profile），且 **methods 桶为空**。
+
+    ★ 批次 2.5（生产侧改动 ①「state_changing 兜底只补标记」）：
+      兜底循环由 ``for name in sorted(set(methods) | _state_changing_from_facts)``
+      改为 ``for name in sorted(methods)`` ⇒ **只给已在 methods 桶里的方法
+      补标记 ⇒ 不再加回** ⇒ 被 source_set 过滤掉的 rfc 方法**不再**被
+      profile 兜底「复活」⇒ 空集合时 methods 桶**为空**（此前会凭空多出
+      SETUP 这类条目 ⇒ 与「source_set 为空 ⇒ 什么都不该进桶」相悖）。
+    """
     views = [
         _fact_view("rfc", "definition", subject_name="SETUP",
                    fid="f1", claim_id="c1"),
@@ -135,10 +143,17 @@ def test_empty_source_set_filters_everything_but_skeleton():
                          fid="f2", claim_id="c2"),
     ]
     b = assemble_bundle(views, PROTOCOL, source_set=[])
-    # rfc 的条目被过滤掉（只剩 profile.json 兜底注入的方法全集）
-    assert "rfc" not in b["methods"]["SETUP"].get("declared_by", [])
+    # ★ 空集合 ⇒ 没有任何方法条目（rfc 的条目被过滤，且不再被兜底加回）
+    assert b["methods"] == {}, \
+        f"空 source_set ⇒ methods 桶应为空，实测 {sorted(b['methods'])}"
+    assert "rfc" not in b["available_sources"]
     # ★ 骨架恒允许
     assert b["transitions"], "协议骨架被误过滤 ⇒ 单源时链路会断"
+
+    # ★ 按源集合分流：非空集合时 rfc 的方法照常进桶（且标注来源）
+    b_rfc = assemble_bundle(views, PROTOCOL, source_set=["rfc"])
+    assert "SETUP" in b_rfc["methods"], "非空 source_set ⇒ rfc 的方法应进桶"
+    assert "rfc" in b_rfc["methods"]["SETUP"].get("declared_by", [])
 
 
 # ===========================================================================

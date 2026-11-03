@@ -113,16 +113,16 @@ ACTION_SEQ_LAYER_NAME = "action_seq"
 FOCUS_GROUP_CONFIG: dict = {
     "A": dict(layers=["edge_cover", "generic_danger", "canonical"],
               order="natural", dict_kind="base",
-              expect_seeds=55, expect_dict_tokens=24),
+              expect_seeds=86, expect_dict_tokens=24),
     "B": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="natural", dict_kind="base",
-              expect_seeds=85, expect_dict_tokens=24),
+              expect_seeds=90, expect_dict_tokens=24),
     "C": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="vuln-proximity", dict_kind="targeted",
-              expect_seeds=61, expect_dict_tokens=217),
+              expect_seeds=90, expect_dict_tokens=218),
     "D": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="vuln-proximity", dict_kind="base",
-              expect_seeds=61, expect_dict_tokens=24),
+              expect_seeds=90, expect_dict_tokens=24),
 }
 
 
@@ -318,7 +318,8 @@ def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
                             env_cfg: Optional[dict] = None,
                             strict_source_only: bool = False,
                             source_set: Optional[list] = None,
-                            base_corpus_from: Optional[str] = None
+                            base_corpus_from: Optional[str] = None,
+                            base_corpus_trusted: bool = False
                             ) -> tuple[list, dict]:
     """⑤ 在**真实抓包种子**上做字段级变异，返回 ``(种子列表, 溯源信息)``。
 
@@ -334,7 +335,8 @@ def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
     base_seeds, source = load_real_base_seeds(
         protocol, profile, group=group,
         strict_source_only=strict_source_only, source_set=source_set,
-        base_corpus_from=Path(base_corpus_from) if base_corpus_from else None)
+        base_corpus_from=Path(base_corpus_from) if base_corpus_from else None,
+        base_corpus_trusted=base_corpus_trusted)
     info = {
         "source": source,
         "base_count": len(base_seeds),
@@ -1183,12 +1185,45 @@ def main() -> int:
     action_seq_info: dict = {}
     action_seq_seeds: list = []
     if _action_seq_enabled(profile) and not args.no_action_seq:
-        action_seq_seeds, action_seq_info = _build_action_seq_seeds(
-            bundle, profile, protocol, group=focus_group,
-            ledger=action_seq_ledger, env_cfg=env_cfg,
-            strict_source_only=args.strict_source_only,
-            source_set=source_set or None,
-            base_corpus_from=args.base_corpus_from)
+        # ★★ 批次 2.5（F5 内化）：**默认内部两段式** ⇒ ⑤ 层底料 = **本次刚产的
+        #   基准层**（写到临时目录）⇒ 底料与最终语料**同源** ⇒ 彻底消除
+        #   「⑤ 层吃历史多源语料 / traffic 抓包」这两条跨源旁路。
+        #   · 显式给了 --base-corpus-from ⇒ 用它（外部底料 ⇒ 校验 provenance）
+        #   · 否则 ⇒ 内部临时目录（本次产的 ⇒ 免校验，天然同源）
+        _base_from = args.base_corpus_from
+        _base_trusted = False
+        _tmp_dir = None
+        if not _base_from:
+            import tempfile
+            _tmp_dir = tempfile.TemporaryDirectory(prefix="protorag_base_")
+            _base_from = _tmp_dir.name
+            _base_trusted = True
+            write_seeds(list(seeds), _base_from, base_count=len(seeds))
+            # ★ 同时写一个**最小 manifest**（含 provenance.source_set）
+            #   ⇒ 底料校验路径（manifest 存在 + provenance ⊆ 本次源集合）
+            #     **自然通过** ⇒ 不必为「内部产出」开特例。
+            try:
+                (Path(_base_from) / "manifest.json").write_text(
+                    json.dumps({"provenance": {
+                        "source_set": list(source_set or []),
+                        "note": "★ 内部两段式：本次刚产的基准层（临时目录）",
+                    }}, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8")
+            except OSError:
+                pass
+            print(f"⑤ 底料: 内部两段式 ⇒ 先把本次基准层（{len(seeds)} 条）"
+                  f"写入临时目录作底料（底料与最终语料同源）")
+        try:
+            action_seq_seeds, action_seq_info = _build_action_seq_seeds(
+                bundle, profile, protocol, group=focus_group,
+                ledger=action_seq_ledger, env_cfg=env_cfg,
+                strict_source_only=args.strict_source_only,
+                source_set=source_set or None,
+                base_corpus_from=_base_from,
+                base_corpus_trusted=_base_trusted)
+        finally:
+            if _tmp_dir is not None:
+                _tmp_dir.cleanup()
         # ★ 追加动作**延后到基准层去重之后**（见下方 `_append_action_seq_seeds` 调用）：
         #   若 ⑤ 先加入再统一去重，⑤ 与基准层的**近重复**会被判重 ⇒
         #   基准层里被判重的那条被 ⑤ 的副本顶替 ⇒ **基准层集合发生变化**

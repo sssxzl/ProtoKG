@@ -4,6 +4,7 @@ from __future__ import annotations
 from core.fused.downstream.rag_seedgen import (
     load_fact_views, assemble_bundle, render_seed_prompt,
     generate_seeds, validate_seed, parse_seed_response,
+    load_source_manifest,
 )
 from core.llm import StubLLMClient
 from core.models import SeedCorpus, SeedMessage
@@ -12,6 +13,16 @@ from core.models import SeedCorpus, SeedMessage
 # ===========================================================================
 # 分桶
 # ===========================================================================
+
+def _hub_source_set(protocol: str = "rtsp") -> list[str]:
+    """中枢本次参与的源集合（``sources.json`` = 唯一权威）。
+
+    ★ 批次 2.5（F6）：``profile.allowed_methods``（**源码侧**人工白名单）改为
+      **按 source_set 决定**是否启用 ⇒ 白名单的适用性随源集合而变。
+    """
+    doc = load_source_manifest(protocol) or {}
+    return [str(s).strip().lower() for s in (doc.get("source_set") or [])]
+
 
 def test_load_fact_views_has_all_five_sources():
     views = load_fact_views()
@@ -23,13 +34,36 @@ def test_load_fact_views_has_all_five_sources():
 
 
 def test_assemble_methods():
-    b = assemble_bundle(load_fact_views())
+    """方法桶：**按 source_set 分流**。
+
+    ★ 批次 2.5（F6）：``profile.allowed_methods`` 是**源码侧**白名单 ⇒ **按 source_set
+      决定**是否启用（判据同 ``scripts/seedgen.py``）：
+        · ``source`` ∈ source_set ⇒ 启用 ⇒ RFC 抽到的非实现方法（ANNOUNCE/REDIRECT）被裁掉
+        · ``source`` ∉ source_set ⇒ **不启用** ⇒ 保留 RFC 抽到的**真实**方法
+    ★ 批次 2.5（F3）：``state_changing`` **不再直读 profile**（那里只列
+      SETUP/PLAY/PAUSE/TEARDOWN），改为**从 facts 的 target_state 推导**
+      ⇒ 凡是出现在**具体状态转移**里的方法都判为改状态（OPTIONS 亦然）。
+    """
+    src_set = _hub_source_set()
+    apply_allowed = (not src_set) or ("source" in src_set)
+    b = assemble_bundle(load_fact_views(), source_set=src_set or None,
+                        apply_allowed_methods=apply_allowed)
     methods = b["methods"]
-    # allowed_methods（profile 白名单，目标程序实现的 8 个方法子集）过滤后收敛
     assert len(methods) >= 8
     assert "SETUP" in methods and "PLAY" in methods and "TEARDOWN" in methods
     assert methods["SETUP"].get("state_changing") is True
-    assert methods["OPTIONS"].get("state_changing") is False
+    # ★ F3：state_changing 从 facts 的 target_state 推导（不再直读 profile 的固定列表）
+    #   ⇒ 判据 = 「该方法出现在**具体状态转移**里」；OPTIONS 亦出现在协议骨架的
+    #   Idle→OPTIONS→Idle 等转移中 ⇒ 判为 True（旧口径下 profile 只列
+    #   SETUP/PLAY/PAUSE/TEARDOWN，故 OPTIONS 曾判 False）。
+    trans_methods = {t[1] for rows in b["transitions_by_source"].values() for t in rows}
+    for name, info in methods.items():
+        assert bool(info.get("state_changing")) is (name in trans_methods), \
+            f"{name} 的 state_changing 应与「出现在具体状态转移里」一致"
+    # ★ F6：白名单按 source_set 决定是否启用 ⇒ 不启用时保留 RFC 抽到的真实方法
+    if not apply_allowed:
+        assert {"ANNOUNCE", "RECORD", "REDIRECT"} <= set(methods), \
+            "source ∉ source_set ⇒ 不应裁掉 RFC 抽到的真实方法"
 
 
 def test_assemble_transitions_keep_method():
