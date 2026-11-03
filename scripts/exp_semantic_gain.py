@@ -78,6 +78,7 @@ from core.fused.semantic import (                                     # noqa: E4
     compute_rule_id,
     load_source_text,
     try_convert,
+    sanitize_rule,
 )
 from core.fused.semantic_rules import (                                # noqa: E402
     bind_field,
@@ -678,6 +679,7 @@ def run_group_two_layer(
     llm: Optional[Any],
     known_fields: list[str],
     llm_facts: dict[str, dict],
+    use_sanitize: bool = True,
 ) -> dict:
     """跑 E1（规则表 + LLM 兜底）或 E2（**只跑规则表**）。
 
@@ -747,19 +749,35 @@ def run_group_two_layer(
             else:
                 record["stage_b_reason"] = "llm_operator_unresolved"
 
+        # ★★ 批次 2（M7 复测）：**LLM 输出后处理**（迁移项 D）
+        #   `semantic.sanitize_rule()` 拦三类「结构合法但语义无效」的规则
+        #   （空 subject / 空 operand 的有参算子 / 自指约束）⇒
+        #   被拦的**落候选库**并记 `reject_reason`（**不静默丢弃**）
+        #   ⇒ M7 拒绝原因直方图会出现新的计数 ⇒ 可量化批次 2 的收益。
+        _sanitize_reason = ""
         if constraint is not None:
             rule = _rule_from_constraint(
                 cand, protocol, anchor, constraint, origin)
-            rules.append(rule)
-            record["outcome"] = "rule"
-            record["origin"] = origin
-            record["rule_id"] = rule.rule_id
-            record["operator"] = constraint.operator
-            record["operand"] = list(constraint.operand)
-            record["target_field"] = constraint.target_field
-            record["validated"] = rule.validated
-        else:
-            final_reason = reason or "unknown"
+            if use_sanitize:
+                _kept_rule, _san_reason = sanitize_rule(rule)
+                if _kept_rule is None:
+                    # ⇒ 降级为候选（走下面的 else 分支）
+                    constraint = None
+                    _sanitize_reason = _san_reason or ""
+                    rule = None
+                else:
+                    rule = _kept_rule
+            if rule is not None:
+                rules.append(rule)
+                record["outcome"] = "rule"
+                record["origin"] = origin
+                record["rule_id"] = rule.rule_id
+                record["operator"] = constraint.operator
+                record["operand"] = list(constraint.operand)
+                record["target_field"] = constraint.target_field
+                record["validated"] = rule.validated
+        if constraint is None:
+            final_reason = _sanitize_reason or reason or "unknown"
             kc = KnowledgeCandidate(
                 candidate_id="c" + compute_evidence_id(
                     f"candidate:{protocol}", anchor.source_anchor,
@@ -1036,6 +1054,7 @@ def compute_idempotency(
     llm: Optional[Any] = None,
     llm_facts: Optional[dict] = None,
     group_label: str = "E2",
+    use_sanitize: bool = True,
 ) -> dict:
     """M6：同一批候选句重复抽取 N 次，``rule_id`` 集合是否完全相同。
 
@@ -1047,7 +1066,8 @@ def compute_idempotency(
     for _ in range(n_runs):
         group = run_group_two_layer(
             protocol, candidates, llm=llm, known_fields=known_fields,
-            llm_facts=llm_facts or {})
+            llm_facts=llm_facts or {},
+            use_sanitize=use_sanitize)
         sets.append(sorted(r.rule_id for r in group["rules"]))
     diffs = []
     for i in range(len(sets)):
@@ -1626,6 +1646,7 @@ def run_experiment(
     out_dir: Path,
     results_doc: Path,
     n_idempotency: int,
+    use_sanitize: bool = True,
 ) -> dict:
     """跑完整实验（--run）。"""
     from core.fused.rfc_extractor import known_field_set
@@ -1692,12 +1713,14 @@ def run_experiment(
             llm=cached_llm,
             known_fields=list(_KNOWN_FIELDS[protocol]),
             llm_facts=llm_facts_by_candidate,
+            use_sanitize=use_sanitize,
         )
         # ── E2（只跑规则表）──────────────────────────────────────────────
         e2[protocol] = run_group_two_layer(
             protocol, cands, llm=None,
             known_fields=list(_KNOWN_FIELDS[protocol]),
             llm_facts={},
+            use_sanitize=use_sanitize,
         )
 
         for label, group in (("C0", c0[protocol]), ("E1", e1[protocol]),
@@ -1722,6 +1745,7 @@ def run_experiment(
             [r for r in frozen_rows if r["protocol"] == protocol],
             list(_KNOWN_FIELDS[protocol]),
             n_idempotency,
+            use_sanitize=use_sanitize,
         )
         idempotency[protocol] = per_protocol
         print(f"  {protocol} × {per_protocol['n_runs']} 轮："
@@ -1877,6 +1901,12 @@ def main(argv: Optional[list[str]] = None) -> int:
                     help=f"结果文档路径（默认 {DEFAULT_RESULTS_DOC}）")
     ap.add_argument("--idempotency-runs", type=int, default=3,
                     help="M6 幂等性重复抽取轮数 N（默认 3，须 ≥ 2）")
+    ap.add_argument(
+        "--no-sanitize",
+        action="store_true",
+        help="★ M7 对照用：**禁用** LLM 输出后处理（sanitize_rule）⇒ "
+             "跑出「基线」口径 ⇒ 与默认（带 sanitize）对比即批次 2 的收益",
+    )
     ap.add_argument("--publish-authoritative", action="store_true",
                     help="★ 批次 1.5：把实验产出的规则**分流发布**进权威库"
                          "（derived/per_source/<协议>/rfc/semantic/）⇒ "
@@ -1915,7 +1945,8 @@ def main(argv: Optional[list[str]] = None) -> int:
             print(f"[prereg] 已写入：{report_path}")
 
     if args.run or args.all:
-        run_experiment(out_dir, results_doc, max(2, args.idempotency_runs))
+        run_experiment(out_dir, results_doc, max(2, args.idempotency_runs),
+                      use_sanitize=not args.no_sanitize)
 
     if args.publish_authoritative:
         # ★ 批次 1.5：受控发布（默认不发布）。

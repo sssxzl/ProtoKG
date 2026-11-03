@@ -186,3 +186,48 @@
 - M1/M3/M4/M5/M6/M7 的实测值**已足以支持**「表达层升级是否带来可执行性收益」这一部分结论；「知识质量收益（F1）」这一部分要等标注集定稿后再评。
 - **C0 组在同一标注集上的 F1** 同样不可计算（§4.5 要求必报，此处如实标注为不可计算并说明原因，不省略、不伪造）。
 
+
+
+---
+
+## ★ 批次 2 的 M7 分布正式复测（2026-11-03）
+
+> ★ **前提补齐**：`semantic.sanitize_rule()` 此前**从未接入** B-10 链路
+>   ⇒ 本次先把 `sanitize_rule()` 接进 `scripts/exp_semantic_gain.py` 的规则转换
+>   （被拦者**落候选库**并记 `reject_reason`，**不静默丢弃**），并新增
+>   `--no-sanitize` 开关以便做「基线 vs +sanitize」对照。
+> ★ **零成本**：两轮都复用既有 `llm_cache.jsonl` ⇒ **本次未调 LLM、未花 API 成本**。
+> ★ 对比工件：`qa/exp/batch2_gain.json`。
+> ★ **未覆盖生产产物**：两轮结果写在临时目录，**未**覆盖
+>   `derived/exp_semantic_gain/`（该目录被 `build_hub._republish_rules` 读取
+>   ⇒ 覆盖会改变中枢 `legal_boundary` 桶 ⇒ 改变种子语料）。
+
+### M7 拒绝原因分布（基线 → +sanitize）
+
+| 组 | 拒绝原因 | 基线 | +sanitize | Δ |
+|---|---|---|---|---|
+| E1 | **empty_subject** | 0 | **9** | **+9 ← 新增** |
+| E1 | field_unbound | 6 | 6 | 0 |
+| E1 | non_normative_kind | 23 | 23 | 0 |
+| E1 | operator_unresolved | 73 | 73 | 0 |
+| E1 | optional_modality | 4 | 4 | 0 |
+| E2 | **empty_subject** | 0 | **5** | **+5 ← 新增** |
+| E2 | field_unbound | 4 | 4 | 0 |
+| E2 | non_normative_kind | 23 | 23 | 0 |
+| E2 | operator_unresolved | 82 | 82 | 0 |
+| E2 | optional_modality | 4 | 4 | 0 |
+
+### 判定（对齐方案 §3.2 验收）
+
+- ✅ **「M7 分布中出现新的拒绝原因计数且可解释」** —— `empty_subject`
+  E1 +9 / E2 +5，且**其它四类拒绝原因计数全部不变** ⇒ sanitize 只动它该动的那一类。
+- ✅ **`gate_exercised` 不变** —— M3/M4/M5 与基线**完全一致**。
+- ✅ **幂等性不变** —— M6（三协议 × 3 轮 rule_id 集合全同）与基线一致。
+- ✅ **全量护栏不漂移**。
+- ⚠ **M1 反而下降**（E1 可执行率 11.67% → 4.17%）：这**不是**收益，而是
+  「**去掉了假阳性**」的证据 —— 被拦的是**结构合法但语义无效**的规则
+  （空 subject ⇒ 投影不出任何桶 ⇒ 无效负载）。
+- ⚠ 按 §4.5，**M2 不可计算 ⇒ 不得宣告「收益成立/不成立」** ⇒ 综合判定仍是
+  「**暂不可判定**」。与方案预判一致：sanitize 只处理「空值/自指」类，
+  对占比最大的 `operator_unresolved`（73/106 = 68.9%）**帮不上**
+  ⇒ 真正的知识质量收益仍待批次 4（CoT / 领域提示）。
