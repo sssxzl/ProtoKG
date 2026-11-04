@@ -3188,15 +3188,87 @@ def semantic_library_dir(protocol: str, root=None) -> Path:
     return rule_store.semantic_dir(protocol)
 
 
+#: RFC 5234（ABNF 核心语法）/ 5321（字符集）的**语法原子** ——
+#: 它们是语法构件，**不是协议字段** ⇒ 从 ABNF 派生字段集时必须排除。
+#:   （否则会把 ``ALPHA``/``DIGIT``/``CTL`` 当成字段名绑上 ⇒ 污染已知字段集。）
+ABNF_SYNTAX_TOKENS: frozenset[str] = frozenset({
+    # RFC 5234 §2.3 核心规则
+    "ALPHA", "BIT", "CHAR", "CR", "CRLF", "CTL", "DIGIT", "DQUOTE", "HTAB",
+    "LF", "LWSP", "OCTET", "SP", "VCHAR", "WSP",
+    # RFC 5321 §4 字符集
+    "US-ASCII", "UTF8-CONT", "UTF8-NONASCII", "TEXT-UTF8-TRIM", "TEXT-UTF8char",
+    "NO-WS-CTL", "QUOTED-STRING",
+})
+
+#: ABNF 左部（定义名）形态：``name = rhs``。
+_RE_ABNF_ASSIGN = re.compile(r"^([A-Za-z][A-Za-z0-9\-]*)\s*=\s*(.+)$")
+#: 连字符 token（协议字段名的形态，如 ``Request-URI``）。
+_RE_HYPHEN_TOKEN = re.compile(r"\b([A-Z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)+)\b")
+#: 句子切分（散文语境判定用）。
+_RE_SENTENCE = re.compile(r"(?<=[.;])\s+")
+
+
+def derive_abnf_field_names(protocol: str) -> set[str]:
+    """从 RFC 的 **ABNF 语法 + 散文语境**派生协议字段名。
+
+    ★ **双证据判据**（缺一不可，否则污染大）：
+      E2 —— 该名字是 ABNF **右部引用的** token（被语法**使用**的名字，
+             如 ``Request-Line = Method SP Request-URI SP SIP-Version CRLF``
+             里的 ``Request-URI`` / ``SIP-Version``）；
+      E3 —— 该名字在**散文**里被称作 header / field。
+
+    ★ **不用 ABNF 左部**（定义名）：那些多为语法产物名
+      （``ACKm`` / ``INVITEm`` / ``A-d-l``）⇒ 既污染又非协议字段。
+
+    ★ **排除语法原子**（:data:`ABNF_SYNTAX_TOKENS`）。
+
+    ★ 与「扩 ``field_sections``」的**关键区别**：本函数只补**字段名**，
+      不改章节判定 ⇒ 不会引入 ``Vias``/``Clients``/``Servers`` 这类
+      **章节结构名**（它们是章节标题，不是字段）。
+
+    Returns:
+        派生出的字段名集合（**不含** ``known_field_set`` 已有的）。
+    """
+    from core import paths
+
+    spec_dir = paths.kb_source_dir(protocol, "rfc")
+    if not spec_dir.is_dir():
+        return set()
+    referenced: set[str] = set()
+    prose: set[str] = set()
+    for f in sorted(spec_dir.glob("*.txt")):
+        raw = f.read_text(encoding="utf-8", errors="ignore")
+        # E3：散文里被称作 header / field 的名字
+        flat = raw.replace("\n", " ")
+        for sent in _RE_SENTENCE.split(flat):
+            if not re.search(r"(header|field)", sent, re.IGNORECASE):
+                continue
+            prose.update(_RE_HYPHEN_TOKEN.findall(sent))
+        # E2：ABNF 右部引用的连字符 token
+        for line in raw.splitlines():
+            s = line.strip()
+            m = _RE_ABNF_ASSIGN.match(s)
+            if not m or len(s) > 140:
+                continue
+            referenced.update(_RE_HYPHEN_TOKEN.findall(m.group(2)))
+    return (referenced & prose) - ABNF_SYNTAX_TOKENS
+
+
 def known_field_set(protocol: str) -> list[str]:
-    """协议已知字段集（`extract_rfc_norms` 的 `kind == "field"`）。
+    """协议已知字段集（章节/ABNF 字段抽取 + **ABNF 派生补充**）。
 
     ★ 口径与 `docs/semantic_rules_coverage_matrix.md` §2 实测一致
       （rtsp 45 / sip 46 / smtp 0 —— smtp 的 RFC 5322 字段章节标题是
       「The Origination Date Field」这类**长标题**，抽不出裸字段名）。
+    ★ **追加** ABNF 派生字段（:func:`derive_abnf_field_names`）：
+      补上「章节标题式抽不到、但 RFC 明确要求」的真头字段
+      （实测 SIP 的 ``Request-URI`` / ``SIP-Version``）
+      ⇒ 修 C6（字段绑定）这一 M1 第一瓶颈。
     """
-    return sorted({n["name"] for n in extract_rfc_norms(protocol)
-                   if n.get("kind") == "field"})
+    fields = {n["name"] for n in extract_rfc_norms(protocol)
+              if n.get("kind") == "field"}
+    fields |= derive_abnf_field_names(protocol)
+    return sorted(fields)
 
 
 @dataclass
@@ -3243,6 +3315,7 @@ def build_semantic_rules(protocol: str, *, known_fields=None,
 
     fields = (list(known_fields) if known_fields is not None
               else known_field_set(protocol))
+    # ★ known_field_set 现含 ABNF 派生字段 ⇒ 字段集更大 ⇒ C6 更易通过。
     vocab = (tuple(expected_vocab) if expected_vocab is not None
              else EXPECTED_VOCAB)
     resolver = make_resolver(known_fields=fields, expected_behavior="")
