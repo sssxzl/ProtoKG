@@ -311,7 +311,7 @@ Date:   Wed Jul 8 17:58:35 2020 +0200
 
     Merge pull request #2393 from tao-communications/master
     
-    rtpengine: added kemi support for block/unblock media/dtmf, and play/â¦
+    rtpengine: added kemi support for block/unblock media/dtmf, and play/…
 
 commit a6652652b9bbf5e89c1368c9c33aefa965f45c31
 Merge: 317f707425 3c02c11d66
@@ -910,7 +910,7 @@ Date:   Wed Jun 24 13:04:11 2020 +0200
     core: events - fix the field name for SREV_SIP_REPLY_OUT
 
 commit 1b4afb70c1c8228bc4dbae6e7ab433c4187b9867
-Author: Daniel MartÃ­nez Ruiz <d.martinez@zaleos.net>
+Author: Daniel Martínez Ruiz <d.martinez@zaleos.net>
 Date:   Wed Jun 24 10:28:04 2020 +0200
 
     keepalive: manage the `ping_from` config value as str.
@@ -1037,7 +1037,7 @@ Date:   Fri Jun 19 13:12:32 2020 +0200
     registrar: expires_range should not make expires < min_expires
 
 commit c753932ebfa055d923c92b916937eec99cd14d23
-Author: Kristian F. HÃ¸gh <kfh@uni-tel.dk>
+Author: Kristian F. Høgh <kfh@uni-tel.dk>
 Date:   Fri Jun 19 11:22:20 2020 +0200
 
     registrar: expires_range should not make expires < min_expires
@@ -1664,7 +1664,7 @@ Date:   Fri Jun 5 13:28:33 2020 +0200
 
     Merge pull request #2342 from kamailio/grumvalski/ds_load_table
     
-    dispatcher: don't reset load table when adding/removing a destinationâ¦
+    dispatcher: don't reset load table when adding/removing a destination…
 
 commit a118641af8fb6bdd288e97c17b12076db6442ef9
 Author: Kamailio Dev <kamailio.dev@kamailio.org>
@@ -4101,7 +4101,7 @@ Date:   Thu Apr 9 05:14:47 2020 +0200
 
     Merge pull request #2279 from kamailio/grumvalski/dlg_briefing_ext
     
-    dialog: add dialog init, start end end timestamps to the output of dlâ¦
+    dialog: add dialog init, start end end timestamps to the output of dl…
 
 commit 541d1bdfaf0bf28114f556be61eb434597ed894a
 Merge: 0b3a669ca5 8fa5e4f572
@@ -5290,7 +5290,7 @@ commit ae95a6a2f73e6a4153a415c70d9e21562c651c1a
 Author: --list <hw@skalatan.de>
 Date:   Mon Mar 23 11:13:41 2020 +0100
 
-    ims_usrloc_pcscf: fix warning: this âifâ clause does not guard...
+    ims_usrloc_pcscf: fix warning: this ‘if’ clause does not guard...
 
 commit c53423a755a0766d27137d1483edb05178d1a44d
 Author: Kamailio Dev <kamailio.dev@kamailio.org>
@@ -9021,7 +9021,7 @@ commit 7fad9c51f71854e0649fe76e273190e4b4f82438
 Author: Henning Westerholt <hw@skalatan.de>
 Date:   Sat Nov 23 18:53:17 2019 +0100
 
-    app_sqlang: fix squirrel warning: ânArgsâ may be used uninitialized in this function
+    app_sqlang: fix squirrel warning: ‘nArgs’ may be used uninitialized in this function
 
 commit daa86b204d3030e2abb2f2459aa348998b982ae2
 Author: Daniel-Constantin Mierla <miconda@gmail.com>
@@ -9262,7 +9262,7 @@ Date:   Mon Nov 18 18:04:11 2019 +0100
     dispatcher: Fixed typo in dispatcher_admin.xml
 
 commit 840d2babc7518e92ffc2173dc760828da1d2ff7b
-Author: Markus BÃ¶nke <mbodbg@gmx.net>
+Author: Markus Bönke <mbodbg@gmx.net>
 Date:   Mon Nov 18 17:40:23 2019 +0100
 
     dispatcher: Fixed typo in dispatcher_admin.xml
@@ -9864,7 +9864,7 @@ Date:   Fri Oct 25 12:00:27 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -9877,7 +9877,7 @@ Date:   Fri Oct 25 11:59:50 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -9890,7 +9890,7 @@ Date:   Fri Oct 25 11:59:34 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -9903,7 +9903,7 @@ Date:   Fri Oct 25 11:59:10 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -9916,7 +9916,7 @@ Date:   Fri Oct 25 11:58:48 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -9929,7 +9929,7 @@ Date:   Fri Oct 25 11:58:26 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -9942,7 +9942,7 @@ Date:   Fri Oct 25 11:58:01 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -9955,7 +9955,7 @@ Date:   Fri Oct 25 11:57:39 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -9968,7 +9968,7 @@ Date:   Fri Oct 25 11:57:18 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -9981,7 +9981,7 @@ Date:   Fri Oct 25 11:56:53 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -9994,7 +9994,7 @@ Date:   Fri Oct 25 11:54:44 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -10007,7 +10007,7 @@ Date:   Fri Oct 25 11:53:37 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -10020,7 +10020,7 @@ Date:   Fri Oct 25 11:52:54 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -10033,7 +10033,7 @@ Date:   Fri Oct 25 11:52:05 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -10046,7 +10046,7 @@ Date:   Fri Oct 25 11:51:20 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -10059,7 +10059,7 @@ Date:   Fri Oct 25 11:50:44 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -10072,7 +10072,7 @@ Date:   Fri Oct 25 11:50:11 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -10085,7 +10085,7 @@ Date:   Fri Oct 25 11:49:42 2019 +0200
     
       The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
       distributions have done so for a long time (for example in Debian
-      since 6.0 âsqueezeâ), even though they provide a compatibility
+      since 6.0 “squeeze”), even though they provide a compatibility
       symlink from /var/run to /run. But software like systemd have
       started emitting warnings when using /var/run, for example for
       its PIDFile directive, which pollutes the logs.
@@ -10098,7 +10098,7 @@ Date:   Fri Oct 25 11:47:31 2019 +0200
     
     The FHS 3.0 [F] has deprecated /var/run in favor of /run. Current
     distributions have done so for a long time (for example in Debian
-    since 6.0 âsqueezeâ), even though they provide a compatibility
+    since 6.0 “squeeze”), even though they provide a compatibility
     symlink from /var/run to /run. But software like systemd have
     started emitting warnings when using /var/run, for example for
     its PIDFile directive, which pollutes the logs.

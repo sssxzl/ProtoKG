@@ -1523,7 +1523,7 @@ DEST: {
 ...
 
    FLAGS consist out of 2 letters. First letter describe status of
-   destination: A-active, I â inactive, T â trying, D â disabled.
+   destination: A-active, I – inactive, T – trying, D – disabled.
    Second letter might be P or X. P is for probing, so AP means
    destination is active and it is tested by SIP options continuously. X
    means that there are no probing or sip pinging. So AX means that

@@ -17,13 +17,13 @@ TOKEN = os.environ.get("DEEPSEEK_API_KEY") or os.environ.get("CHAT_AFL_TOKEN", "
 PROXY = "http://192.168.37.1:18080/chat/completions"
 
 # ---- 1. token 补全（chat-llm.h，含 DEEPSEEK_TOKEN 或 OPENAI_TOKEN）----
-s = open(CHAT_LLM_H).read()
+s = open(CHAT_LLM_H, encoding="utf-8").read()
 s = re.sub(r'#define (?:DEEPSEEK_TOKEN|OPENAI_TOKEN) "[^"]*"',
            '#define \\1 "' + TOKEN + '"', s)
-open(CHAT_LLM_H, "w").write(s)
+open(CHAT_LLM_H, "w", encoding="utf-8").write(s)
 
 # ---- 2~7. chat-llm.c 修复 ----
-s = open(CHAT_LLM_C).read()
+s = open(CHAT_LLM_C, encoding="utf-8").read()
 
 # 2. URL 改代理（两个端点都改）
 s = s.replace("https://api.deepseek.com/v1/chat/completions", PROXY)
@@ -94,5 +94,5 @@ if old7 in s:
 else:
     print("[warn] remaining_templates first_question 锚点未找到，可能已修复")
 
-open(CHAT_LLM_C, "w").write(s)
+open(CHAT_LLM_C, "w", encoding="utf-8").write(s)
 print("chatafl 修复完成")

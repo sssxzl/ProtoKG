@@ -100,3 +100,7 @@ _crlf_probe_*/
 
 # 消融脚本的运行时中间工件目录（最终工件已归档到 local/ablation_rtsp/）。
 tools/qa/ablation/_out/
+
+# 编码护栏产物与原始坏版本备份（本地留存，不入库）
+local/encoding_backup/
+local/encoding_guard_result.json

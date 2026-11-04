@@ -120,7 +120,7 @@ def test_regions_count_matches_paths_found(tmp_path: Path) -> None:
             # ★ 文件名不能含 ":"（Windows 非法）—— AFLNet 真实文件名形如
             #   "id:000151,src:000000,op:havoc,rep:64,+cov"，此处用等价的
             #   合法名（脚本只数文件个数，不解析名字）
-            (rd / f"id-{i:06d}-src-000000-op-havoc-rep-1").write_text("x")
+            (rd / f"id-{i:06d}-src-000000-op-havoc-rep-1").write_text("x", encoding="utf-8")
     recs = mod.collect(s, out_root)
     assert len(recs) == 6
     for r in recs:
@@ -141,7 +141,7 @@ def test_mismatched_regions_is_reported(tmp_path: Path) -> None:
     out_root = tmp_path / "out"
     rd = out_root / "rtsp" / "protorag" / "r1" / "regions"
     rd.mkdir(parents=True, exist_ok=True)
-    (rd / "id:000000").write_text("x")          # 只有 1 个，与 999 不符
+    (rd / "id:000000").write_text("x", encoding="utf-8")          # 只有 1 个，与 999 不符
     recs = mod.collect(s, out_root)
     md = mod.render(recs)
     assert "存在不一致" in md, "不一致时必须显式报出，不能默认通过"

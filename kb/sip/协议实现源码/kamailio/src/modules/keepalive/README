@@ -233,7 +233,7 @@ if(ka_is_alive("192.168.10.20") == 1) {
        or 'sips' (SIP over TLS) - if omitted, 'sip'is used by default;
        'port' is optional (using default standard port 5060 for sip and
        5061 for sips)
-     * owner (string) - module name âowningâ the destination (for
+     * owner (string) - module name “owning” the destination (for
        informational purpose)
 
    Returned value:
@@ -263,7 +263,7 @@ ka_add_destination("sip:192.168.1.10:5060;transport=tcp", "config");
        or 'sips' (SIP over TLS) - if omitted, 'sip'is used by default;
        'port' is optional (using default standard port 5060 for sip and
        5061 for sips)
-     * owner (string) - module name âowningâ the destination (for
+     * owner (string) - module name “owning” the destination (for
        informational purpose)
 
    Returned value:

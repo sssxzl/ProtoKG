@@ -6,7 +6,7 @@
 import sys
 
 p = sys.argv[1] if len(sys.argv) > 1 else "/home/zxy/rq2_chatafl_fix/chat-llm.c"
-s = open(p).read()
+s = open(p, encoding="utf-8").read()
 
 # ---- 1. curl 超时 ----
 old1 = '    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, chat_with_llm_helper);'
@@ -31,5 +31,5 @@ if old2 in s:
 else:
     print("[warn] stall 锚点未找到（可能已修过）")
 
-open(p, "w").write(s)
+open(p, "w", encoding="utf-8").write(s)
 print("修复完成:", p)

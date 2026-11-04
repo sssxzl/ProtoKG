@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # 修复 construct_prompt_for_remaining_templates 的 first_question JSON 转义
 p = "/home/ubuntu/chatafl/chat-llm.c"
-s = open(p).read()
+s = open(p, encoding="utf-8").read()
 
 old = '''    asprintf(&prompt,
              "["
@@ -28,5 +28,5 @@ new = '''    json_object *question_str = json_object_new_string(first_question);
 
 assert old in s, "old not found"
 s = s.replace(old, new)
-open(p, "w").write(s)
+open(p, "w", encoding="utf-8").write(s)
 print("remaining_templates JSON 转义修复完成")

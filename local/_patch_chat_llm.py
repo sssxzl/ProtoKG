@@ -9,7 +9,7 @@ import sys
 
 PATH = "/home/ubuntu/chatafl/chat-llm.c"
 
-with open(PATH, "r") as f:
+with open(PATH, "r", encoding="utf-8") as f:
     src = f.read()
 
 # 1) 确保 getenv 所需 <stdlib.h> 已包含（幂等）。
@@ -45,7 +45,7 @@ if old not in src:
 
 src = src.replace(old, new, 1)
 
-with open(PATH, "w") as f:
+with open(PATH, "w", encoding="utf-8") as f:
     f.write(src)
 
 print("patch applied OK")

@@ -1,0 +1,35 @@
+# tools/qa/baseline/encoding_known_issues.txt —— 编码护栏的**已知豁免**清单
+#
+# 格式：``<仓库相对路径>\t<违规码>\t<原因>``
+#   · 违规码 E2 = 文件不能整体按 UTF-8 解码；E1 = mojibake；E4 = 缺 encoding
+#   · 只写两列（``<路径>\t<原因>``）= 该路径的**所有**码都豁免
+#
+# ★ 这些条目**不是**本项目的乱码缺陷，而是**上游原生**的文件编码：
+#   kamailio 是 2000 年代的老代码库，源码/测试/文档里大量 latin-1 注释与作者名。
+#   ⇒ 「无法确定原文」（多数是 latin-1 注释，转成 UTF-8 会偏离上游原貌）
+#   ⇒ **不修改**，只登记；RFC 抽取路径（kb/<协议>/spec/）不含这些文件 ⇒ 不影响语料。
+#
+# --- E2：上游原生非 UTF-8（latin-1 注释/示例）---
+kb/sip/协议实现源码/kamailio/doc/misc/TODO	E2	上游原生 latin-1（作者笔记），非本项目乱码；不参与 RFC 抽取
+kb/sip/协议实现源码/kamailio/src/core/parser/parse_fline.c	E2	上游原生 latin-1 注释；非本项目乱码；不参与 RFC 抽取
+kb/sip/协议实现源码/kamailio/src/modules/db_sqlite/doc/db_sqlite.xml	E2	上游原生 latin-1；非本项目乱码；不参与 RFC 抽取
+kb/sip/协议实现源码/kamailio/src/modules/permissions/parse_config.c	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/src/modules/permissions/parse_config.h	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/src/modules/permissions/rule.c	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/src/modules/permissions/rule.h	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/test/misc/code/dns_query.c	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/test/misc/code/gethostbyaddr.c	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/test/misc/code/gethostbyname.c	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/test/misc/code/ifls.c	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/test/misc/code/locking/locking_test.c	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/test/misc/code/re_test.c	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/test/misc/code/resolver_test.c	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/test/misc/code/udp_flood_disc.c	E2	上游原生 latin-1 注释；非本项目乱码
+kb/sip/协议实现源码/kamailio/test/misc/code/udp_test_proxy.c	E2	上游原生 latin-1 注释；非本项目乱码
+#
+# --- E1：上游原生、且**不可逆**还原（无法确定原文 ⇒ 不臆测替换）---
+kb/sip/协议实现源码/kamailio/utils/pdbt/scripts/get_carrier_names_finland.sh	E1	单个不可逆 mojibake 标记；上游原生；无法确定原文 ⇒ 不改
+#
+# --- E4：第三方 Python 脚本缺 encoding（上游代码 ⇒ 不改）---
+kb/sip/协议实现源码/kamailio/misc/tools/kemi/python_mock/kemi_mock.py	E4	第三方测试桩脚本；上游代码 ⇒ 不改
+kb/sip/协议实现源码/kamailio/utils/kamctl/dbtextdb/dbtextdb.py	E4	第三方运维脚本；上游代码 ⇒ 不改

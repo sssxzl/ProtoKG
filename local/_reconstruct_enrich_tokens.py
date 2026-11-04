@@ -85,7 +85,7 @@ def main():
         sys.exit(2)
     seed_dir = sys.argv[1]
     msg_types = [t.strip().upper() for t in
-                 open(sys.argv[2]).read().split(",") if t.strip()]
+                 open(sys.argv[2], encoding="utf-8").read().split(",") if t.strip()]
     do_run = "--run" in sys.argv
 
     import glob

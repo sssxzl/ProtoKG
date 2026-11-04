@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # 修复镜像内 chatafl 的语法提取 prompt（纯格式约束 + JSON 转义）
 p = "/home/ubuntu/chatafl/chat-llm.c"
-s = open(p).read()
+s = open(p, encoding="utf-8").read()
 
 # 1. msg 加纯格式约束（让 deepseek-chat 返回纯 COMMAND: [...] 格式，避免 markdown）
 old1 = 'all of client request templates are :"'
@@ -15,5 +15,5 @@ new2 = '    json_object *msg_json = json_object_new_string(msg);\n    const char
 assert old2 in s, "old2 not found"
 s = s.replace(old2, new2)
 
-open(p, "w").write(s)
+open(p, "w", encoding="utf-8").write(s)
 print("两处修复完成")

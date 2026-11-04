@@ -858,7 +858,7 @@ def build(data_dir: Path, interim_dir: Path | None) -> dict:
         ts: list[int] = []
         cvg: list[float] = []
         eps: list[float] = []
-        for line in path.read_text(errors="replace").splitlines():
+        for line in path.read_text(errors="replace", encoding="utf-8").splitlines():
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
@@ -984,12 +984,12 @@ def build(data_dir: Path, interim_dir: Path | None) -> dict:
                 if not (fs_path.exists() and pd_path.exists()):
                     continue
                 st = {}
-                for line in fs_path.read_text(errors="replace").splitlines():
+                for line in fs_path.read_text(errors="replace", encoding="utf-8").splitlines():
                     parts = line.split()
                     if len(parts) >= 3:
                         st[parts[0]] = parts[2]
                 first = None
-                for line in pd_path.read_text(errors="replace").splitlines():
+                for line in pd_path.read_text(errors="replace", encoding="utf-8").splitlines():
                     line = line.strip()
                     if line and not line.startswith("#"):
                         first = line
