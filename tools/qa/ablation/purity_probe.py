@@ -155,8 +155,30 @@ def main(argv=None) -> int:
     seeds = doc.get("seeds") or []
     by_layer = Counter(s.get("layer_name") or "?" for s in seeds)
 
+    # ★ 批次 2.5（F5）：底料事实**优先**从**本次 manifest** 的 action_seq 元信息读
+    #   —— 因为 F5 之后默认走「内部两段式」，底料根本不是 published 目录；
+    #   沿用旧模型去查 published 目录 ⇒ 会把「同源底料」误判成「含 vuln 的历史语料」。
+    seq = (doc.get("seedgen") or {}).get("action_seq") or {}
+    base_src = str(seq.get("source") or "") or _base_source(args.protocol, args.group)
     base = _base_corpus_facts(args.protocol, args.group)
-    base_src = _base_source(args.protocol, args.group)
+    if base_src == "internal-two-stage":
+        # 底料 = **本次刚产的基准层** ⇒ 底料的层构成 = 本次语料的基准层构成
+        _base_layers = Counter(
+            s.get("layer_name") or "?"
+            for s in seeds if (s.get("layer_name") or "") != "action_seq")
+        base = {
+            "dirs": [{"dir": "(本次基准层·内部两段式)", "total": seq.get("base_count"),
+                      "vuln_boundary": _base_layers.get("vuln_boundary", 0),
+                      "canonical": _base_layers.get("canonical", 0),
+                      "manifest": True}],
+            "vuln_seeds": _base_layers.get("vuln_boundary", 0),
+            "total_seeds": seq.get("base_count") or 0,
+            "has_manifest": True,
+            "layer_counts": dict(_base_layers),
+            "source_side_seeds": _base_layers.get("canonical", 0),
+            "used_dir": "(本次基准层·内部两段式)",
+            "two_stage": True,
+        }
     rules = _semantic_rules(args.protocol)
 
     # ---- 逐层判定「知识来源」 ----
@@ -166,6 +188,10 @@ def main(argv=None) -> int:
         if layer == "action_seq":
             if base_src == "traffic-capture":
                 tag = "traffic(真实抓包)"
+            elif base_src == "internal-two-stage":
+                tag = ("★同源(底料=本次基准层·内部两段式 ⇒ 无跨源)"
+                       + ("；基准层含 canonical ⇒ 资源清单=源码侧"
+                          if base.get("source_side_seeds") else ""))
             elif strict:
                 tag = ("基准层语料（已滤 vuln）"
                        + ("；但其中含 canonical 底料 ⇒ 资源清单=源码侧"

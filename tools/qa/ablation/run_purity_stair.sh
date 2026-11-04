@@ -58,6 +58,9 @@ run_step () {
   name="$1"; dims="$2"; strict="$3"
   echo ""
   echo "######## $name  (骨架维度=${dims:-全量}  旁路=${strict:-默认}) ########"
+  # ★ 跑前**清空输出目录**：旧产物残留会污染 corpus_gate 的 G1/G2 统计
+  #   （实测：S0 目录残留 47 个上一轮的 .raw ⇒ G2 虚高）
+  rm -rf "out/pur_$name" "out/pur_$name.build.log" "out/pur_$name.seed.log"
   if [ -n "$dims" ]; then
     $PY scripts/build_hub.py --protocol "$PROTO" --sources rfc \
         --exclude-skeleton-dims $dims > "out/pur_$name.build.log" 2>&1

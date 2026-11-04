@@ -1517,7 +1517,8 @@ def load_real_base_seeds(protocol: str, profile: dict, *,
 
     Returns:
         ``(种子列表, 来源标签)``；来源标签 ∈
-        ``{"published-corpus", "traffic-capture", ""}``。
+        ``{"internal-two-stage", "explicit-base-corpus",
+        "published-corpus", "traffic-capture", ""}``。
     """
     seeds = _load_published_seeds(protocol, profile, group=group,
                                   root=derived_root,
@@ -1526,6 +1527,15 @@ def load_real_base_seeds(protocol: str, profile: dict, *,
                                   base_corpus_from=base_corpus_from,
                                   base_corpus_trusted=base_corpus_trusted)
     if seeds:
+        # ★ 批次 2.5（F5）：底料来源必须**如实**标注（否则下游审计会把
+        #   「内部两段式（同源）」误判成「published-corpus（历史语料）」）
+        #   · base_corpus_trusted=True ⇒ **内部两段式**（本次刚产的基准层）
+        #   · base_corpus_from 显式给出 ⇒ 外部底料（已过 provenance 校验）
+        #   · 否则 ⇒ 自动找到的 published 目录（**保持原语义**）
+        if base_corpus_trusted:
+            return seeds, "internal-two-stage"
+        if base_corpus_from is not None:
+            return seeds, "explicit-base-corpus"
         return seeds, "published-corpus"
     # ★ 批次 2.5（F5）：**显式指定了底料** ⇒ 它若被拒绝（来源不干净 / 不存在）
     #   ⇒ **不再回退**到 traffic 抓包（那也是跨源污染，且违背「显式指定」的意图）
