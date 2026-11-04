@@ -146,12 +146,12 @@ def test_focus_group_config_shape():
     #            批次 2.5 基线重标定（纯 RFC 单源档 + ⑤ 层两段式底料）第三次重标定）
     # ★ 批次 2.5 重标定后为 86（旧值 55）
     assert FOCUS_GROUP_CONFIG["A"]["expect_seeds"] == 86
-    # ★ 批次 2.5 重标定后为 90（旧值 85）
-    assert FOCUS_GROUP_CONFIG["B"]["expect_seeds"] == 90
-    # ★ 批次 2.5 重标定后为 90（旧值 61）
-    assert FOCUS_GROUP_CONFIG["C"]["expect_seeds"] == 90
-    # ★ 批次 2.5 重标定后为 90（旧值 61）
-    assert FOCUS_GROUP_CONFIG["D"]["expect_seeds"] == 90
+    # ★ 批次 2.5 F9（跨层去重）后为 89（旧值 90 ⇒ ⑤ 层丢 1 条无效变异）
+    assert FOCUS_GROUP_CONFIG["B"]["expect_seeds"] == 89
+    # ★ 批次 2.5 F9（跨层去重）后为 89（旧值 90）
+    assert FOCUS_GROUP_CONFIG["C"]["expect_seeds"] == 89
+    # ★ 批次 2.5 F9（跨层去重）后为 89（旧值 90）
+    assert FOCUS_GROUP_CONFIG["D"]["expect_seeds"] == 89
 
 
 def test_resolve_config_focus_groups():

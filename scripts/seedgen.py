@@ -62,7 +62,7 @@ from core.fused.downstream.boundary_probe import (  # noqa: E402
     generate_protocol_dict, generate_targeted_dict, load_base_dict_tokens,
 )
 from core.fused.downstream.selector import (  # noqa: E402
-    dedupe_seeds, prioritize_seeds,
+    dedupe_seeds, prioritize_seeds, _seed_signature,
 )
 from core.fused.downstream.action_seq import (  # noqa: E402
     ACTION_SEQ_GENERATED_BY, ActionLedger, apply_actions,
@@ -116,13 +116,13 @@ FOCUS_GROUP_CONFIG: dict = {
               expect_seeds=86, expect_dict_tokens=24),
     "B": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="natural", dict_kind="base",
-              expect_seeds=90, expect_dict_tokens=24),
+              expect_seeds=89, expect_dict_tokens=24),
     "C": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="vuln-proximity", dict_kind="targeted",
-              expect_seeds=90, expect_dict_tokens=223),
+              expect_seeds=89, expect_dict_tokens=223),
     "D": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="vuln-proximity", dict_kind="base",
-              expect_seeds=90, expect_dict_tokens=24),
+              expect_seeds=89, expect_dict_tokens=24),
 }
 
 
@@ -439,7 +439,29 @@ def _append_action_seq_seeds(seeds: list, action_seeds: list) -> list:
     """
     if not action_seeds:
         return seeds
-    return list(seeds) + list(action_seeds)
+    # ★ 批次 2.5（F9）：**跨层去重** —— ⑤ 层的变异若与**基准层**某条
+    #   签名（方法序列 + 头部取值）完全相同 ⇒ 说明这次变异**没产生新内容**
+    #   ⇒ 丢弃它（否则落盘后就是两条**字节完全相同**的种子）。
+    #   实测 rtsp/B：③层 ``53_DESCRIBE.raw`` 与 ⑤层 ``M89_DESCRIBE.raw``
+    #   字节完全相同（90 条里 1 组重复 ⇒ 实际只有 89 条独立种子）。
+    #
+    #   ★ **基准层优先**：只丢 ⑤ 层那条，**基准层一条不动** ⇒
+    #   「ON 时基准层条数与 OFF 完全相同」这条不变式**不受影响**。
+    #   （★ 不能改成「⑤ 参与统一去重」—— 那会让 ⑤ 的副本顶替基准层里的
+    #     近重复种子 ⇒ 基准层集合变化 ⇒ 违反该不变式。）
+    base_sigs = {_seed_signature(s) for s in seeds}
+    kept, dropped = [], []
+    for s in action_seeds:
+        sig = _seed_signature(s)
+        if sig in base_sigs:
+            dropped.append(s)
+            continue
+        base_sigs.add(sig)          # ⑤ 层内部也要互斥
+        kept.append(s)
+    if dropped:
+        print(f"⑤ 跨层去重: 丢弃 {len(dropped)} 条与基准层签名相同的变异"
+              f"（变异未产生新内容 ⇒ 落盘会是字节重复）")
+    return list(seeds) + list(kept)
 
 
 def _apply_url_placeholders(seeds: list, profile: dict, protocol: str,

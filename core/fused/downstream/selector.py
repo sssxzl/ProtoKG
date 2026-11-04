@@ -294,4 +294,5 @@ def seed_layer(seed: SeedCorpus) -> tuple[str, str]:
 
 
 __all__ = ["select_seeds", "dedupe_seeds", "vuln_proximity_score",
+           "_seed_signature",
            "prioritize_seeds", "seed_layer"]

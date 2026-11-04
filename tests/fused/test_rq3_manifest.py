@@ -279,6 +279,8 @@ def test_cli_manifest_md5_unique_per_group(tmp_path):
         layers = {e["layer"] for e in seeds if e["md5"] == md}
         assert "L5" in layers, f"重复种子未涉及 ⑤ 层: {md[:12]} {layers}"
         assert len(layers) == 2, f"重复种子跨了多于两层: {md[:12]} {layers}"
-    # ★ 批次 2.5 重标定后为 1（旧值 0）
-    assert len(dups) == 1, \
-        f"组 C 跨层撞车应为 1 处（⑤ 追加撞基准层），实际 {len(dups)} 处"
+    # ★ 批次 2.5 **F9（跨层去重）后为 0**（旧值 1 ⇒ 那是 ③层与⑤层
+    #   字节完全相同的已知缺陷；F9 让 ⑤ 层丢弃"未产生新内容"的变异
+    #   ⇒ 跨层撞车归零 ⇒ 本断言从"记录缺陷"升级为"**防复发**"）
+    assert len(dups) == 0, \
+        f"组 C 跨层撞车应为 0 处（F9 后 ⑤ 层不与基准层重复），实际 {len(dups)} 处"
