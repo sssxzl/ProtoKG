@@ -2,8 +2,8 @@
   "experiment": "B-10",
   "roadmap": "docs/rfc_source_bcd_roadmap.md §4",
   "prereg": "docs/semantic_gain_report.md",
-  "generated_at": "2026-11-02 06:02:39",
-  "elapsed_s": 139.8,
+  "generated_at": "2026-11-04 15:01:11",
+  "elapsed_s": 1.3,
   "frozen_candidates": {
     "source_path": "E:\\科研\\想法idea\\rag-chatafl\\derived\\exp_semantic\\candidates_frozen.jsonl",
     "source_md5": "6060457e78f253699fcf2da8dc343733",
@@ -21,35 +21,35 @@
     "duplicate_protocol_text_pairs": 0
   },
   "llm": {
-    "calls_made": 120,
-    "cache_hits": 0,
-    "cache_reused_from_previous_run": 0,
+    "calls_made": 0,
+    "cache_hits": 120,
+    "cache_reused_from_previous_run": 120,
     "cache_entries_total": 120,
     "failures": [],
     "cache_path": "E:\\科研\\想法idea\\rag-chatafl\\derived\\exp_semantic_gain\\llm_cache.jsonl",
     "model": "deepseek-chat",
-    "prompt_version": "rfc-constraint-prompt-v1",
+    "prompt_version": "rfc-constraint-prompt-v2",
     "client_error": ""
   },
   "known_fields": {
     "rtsp": 45,
     "sip": 46,
-    "smtp": 0
+    "smtp": 19
   },
   "metrics": {
     "M1": {
       "rtsp": {
         "denominator_candidates": 40,
-        "c0_decidable": 8,
-        "c0_decidable_rate_pct": 20.0,
-        "c0_decidable_with_operand_rate_pct": 5.0,
+        "c0_decidable": 9,
+        "c0_decidable_rate_pct": 22.5,
+        "c0_decidable_with_operand_rate_pct": 7.5,
         "c0_decidable_presence_operators_pct": 15.0,
-        "e1_rules": 7,
-        "e1_executable_rate_pct": 17.5,
-        "e2_rules": 4,
-        "e2_executable_rate_pct": 10.0,
-        "e1_minus_c0_pp": -2.5,
-        "e2_minus_c0_pp": -10.0
+        "e1_rules": 5,
+        "e1_executable_rate_pct": 12.5,
+        "e2_rules": 1,
+        "e2_executable_rate_pct": 2.5,
+        "e1_minus_c0_pp": -10.0,
+        "e2_minus_c0_pp": -20.0
       },
       "sip": {
         "denominator_candidates": 40,
@@ -57,38 +57,38 @@
         "c0_decidable_rate_pct": 17.5,
         "c0_decidable_with_operand_rate_pct": 2.5,
         "c0_decidable_presence_operators_pct": 15.0,
-        "e1_rules": 6,
-        "e1_executable_rate_pct": 15.0,
-        "e2_rules": 3,
-        "e2_executable_rate_pct": 7.5,
-        "e1_minus_c0_pp": -2.5,
-        "e2_minus_c0_pp": -10.0
+        "e1_rules": 8,
+        "e1_executable_rate_pct": 20.0,
+        "e2_rules": 1,
+        "e2_executable_rate_pct": 2.5,
+        "e1_minus_c0_pp": 2.5,
+        "e2_minus_c0_pp": -15.0
       },
       "smtp": {
         "denominator_candidates": 40,
-        "c0_decidable": 5,
-        "c0_decidable_rate_pct": 12.5,
-        "c0_decidable_with_operand_rate_pct": 5.0,
+        "c0_decidable": 6,
+        "c0_decidable_rate_pct": 15.0,
+        "c0_decidable_with_operand_rate_pct": 7.5,
         "c0_decidable_presence_operators_pct": 7.5,
-        "e1_rules": 1,
-        "e1_executable_rate_pct": 2.5,
+        "e1_rules": 4,
+        "e1_executable_rate_pct": 10.0,
         "e2_rules": 0,
         "e2_executable_rate_pct": 0.0,
-        "e1_minus_c0_pp": -10.0,
-        "e2_minus_c0_pp": -12.5
+        "e1_minus_c0_pp": -5.0,
+        "e2_minus_c0_pp": -15.0
       },
       "TOTAL": {
         "denominator_candidates": 120,
-        "c0_decidable": 20,
-        "c0_decidable_rate_pct": 16.6667,
-        "c0_decidable_with_operand_rate_pct": 4.1667,
+        "c0_decidable": 22,
+        "c0_decidable_rate_pct": 18.3333,
+        "c0_decidable_with_operand_rate_pct": 5.8333,
         "c0_decidable_presence_operators_pct": 12.5,
-        "e1_rules": 14,
-        "e1_executable_rate_pct": 11.6667,
-        "e2_rules": 7,
-        "e2_executable_rate_pct": 5.8333,
-        "e1_minus_c0_pp": -5.0,
-        "e2_minus_c0_pp": -10.8334
+        "e1_rules": 17,
+        "e1_executable_rate_pct": 14.1667,
+        "e2_rules": 2,
+        "e2_executable_rate_pct": 1.6667,
+        "e1_minus_c0_pp": -4.1666,
+        "e2_minus_c0_pp": -16.6666
       }
     },
     "M2": {
@@ -110,74 +110,8 @@
     "M3_M4_M5": {
       "E1": {
         "rtsp": {
-          "rules": 7,
-          "validated_true": 7,
-          "m3_evidence_verifiable_rate_pct": 100.0,
-          "explicit_rules": 5,
-          "explicit_with_must": 5,
-          "m4_explicitness_purity_pct": 100.0,
-          "explicit_with_must_uppercase_only": 4,
-          "m4_explicitness_purity_uppercase_pct": 80.0,
-          "rules_whose_source_has_must": 5,
-          "explicit_set_equals_must_set": true,
-          "may_optional_rules": 0,
-          "m5_may_misraise_rate_pct": 0.0,
-          "may_token_rules_loose": 0,
-          "m5_may_token_rate_pct_loose": 0.0
-        },
-        "sip": {
-          "rules": 6,
-          "validated_true": 6,
-          "m3_evidence_verifiable_rate_pct": 100.0,
-          "explicit_rules": 5,
-          "explicit_with_must": 5,
-          "m4_explicitness_purity_pct": 100.0,
-          "explicit_with_must_uppercase_only": 4,
-          "m4_explicitness_purity_uppercase_pct": 80.0,
-          "rules_whose_source_has_must": 5,
-          "explicit_set_equals_must_set": true,
-          "may_optional_rules": 0,
-          "m5_may_misraise_rate_pct": 0.0,
-          "may_token_rules_loose": 0,
-          "m5_may_token_rate_pct_loose": 0.0
-        },
-        "smtp": {
-          "rules": 1,
-          "validated_true": 1,
-          "m3_evidence_verifiable_rate_pct": 100.0,
-          "explicit_rules": 0,
-          "explicit_with_must": 0,
-          "m4_explicitness_purity_pct": 0.0,
-          "explicit_with_must_uppercase_only": 0,
-          "m4_explicitness_purity_uppercase_pct": 0.0,
-          "rules_whose_source_has_must": 0,
-          "explicit_set_equals_must_set": true,
-          "may_optional_rules": 0,
-          "m5_may_misraise_rate_pct": 0.0,
-          "may_token_rules_loose": 0,
-          "m5_may_token_rate_pct_loose": 0.0
-        },
-        "TOTAL": {
-          "rules": 14,
-          "validated_true": 14,
-          "m3_evidence_verifiable_rate_pct": 100.0,
-          "explicit_rules": 10,
-          "explicit_with_must": 10,
-          "m4_explicitness_purity_pct": 100.0,
-          "explicit_with_must_uppercase_only": 8,
-          "m4_explicitness_purity_uppercase_pct": 80.0,
-          "rules_whose_source_has_must": 10,
-          "explicit_set_equals_must_set": true,
-          "may_optional_rules": 0,
-          "m5_may_misraise_rate_pct": 0.0,
-          "may_token_rules_loose": 0,
-          "m5_may_token_rate_pct_loose": 0.0
-        }
-      },
-      "E2": {
-        "rtsp": {
-          "rules": 4,
-          "validated_true": 4,
+          "rules": 5,
+          "validated_true": 5,
           "m3_evidence_verifiable_rate_pct": 100.0,
           "explicit_rules": 3,
           "explicit_with_must": 3,
@@ -188,19 +122,85 @@
           "explicit_set_equals_must_set": true,
           "may_optional_rules": 0,
           "m5_may_misraise_rate_pct": 0.0,
+          "may_token_rules_loose": 1,
+          "m5_may_token_rate_pct_loose": 20.0
+        },
+        "sip": {
+          "rules": 8,
+          "validated_true": 8,
+          "m3_evidence_verifiable_rate_pct": 100.0,
+          "explicit_rules": 7,
+          "explicit_with_must": 7,
+          "m4_explicitness_purity_pct": 100.0,
+          "explicit_with_must_uppercase_only": 7,
+          "m4_explicitness_purity_uppercase_pct": 100.0,
+          "rules_whose_source_has_must": 7,
+          "explicit_set_equals_must_set": true,
+          "may_optional_rules": 0,
+          "m5_may_misraise_rate_pct": 0.0,
+          "may_token_rules_loose": 0,
+          "m5_may_token_rate_pct_loose": 0.0
+        },
+        "smtp": {
+          "rules": 4,
+          "validated_true": 4,
+          "m3_evidence_verifiable_rate_pct": 100.0,
+          "explicit_rules": 1,
+          "explicit_with_must": 1,
+          "m4_explicitness_purity_pct": 100.0,
+          "explicit_with_must_uppercase_only": 1,
+          "m4_explicitness_purity_uppercase_pct": 100.0,
+          "rules_whose_source_has_must": 1,
+          "explicit_set_equals_must_set": true,
+          "may_optional_rules": 0,
+          "m5_may_misraise_rate_pct": 0.0,
+          "may_token_rules_loose": 0,
+          "m5_may_token_rate_pct_loose": 0.0
+        },
+        "TOTAL": {
+          "rules": 17,
+          "validated_true": 17,
+          "m3_evidence_verifiable_rate_pct": 100.0,
+          "explicit_rules": 11,
+          "explicit_with_must": 11,
+          "m4_explicitness_purity_pct": 100.0,
+          "explicit_with_must_uppercase_only": 10,
+          "m4_explicitness_purity_uppercase_pct": 90.9091,
+          "rules_whose_source_has_must": 11,
+          "explicit_set_equals_must_set": true,
+          "may_optional_rules": 0,
+          "m5_may_misraise_rate_pct": 0.0,
+          "may_token_rules_loose": 1,
+          "m5_may_token_rate_pct_loose": 5.8824
+        }
+      },
+      "E2": {
+        "rtsp": {
+          "rules": 1,
+          "validated_true": 1,
+          "m3_evidence_verifiable_rate_pct": 100.0,
+          "explicit_rules": 1,
+          "explicit_with_must": 1,
+          "m4_explicitness_purity_pct": 100.0,
+          "explicit_with_must_uppercase_only": 1,
+          "m4_explicitness_purity_uppercase_pct": 100.0,
+          "rules_whose_source_has_must": 1,
+          "explicit_set_equals_must_set": true,
+          "may_optional_rules": 0,
+          "m5_may_misraise_rate_pct": 0.0,
           "may_token_rules_loose": 0,
           "m5_may_token_rate_pct_loose": 0.0
         },
         "sip": {
-          "rules": 3,
-          "validated_true": 3,
+          "rules": 1,
+          "validated_true": 1,
           "m3_evidence_verifiable_rate_pct": 100.0,
-          "explicit_rules": 3,
-          "explicit_with_must": 3,
+          "explicit_rules": 1,
+          "explicit_with_must": 1,
           "m4_explicitness_purity_pct": 100.0,
-          "explicit_with_must_uppercase_only": 3,
+          "explicit_with_must_uppercase_only": 1,
           "m4_explicitness_purity_uppercase_pct": 100.0,
-          "rules_whose_source_has_must": 3,
+          "rules_whose_source_has_must": 1,
           "explicit_set_equals_must_set": true,
           "may_optional_rules": 0,
           "m5_may_misraise_rate_pct": 0.0,
@@ -224,15 +224,15 @@
           "m5_may_token_rate_pct_loose": 0.0
         },
         "TOTAL": {
-          "rules": 7,
-          "validated_true": 7,
+          "rules": 2,
+          "validated_true": 2,
           "m3_evidence_verifiable_rate_pct": 100.0,
-          "explicit_rules": 6,
-          "explicit_with_must": 6,
+          "explicit_rules": 2,
+          "explicit_with_must": 2,
           "m4_explicitness_purity_pct": 100.0,
-          "explicit_with_must_uppercase_only": 5,
-          "m4_explicitness_purity_uppercase_pct": 83.3333,
-          "rules_whose_source_has_must": 6,
+          "explicit_with_must_uppercase_only": 2,
+          "m4_explicitness_purity_uppercase_pct": 100.0,
+          "rules_whose_source_has_must": 2,
           "explicit_set_equals_must_set": true,
           "may_optional_rules": 0,
           "m5_may_misraise_rate_pct": 0.0,
@@ -245,39 +245,46 @@
       "E1": {
         "per_protocol": {
           "rtsp": {
-            "field_unbound": 4,
+            "empty_subject": 4,
+            "field_unbound": 9,
             "non_normative_kind": 12,
-            "operator_unresolved": 16,
+            "operator_unresolved": 9,
             "optional_modality": 1
           },
           "sip": {
+            "empty_subject": 6,
+            "field_unbound": 11,
             "non_normative_kind": 7,
-            "operator_unresolved": 26,
+            "operator_unresolved": 7,
             "optional_modality": 1
           },
           "smtp": {
-            "field_unbound": 2,
+            "empty_subject": 7,
+            "field_unbound": 13,
             "non_normative_kind": 4,
-            "operator_unresolved": 31,
+            "operator_unresolved": 10,
             "optional_modality": 2
           }
         },
         "total": {
-          "field_unbound": 6,
+          "empty_subject": 17,
+          "field_unbound": 33,
           "non_normative_kind": 23,
-          "operator_unresolved": 73,
+          "operator_unresolved": 26,
           "optional_modality": 4
         }
       },
       "E2": {
         "per_protocol": {
           "rtsp": {
+            "empty_subject": 3,
             "field_unbound": 4,
             "non_normative_kind": 12,
             "operator_unresolved": 19,
             "optional_modality": 1
           },
           "sip": {
+            "empty_subject": 2,
             "non_normative_kind": 7,
             "operator_unresolved": 29,
             "optional_modality": 1
@@ -289,6 +296,7 @@
           }
         },
         "total": {
+          "empty_subject": 5,
           "field_unbound": 4,
           "non_normative_kind": 23,
           "operator_unresolved": 82,
@@ -304,22 +312,13 @@
       "n_runs": 3,
       "rule_id_sets": [
         [
-          "r455b41f6c67874e8",
-          "r46f46d7984b68d0e",
-          "r48dd6863ab61fa57",
-          "rdac451febf1bad1a"
+          "r48dd6863ab61fa57"
         ],
         [
-          "r455b41f6c67874e8",
-          "r46f46d7984b68d0e",
-          "r48dd6863ab61fa57",
-          "rdac451febf1bad1a"
+          "r48dd6863ab61fa57"
         ],
         [
-          "r455b41f6c67874e8",
-          "r46f46d7984b68d0e",
-          "r48dd6863ab61fa57",
-          "rdac451febf1bad1a"
+          "r48dd6863ab61fa57"
         ]
       ],
       "pairwise_diff": [
@@ -353,19 +352,13 @@
       "n_runs": 3,
       "rule_id_sets": [
         [
-          "r40fe56d8ba724097",
-          "r8c7c27ff4c807d85",
-          "rfbc91afe5aca7b3d"
+          "r8c7c27ff4c807d85"
         ],
         [
-          "r40fe56d8ba724097",
-          "r8c7c27ff4c807d85",
-          "rfbc91afe5aca7b3d"
+          "r8c7c27ff4c807d85"
         ],
         [
-          "r40fe56d8ba724097",
-          "r8c7c27ff4c807d85",
-          "rfbc91afe5aca7b3d"
+          "r8c7c27ff4c807d85"
         ]
       ],
       "pairwise_diff": [
@@ -431,12 +424,36 @@
   },
   "m1_decomposition": {
     "rtsp": {
-      "both_rule": 5,
-      "c0_only": 3,
-      "e1_only": 2,
-      "neither": 30,
-      "c0_decidable_but_source_non_normative": 1,
+      "both_rule": 2,
+      "c0_only": 7,
+      "e1_only": 3,
+      "neither": 28,
+      "c0_decidable_but_source_non_normative": 2,
       "c0_only_detail": [
+        {
+          "candidate_id": "rtsp-33e62ef9c39b",
+          "protocol": "rtsp",
+          "text": "A session identifier MUST be chosen\n   randomly and MUST be at least eight octets long to make guessing it\n   more difficult.",
+          "c0_operator": "lt",
+          "c0_operand": [
+            "8"
+          ],
+          "e1_reject_reason": "field_unbound",
+          "e1_stage_a_reason": "field_unbound",
+          "e1_stage_b_reason": "field_unbound",
+          "source_modality": "mandatory"
+        },
+        {
+          "candidate_id": "rtsp-4a1264c744c4",
+          "protocol": "rtsp",
+          "text": "If a server does not support a\n   particular method, it MUST return \"501 Not Implemented\" and a client\n   SHOULD not try this method again for this server.",
+          "c0_operator": "present",
+          "c0_operand": [],
+          "e1_reject_reason": "field_unbound",
+          "e1_stage_a_reason": "operator_unresolved",
+          "e1_stage_b_reason": "field_unbound",
+          "source_modality": "mandatory"
+        },
         {
           "candidate_id": "rtsp-6b0abdbbee5a",
           "protocol": "rtsp",
@@ -446,6 +463,30 @@
           "e1_reject_reason": "field_unbound",
           "e1_stage_a_reason": "operator_unresolved",
           "e1_stage_b_reason": "field_unbound",
+          "source_modality": "mandatory"
+        },
+        {
+          "candidate_id": "rtsp-8233710a7d4f",
+          "protocol": "rtsp",
+          "text": "Conference:\n          a multiparty, multimedia presentation, where \"multi\" implies\n          greater than or equal to one.",
+          "c0_operator": "eq",
+          "c0_operand": [
+            "1"
+          ],
+          "e1_reject_reason": "non_normative_kind",
+          "e1_stage_a_reason": "non_normative_kind",
+          "e1_stage_b_reason": "non_normative_kind",
+          "source_modality": "none"
+        },
+        {
+          "candidate_id": "rtsp-90a58ceb5019",
+          "protocol": "rtsp",
+          "text": "If a request is repeated because of lack of\n   acknowledgement, the request MUST carry the original sequence number\n   (i.e., the sequence number is not increme",
+          "c0_operator": "present",
+          "c0_operand": [],
+          "e1_reject_reason": "empty_subject",
+          "e1_stage_a_reason": "",
+          "e1_stage_b_reason": "",
           "source_modality": "mandatory"
         },
         {
@@ -475,43 +516,52 @@
       ]
     },
     "sip": {
-      "both_rule": 5,
-      "c0_only": 2,
-      "e1_only": 1,
-      "neither": 32,
-      "c0_decidable_but_source_non_normative": 2,
+      "both_rule": 4,
+      "c0_only": 3,
+      "e1_only": 4,
+      "neither": 29,
+      "c0_decidable_but_source_non_normative": 0,
       "c0_only_detail": [
         {
-          "candidate_id": "sip-7e0210b35d55",
+          "candidate_id": "sip-29e1c3ebab3a",
           "protocol": "sip",
-          "text": "From: sip:+12125551212@phone2net.com;tag=887s",
-          "c0_operator": "present",
+          "text": "Even though an arbitrary number of parameter pairs may be attached to\n   a header field value, any given parameter-name MUST NOT appear more\n   than once.",
+          "c0_operator": "absent",
           "c0_operand": [],
-          "e1_reject_reason": "non_normative_kind",
-          "e1_stage_a_reason": "non_normative_kind",
-          "e1_stage_b_reason": "non_normative_kind",
-          "source_modality": "none"
+          "e1_reject_reason": "field_unbound",
+          "e1_stage_a_reason": "operator_unresolved",
+          "e1_stage_b_reason": "field_unbound",
+          "source_modality": "mandatory"
         },
         {
-          "candidate_id": "sip-b7849cf998af",
+          "candidate_id": "sip-5ede502c49a8",
           "protocol": "sip",
-          "text": "Content-Length: 131",
-          "c0_operator": "eq",
-          "c0_operand": [
-            "131"
-          ],
-          "e1_reject_reason": "non_normative_kind",
-          "e1_stage_a_reason": "non_normative_kind",
-          "e1_stage_b_reason": "non_normative_kind",
-          "source_modality": "none"
+          "text": "To be compliant with this specification,\n           applications sending SIP messages MUST include a SIP-Version\n           of \"SIP/2.0\".",
+          "c0_operator": "present",
+          "c0_operand": [],
+          "e1_reject_reason": "empty_subject",
+          "e1_stage_a_reason": "",
+          "e1_stage_b_reason": "",
+          "source_modality": "mandatory"
+        },
+        {
+          "candidate_id": "sip-c345b0492ff8",
+          "protocol": "sip",
+          "text": "Any\n   implementation that supports TLS MUST support the SIPS URI scheme.",
+          "c0_operator": "present",
+          "c0_operand": [],
+          "e1_reject_reason": "empty_subject",
+          "e1_stage_a_reason": "operator_unresolved",
+          "e1_stage_b_reason": "",
+          "source_modality": "mandatory"
         }
       ]
     },
     "smtp": {
-      "both_rule": 1,
-      "c0_only": 4,
-      "e1_only": 0,
-      "neither": 35,
+      "both_rule": 0,
+      "c0_only": 6,
+      "e1_only": 4,
+      "neither": 30,
       "c0_decidable_but_source_non_normative": 2,
       "c0_only_detail": [
         {
@@ -528,6 +578,19 @@
           "source_modality": "none"
         },
         {
+          "candidate_id": "smtp-486935de3400",
+          "protocol": "smtp",
+          "text": "If the\n   client and server are using the ENHANCEDSTATUSCODES ESMTP extension\n   [RFC2034], the status code to be returned SHOULD be 5.7.0.",
+          "c0_operator": "eq",
+          "c0_operand": [
+            "5"
+          ],
+          "e1_reject_reason": "field_unbound",
+          "e1_stage_a_reason": "operator_unresolved",
+          "e1_stage_b_reason": "field_unbound",
+          "source_modality": "recommended"
+        },
+        {
           "candidate_id": "smtp-4be41b9657d1",
           "protocol": "smtp",
           "text": "Servers MUST NOT return the extended EHLO-\n   style response to a HELO command.",
@@ -537,6 +600,17 @@
           "e1_stage_a_reason": "operator_unresolved",
           "e1_stage_b_reason": "field_unbound",
           "source_modality": "mandatory"
+        },
+        {
+          "candidate_id": "smtp-58dfa9e02868",
+          "protocol": "smtp",
+          "text": "8BITMIME SHOULD be supported by SMTP\n   servers.",
+          "c0_operator": "present",
+          "c0_operand": [],
+          "e1_reject_reason": "empty_subject",
+          "e1_stage_a_reason": "operator_unresolved",
+          "e1_stage_b_reason": "",
+          "source_modality": "recommended"
         },
         {
           "candidate_id": "smtp-98738dfebfd9",
@@ -568,24 +642,24 @@
   "verdict": {
     "composite": "暂不可判定",
     "reason": "M2 本轮不可计算（人工标注集未完成、缺第二名真人标注者、κ 无法计算）⇒ 按 §4.5 综合判定只能是「暂不可判定」。",
-    "m1_delta_pp_e1_minus_c0": -5.0
+    "m1_delta_pp_e1_minus_c0": -4.1666
   },
   "run_variance": {
-    "previous_run_at": "2026-11-02 05:59:37",
-    "previous_llm_calls_made": 120,
+    "previous_run_at": "2026-11-04 14:55:20",
+    "previous_llm_calls_made": 0,
     "previous_m1_total": {
-      "c0_decidable_rate_pct": 19.1667,
-      "e1_executable_rate_pct": 13.3333,
-      "e2_executable_rate_pct": 5.8333,
-      "e1_minus_c0_pp": -5.8334
+      "c0_decidable_rate_pct": 18.3333,
+      "e1_executable_rate_pct": 14.1667,
+      "e2_executable_rate_pct": 1.6667,
+      "e1_minus_c0_pp": -4.1666
     },
     "current_m1_total": {
-      "c0_decidable_rate_pct": 16.6667,
-      "e1_executable_rate_pct": 11.6667,
-      "e2_executable_rate_pct": 5.8333,
-      "e1_minus_c0_pp": -5.0
+      "c0_decidable_rate_pct": 18.3333,
+      "e1_executable_rate_pct": 14.1667,
+      "e2_executable_rate_pct": 1.6667,
+      "e1_minus_c0_pp": -4.1666
     },
-    "delta_e1_minus_c0_pp": 0.8334,
+    "delta_e1_minus_c0_pp": 0.0,
     "note": "缓存命中 ⇒ 两次数值完全相同（抖动 0）；冷缓存重跑 ⇒ 抖动来自 LLM 温度 0.2 的非确定性。"
   }
 }
