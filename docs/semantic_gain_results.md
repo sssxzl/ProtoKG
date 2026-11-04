@@ -1,9 +1,9 @@
 # B-10 实验结果（里程碑 B 出口闸门）
 
-- 生成时间：`2026-11-04 15:01:11`
+- 生成时间：`2026-11-04 17:34:25`
 - 候选集：`derived/exp_semantic_gain/candidates_frozen.jsonl`（md5 `b392118d5070f6a68d55d105d04aae40`，源 `derived/exp_semantic/candidates_frozen.jsonl` md5 `6060457e78f253699fcf2da8dc343733`）
 - 候选句总数：**120**（{'rtsp': 40, 'sip': 40, 'smtp': 40}）
-- LLM：实际调用 **0** 次，缓存命中 **120** 次，失败 **0** 次
+- LLM：实际调用 **120** 次，缓存命中 **0** 次，失败 **0** 次
 
 > ★ 本文件只放**结果**；预登记在 `docs/semantic_gain_report.md`（实验前定稿）。
 
@@ -11,20 +11,20 @@
 
 | 协议 | 候选句 | C0 可判定 | C0 可判定率 | E1 可执行规则 | E1 可执行率 | E2 可执行规则 | E2 可执行率 | E1−C0 (pp) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| rtsp | 40 | 9 | 22.50% | 5 | 12.50% | 1 | 2.50% | -10.00 |
-| sip | 40 | 7 | 17.50% | 8 | 20.00% | 1 | 2.50% | +2.50 |
+| rtsp | 40 | 9 | 22.50% | 4 | 10.00% | 1 | 2.50% | -12.50 |
+| sip | 40 | 6 | 15.00% | 8 | 20.00% | 1 | 2.50% | +5.00 |
 | smtp | 40 | 6 | 15.00% | 4 | 10.00% | 0 | 0.00% | -5.00 |
-| TOTAL | 120 | 22 | 18.33% | 17 | 14.17% | 2 | 1.67% | -4.17 |
+| TOTAL | 120 | 21 | 17.50% | 16 | 13.33% | 2 | 1.67% | -4.17 |
 
 - C0「可判定率」判定实现：`scripts/exp_semantic_gain.py::probe_operator()`（有序模式表，中英双语；C0 与 E1 的 LLM 兜底**共用**同一函数）。
 - C0「可判定率」主口径 = 能解析出 operator（与 §4.2 口径一致）。
 
 | 协议 | C0 可判定率（主口径） | 其中数值型算子且抓到操作数 | 其中存在性算子（present/absent，本就无操作数） |
 |---|---:|---:|---:|
-| rtsp | 22.50% | 7.50% | 15.00% |
-| sip | 17.50% | 2.50% | 15.00% |
+| rtsp | 22.50% | 5.00% | 17.50% |
+| sip | 15.00% | 2.50% | 12.50% |
 | smtp | 15.00% | 7.50% | 7.50% |
-| TOTAL | 18.33% | 5.83% | 12.50% |
+| TOTAL | 17.50% | 5.00% | 12.50% |
 
 ⚠ **「数值型算子且抓到操作数」这一列不是更严的同口径指标**，而是主口径的**子集**：存在性算子（`present`/`absent`）按定义**不需要操作数**，把它判为不可判定对 C0 不公平。⇒ **判定口径只用主口径**；该列仅作参考。
 
@@ -34,9 +34,9 @@
 
 | 协议 | 两者皆规则 | 仅 C0 可判定 | 仅 E1 规则 | 皆否 | 仅 C0 可判定且**原文无规范动词** |
 |---|---:|---:|---:|---:|---:|
-| rtsp | 2 | 7 | 3 | 28 | 2 |
-| sip | 4 | 3 | 4 | 29 | 0 |
-| smtp | 0 | 6 | 4 | 30 | 2 |
+| rtsp | 1 | 8 | 3 | 28 | 2 |
+| sip | 3 | 3 | 5 | 29 | 0 |
+| smtp | 1 | 5 | 3 | 31 | 2 |
 
 **读法（诚实说明）**：
 
@@ -48,19 +48,19 @@
 
 | 协议 | candidate_id | E1 拒绝原因 | 阶段A | 阶段B | 原文 modality | C0 算子 |
 |---|---|---|---|---|---|---|
+| rtsp | `rtsp-259543acf50b` | `non_normative_kind` | `non_normative_kind` | `non_normative_kind` | none | `present` |
 | rtsp | `rtsp-33e62ef9c39b` | `field_unbound` | `field_unbound` | `field_unbound` | mandatory | `lt` |
-| rtsp | `rtsp-4a1264c744c4` | `field_unbound` | `operator_unresolved` | `field_unbound` | mandatory | `present` |
 | rtsp | `rtsp-6b0abdbbee5a` | `field_unbound` | `operator_unresolved` | `field_unbound` | mandatory | `absent` |
-| rtsp | `rtsp-8233710a7d4f` | `non_normative_kind` | `non_normative_kind` | `non_normative_kind` | none | `eq` |
 | rtsp | `rtsp-90a58ceb5019` | `empty_subject` | `` | `` | mandatory | `present` |
 | rtsp | `rtsp-931303084a4e` | `non_normative_kind` | `non_normative_kind` | `non_normative_kind` | none | `present` |
 | rtsp | `rtsp-97d6818e2146` | `field_unbound` | `field_unbound` | `field_unbound` | recommended | `le` |
+| rtsp | `rtsp-c328def01166` | `empty_subject` | `operator_unresolved` | `` | mandatory | `present` |
+| rtsp | `rtsp-ca911071279e` | `empty_subject` | `operator_unresolved` | `` | recommended | `present` |
 | sip | `sip-29e1c3ebab3a` | `field_unbound` | `operator_unresolved` | `field_unbound` | mandatory | `absent` |
 | sip | `sip-5ede502c49a8` | `empty_subject` | `` | `` | mandatory | `present` |
 | sip | `sip-c345b0492ff8` | `empty_subject` | `operator_unresolved` | `` | mandatory | `present` |
 | smtp | `smtp-42e625694616` | `non_normative_kind` | `non_normative_kind` | `non_normative_kind` | none | `le` |
 | smtp | `smtp-486935de3400` | `field_unbound` | `operator_unresolved` | `field_unbound` | recommended | `eq` |
-| smtp | `smtp-4be41b9657d1` | `field_unbound` | `operator_unresolved` | `field_unbound` | mandatory | `absent` |
 | smtp | `smtp-58dfa9e02868` | `empty_subject` | `operator_unresolved` | `` | recommended | `present` |
 | smtp | `smtp-98738dfebfd9` | `non_normative_kind` | `non_normative_kind` | `non_normative_kind` | none | `gt` |
 | smtp | `smtp-e9fe203045cc` | `field_unbound` | `operator_unresolved` | `field_unbound` | mandatory | `absent` |
@@ -77,10 +77,10 @@
 
 | 组 | 协议 | 规则数 | M3 证据可验证率 | explicit 规则 | M4 纯净度 | M5 MAY 误升率 | explicit 集合 == MUST 集合 |
 |---|---|---:|---:|---:|---:|---:|:---:|
-| E1 | rtsp | 5 | 100.00% | 3 | 100.00% | 0.00% | 是 |
+| E1 | rtsp | 4 | 100.00% | 2 | 100.00% | 0.00% | 是 |
 | E1 | sip | 8 | 100.00% | 7 | 100.00% | 0.00% | 是 |
 | E1 | smtp | 4 | 100.00% | 1 | 100.00% | 0.00% | 是 |
-| E1 | TOTAL | 17 | 100.00% | 11 | 100.00% | 0.00% | 是 |
+| E1 | TOTAL | 16 | 100.00% | 10 | 100.00% | 0.00% | 是 |
 | E2 | rtsp | 1 | 100.00% | 1 | 100.00% | 0.00% | 是 |
 | E2 | sip | 1 | 100.00% | 1 | 100.00% | 0.00% | 是 |
 | E2 | smtp | 0 | 0.00% | 0 | 0.00% | 0.00% | 是 |
@@ -131,10 +131,10 @@
 
 | 协议 | 拒绝原因分布 |
 |---|---|
-| rtsp | {'empty_subject': 4, 'field_unbound': 9, 'non_normative_kind': 12, 'operator_unresolved': 9, 'optional_modality': 1} |
+| rtsp | {'empty_subject': 7, 'field_unbound': 9, 'non_normative_kind': 12, 'operator_unresolved': 7, 'optional_modality': 1} |
 | sip | {'empty_subject': 6, 'field_unbound': 11, 'non_normative_kind': 7, 'operator_unresolved': 7, 'optional_modality': 1} |
-| smtp | {'empty_subject': 7, 'field_unbound': 13, 'non_normative_kind': 4, 'operator_unresolved': 10, 'optional_modality': 2} |
-| **合计** | {'empty_subject': 17, 'field_unbound': 33, 'non_normative_kind': 23, 'operator_unresolved': 26, 'optional_modality': 4} |
+| smtp | {'empty_subject': 8, 'field_unbound': 12, 'non_normative_kind': 4, 'operator_unresolved': 10, 'optional_modality': 2} |
+| **合计** | {'empty_subject': 21, 'field_unbound': 32, 'non_normative_kind': 23, 'operator_unresolved': 24, 'optional_modality': 4} |
 
 ### E2
 
@@ -147,23 +147,23 @@
 
 ## 6　LLM 调用统计
 
-- 实际 LLM 调用：**0** 次
-- 缓存命中：**120** 次
-- 本次运行前**已存在**的缓存条目（上一轮已付费）：**120** 条
+- 实际 LLM 调用：**120** 次
+- 缓存命中：**0** 次
+- 本次运行前**已存在**的缓存条目（上一轮已付费）：**0** 条
 - 缓存文件内**去重后**的响应总数：**120** 条（= 不同候选句数；C0 与 E1 共用 ⇒ 同一候选句只调一次 LLM）
 - 失败：**0** 次
-- 缓存文件：`derived/exp_semantic_gain/llm_cache.jsonl`（缓存键 `sha256(candidate_text + prompt_version + model)`，`prompt_version=rfc-constraint-prompt-v2`，`model=deepseek-chat`）
+- 缓存文件：`derived/exp_semantic_gain/llm_cache.jsonl`（缓存键 `sha256(candidate_text + prompt_version + model)`，`prompt_version=rfc-constraint-structured`，`model=deepseek-chat`）
 
 ## 6.1　运行间方差（LLM 非确定性）
 
-- 上一次运行：`2026-11-04 14:55:20`（该次实际 LLM 调用 0 次）
+- 上一次运行：`2026-11-04 15:01:11`（该次实际 LLM 调用 0 次）
 
 | 指标 | 上一次 | 本次 | 差 |
 |---|---:|---:|---:|
-| C0 可判定率 % | 18.3333 | 18.3333 | +0.00 |
-| E1 可执行率 % | 14.1667 | 14.1667 | +0.00 |
+| C0 可判定率 % | 18.3333 | 17.5 | -0.83 |
+| E1 可执行率 % | 14.1667 | 13.3333 | -0.83 |
 | E2 可执行率 % | 1.6667 | 1.6667 | +0.00 |
-| E1−C0 (pp) | -4.1666 | -4.1666 | +0.00 |
+| E1−C0 (pp) | -4.1666 | -4.1667 | -0.00 |
 
 - 缓存命中 ⇒ 两次数值完全相同（抖动 0）；冷缓存重跑 ⇒ 抖动来自 LLM 温度 0.2 的非确定性。
 
@@ -179,7 +179,7 @@
   ① **C0 的可判定率被 LLM 幻觉虚高**：C0 判为可判定的条目中，有一部分的 **RFC 原句里没有任何规范动词** —— 是 LLM 在中文改写里**幻觉出了规范力**，而 C0 的自由文本照样能被解析出算子。E1 按 C3（`non_normative_kind`）把这类**正确拒绝**了 ⇒ **C0 的分子含「幻觉项」**。
   ② **两者的分母/门槛不同**：C0 只需「文本里能解析出算子」；E1 还要过 C2（区间核对）、C3（证据类型）、C6（字段绑定）、可选性闸门等 —— 这正是两层模型的设计意图（**不污染**）。
 
-  ⇒ 因此本轮 M1 应读作：**「按『规则表+闸门』的严格口径，E1 只覆盖 14.17% 的候选句；而 C0 的『可判定』里有相当比例来自 LLM 改写时的幻觉规范力」** —— **不能**读作「表达层升级没有收益」。真正的知识质量收益（M2/F1）仍待标注集定稿后评。
+  ⇒ 因此本轮 M1 应读作：**「按『规则表+闸门』的严格口径，E1 只覆盖 13.33% 的候选句；而 C0 的『可判定』里有相当比例来自 LLM 改写时的幻觉规范力」** —— **不能**读作「表达层升级没有收益」。真正的知识质量收益（M2/F1）仍待标注集定稿后评。
 - M3 E1 = 100.00%（目标 100%）；M4 E1 = 100.00%（目标 100%）；M5 E1 = 0.00%（目标 0%）；B-3（explicit 集合 == MUST 集合）= 成立。
 - M3 E2 = 100.00%（目标 100%）；M4 E2 = 100.00%（目标 100%）；M5 E2 = 0.00%（目标 0%）；B-3（explicit 集合 == MUST 集合）= 成立。
 - M6（rule_id 幂等性，三协议 × 3 轮）：全部完全相同。

@@ -90,46 +90,11 @@ from core.fused.semantic_rules import (                                # noqa: E
 
 PROTOCOLS: tuple[str, ...] = ("rtsp", "sip", "smtp")
 
-#: LLM 缓存键的一部分：提示词版本。改动 ``_PROMPT_CONSTRAINT`` 时**必须** bump。
-#: ★ v2（模型调试批次）：LLM 直接输出结构化 operator/operand，缓存全部失效。
-PROMPT_VERSION = "rfc-constraint-prompt-v2"
-
-#: ★ 实验专用 prompt v2 —— 只在 ``run_group_c0`` 内 monkeypatch 到
-#:   ``rx._PROMPT_CONSTRAINT``，**不改动 core/ 生产链路**
-#:   （``build_hub --constraints`` 的产物保持逐字节不变）。
-#:
-#: 为什么要 v2：v1 只让 LLM 给 5 个自由文本字段，E1 阶段 B 被迫用
-#: ``probe_operator`` 的正则去中文自然语言里猜 operator ⇒ 实测 73/120 候选
-#: 被判 ``operator_unresolved`` ⇒ M1 负增益 −5.0pp。v2 让 LLM 从受控词表
-#: 里直接选算子并给出 operand，下游不再靠正则猜。
-_PROMPT_CONSTRAINT_V2 = """你是 {protocol} 协议规范分析专家。下面是从 RFC 文档摘出的规范性约束句子。
-请从中提取「字段语义约束」，并结构化输出。
-
-对每条约束提取：
-- field：受约束的字段名（如 QNAME、RDLENGTH、Transport）
-- constraint：约束内容（该字段应满足的合法要求，如「单 label ≤ 63 字节」）
-- violation：违反该约束的方式（非法输入，如「label 长度字段 > 实际内容」）
-- expected_code：违反后接收方应返回的响应码/错误码（推断不到留空字符串）
-- expected_behavior：违反后接收方应有的行为，推断不到留空字符串
-- operator：从下列受控词表中**选一个**描述可执行算子：
-    le(上界/不得超过/至多)、ge(下界/至少/不小于)、gt(严格大于)、lt(严格小于)、
-    eq(等于/必须为某值)、ne(不等于)、in(取值属于集合)、range(取值落在区间)、
-    present(必须包含/必须存在)、absent(不得包含/禁止出现)
-  原句无法归到任何算子时填空字符串，不要编造。
-- operand：算子的操作数值，字符串数组。
-    le/ge/gt/lt/eq/ne/in/range 必须给至少一个数值或取值（如 ["63"]、["smpte","npt"]）；
-    present/absent 必须给空数组 []。
-  数值只写数字本身，不带单位。
-
-约束句子：
-<<<
-{text}
->>>
-
-只输出 JSON（不要解释），格式：
-{{"constraints": [{{"field": "...", "constraint": "...", "violation": "...",
-                    "expected_code": "...", "expected_behavior": "...",
-                    "operator": "le", "operand": ["63"]}}]}}"""
+#: LLM 缓存键的一部分：提示词**契约版本**。
+#: ★ 取自 core（``core.fused.rfc_extractor.CONSTRAINT_PROMPT_VERSION``）
+#:   —— 提示词本体已在 core 维护，实验侧**不再自带副本**（避免两处漂移）。
+#: ★ 改动 core 的提示词内容时**必须**同步 bump 那个常量，否则会读到旧缓存。
+from core.fused.rfc_extractor import CONSTRAINT_PROMPT_VERSION as PROMPT_VERSION
 
 #: 期望响应词表（与 ``core.fused.rfc_extractor.EXPECTED_VOCAB`` 同源）。
 EXPECTED_VOCAB: tuple[str, ...] = (
@@ -479,8 +444,8 @@ class CachedLLM:
         self.cache_hits = 0
         self.failures: list[dict] = []
         self._current_text: Optional[str] = None
-        #: ★ v2：最近一次 chat_json 的原始响应（供 run_group_c0 取结构化
-        #:   operator/operand —— CachedLLM 在缓存命中时也要回填，保证可复跑）。
+        #: 最近一次 chat_json 的原始响应（供 run_group_c0 取结构化算子
+        #:   —— CachedLLM 在缓存命中时也要回填，保证可复跑）。
         self.last_response: Any = None
 
     # -- 上下文：每次 LLM 调用前声明当前候选句（用于算缓存键）----------
@@ -559,7 +524,6 @@ def run_group_c0(
     items: list[dict] = []
     facts: list[dict] = []
     original = rx.extract_constraint_candidates
-    original_prompt = rx._PROMPT_CONSTRAINT
 
     for cand in candidates:
         frozen_row = dict(cand)
@@ -569,38 +533,28 @@ def run_group_c0(
         # 影子实现只需要这几个键；span/section 一并带上以保持一致。
         rx.extract_constraint_candidates = (  # type: ignore[assignment]
             lambda protocol, max_per_rfc=80, _row=frozen_row: [_row])
-        # ★ v2：只在本次实验内把影子 prompt 换成结构化 prompt；core/ 全局不动。
-        rx._PROMPT_CONSTRAINT = _PROMPT_CONSTRAINT_V2
         llm.last_response = None
         try:
             norms = rx.extract_constraint_norms(
                 protocol, llm=llm, max_candidates=1)
         finally:
             rx.extract_constraint_candidates = original  # type: ignore[assignment]
-            rx._PROMPT_CONSTRAINT = original_prompt
 
-        # ★ v2：从本次 LLM 原始响应里取结构化 operator/operand。
-        #   只收受控词表内的算子；有参算子必须带 operand（否则视为 LLM 输出
-        #   不完整 ⇒ 留空，交给 _probe_llm_fact 回退 v1 自由文本口径）。
+        # ★ 结构化算子：从 **norm 层**读（``operator=`` / ``operand=``）。
+        #   ★ core 侧已把算子写进 norm 的 content 串 ⇒ norm → fact 链路自带算子，
+        #     **不再需要**从 LLM 原始响应旁路取（该旁路在生产链路里不存在）。
         llm_op, llm_operand = "", []
-        _resp = getattr(llm, "last_response", None)
-        if isinstance(_resp, dict):
-            for _c in (_resp.get("constraints") or []):
-                if not isinstance(_c, dict):
-                    continue
-                _op = str(_c.get("operator") or "").strip()
-                if _op not in OPERATORS:
-                    continue
-                _raw = _c.get("operand") or []
-                _vals = ([str(x).strip() for x in _raw
-                          if str(x).strip()]
-                         if isinstance(_raw, (list, tuple)) else [])
-                if _op in ("present", "absent"):
-                    _vals = []
-                if _op not in ("present", "absent") and not _vals:
-                    continue
-                llm_op, llm_operand = _op, _vals
-                break
+        for _norm_row in norms:
+            _op = str(_norm_row.get("operator") or "").strip()
+            if _op not in OPERATORS:
+                continue
+            _vals = [str(x) for x in (_norm_row.get("operand") or [])]
+            if _op in ("present", "absent"):
+                _vals = []
+            if _op not in ("present", "absent") and not _vals:
+                continue
+            llm_op, llm_operand = _op, _vals
+            break
 
         record: dict[str, Any] = {
             "candidate_id": cand["candidate_id"],
@@ -618,10 +572,11 @@ def run_group_c0(
             "operand": [],
             "probe_pattern": "",
             "probe_source": "",
-            # ★ v2：LLM 直接给的结构化算子（C0 的 decidable 判定仍走 v1 口径
-            #   ⇒ 单变量归因：只有 E1 阶段 B 消费这两个字段）。
-            "llm_operator": llm_op,
-            "llm_operand": list(llm_operand),
+            # ★ LLM 直接给出的结构化算子（C0 的 decidable 判定走
+            #   :func:`probe_operator` 的自由文本口径 ⇒ 两者同源可比；
+            #   这两个字段由 E1 阶段 B 消费）。
+            "structured_operator": llm_op,
+            "structured_operand": list(llm_operand),
         }
 
         legal_text = ""
@@ -889,12 +844,12 @@ def run_group_two_layer(
 def _probe_llm_fact(fact: dict) -> Optional[dict]:
     """把 C0 组的 LLM 输出转成 resolver 契约 dict（阶段 B 用）。
 
-    ★ v2 主路径：优先消费 LLM **直接给出的结构化 operator/operand**
-      （受控词表 ``OPERATORS`` 校验 + 有参算子必须带 operand），
-      不再用正则从中文自由文本里猜 —— v1 因此产生 73 条
-      ``operator_unresolved``，是 M1 负增益的主因。
-    ★ v2 回退：结构化字段缺失/非法时才走 v1 的 :func:`probe_operator`
-      自由文本口径，保证与旧结果可比、且不静默丢弃。
+    ★ 主路径：消费 LLM **直接给出的结构化 operator/operand**
+      （受控词表 ``OPERATORS`` 校验 + 有参算子必须带 operand）——
+      自由文本契约下需用正则反推算子，实测 73/120 候选因此
+      ``operator_unresolved``，是负增益的主因。
+    ★ 兜底：结构化字段缺失/非法时走 :func:`probe_operator` 的
+      自由文本口径，保证不静默丢弃、且与 C0 判定同源。
     ★ ``target_field`` 取 LLM 给的字段名并**精确绑定**到协议已知字段集
       （绑不上 ⇒ 置空，交由 C6 判 ``field_unbound`` —— 不模糊匹配）。
     ★ ``expected_behavior`` 恒置空：按 §3.4 C7「缺 P 不阻断转换」，**不发明 P**。
@@ -902,15 +857,15 @@ def _probe_llm_fact(fact: dict) -> Optional[dict]:
     target = bind_field(fact.get("field") or "", _KNOWN_FIELDS.get(
         fact.get("protocol") or "", ()))
 
-    # ── v2：结构化算子（LLM 直接给，不靠正则）────────────────────────
-    op = str(fact.get("llm_operator") or "").strip()
+    # ── 主路径：结构化算子（LLM 直接给，不靠正则）────────────────────
+    op = str(fact.get("structured_operator") or "").strip()
     if op in OPERATORS:
-        raw = fact.get("llm_operand") or []
+        raw = fact.get("structured_operand") or []
         operand = ([str(x).strip() for x in raw if str(x).strip()]
                    if isinstance(raw, (list, tuple)) else [])
         if op in ("present", "absent"):
             operand = []
-        # 有参算子无 operand ⇒ LLM 输出不完整 ⇒ 不采用，回退 v1 口径
+        # 有参算子无 operand ⇒ LLM 输出不完整 ⇒ 不采用，转自由文本兜底
         if op in ("present", "absent") or operand:
             return {
                 "operator": op,
@@ -921,7 +876,7 @@ def _probe_llm_fact(fact: dict) -> Optional[dict]:
                 "expected_behavior": "",
             }
 
-    # ── v1 回退：自由文本正则 ────────────────────────────────────────
+    # ── 兜底：自由文本正则 ──────────────────────────────────────────
     for key in ("legal", "illegal"):
         hit = probe_operator(fact.get(key) or "")
         if hit is None:

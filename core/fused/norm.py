@@ -270,8 +270,11 @@ def method_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
 
 
 #: 约束 content 的已知 key（按 key= 边界切分，值可含空格）
+#: ★ ``operator`` / ``operand`` 是**结构化算子**通道：
+#:   LLM 直接给出的受控算子与取值 ⇒ norm → fact 链路不再从中文自由文本反推算子。
+#:   ★ ``operand`` 用逗号分隔承载（列表语义，见 ``parse_constraint_operand``）。
 _RE_CONSTRAINT_SPLIT = re.compile(
-    r"\b(field|constraint|violation|code|behavior)=")
+    r"\b(field|constraint|violation|code|behavior|operator|operand)=")
 
 
 def parse_constraint_content(content: str) -> dict[str, str]:
@@ -288,6 +291,16 @@ def parse_constraint_content(content: str) -> dict[str, str]:
         val = parts[i + 1].strip() if i + 1 < len(parts) else ""
         out[key] = val
     return out
+
+
+def parse_constraint_operand(content: str) -> list[str]:
+    """从 content 串取 ``operand`` 列表（逗号分隔 → 字符串数组）。
+
+    ★ 与 :func:`parse_constraint_content` 同口径（同一套切分正则）。
+    ★ 空串 ⇒ 空列表（无参算子 present/absent 的正常形态）。
+    """
+    raw = parse_constraint_content(content or "").get("operand") or ""
+    return [x.strip() for x in raw.split(",") if x.strip()]
 
 
 #: 约束身份的**结构化字段**（判别位只用这些，**不含**自由措辞字段）。
@@ -340,6 +353,9 @@ def constraint_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
     violation = d.get("violation", "")
     code = d.get("code", "")
     behavior = d.get("behavior", "")
+    # ★ 结构化算子（LLM 直接给出）⇒ 随 fact 一起下沉到下游。
+    operator = d.get("operator", "")
+    operand = parse_constraint_operand(norm.get("content", ""))
     # ★ B-4：同一 field 的**多条**约束必须产出**不同的 fact_key** ——
     #   fact_id 只由 fact_key 决定（**不含 value**）⇒ 同字段多约束会产出
     #   **同一个 fact_id** ⇒ `dup_fact_ids > 0` ⇒ 质量闸阻断构建
@@ -357,7 +373,9 @@ def constraint_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
         facts.append(_make_fact(
             subject, "legal_boundary",
             Value(type="struct", data={"dim": field, "legal": constraint,
-                                       "illegal": violation, "trigger": behavior}),
+                                       "illegal": violation, "trigger": behavior,
+                                       "operator": operator,
+                                       "operand": operand}),
             "must", norm))
     if field and (code or behavior):
         facts.append(_make_fact(

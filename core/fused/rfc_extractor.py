@@ -3549,6 +3549,14 @@ def semantic_quality_report(protocol: str, audit=None) -> QualityReport:
     return rep
 
 
+#: RFC 约束抽取的**结构化提示词**。
+#: ★ 契约要点：除原有 5 个字段外，**要求 LLM 直接给出可执行算子**
+#:   （``operator`` + ``operand``）⇒ 下游不必再用正则从中文自由文本反推算子
+#:   （反推口径的失配率实测高达 73/120）。
+#: ★ ``operator`` 取值受控（见 ``core.fused.semantic.OPERATORS``）；
+#:   原文无法归到任何算子时**填空字符串**（表示「这条不是可执行约束」）——
+#:   允许模型诚实地否定，比逼它硬编一个算子更可靠。
+#: ★ ``operand``：有参算子必给至少一个取值；``present``/``absent`` 必须给空数组。
 _PROMPT_CONSTRAINT = """你是 {protocol} 协议规范分析专家。下面是从 RFC 文档摘出的规范性约束句子。
 请从中提取「字段语义约束」，并结构化输出。
 
@@ -3556,8 +3564,17 @@ _PROMPT_CONSTRAINT = """你是 {protocol} 协议规范分析专家。下面是�
 - field：受约束的字段名（如 QNAME、RDLENGTH、Transport）
 - constraint：约束内容（该字段应满足的合法要求，如「单 label ≤ 63 字节」）
 - violation：违反该约束的方式（非法输入，如「label 长度字段 > 实际内容」）
-- expected_code：违反后接收方应返回的响应码/错误码（根据你对 {protocol} 协议的理解推断，推断不到留空字符串）
-- expected_behavior：违反后接收方应有的行为（如「返回 FORMERR 错误」），推断不到留空字符串
+- expected_code：违反后接收方应返回的响应码/错误码（推断不到留空字符串）
+- expected_behavior：违反后接收方应有的行为，推断不到留空字符串
+- operator：从下列受控词表中**选一个**描述可执行算子：
+    le(上界/不得超过/至多)、ge(下界/至少/不小于)、gt(严格大于)、lt(严格小于)、
+    eq(等于/必须为某值)、ne(不等于)、in(取值属于集合)、range(取值落在区间)、
+    present(必须包含/必须存在)、absent(不得包含/禁止出现)
+  原句无法归到任何算子时填空字符串，不要编造。
+- operand：算子的操作数值，字符串数组。
+    le/ge/gt/lt/eq/ne/in/range 必须给至少一个数值或取值（如 ["63"]、["smpte","npt"]）；
+    present/absent 必须给空数组 []。
+  数值只写数字本身，不带单位。
 
 约束句子：
 <<<
@@ -3566,13 +3583,23 @@ _PROMPT_CONSTRAINT = """你是 {protocol} 协议规范分析专家。下面是�
 
 只输出 JSON（不要解释），格式：
 {{"constraints": [{{"field": "...", "constraint": "...", "violation": "...",
-                    "expected_code": "...", "expected_behavior": "..."}}]}}"""
+                    "expected_code": "...", "expected_behavior": "...",
+                    "operator": "le", "operand": ["63"]}}]}}"""
+
+#: 提示词的**契约版本标识** —— 进 LLM 缓存键
+#: （``sha256(candidate_text + prompt_version + model)``）
+#: ⇒ **改动提示词内容必须同步改它**，否则会读到旧缓存。
+CONSTRAINT_PROMPT_VERSION = "rfc-constraint-structured"
 
 
 def infer_constraints(protocol: str, llm=None, max_candidates: int = 40,
                       batch_size: int = 8) -> list[dict]:
     """LLM 结构化约束：把 rule 候选段落喂 LLM，输出 (field/constraint/violation/
-    expected_code/expected_behavior) 三元组（对齐 SemFuzz 的 C/P 配对）。
+    expected_code/expected_behavior/operator/operand)（对齐 SemFuzz 的 C/P 配对）。
+
+    ★ ``operator`` / ``operand`` 是**结构化算子**：LLM 直接给出受控算子与取值，
+      下游（:func:`extract_constraint_norms` → norm → fact）据此携带可执行算子，
+      **不再**从中文自由文本反推。
 
     llm 缺省用 DeepSeekClient；测试可传 StubLLMClient。分批喂避免逐条调用。
     """
@@ -3602,12 +3629,31 @@ def infer_constraints(protocol: str, llm=None, max_candidates: int = 40,
             constraint = (c.get("constraint") or "").strip()
             if not field or not constraint:
                 continue
+            # ★ 结构化算子：只收受控词表内的算子；有参算子必须带 operand
+            #   （否则视为 LLM 输出不完整 ⇒ 留空，由下游按「无可执行算子」处理）。
+            #   ★ 算子词表的**唯一真源**是 ``core.fused.semantic.OPERATORS``
+            #     （惰性导入 ⇒ 避免模块级循环导入）。
+            from core.fused.semantic import OPERATORS as _OPERATOR_DOMAIN
+            operator = (c.get("operator") or "").strip()
+            if operator not in _OPERATOR_DOMAIN:
+                operator = ""
+            raw_operand = c.get("operand") or []
+            operand = ([str(x).strip() for x in raw_operand
+                        if str(x).strip()]
+                       if isinstance(raw_operand, (list, tuple)) else [])
+            if operator in ("present", "absent"):
+                operand = []
+            if operator and operator not in ("present", "absent") and not operand:
+                operator, operand = "", []
+
             out.append({
                 "field": field,
                 "constraint": constraint,
                 "violation": (c.get("violation") or "").strip(),
                 "expected_code": (c.get("expected_code") or "").strip(),
                 "expected_behavior": (c.get("expected_behavior") or "").strip(),
+                "operator": operator,
+                "operand": operand,
                 "source": batch[0]["source"],
                 "protocol": protocol,
                 # ★ B-3：候选的 span / 章节归属 / 规范版本随约束一起下沉。
@@ -3660,9 +3706,16 @@ def extract_constraint_norms(protocol: str, llm=None,
     norms: list[dict] = []
     seen_ids: set[str] = set()
     for c in constraints:
+        # ★ content 串携带**结构化算子**（``operator=`` / ``operand=``）
+        #   ⇒ norm → fact 链路不再丢失算子（下游据此渲染可执行约束）。
+        #   ★ operand 是**列表** ⇒ 用逗号连接的字符串承载（解析时按逗号切分）。
+        _operand = c.get("operand") or []
+        _operand_text = ",".join(str(x) for x in _operand)
         content = (f"field={c['field']} constraint={c['constraint']} "
                    f"violation={c['violation']} code={c['expected_code']} "
-                   f"behavior={c['expected_behavior']}")
+                   f"behavior={c['expected_behavior']} "
+                   f"operator={c.get('operator') or ''} "
+                   f"operand={_operand_text}")
         norm_id = _constraint_norm_id(
             protocol, c["field"], c["constraint"], c["violation"],
             c["expected_code"])
@@ -3677,6 +3730,10 @@ def extract_constraint_norms(protocol: str, llm=None,
             "kind": "constraint",
             "name": c["field"],
             "content": content,
+            # ★ 结构化算子随 norm 下沉（供实验侧与下游直接消费，
+            #   无需再从 content 串反解）。
+            "operator": c.get("operator") or "",
+            "operand": list(c.get("operand") or []),
             "kb_source_type": "rfc",
             "source": c["source"],
             "protocol": protocol,
