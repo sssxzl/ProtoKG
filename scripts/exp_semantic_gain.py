@@ -94,7 +94,10 @@ PROTOCOLS: tuple[str, ...] = ("rtsp", "sip", "smtp")
 #: ★ 取自 core（``core.fused.rfc_extractor.CONSTRAINT_PROMPT_VERSION``）
 #:   —— 提示词本体已在 core 维护，实验侧**不再自带副本**（避免两处漂移）。
 #: ★ 改动 core 的提示词内容时**必须**同步 bump 那个常量，否则会读到旧缓存。
-from core.fused.rfc_extractor import CONSTRAINT_PROMPT_VERSION as PROMPT_VERSION
+from core.fused.rfc_extractor import (                            # noqa: E402
+    CONSTRAINT_PROMPT_VERSION as PROMPT_VERSION,
+    _expected_class,
+)
 
 #: 期望响应词表（与 ``core.fused.rfc_extractor.EXPECTED_VOCAB`` 同源）。
 EXPECTED_VOCAB: tuple[str, ...] = (
@@ -594,6 +597,8 @@ def run_group_c0(
             record["expected_code"] = record["expected_code"] or parsed.get("code", "")
             record["trigger"] = record["trigger"] or parsed.get("behavior", "")
             record["expected_behavior"] = record["expected_behavior"] or parsed.get("behavior", "")
+            # ★ P 侧**受控类别**（C7 闸门依据）—— 与自由文本 behavior 互补。
+            record["expected_class"] = parsed.get("class", "") or ""
 
         record["legal"] = legal_text
         record["illegal"] = illegal_text
@@ -873,7 +878,11 @@ def _probe_llm_fact(fact: dict) -> Optional[dict]:
                 "operand_source": "constant",
                 "operand_ref": None,
                 "target_field": target or "",
-                "expected_behavior": "",
+                # ★ P 侧（处理期望）：LLM 从**受控词表**里选的类别
+                #   （C0 record 的 expected_class ⇒ 受控校验后填入）。
+                #   ★ 只有 **LLM 兜底路径**会填；确定性规则表路径恒为空
+                #     （规则表不发明处理期望）⇒ 语义归属清晰。
+                "expected_behavior": _expected_class(fact.get("expected_class")),
             }
 
     # ── 兜底：自由文本正则 ──────────────────────────────────────────
@@ -887,7 +896,7 @@ def _probe_llm_fact(fact: dict) -> Optional[dict]:
             "operand_source": "constant",
             "operand_ref": None,
             "target_field": target or "",
-            "expected_behavior": "",
+            "expected_behavior": _expected_class(fact.get("expected_class")),
         }
     return None
 

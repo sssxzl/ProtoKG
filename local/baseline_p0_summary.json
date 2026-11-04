@@ -3,7 +3,7 @@
   "note": "批次 2.5（F1/F3/F5/F6 + D20-丁+）之后的种子语料基线摘要",
   "hub_state": "纯 RFC 单源（--sources rfc）+ 协议骨架 + 必填头物化 + 会话语义不入中枢 + 语义四库自动重发布且按协议过滤 + 方法白名单按源集合决定 + ⑤ 层两段式底料",
   "regen_script": "tools/qa/ablation/regen_baseline.py",
-  "generated_at": "2026-11-04T23:23:04.076470+08:00",
+  "generated_at": "2026-11-05T00:01:21.354273+08:00",
   "md5_manifest": "local/baseline_p0_seeds.md5",
   "groups": {
     "rtsp": {
@@ -18,21 +18,21 @@
         }
       },
       "B": {
-        "seed_count": 90,
+        "seed_count": 91,
         "dict_tokens": 24,
         "layers": {
           "canonical": 18,
           "edge_cover": 6,
           "generic_danger": 28,
-          "vuln_boundary": 4,
+          "vuln_boundary": 5,
           "action_seq": 34
         }
       },
       "C": {
-        "seed_count": 90,
+        "seed_count": 91,
         "dict_tokens": 223,
         "layers": {
-          "vuln_boundary": 4,
+          "vuln_boundary": 5,
           "generic_danger": 28,
           "edge_cover": 6,
           "canonical": 18,
@@ -40,10 +40,10 @@
         }
       },
       "D": {
-        "seed_count": 90,
+        "seed_count": 91,
         "dict_tokens": 24,
         "layers": {
-          "vuln_boundary": 4,
+          "vuln_boundary": 5,
           "generic_danger": 28,
           "edge_cover": 6,
           "canonical": 18,

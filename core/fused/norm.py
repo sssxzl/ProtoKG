@@ -274,7 +274,7 @@ def method_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
 #:   LLM 直接给出的受控算子与取值 ⇒ norm → fact 链路不再从中文自由文本反推算子。
 #:   ★ ``operand`` 用逗号分隔承载（列表语义，见 ``parse_constraint_operand``）。
 _RE_CONSTRAINT_SPLIT = re.compile(
-    r"\b(field|constraint|violation|code|behavior|operator|operand)=")
+    r"\b(field|constraint|violation|code|behavior|class|operator|operand)=")
 
 
 def parse_constraint_content(content: str) -> dict[str, str]:
@@ -356,6 +356,8 @@ def constraint_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
     # ★ 结构化算子（LLM 直接给出）⇒ 随 fact 一起下沉到下游。
     operator = d.get("operator", "")
     operand = parse_constraint_operand(norm.get("content", ""))
+    # ★ 期望响应**类别**（受控词表，C7 闸门依据）⇒ 与自由文本 behavior 互补。
+    expected_class = d.get("class", "")
     # ★ B-4：同一 field 的**多条**约束必须产出**不同的 fact_key** ——
     #   fact_id 只由 fact_key 决定（**不含 value**）⇒ 同字段多约束会产出
     #   **同一个 fact_id** ⇒ `dup_fact_ids > 0` ⇒ 质量闸阻断构建
@@ -377,12 +379,14 @@ def constraint_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
                                        "operator": operator,
                                        "operand": operand}),
             "must", norm))
-    if field and (code or behavior):
+    if field and (code or behavior or expected_class):
         facts.append(_make_fact(
             subject, "response_expectation",
             Value(type="struct", data={"violation": violation,
                                        "expected_code": code,
-                                       "expected_behavior": behavior}),
+                                       "expected_behavior": expected_class
+                                       or behavior,
+                                       "expected_behavior_text": behavior}),
             "must", norm))
     return facts
 

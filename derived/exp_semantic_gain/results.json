@@ -2,7 +2,7 @@
   "experiment": "B-10",
   "roadmap": "docs/rfc_source_bcd_roadmap.md §4",
   "prereg": "docs/semantic_gain_report.md",
-  "generated_at": "2026-11-04 23:12:21",
+  "generated_at": "2026-11-04 23:56:09",
   "elapsed_s": 1.3,
   "frozen_candidates": {
     "source_path": "E:\\科研\\想法idea\\rag-chatafl\\derived\\exp_semantic\\candidates_frozen.jsonl",
@@ -23,12 +23,12 @@
   "llm": {
     "calls_made": 0,
     "cache_hits": 120,
-    "cache_reused_from_previous_run": 120,
-    "cache_entries_total": 120,
+    "cache_reused_from_previous_run": 240,
+    "cache_entries_total": 240,
     "failures": [],
     "cache_path": "E:\\科研\\想法idea\\rag-chatafl\\derived\\exp_semantic_gain\\llm_cache.jsonl",
     "model": "deepseek-chat",
-    "prompt_version": "rfc-constraint-structured",
+    "prompt_version": "rfc-constraint-structured-p",
     "client_error": ""
   },
   "known_fields": {
@@ -40,55 +40,55 @@
     "M1": {
       "rtsp": {
         "denominator_candidates": 40,
-        "c0_decidable": 8,
-        "c0_decidable_rate_pct": 20.0,
+        "c0_decidable": 9,
+        "c0_decidable_rate_pct": 22.5,
         "c0_decidable_with_operand_rate_pct": 7.5,
-        "c0_decidable_presence_operators_pct": 12.5,
-        "e1_rules": 3,
-        "e1_executable_rate_pct": 7.5,
+        "c0_decidable_presence_operators_pct": 15.0,
+        "e1_rules": 5,
+        "e1_executable_rate_pct": 12.5,
         "e2_rules": 1,
         "e2_executable_rate_pct": 2.5,
-        "e1_minus_c0_pp": -12.5,
-        "e2_minus_c0_pp": -17.5
+        "e1_minus_c0_pp": -10.0,
+        "e2_minus_c0_pp": -20.0
       },
       "sip": {
         "denominator_candidates": 40,
-        "c0_decidable": 8,
-        "c0_decidable_rate_pct": 20.0,
+        "c0_decidable": 9,
+        "c0_decidable_rate_pct": 22.5,
         "c0_decidable_with_operand_rate_pct": 5.0,
-        "c0_decidable_presence_operators_pct": 15.0,
-        "e1_rules": 12,
-        "e1_executable_rate_pct": 30.0,
+        "c0_decidable_presence_operators_pct": 17.5,
+        "e1_rules": 11,
+        "e1_executable_rate_pct": 27.5,
         "e2_rules": 2,
         "e2_executable_rate_pct": 5.0,
-        "e1_minus_c0_pp": 10.0,
-        "e2_minus_c0_pp": -15.0
+        "e1_minus_c0_pp": 5.0,
+        "e2_minus_c0_pp": -17.5
       },
       "smtp": {
         "denominator_candidates": 40,
-        "c0_decidable": 5,
-        "c0_decidable_rate_pct": 12.5,
-        "c0_decidable_with_operand_rate_pct": 7.5,
-        "c0_decidable_presence_operators_pct": 5.0,
+        "c0_decidable": 6,
+        "c0_decidable_rate_pct": 15.0,
+        "c0_decidable_with_operand_rate_pct": 5.0,
+        "c0_decidable_presence_operators_pct": 10.0,
         "e1_rules": 4,
         "e1_executable_rate_pct": 10.0,
         "e2_rules": 0,
         "e2_executable_rate_pct": 0.0,
-        "e1_minus_c0_pp": -2.5,
-        "e2_minus_c0_pp": -12.5
+        "e1_minus_c0_pp": -5.0,
+        "e2_minus_c0_pp": -15.0
       },
       "TOTAL": {
         "denominator_candidates": 120,
-        "c0_decidable": 21,
-        "c0_decidable_rate_pct": 17.5,
-        "c0_decidable_with_operand_rate_pct": 6.6667,
-        "c0_decidable_presence_operators_pct": 10.8333,
-        "e1_rules": 19,
-        "e1_executable_rate_pct": 15.8333,
+        "c0_decidable": 24,
+        "c0_decidable_rate_pct": 20.0,
+        "c0_decidable_with_operand_rate_pct": 5.8333,
+        "c0_decidable_presence_operators_pct": 14.1667,
+        "e1_rules": 20,
+        "e1_executable_rate_pct": 16.6667,
         "e2_rules": 3,
         "e2_executable_rate_pct": 2.5,
-        "e1_minus_c0_pp": -1.6667,
-        "e2_minus_c0_pp": -15.0
+        "e1_minus_c0_pp": -3.3333,
+        "e2_minus_c0_pp": -17.5
       }
     },
     "M2": {
@@ -110,15 +110,15 @@
     "M3_M4_M5": {
       "E1": {
         "rtsp": {
-          "rules": 3,
-          "validated_true": 3,
+          "rules": 5,
+          "validated_true": 5,
           "m3_evidence_verifiable_rate_pct": 100.0,
-          "explicit_rules": 2,
-          "explicit_with_must": 2,
+          "explicit_rules": 3,
+          "explicit_with_must": 3,
           "m4_explicitness_purity_pct": 100.0,
-          "explicit_with_must_uppercase_only": 1,
-          "m4_explicitness_purity_uppercase_pct": 50.0,
-          "rules_whose_source_has_must": 2,
+          "explicit_with_must_uppercase_only": 2,
+          "m4_explicitness_purity_uppercase_pct": 66.6667,
+          "rules_whose_source_has_must": 3,
           "explicit_set_equals_must_set": true,
           "may_optional_rules": 0,
           "m5_may_misraise_rate_pct": 0.0,
@@ -126,15 +126,15 @@
           "m5_may_token_rate_pct_loose": 0.0
         },
         "sip": {
-          "rules": 12,
-          "validated_true": 12,
+          "rules": 11,
+          "validated_true": 11,
           "m3_evidence_verifiable_rate_pct": 100.0,
-          "explicit_rules": 10,
-          "explicit_with_must": 10,
+          "explicit_rules": 9,
+          "explicit_with_must": 9,
           "m4_explicitness_purity_pct": 100.0,
-          "explicit_with_must_uppercase_only": 10,
+          "explicit_with_must_uppercase_only": 9,
           "m4_explicitness_purity_uppercase_pct": 100.0,
-          "rules_whose_source_has_must": 10,
+          "rules_whose_source_has_must": 9,
           "explicit_set_equals_must_set": true,
           "may_optional_rules": 0,
           "m5_may_misraise_rate_pct": 0.0,
@@ -158,8 +158,8 @@
           "m5_may_token_rate_pct_loose": 0.0
         },
         "TOTAL": {
-          "rules": 19,
-          "validated_true": 19,
+          "rules": 20,
+          "validated_true": 20,
           "m3_evidence_verifiable_rate_pct": 100.0,
           "explicit_rules": 13,
           "explicit_with_must": 13,
@@ -246,31 +246,31 @@
         "per_protocol": {
           "rtsp": {
             "empty_subject": 6,
-            "field_unbound": 12,
+            "field_unbound": 10,
             "non_normative_kind": 12,
             "operator_unresolved": 6,
             "optional_modality": 1
           },
           "sip": {
             "empty_subject": 5,
-            "field_unbound": 8,
+            "field_unbound": 7,
             "non_normative_kind": 7,
-            "operator_unresolved": 7,
+            "operator_unresolved": 9,
             "optional_modality": 1
           },
           "smtp": {
-            "empty_subject": 8,
-            "field_unbound": 11,
+            "empty_subject": 7,
+            "field_unbound": 13,
             "non_normative_kind": 4,
-            "operator_unresolved": 11,
+            "operator_unresolved": 10,
             "optional_modality": 2
           }
         },
         "total": {
-          "empty_subject": 19,
-          "field_unbound": 31,
+          "empty_subject": 18,
+          "field_unbound": 30,
           "non_normative_kind": 23,
-          "operator_unresolved": 24,
+          "operator_unresolved": 25,
           "optional_modality": 4
         }
       },
@@ -427,22 +427,20 @@
   },
   "m1_decomposition": {
     "rtsp": {
-      "both_rule": 1,
+      "both_rule": 2,
       "c0_only": 7,
-      "e1_only": 2,
-      "neither": 30,
+      "e1_only": 3,
+      "neither": 28,
       "c0_decidable_but_source_non_normative": 2,
       "c0_only_detail": [
         {
-          "candidate_id": "rtsp-33e62ef9c39b",
+          "candidate_id": "rtsp-4a1264c744c4",
           "protocol": "rtsp",
-          "text": "A session identifier MUST be chosen\n   randomly and MUST be at least eight octets long to make guessing it\n   more difficult.",
-          "c0_operator": "lt",
-          "c0_operand": [
-            "8"
-          ],
+          "text": "If a server does not support a\n   particular method, it MUST return \"501 Not Implemented\" and a client\n   SHOULD not try this method again for this server.",
+          "c0_operator": "present",
+          "c0_operand": [],
           "e1_reject_reason": "field_unbound",
-          "e1_stage_a_reason": "field_unbound",
+          "e1_stage_a_reason": "operator_unresolved",
           "e1_stage_b_reason": "field_unbound",
           "source_modality": "mandatory"
         },
@@ -520,11 +518,22 @@
     },
     "sip": {
       "both_rule": 4,
-      "c0_only": 4,
-      "e1_only": 8,
+      "c0_only": 5,
+      "e1_only": 7,
       "neither": 24,
-      "c0_decidable_but_source_non_normative": 2,
+      "c0_decidable_but_source_non_normative": 3,
       "c0_only_detail": [
+        {
+          "candidate_id": "sip-127553b8886f",
+          "protocol": "sip",
+          "text": "Content-Length contains an octet (byte) count of the message body.",
+          "c0_operator": "present",
+          "c0_operand": [],
+          "e1_reject_reason": "non_normative_kind",
+          "e1_stage_a_reason": "non_normative_kind",
+          "e1_stage_b_reason": "non_normative_kind",
+          "source_modality": "none"
+        },
         {
           "candidate_id": "sip-29e1c3ebab3a",
           "protocol": "sip",
@@ -575,10 +584,10 @@
     },
     "smtp": {
       "both_rule": 1,
-      "c0_only": 4,
+      "c0_only": 5,
       "e1_only": 3,
-      "neither": 32,
-      "c0_decidable_but_source_non_normative": 2,
+      "neither": 31,
+      "c0_decidable_but_source_non_normative": 1,
       "c0_only_detail": [
         {
           "candidate_id": "smtp-42e625694616",
@@ -607,6 +616,17 @@
           "source_modality": "recommended"
         },
         {
+          "candidate_id": "smtp-4be41b9657d1",
+          "protocol": "smtp",
+          "text": "Servers MUST NOT return the extended EHLO-\n   style response to a HELO command.",
+          "c0_operator": "absent",
+          "c0_operand": [],
+          "e1_reject_reason": "field_unbound",
+          "e1_stage_a_reason": "operator_unresolved",
+          "e1_stage_b_reason": "field_unbound",
+          "source_modality": "mandatory"
+        },
+        {
           "candidate_id": "smtp-58dfa9e02868",
           "protocol": "smtp",
           "text": "8BITMIME SHOULD be supported by SMTP\n   servers.",
@@ -618,17 +638,15 @@
           "source_modality": "recommended"
         },
         {
-          "candidate_id": "smtp-98738dfebfd9",
+          "candidate_id": "smtp-e9fe203045cc",
           "protocol": "smtp",
-          "text": "A\n   message that is conformant with this specification is composed of\n   characters with values in the range of 1 through 127 and interpreted\n   as US-ASCII [A",
-          "c0_operator": "gt",
-          "c0_operand": [
-            "127"
-          ],
-          "e1_reject_reason": "non_normative_kind",
-          "e1_stage_a_reason": "non_normative_kind",
-          "e1_stage_b_reason": "non_normative_kind",
-          "source_modality": "none"
+          "text": "However, this\n   document itself may not be modified in any way, such as by removing\n   the copyright notice or references to the Internet Society or other\n   I",
+          "c0_operator": "absent",
+          "c0_operand": [],
+          "e1_reject_reason": "field_unbound",
+          "e1_stage_a_reason": "operator_unresolved",
+          "e1_stage_b_reason": "field_unbound",
+          "source_modality": "mandatory"
         }
       ]
     }
@@ -636,22 +654,22 @@
   "verdict": {
     "composite": "暂不可判定",
     "reason": "M2 本轮不可计算（人工标注集未完成、缺第二名真人标注者、κ 无法计算）⇒ 按 §4.5 综合判定只能是「暂不可判定」。",
-    "m1_delta_pp_e1_minus_c0": -1.6667
+    "m1_delta_pp_e1_minus_c0": -3.3333
   },
   "run_variance": {
-    "previous_run_at": "2026-11-04 23:07:33",
-    "previous_llm_calls_made": 120,
+    "previous_run_at": "2026-11-04 23:55:39",
+    "previous_llm_calls_made": 0,
     "previous_m1_total": {
-      "c0_decidable_rate_pct": 17.5,
-      "e1_executable_rate_pct": 15.8333,
+      "c0_decidable_rate_pct": 20.0,
+      "e1_executable_rate_pct": 16.6667,
       "e2_executable_rate_pct": 2.5,
-      "e1_minus_c0_pp": -1.6667
+      "e1_minus_c0_pp": -3.3333
     },
     "current_m1_total": {
-      "c0_decidable_rate_pct": 17.5,
-      "e1_executable_rate_pct": 15.8333,
+      "c0_decidable_rate_pct": 20.0,
+      "e1_executable_rate_pct": 16.6667,
       "e2_executable_rate_pct": 2.5,
-      "e1_minus_c0_pp": -1.6667
+      "e1_minus_c0_pp": -3.3333
     },
     "delta_e1_minus_c0_pp": 0.0,
     "note": "缓存命中 ⇒ 两次数值完全相同（抖动 0）；冷缓存重跑 ⇒ 抖动来自 LLM 温度 0.2 的非确定性。"

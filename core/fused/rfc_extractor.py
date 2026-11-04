@@ -3646,8 +3646,14 @@ _PROMPT_CONSTRAINT = """你是 {protocol} 协议规范分析专家。下面是�
 - field：受约束的字段名（如 QNAME、RDLENGTH、Transport）
 - constraint：约束内容（该字段应满足的合法要求，如「单 label ≤ 63 字节」）
 - violation：违反该约束的方式（非法输入，如「label 长度字段 > 实际内容」）
-- expected_code：违反后接收方应返回的响应码/错误码（推断不到留空字符串）
-- expected_behavior：违反后接收方应有的行为，推断不到留空字符串
+- expected_code：违反后接收方应返回的**具体**响应码/错误码（推断不到留空字符串）
+- expected_behavior：违反后接收方应有的行为（自由描述，推断不到留空字符串）
+- expected_class：**期望响应类别**，从下列受控词表中**选一个**（这是下游闸门依据）：
+    success（接收方正常接受并处理）
+    protocol_error（接收方判定请求违反协议并拒绝）
+    application_error（协议本身合法，但业务上无法处理）
+    silence（接收方不响应，保持静默）
+  原句无法判断时填空字符串，不要编造。
 - operator：从下列受控词表中**选一个**描述可执行算子：
     le(上界/不得超过/至多)、ge(下界/至少/不小于)、gt(严格大于)、lt(严格小于)、
     eq(等于/必须为某值)、ne(不等于)、in(取值属于集合)、range(取值落在区间)、
@@ -3666,12 +3672,33 @@ _PROMPT_CONSTRAINT = """你是 {protocol} 协议规范分析专家。下面是�
 只输出 JSON（不要解释），格式：
 {{"constraints": [{{"field": "...", "constraint": "...", "violation": "...",
                     "expected_code": "...", "expected_behavior": "...",
+                    "expected_class": "protocol_error",
                     "operator": "le", "operand": ["63"]}}]}}"""
 
 #: 提示词的**契约版本标识** —— 进 LLM 缓存键
 #: （``sha256(candidate_text + prompt_version + model)``）
 #: ⇒ **改动提示词内容必须同步改它**，否则会读到旧缓存。
-CONSTRAINT_PROMPT_VERSION = "rfc-constraint-structured"
+CONSTRAINT_PROMPT_VERSION = "rfc-constraint-structured-p"
+
+
+#: 期望响应**类别**的受控词表（与 ``rfc_config.expected_response_classes``
+#: 同源；此处为**兜底全集**，协议级词表可更窄）。
+EXPECTED_CLASSES: tuple[str, ...] = (
+    "success", "protocol_error", "application_error", "silence",
+)
+
+
+def _expected_class(value: Any) -> str:
+    """把 LLM 给的期望响应类别归一到**受控词表**（不在表内 ⇒ 置空）。
+
+    ★ 这是 C7 闸门（:func:`try_convert`）的依据 ⇒ **必须受控**：
+      自由文本（如「返回 400 错误」）无法映射到状态码族，会让 P 侧知识不可用。
+    ★ 不在词表内**不报错、只置空** ⇒ 与「推断不到留空字符串」的提示语义一致。
+    """
+    text = str(value or "").strip().lower()
+    if text in EXPECTED_CLASSES:
+        return text
+    return ""
 
 
 def infer_constraints(protocol: str, llm=None, max_candidates: int = 40,
@@ -3734,6 +3761,9 @@ def infer_constraints(protocol: str, llm=None, max_candidates: int = 40,
                 "violation": (c.get("violation") or "").strip(),
                 "expected_code": (c.get("expected_code") or "").strip(),
                 "expected_behavior": (c.get("expected_behavior") or "").strip(),
+                # ★ 期望响应**类别**（受控词表）⇒ C7 闸门依据。
+                #   ★ 校验：不在受控词表内 ⇒ 置空（宁可无 P 侧，不引入脏类别）。
+                "expected_class": _expected_class(c.get("expected_class")),
                 "operator": operator,
                 "operand": operand,
                 "source": batch[0]["source"],
@@ -3796,6 +3826,7 @@ def extract_constraint_norms(protocol: str, llm=None,
         content = (f"field={c['field']} constraint={c['constraint']} "
                    f"violation={c['violation']} code={c['expected_code']} "
                    f"behavior={c['expected_behavior']} "
+                   f"class={c.get('expected_class') or ''} "
                    f"operator={c.get('operator') or ''} "
                    f"operand={_operand_text}")
         norm_id = _constraint_norm_id(

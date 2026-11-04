@@ -713,7 +713,12 @@ def try_convert(
         # 消息级约束（target_field=""）仅允许 present（强制机制 2 的第⑥条）
         return None, "field_unbound"
 
-    # ── C7：expected_behavior ∈ 词表；**缺失不阻断** ─────────────────
+    # ── C7：期望响应**类别** ∈ 词表；**缺失不阻断** ─────────────────
+    #   ★ 依据 = resolver 契约里的 ``expected_behavior``（**受控类别**）：
+    #     · LLM 兜底路径 ⇒ 由 LLM 从受控词表里选（经受控校验后填入）；
+    #     · 确定性规则表路径 ⇒ 恒为 ""（规则表**不发明**处理期望，原设计纪律）。
+    #   ★ ``behavior=``（content 串里的自由文本描述）**不作闸门依据**，只作溯源展示。
+    #   ★ 缺失 ⇒ **不阻断**（沿用原口径「缺 P 不阻断转换」）。
     expected_behavior = parsed.get("expected_behavior") or ""
     if expected_behavior:
         if expected_behavior not in set(expected_vocab):
