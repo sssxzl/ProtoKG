@@ -119,7 +119,7 @@ FOCUS_GROUP_CONFIG: dict = {
               expect_seeds=90, expect_dict_tokens=24),
     "C": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="vuln-proximity", dict_kind="targeted",
-              expect_seeds=90, expect_dict_tokens=218),
+              expect_seeds=90, expect_dict_tokens=223),
     "D": dict(layers=["edge_cover", "generic_danger", "vuln_boundary", "canonical"],
               order="vuln-proximity", dict_kind="base",
               expect_seeds=90, expect_dict_tokens=24),

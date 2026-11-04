@@ -71,7 +71,7 @@
           "C": {
             "dict": "targeted",
             "seeds": 79,
-            "dict_tokens": 218
+            "dict_tokens": 212
           },
           "D": {
             "dict": "base",
@@ -197,7 +197,7 @@
       "C": {
         "dict": "targeted",
         "seeds": 90,
-        "dict_tokens": 218
+        "dict_tokens": 223
       },
       "D": {
         "dict": "base",

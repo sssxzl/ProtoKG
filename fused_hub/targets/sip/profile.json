@@ -222,22 +222,22 @@
       "A": {
         "dict": "protocol",
         "seeds": 22,
-        "dict_tokens": 181
+        "dict_tokens": 175
       },
       "B": {
         "dict": "protocol",
         "seeds": 22,
-        "dict_tokens": 181
+        "dict_tokens": 175
       },
       "C": {
         "dict": "targeted",
         "seeds": 22,
-        "dict_tokens": 181
+        "dict_tokens": 175
       },
       "D": {
         "dict": "protocol",
         "seeds": 22,
-        "dict_tokens": 181
+        "dict_tokens": 175
       }
     },
     "client_side": {

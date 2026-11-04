@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -35,12 +36,22 @@ BASE_DICT = ROOT / "fused_hub" / "targets" / "rtsp" / "rtsp_base.dict"
 #: 镜像内基础字典 MD5（实测）
 BASE_DICT_MD5 = "464351f88db6c3f0bdac0de01859316b"
 
-#: 关键 token 集合 —— **与源集合无关**的部分（Session 触发值 / Transport 边界）
+#: 关键 token 集合 —— 触发 Session **裸值** / Transport 边界
+#:
+#: ★ 批次 2.5（F7）：Session 候选值的**来源**从 traffic 抓包文件
+#:   （``fused_hub/targets/<proto>_request_templates.json``）改为**中枢**
+#:   （见 :func:`_hub_session_candidates`）⇒ 组合形式 ``"Session: <值>"`` 的
+#:   取值集合**随本次参与源而变** ⇒ 它不再属于「与源集合无关」的部分，
+#:   改由 :func:`_required_key_tokens` **按源集合派生**。
+#:   ★ 纯 RFC 单源档下，traffic 侧真实抓包值（000022B8 / 107518505 /
+#:     7477886380351771441）不再作为候选来源：其中 000022B8 仍以**裸值**形式
+#:     留在字典里（来自冻结的基础字典 ``rtsp_base.dict``），但不再有
+#:     ``"Session: 000022B8"`` 组合形式。
 KEY_TOKENS_CORE = frozenset({
-    "000022B8", "Session: 000022B8",
-    "interleaved=0-1", "client_port=50000-50001",
+    "000022B8",                # 触发 Session 裸值（基础字典自带 ⇒ 与源集合无关）
+    "interleaved=0-1",         # Transport 边界（profile 下沉 ⇒ 与源集合无关）
+    "client_port=50000-50001",  # Transport 边界（profile 下沉 ⇒ 与源集合无关）
 })
-
 #: 关键 token 集合 —— 依赖**会话语义**（url_template ⇒ track 编号）的部分
 #:
 #: ★ 批次 2.5（F3）：会话语义三段（precondition / session_header / url_template）
@@ -53,6 +64,43 @@ def _hub_source_set(protocol: str = "rtsp") -> list[str]:
     """中枢本次参与的源集合（``sources.json`` = 唯一权威）。"""
     doc = load_source_manifest(protocol) or {}
     return [str(s).strip().lower() for s in (doc.get("source_set") or [])]
+
+
+def _hub_session_candidates(bundle: dict) -> list[str]:
+    """中枢本次参与源给出的 Session 取值（= 定向字典的 Session 候选来源）。
+
+    ★ 批次 2.5（F7）：Session 候选值改由**中枢**给出 ⇒ 这里按中枢的
+      ``headers.Session.source_values`` × ``available_sources`` **独立重算**
+      （不调用生产函数 ``extract_session_candidates`` ⇒ 断言不自证），
+      供「字典里的 Session 值来自中枢」这条契约使用。
+    """
+    hdr = (bundle.get("headers") or {}).get("Session") or {}
+    src_values = hdr.get("source_values") or {}
+    available = {str(s).lower() for s in (bundle.get("available_sources") or [])}
+    out: set = set()
+    for src, vals in (src_values or {}).items():
+        if str(src).lower() in available:
+            out.update(str(v) for v in (vals or []))
+    return sorted(out)
+
+
+def _traffic_capture_session_values(protocol: str = "rtsp") -> list[str]:
+    """traffic 侧真实抓包产物里的 Session 取值（= F7 **之前**的候选来源）。
+
+    用于反向断言：这些值**不得**再以 ``Session: <值>`` 组合形式进入字典。
+    """
+    path = ROOT / "fused_hub" / "targets" / f"{protocol}_request_templates.json"
+    if not path.exists():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    out: set = set()
+    for info in (data.get("methods") or {}).values():
+        for v in ((info or {}).get("examples") or {}).get("Session") or []:
+            out.add(str(v))
+    return sorted(out)
 
 
 def _apply_allowed_methods(src_set: list[str]) -> bool:
@@ -71,11 +119,19 @@ def _session_semantics_available(protocol: str = "rtsp") -> bool:
     return "expert_note" in _hub_source_set(protocol)
 
 
-def _required_key_tokens(protocol: str = "rtsp") -> frozenset:
-    """本次**应**出现在字典里的关键 token 集合（按源集合分流）。"""
+def _required_key_tokens(bundle: dict, protocol: str = "rtsp") -> frozenset:
+    """本次**应**出现在字典里的关键 token 集合（按源集合分流）。
+
+    ★ 批次 2.5（F7）：``Session: <值>`` 组合形式的 Session 候选改**从中枢**取
+      ⇒ 必含组合形式随中枢候选集变化（不再恒为 traffic 抓包路径的固定 3 个）。
+    ★ 批次 2.5（F3）：``track1/track2`` 由**会话语义**（url_template）派生 ⇒
+      仅在 expert_note 参与本次构建时才出现在字典里。
+    """
+    toks = set(KEY_TOKENS_CORE)
+    toks |= {f"Session: {s}" for s in _hub_session_candidates(bundle)}
     if _session_semantics_available(protocol):
-        return KEY_TOKENS_CORE | KEY_TOKENS_SESSION
-    return KEY_TOKENS_CORE
+        toks |= KEY_TOKENS_SESSION
+    return frozenset(toks)
 
 
 @pytest.fixture(scope="module")
@@ -172,19 +228,57 @@ def test_targeted_dict_contains_all_key_tokens(bundle, resources):
 
     ★ 批次 2.5（F3）：``track1/track2`` 由**会话语义**（url_template）派生 ⇒
       仅在 expert_note 参与本次构建时才出现在字典里 ⇒ 按源集合分流断言。
+    ★ 批次 2.5（F7）：Session 组合形式的关键 token 由**中枢**给出 ⇒ 按源集合
+      分流（必含集合随本次参与源变化，不再是写死的 "Session: 000022B8"）。
     """
     toks = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
                                            resources=resources))
-    assert _required_key_tokens() <= toks
+    assert _required_key_tokens(bundle) <= toks
 
 
 def test_targeted_dict_contains_session_candidates(bundle, resources):
-    """定向字典含从真实流量模板抽取的 Session 候选（非硬编码）。"""
+    """★ 批次 2.5（F7）后：Session 候选**来源改为中枢**（不再直读 traffic 抓包文件）。
+
+    ★ F7 之前：候选值来自 ``fused_hub/targets/<proto>_request_templates.json``
+      （traffic 侧的真实抓包产物）⇒ 纯 RFC 单源实验也会混进外网抓包 Session 值。
+    ★ F7 之后：候选值来自**中枢**（``headers.Session.source_values``
+      × ``available_sources``）⇒ 候选集合随本次参与源而变。
+
+    ⇒ 本断言按**新来源**校验（不调用生产函数自证 ⇒ 用独立重算的
+      :func:`_hub_session_candidates` 作期望值）：
+      ① 中枢给出的每个 Session 取值 ⇒ **裸值**与 ``"Session: <值>"`` 组合形式
+         都必须出现在字典里；
+      ② 字典里的 ``"Session: <值>"`` 组合形式集合 **==** 中枢取值集合
+         （不多不少 ⇒ 字典不掺入字典外来源的组合形式）；
+      ③ traffic 抓包侧**独有**的取值不得再以组合形式进入字典
+         （裸值 ``000022B8`` 仍可能来自冻结的基础字典 ``rtsp_base.dict``
+         ⇒ 只禁组合形式，不禁裸值）。
+    """
     toks = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
                                            resources=resources))
-    for s in extract_session_candidates("rtsp"):
-        assert s in toks
-        assert f"Session: {s}" in toks
+    hub = _hub_session_candidates(bundle)
+    assert hub, "中枢本次参与源应给出 Session 取值"
+
+    # ① 中枢给出的每个取值 ⇒ 裸值 + 组合形式都在字典里
+    for s in hub:
+        assert s in toks, f"中枢 Session 取值未进字典（裸值）: {s!r}"
+        assert f"Session: {s}" in toks, f"中枢 Session 取值未进字典（组合）: {s!r}"
+
+    # ② 字典里的 Session 组合形式集合 == 中枢取值集合
+    combos = {t[len("Session: "):] for t in toks if t.startswith("Session: ")}
+    assert combos == set(hub), (
+        "字典里的 Session 组合形式应恰为中枢取值集合；"
+        f"多出={sorted(combos - set(hub))} 缺少={sorted(set(hub) - combos)}")
+
+    # ③ traffic 抓包侧独有的取值不得再以组合形式进入字典
+    traffic_only = sorted(set(_traffic_capture_session_values("rtsp")) - set(hub))
+    assert traffic_only, "traffic 抓包值应与中枢取值有差异（否则本断言恒真）"
+    for s in traffic_only:
+        assert f"Session: {s}" not in toks, (
+            f"traffic 抓包取值不应再作为 Session 候选进入字典: {s!r}")
+
+    # ④ 生产实现与独立重算一致（生产函数不应自相矛盾）
+    assert extract_session_candidates("rtsp", bundle) == hub
 
 
 def test_targeted_dict_all_tokens_pass_filter(bundle, resources):
@@ -253,15 +347,15 @@ def test_compact_dict_token_count(bundle, resources):
     ★ 批次 2.5（F3）：精简档会并入 ``url_template`` 派生的 track 编号
       （``track1`` / ``track2``），而 ``url_template`` 属会话语义三段
       ⇒ **只在 ``expert_note`` 参与本次中枢构建时**才有这两个 token。
-    ⇒ 纯 RFC 单源档：30（批次 2.5 重标定后为 30，旧值 32）；
-      含 expert_note 的多源档：32。
+    ⇒ 纯 RFC 单源档：36（批次 2.5 F7 后：Session 候选改走中枢 ⇒ 30→36）；
+      含 expert_note 的多源档：38（+track1/track2）。
     """
     toks = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
                                            resources=resources, compact=True))
     if _session_semantics_available("rtsp"):
-        assert len(toks) == 32
+        assert len(toks) == 38  # 36 + track1/track2（expert_note 档）
     else:
-        assert len(toks) == 30  # 批次 2.5 重标定后为 30（旧值 32）
+        assert len(toks) == 36  # 批次 2.5 F7 后为 36（Session 候选走中枢：30→36）
 
 
 def test_compact_dict_is_superset_of_base(bundle, resources, base_tokens):
@@ -279,7 +373,7 @@ def test_compact_dict_keeps_all_key_tokens(bundle, resources):
     """
     toks = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
                                            resources=resources, compact=True))
-    assert _required_key_tokens() <= toks
+    assert _required_key_tokens(bundle) <= toks
 
 
 def test_compact_key_density_higher(bundle, resources):
@@ -290,7 +384,7 @@ def test_compact_key_density_higher(bundle, resources):
       · 纯 RFC 单源档：4 / 30 ≈ 0.133（批次 2.5 重标定后为 0.133，旧值 0.18）
       · 含 expert_note 多源档：6 / 32 = 0.188（旧值 0.18）
     """
-    required = _required_key_tokens()
+    required = _required_key_tokens(bundle)
     full = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
                                            resources=resources))
     compact = _tokens(generate_targeted_dict(bundle, protocol="rtsp",
@@ -302,7 +396,7 @@ def test_compact_key_density_higher(bundle, resources):
     if _session_semantics_available("rtsp"):
         assert d_cmp >= 0.18
     else:
-        assert d_cmp >= 0.13  # 批次 2.5 重标定后为 0.133（旧值 0.18）
+        assert d_cmp >= 0.13  # 批次 2.5 F7 后为 0.333（Session 候选走中枢：0.133→0.333）
 
 
 # ===========================================================================

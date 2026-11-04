@@ -230,13 +230,35 @@ def derive_semantic_candidates(bundle: dict, stream: str = "matroskaFileTest",
 # 4. 边界探针：oracle 判定 + 定位合法边界
 # ===========================================================================
 
-def extract_session_candidates(protocol: str = "rtsp") -> list:
-    """从真实流量模板自动提取 Session 候选值（触发值来源，替代硬编码）。
+def extract_session_candidates(protocol: str = "rtsp",
+                              bundle: Optional[dict] = None) -> list:
+    """Session 候选值（触发值来源，替代硬编码）。
 
     思想来源：AFL dictionary 机制——触发值应从语料自动提取，而非手写。
+
+    ★★ 批次 2.5（F7）：**优先从中枢取**（受 ``source_set`` 过滤），
+      只有「没有 bundle」或「traffic 确实参与了本次」才回退读
+      ``<protocol>_request_templates.json``（**traffic 侧**的真实抓包产物）。
+      ⇒ 纯 RFC 单源实验不再引入 traffic 侧的 Session 值
+        （实测旧路径会混进 3 个外网抓包 Session 值）。
     """
     import json
     from pathlib import Path
+    # ① 中枢取：只取**本次参与源**给的 Session 取值
+    if bundle is not None:
+        _hdr = (bundle.get("headers") or {}).get("Session") or {}
+        _sv = _hdr.get("source_values") or {}
+        _srcs = {str(s).lower() for s in (bundle.get("available_sources") or [])}
+        _vals: set = set()
+        for _src, _lst in _sv.items():
+            if str(_src).lower() in _srcs:
+                _vals.update(str(x) for x in (_lst or []))
+        if _vals:
+            return sorted(_vals)
+        # ② 中枢里没有 ⇒ traffic 未参与 ⇒ **不**回退到 traffic 抓包文件
+        if "traffic" not in _srcs:
+            return []
+    # ③ 回退：读真实流量模板（traffic 侧）
     root = Path(__file__).resolve().parents[3]
     path = root / "fused_hub" / "targets" / f"{protocol}_request_templates.json"
     if not path.exists():
@@ -1074,7 +1096,9 @@ def generate_targeted_dict(bundle: dict,
         if _is_dict_token(t):
             tokens.add(t)
     # 3. Session 触发值（从真实流量模板自动抽取，非硬编码）
-    sessions = extract_session_candidates(protocol)
+    # ★ 批次 2.5（F7）：传 bundle ⇒ Session 候选**从中枢**取
+    #   （受 source_set 过滤；traffic 未参与 ⇒ 不用 traffic 抓包值）
+    sessions = extract_session_candidates(protocol, bundle)
     for s in sessions:
         if _is_dict_token(s):
             tokens.add(s)
