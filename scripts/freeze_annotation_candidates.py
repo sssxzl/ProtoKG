@@ -331,7 +331,12 @@ def freeze(protocols: tuple[str, ...], per_protocol: int,
     frozen: list[dict] = []
     for protocol in protocols:
         cfg = _load_rfc_cfg(protocol)
-        raw = extract_constraint_candidates(protocol)
+        # ★ **显式钉死 80**：本脚本产出的是**冻结候选集**（人工标注集按
+        #   ``candidate_id`` 与它绑定）⇒ 候选池一变，冻结集 md5 与
+        #   全部已标/待标条目的绑定同时失效 ⇒ 上限**必须**与
+        #   生产路径的 ``PRODUCTION_CANDIDATE_POOL_LIMIT`` **解耦**。
+        #   （实测钉死后冻结集 md5 保持 ``6060457e78f253699fcf2da8dc343733`` 不变。）
+        raw = extract_constraint_candidates(protocol, max_per_rfc=80)
         buckets: dict[str, list[dict]] = {k: [] for k in SUBJECT_TYPES}
         for cand in raw:
             if _leaked(str(cand.get("text") or "")):

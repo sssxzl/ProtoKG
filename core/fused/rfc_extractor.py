@@ -3210,9 +3210,18 @@ class SemanticBundle:
     candidate_total: int = 0
 
 
+#: **生产路径**的候选句池上限（每 RFC 文件）。
+#: ★ 此前固定 80 ⇒ rtsp / sip 的候选被**人为截断**（实测自然上限 284 / 1000），
+#:   直接压制了语义规则覆盖（③ 层极薄的主因之一）。
+#: ★ **仅用于生产路径**（:func:`build_semantic_rules`）；
+#:   冻结集 / B-10 评测路径**各自显式钉死 80**（口径不可漂移）。
+PRODUCTION_CANDIDATE_POOL_LIMIT = 1000
+
+
 def build_semantic_rules(protocol: str, *, known_fields=None,
                          expected_vocab=None,
-                         max_per_rfc: int = 80) -> SemanticBundle:
+                         max_per_rfc: int = PRODUCTION_CANDIDATE_POOL_LIMIT
+                         ) -> SemanticBundle:
     """B-9 `rules_only` 的**唯一产出入口**：RFC 约束候选 → 规则 + 知识候选。
 
     ★ 生产侧的**契约**（使强制机制 4 在产出端天然成立）：
