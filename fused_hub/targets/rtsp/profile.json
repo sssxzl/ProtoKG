@@ -65,21 +65,21 @@
           },
           "B": {
             "dict": "base",
-            "seeds": 78,
+            "seeds": 79,
             "dict_tokens": 24
           },
           "C": {
             "dict": "targeted",
-            "seeds": 78,
+            "seeds": 79,
             "dict_tokens": 212
           },
           "D": {
             "dict": "base",
-            "seeds": 78,
+            "seeds": 79,
             "dict_tokens": 24
           }
         },
-        "focus_group_note": "★ 批次 2.5 F9 重标定：env 档（可播会话子集）独立标定（协议级 86/89/89/89，env 级见本处）"
+        "focus_group_note": "★ 批次 2.5 F9 + 2026-11-04 重标定（扩池 + ABNF 派生字段 ⇒ ③层 +1 条约束边界候选）：env 档（可播会话子集）独立标定（协议级 86/90/90/90，env 级见本处）"
       }
     },
     "required_headers": {
@@ -191,17 +191,17 @@
       },
       "B": {
         "dict": "base",
-        "seeds": 89,
+        "seeds": 90,
         "dict_tokens": 24
       },
       "C": {
         "dict": "targeted",
-        "seeds": 89,
+        "seeds": 90,
         "dict_tokens": 223
       },
       "D": {
         "dict": "base",
-        "seeds": 89,
+        "seeds": 90,
         "dict_tokens": 24
       }
     },

@@ -7,14 +7,14 @@
       "canonical": 18,
       "edge_cover": 6,
       "generic_danger": 28,
-      "vuln_boundary": 3,
-      "action_seq": 35
+      "vuln_boundary": 4,
+      "action_seq": 34
     },
     "⑤层底料来源": "internal-two-stage",
-    "⑤层底料含vuln种子数": 3,
+    "⑤层底料含vuln种子数": 4,
     "G1违规": 0,
     "G2违规": 31,
-    "G2比率(基准层)": 0.5636,
+    "G2比率(基准层)": 0.5536,
     "每层知识来源": {
       "canonical": {
         "count": 18,
@@ -29,11 +29,11 @@
         "knowledge_origin": "rfc+bundle(骨架)"
       },
       "vuln_boundary": {
-        "count": 3,
+        "count": 4,
         "knowledge_origin": "rfc(语义规则；可能跨协议)"
       },
       "action_seq": {
-        "count": 35,
+        "count": 34,
         "knowledge_origin": "★同源(底料=本次基准层·内部两段式 ⇒ 无跨源)；基准层含 canonical ⇒ 资源清单=源码侧"
       }
     }
@@ -46,14 +46,14 @@
       "canonical": 18,
       "edge_cover": 6,
       "generic_danger": 28,
-      "vuln_boundary": 3,
-      "action_seq": 35
+      "vuln_boundary": 4,
+      "action_seq": 34
     },
     "⑤层底料来源": "internal-two-stage",
-    "⑤层底料含vuln种子数": 3,
+    "⑤层底料含vuln种子数": 4,
     "G1违规": 0,
     "G2违规": 31,
-    "G2比率(基准层)": 0.5636,
+    "G2比率(基准层)": 0.5536,
     "每层知识来源": {
       "canonical": {
         "count": 18,
@@ -68,11 +68,11 @@
         "knowledge_origin": "rfc+bundle(骨架)"
       },
       "vuln_boundary": {
-        "count": 3,
+        "count": 4,
         "knowledge_origin": "rfc(语义规则；可能跨协议)"
       },
       "action_seq": {
-        "count": 35,
+        "count": 34,
         "knowledge_origin": "★同源(底料=本次基准层·内部两段式 ⇒ 无跨源)；基准层含 canonical ⇒ 资源清单=源码侧"
       }
     }
@@ -84,14 +84,14 @@
     "层分布": {
       "edge_cover": 3,
       "generic_danger": 12,
-      "vuln_boundary": 3,
-      "action_seq": 16
+      "vuln_boundary": 4,
+      "action_seq": 15
     },
     "⑤层底料来源": "internal-two-stage",
-    "⑤层底料含vuln种子数": 3,
+    "⑤层底料含vuln种子数": 4,
     "G1违规": 0,
     "G2违规": 9,
-    "G2比率(基准层)": 0.5,
+    "G2比率(基准层)": 0.4737,
     "每层知识来源": {
       "edge_cover": {
         "count": 3,
@@ -102,11 +102,11 @@
         "knowledge_origin": "rfc+bundle(骨架)"
       },
       "vuln_boundary": {
-        "count": 3,
+        "count": 4,
         "knowledge_origin": "rfc(语义规则；可能跨协议)"
       },
       "action_seq": {
-        "count": 16,
+        "count": 15,
         "knowledge_origin": "★同源(底料=本次基准层·内部两段式 ⇒ 无跨源)"
       }
     }
@@ -118,14 +118,14 @@
     "层分布": {
       "edge_cover": 3,
       "generic_danger": 12,
-      "vuln_boundary": 3,
-      "action_seq": 16
+      "vuln_boundary": 4,
+      "action_seq": 15
     },
     "⑤层底料来源": "internal-two-stage",
-    "⑤层底料含vuln种子数": 3,
+    "⑤层底料含vuln种子数": 4,
     "G1违规": 0,
     "G2违规": 9,
-    "G2比率(基准层)": 0.5,
+    "G2比率(基准层)": 0.4737,
     "每层知识来源": {
       "edge_cover": {
         "count": 3,
@@ -136,11 +136,11 @@
         "knowledge_origin": "rfc+bundle(骨架)"
       },
       "vuln_boundary": {
-        "count": 3,
+        "count": 4,
         "knowledge_origin": "rfc(语义规则；可能跨协议)"
       },
       "action_seq": {
-        "count": 16,
+        "count": 15,
         "knowledge_origin": "★同源(底料=本次基准层·内部两段式 ⇒ 无跨源)"
       }
     }

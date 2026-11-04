@@ -458,11 +458,19 @@ SEMANTIC_RULE_SOURCES: tuple[str, ...] = tuple(
 
 
 def _protocol_spec_versions(protocol: str) -> list[str] | None:
-    """本协议的**规范号**（如 ``["RFC 2326"]``）；声明缺失 ⇒ 返回 None（不过滤）。
+    """本协议的**规范号集合**；声明缺失 ⇒ 返回 None（不过滤）。
 
     ★ 批次 2.5（F1）：语义规则必须按协议过滤 —— B-10 的实验产物是多协议混合的
       （实测 RFC 2326:11 / RFC 3261:9 / RFC 5321:1）⇒ 不过滤会把 SIP 的
       RFC 3261 规则灌进 RTSP 库（实测 RTSP 库 5 条里 3 条是 SIP 的）。
+
+    ★★ 2026-11-04 修：**单值不够用** —— smtp 的 kb 里有 4 个 RFC
+      （3207 / 4954 / 5321 / **5322**），而 SMTP 的**语义约束**（头字段
+      MUST/SHOULD）出自 **RFC 5322**（邮件格式），不是 5321（传输）
+      ⇒ 原先单值 ``"RFC 5321"`` 会把 4 条 smtp 规则**全部滤掉**
+      ⇒ smtp 语义规则库恒为 0 条（实测确认）。
+    ⇒ 故支持**列表**：``spec_versions``（显式多值，优先）或 ``spec_version``
+      （单值或列表）；单值行为**完全不变**。
     """
     cfg_path = paths.target_rfc_config(protocol)
     if not cfg_path.is_file():
@@ -471,8 +479,15 @@ def _protocol_spec_versions(protocol: str) -> list[str] | None:
         cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return None
-    sv = str(cfg.get("spec_version") or "").strip()
-    return [sv] if sv else None
+    raw = cfg.get("spec_versions")
+    if raw is None:
+        raw = cfg.get("spec_version")
+    if isinstance(raw, (list, tuple, set)):
+        out = [str(x).strip() for x in raw if str(x).strip()]
+    else:
+        sv = str(raw or "").strip()
+        out = [sv] if sv else []
+    return out or None
 
 
 def _republish_rules(protocol: str) -> None:

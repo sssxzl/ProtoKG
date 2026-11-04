@@ -50,17 +50,17 @@
       },
       "B": {
         "dict": "protocol",
-        "seeds": 62,
+        "seeds": 67,
         "dict_tokens": 39
       },
       "C": {
         "dict": "targeted",
-        "seeds": 62,
+        "seeds": 67,
         "dict_tokens": 39
       },
       "D": {
         "dict": "protocol",
-        "seeds": 62,
+        "seeds": 67,
         "dict_tokens": 39
       }
     },
