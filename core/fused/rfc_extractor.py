@@ -2377,6 +2377,147 @@ def _transition_quality_gate(rows: list[dict], protocol: str,
     return kept, stat
 
 
+#: 跨块 PSM 合并提示（PSMBENCH 流程第③步）的契约版本 —— 并入 LLM 缓存键
+TRANSITION_MERGE_PROMPT_VERSION = "rfc-transition-merge-conflict"
+
+#: 合并提示：把多个片段的部分 PSM 合并为一份一致、无冲突的完整 PSM
+_PROMPT_TRANSITION_MERGE = """你是协议规范分析助手。下面是对 {protocol} 协议 RFC 规范中
+**多个片段**分别抽取出的状态转移（部分 PSM），它们之间可能存在重复或冲突。
+
+请把它们合并成**一份一致、无冲突的完整 PSM**，输出 JSON：
+{{"transitions": [{{"from": "<源状态>", "method": "<触发方法>", "to": "<目标状态>"}}],
+  "conflicts": [{{"from": "...", "method": "...", "kept": "...",
+                 "dropped": ["..."]}}]}}
+
+规则：
+1. **去重**：完全相同的转移只保留一条。
+2. **冲突消解**：同一个 (from, method) 出现多个不同的 to 时，保留与 RFC 原文
+   最一致的一条，并把被丢弃的候选写进 `conflicts`。
+3. `method` **必须**取自这份已知方法集（不在集合内的一律丢弃）：{allowed}
+4. 状态名**照抄**下面出现过的写法，不要新造、不要改大小写。
+5. 不要推测、不要补充 RFC 之外的知识。
+
+出现过的状态名：{states}
+
+部分 PSM（共 {m} 条，来自多个片段）：
+{partials}
+"""
+
+
+def _psm_conflicts(rows: list[dict]) -> list[dict]:
+    """检测部分 PSM 的冲突：同一 ``(from, method)`` 映射到**多个** ``to``。"""
+    from collections import defaultdict
+    _g: dict = defaultdict(set)
+    for _r in rows:
+        _g[(_r["from"], _r["method"])].add(_r["to"])
+    return [{"from": _k[0], "method": _k[1], "targets": sorted(_v)}
+            for _k, _v in _g.items() if len(_v) > 1]
+
+
+def dump_per_source_artifact(protocol: str, name: str, payload: dict) -> None:
+    """把中间统计落盘到 ``derived/per_source/<协议>/<name>``（审计用，失败不阻断）。"""
+    try:
+        _d = paths.per_source_root(protocol)
+        _d.mkdir(parents=True, exist_ok=True)
+        (_d / name).write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8")
+    except OSError:
+        pass
+
+
+def _merge_partial_psms(rows: list[dict], protocol: str,
+                        llm) -> tuple[list[dict], dict]:
+    """跨块 PSM 合并（PSMBENCH 流程第③步）—— **冲突驱动**。
+
+    ★ 为什么按需触发（2026-11-06 实测，**勿改回无条件合并**）：
+      · **rtsp**：表格腿 14 条 与 LLM 腿 14 条**集合完全相同**，且 **0 个**
+        「同 (from, method) 不同 to」冲突 ⇒ 无条件合并的收益 = **0**；
+      · **sip**：质量闸后 0 条 ⇒ 无可合并；
+      · **smtp**：RFC 无状态机表述。
+      ⇒ 无条件合并只会白增 1 次 LLM 调用与不确定性。改为冲突驱动后：
+        无冲突 ⇒ 直接去重返回（**零额外调用**）；有冲突 ⇒ 才调 LLM 消解。
+
+    ★ 保底：合并失败 / 合并后为空 ⇒ **保留原样**（防退化），并记录原因。
+
+    Args:
+        rows: 各块 union 后的部分 PSM。
+        protocol: 协议名（提示词 / 已知方法集用）。
+        llm: LLM 客户端（**仅在有冲突时才会被调用**）。
+
+    Returns:
+        ``(合并后的 rows, 统计字典)``；统计由调用方落盘。
+    """
+    _stat: dict = {"partial": len(rows), "conflicts": 0, "merged": False,
+                   "after": len(rows)}
+    if not rows:
+        return rows, _stat
+    _conf = _psm_conflicts(rows)
+    _stat["conflicts"] = len(_conf)
+    if not _conf:
+        # 无冲突 ⇒ 仅去重（保持原顺序，**零 LLM 调用**）
+        _seen: set = set()
+        _out: list[dict] = []
+        for _r in rows:
+            _k = (_r["from"], _r["method"], _r["to"])
+            if _k not in _seen:
+                _seen.add(_k)
+                _out.append(_r)
+        _stat["after"] = len(_out)
+        return _out, _stat
+    # 有冲突 ⇒ 调 LLM 合并（PSMBENCH 第③步）
+    _stat["conflict_detail"] = _conf
+    if llm is None:
+        try:
+            from core.llm import DeepSeekClient
+            llm = DeepSeekClient()
+        except Exception:  # noqa: BLE001
+            _stat["note"] = "LLM 不可用 ⇒ 保留原样（不合并）"
+            return rows, _stat
+    _known = _rfc_source_methods(protocol, _load_rfc_config(protocol))
+    _states = sorted({_r["from"] for _r in rows} | {_r["to"] for _r in rows})
+    _partials = "\n".join(
+        "%d. %s --%s--> %s" % (_i + 1, _r["from"], _r["method"], _r["to"])
+        for _i, _r in enumerate(rows))
+    try:
+        _res = llm.chat_json(
+            system="你输出 JSON。",
+            user=_PROMPT_TRANSITION_MERGE.format(
+                protocol=protocol.upper(),
+                allowed=", ".join(sorted(_known)),
+                states=", ".join(_states),
+                m=len(rows), partials=_partials),
+            temperature=0.0, max_tokens=2000)
+    except Exception:  # noqa: BLE001
+        _stat["note"] = "合并调用失败 ⇒ 保留原样"
+        return rows, _stat
+    if not isinstance(_res, dict):
+        _stat["note"] = "合并输出非 dict ⇒ 保留原样"
+        return rows, _stat
+    _merged: list[dict] = []
+    for _tr in (_res.get("transitions") or []):
+        if not isinstance(_tr, dict):
+            continue
+        _f = str(_tr.get("from", "")).strip()
+        _m = str(_tr.get("method", "")).strip()
+        _t = str(_tr.get("to", "")).strip()
+        if not (_f and _m and _t):
+            continue
+        # ★ 合并结果同样受「method ∈ 已知方法集」约束（防合并阶段引入假方法）
+        if _known and _m.upper() not in _known:
+            continue
+        _row = {"from": _f, "method": _m, "to": _t}
+        if _row not in _merged:
+            _merged.append(_row)
+    if not _merged:
+        _stat["note"] = "合并后为空 ⇒ 保留原样（防退化）"
+        return rows, _stat
+    _stat["merged"] = True
+    _stat["after"] = len(_merged)
+    _stat["llm_conflicts"] = _res.get("conflicts") or []
+    return _merged, _stat
+
+
 def infer_transitions(protocol: str, llm=None) -> list[dict]:
     """LLM 抽状态转移（**带磁盘缓存** ⇒ 确定性 + 零重复成本）。
 
@@ -2391,7 +2532,7 @@ def infer_transitions(protocol: str, llm=None) -> list[dict]:
     # ★ E′（2026-11-06）：缓存键**并入 prompt_version** ⇒ 改提示词自动失效。
     #   历史缺陷：只哈希候选块文本 ⇒ 改提示词但缓存命中 ⇒ 改动静默不生效。
     block_hash = hashlib_sha256(
-        "|".join([TRANSITION_PROMPT_VERSION]
+        "|".join([TRANSITION_PROMPT_VERSION, TRANSITION_MERGE_PROMPT_VERSION]
                  + [c["hash"] for c in candidates]))
     if cache_file.exists():
         try:
@@ -2439,6 +2580,10 @@ def infer_transitions(protocol: str, llm=None) -> list[dict]:
             row = {"from": frm, "method": mth, "to": to}
             if row not in out:
                 out.append(row)
+    # ★ D′（2026-11-06）：跨块 PSM 合并（PSMBENCH 流程第③步）—— 冲突驱动。
+    #   无冲突 ⇒ 仅去重（零 LLM）；有冲突 ⇒ 才调 LLM 消解。实测见函数 docstring。
+    out, _mstat = _merge_partial_psms(out, protocol, llm)
+    dump_per_source_artifact(protocol, "transition_merge.json", _mstat)
     try:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
         cache_file.write_text(json.dumps(
