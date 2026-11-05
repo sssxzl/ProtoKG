@@ -1,0 +1,870 @@
+{
+  "seeds": [
+    {
+      "description": "OPTIONS 探测后 DESCRIBE 获取 SDP，再 SETUP 建立 RTP/AVP/UDP 单播会话",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Init",
+        "Init",
+        "Ready"
+      ],
+      "messages": [
+        {
+          "method": "OPTIONS",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1"
+          },
+          "body": ""
+        },
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "2",
+            "Accept": "application/sdp"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "3",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=3056-3057"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "完整播放流程：DESCRIBE、SETUP、PLAY、PAUSE、TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+      "state_path": [
+        "Init",
+        "Init",
+        "Ready",
+        "Playing",
+        "Ready",
+        "Init"
+      ],
+      "messages": [
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "1",
+            "Accept": "application/sdp, application/rtsl, application/mheg"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=3058-3059"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505",
+            "Range": "npt=0-"
+          },
+          "body": ""
+        },
+        {
+          "method": "PAUSE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "5",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "TCP 交织传输 SETUP 后直接 PLAY 并 TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Playing",
+        "Init"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP/TCP;interleaved=0-1"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "0456804596",
+            "Range": "npt=0.000-"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "0456804596"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "组播 SETUP 后 PLAY，使用 clock 范围",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Playing",
+        "Init"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;multicast;destination=224.0.1.11;"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "2034820394",
+            "Range": "clock=19960213T143205Z-"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "2034820394"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "SETUP 后 GET_PARAMETER 保活，再 SET_PARAMETER 设置参数，最后 TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Ready",
+        "Init"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=8000-8001"
+          },
+          "body": ""
+        },
+        {
+          "method": "GET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "12345678"
+          },
+          "body": ""
+        },
+        {
+          "method": "SET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "12345678",
+            "Content-Type": "text/parameters",
+            "Content-Length": "15"
+          },
+          "body": "speed: 2.5\r\n"
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "12345678"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "ANNOUNCE 推送 SDP 后 SETUP、RECORD、PAUSE、TEARDOWN 录制流程",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Init",
+        "Ready",
+        "Recording",
+        "Ready",
+        "Init"
+      ],
+      "messages": [
+        {
+          "method": "ANNOUNCE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1",
+            "Content-Type": "application/sdp",
+            "Content-Length": "44"
+          },
+          "body": "v=0\r\no=- 0 0 IN IP4 127.0.0.1\r\ns=test\r\n"
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP;unicast;client_port=4588-4589"
+          },
+          "body": ""
+        },
+        {
+          "method": "RECORD",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "23456789"
+          },
+          "body": ""
+        },
+        {
+          "method": "PAUSE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "23456789"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "5",
+            "Session": "23456789"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "Playing 状态下重复 SETUP 保持 Playing，再 PAUSE 回 Ready",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Playing",
+        "Playing",
+        "Ready"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=52570-52571"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "47112344",
+            "Range": "npt=10-15"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=2",
+          "headers": {
+            "CSeq": "3",
+            "Session": "47112344",
+            "Transport": "RTP/AVP;unicast;client_port=8002-8003"
+          },
+          "body": ""
+        },
+        {
+          "method": "PAUSE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "47112344"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "Ready 状态重复 SETUP 保持 Ready，再 PLAY 进入 Playing",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Ready",
+        "Playing"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=10000"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=2",
+          "headers": {
+            "CSeq": "2",
+            "Session": "50887676",
+            "Transport": "RTP/AVP;unicast;client_port=8000-8001;"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "50887676",
+            "Range": "npt=20-25"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "Init 状态直接 TEARDOWN 保持 Init，再 OPTIONS 探测",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Init",
+        "Init"
+      ],
+      "messages": [
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "1",
+            "Session": "91389234234"
+          },
+          "body": ""
+        },
+        {
+          "method": "OPTIONS",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "302"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "带 Digest 认证的 DESCRIBE 与 SETUP 流程",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Init",
+        "Ready"
+      ],
+      "messages": [
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1",
+            "Accept": "application/rtsl, application/sdp;level=2",
+            "Authorization": "Digest username=\"<user>\", realm=\"IP Camera(C1052)\", nonce=\"<nonce>\", uri=\"rtsp://10.11.26.98:554/isapi/streaming/channels/101\", response=\"<response>\""
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP;unicast;client_port=52570-52571;server_port=8226-8227;ssrc=3d208345;mode=\"play\""
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "smpte 时间范围 PLAY 后 PAUSE 再 PLAY",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Playing",
+        "Ready",
+        "Playing"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=3056-3057;"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "107518505;timeout=60",
+            "Range": "smpte=0:10:00-0:20:00"
+          },
+          "body": ""
+        },
+        {
+          "method": "PAUSE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505;timeout=60"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505;timeout=60",
+            "Range": "smpte=0:10:20-;time=19970123T153600Z"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "带 Speed 与 RTP-Info 的 PLAY，随后 GET_PARAMETER 保活",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Playing",
+        "Playing"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=6970-6971;mode=play"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "0456804596",
+            "Speed": "2.5",
+            "RTP-Info": "url=rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1;seq=4276;rtptime=3627500126"
+          },
+          "body": ""
+        },
+        {
+          "method": "GET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "0456804596"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "SET_PARAMETER 携带 text/parameters 后 TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Ready",
+        "Init"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=8002-8003"
+          },
+          "body": ""
+        },
+        {
+          "method": "SET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "2034820394",
+            "Content-Type": "text/parameters",
+            "Content-Length": "10"
+          },
+          "body": "speed: 2.5"
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "2034820394"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "OPTIONS 后 ANNOUNCE 再 SETUP 与 RECORD",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Init",
+        "Init",
+        "Ready",
+        "Recording"
+      ],
+      "messages": [
+        {
+          "method": "OPTIONS",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1"
+          },
+          "body": ""
+        },
+        {
+          "method": "ANNOUNCE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "2",
+            "Content-Type": "application/sdp",
+            "Content-Length": "48"
+          },
+          "body": "v=0\r\no=- 0 0 IN IP4 10.11.26.98\r\ns=stream\r\n"
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "3",
+            "Transport": "RTP/AVP;multicast;ttl=127;mode=\"PLAY\","
+          },
+          "body": ""
+        },
+        {
+          "method": "RECORD",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "23456789"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "Recording 状态重复 SETUP 保持 Recording，再 TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Recording",
+        "Recording",
+        "Init"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=4588-4589"
+          },
+          "body": ""
+        },
+        {
+          "method": "RECORD",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "23456789"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=2",
+          "headers": {
+            "CSeq": "3",
+            "Session": "23456789",
+            "Transport": "RTP/AVP;unicast;client_port=8000-8001"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "23456789"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "CSeq 边界值 0 与超长 URL 的 OPTIONS 探测",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Init"
+      ],
+      "messages": [
+        {
+          "method": "OPTIONS",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "0"
+          },
+          "body": ""
+        },
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "954",
+            "Accept": "application/x-rtsp-mh, application/sdp"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "带 Require 与 Proxy-Require 扩展头的 SETUP 与 PLAY",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Playing"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=3058-3059",
+            "Require": "implicit-play",
+            "Proxy-Require": "gzipped-messages"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "107518505",
+            "Range": "npt=30-",
+            "X-Accept-Dynamic-Rate": "1",
+            "X-Accept-Retransmit": "our-retransmit"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "带 Cache-Control 与 Conference 头的 DESCRIBE 与 SETUP",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Init",
+        "Ready"
+      ],
+      "messages": [
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1",
+            "Accept": "application/sdp",
+            "Cache-Control": "must-revalidate",
+            "Conference": "128.16.64.19/32492374"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP;multicast;destination=225.219.201.15;",
+            "Bandwidth": "4000"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "clock 时间范围 PLAY 后 TEARDOWN 完整会话",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Playing",
+        "Init"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=3056-3057"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "91389234234",
+            "Range": "clock=19961108T142300Z-19961108T143520Z"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "91389234234"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "多轨 SETUP 后 PLAY 再 GET_PARAMETER 与 SET_PARAMETER 混合操作",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Init",
+        "Ready",
+        "Ready",
+        "Playing",
+        "Playing",
+        "Playing"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=8000-8001"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=2",
+          "headers": {
+            "CSeq": "2",
+            "Session": "12345678",
+            "Transport": "RTP/AVP;unicast;client_port=8002-8003"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "12345678",
+            "Range": "npt=0-"
+          },
+          "body": ""
+        },
+        {
+          "method": "GET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "12345678"
+          },
+          "body": ""
+        },
+        {
+          "method": "SET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "5",
+            "Session": "12345678",
+            "Content-Type": "text/parameters",
+            "Content-Length": "20"
+          },
+          "body": "speed: 2.5\r\nfoo: bar\r\n"
+        }
+      ]
+    }
+  ]
+}

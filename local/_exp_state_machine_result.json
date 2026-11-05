@@ -1,0 +1,741 @@
+{
+  "protocol": "rtsp",
+  "repeats": 3,
+  "n_seeds": 20,
+  "results": {
+    "A_现状(骨架38)": {
+      "per_run": [
+        {
+          "seeds_raw": 19,
+          "seeds_kept": 17,
+          "state_total": 67,
+          "state_on_target": 67,
+          "state_cross": 0,
+          "sec": 15.8
+        },
+        {
+          "seeds_raw": 20,
+          "seeds_kept": 17,
+          "state_total": 100,
+          "state_on_target": 100,
+          "state_cross": 0,
+          "sec": 20.8
+        },
+        {
+          "seeds_raw": 20,
+          "seeds_kept": 15,
+          "state_total": 88,
+          "state_on_target": 88,
+          "state_cross": 0,
+          "sec": 20.8
+        }
+      ],
+      "transitions": [
+        [
+          "Confirmed",
+          "DESCRIBE",
+          "Registered"
+        ],
+        [
+          "Confirmed",
+          "GET_PARAMETER",
+          "Confirmed"
+        ],
+        [
+          "Confirmed",
+          "PAUSE",
+          "Paused"
+        ],
+        [
+          "Confirmed",
+          "PLAY",
+          "Confirmed"
+        ],
+        [
+          "Confirmed",
+          "SETUP",
+          "Confirmed"
+        ],
+        [
+          "Confirmed",
+          "SET_PARAMETER",
+          "Confirmed"
+        ],
+        [
+          "Confirmed",
+          "TEARDOWN",
+          "Terminated"
+        ],
+        [
+          "Idle",
+          "DESCRIBE",
+          "Idle"
+        ],
+        [
+          "Idle",
+          "DESCRIBE",
+          "Registered"
+        ],
+        [
+          "Idle",
+          "GET_PARAMETER",
+          "Idle"
+        ],
+        [
+          "Idle",
+          "OPTIONS",
+          "Idle"
+        ],
+        [
+          "Idle",
+          "OPTIONS",
+          "Registered"
+        ],
+        [
+          "Idle",
+          "SETUP",
+          "Confirmed"
+        ],
+        [
+          "Idle",
+          "SETUP",
+          "Invited"
+        ],
+        [
+          "Idle",
+          "SET_PARAMETER",
+          "Idle"
+        ],
+        [
+          "Idle",
+          "TEARDOWN",
+          "Terminated"
+        ],
+        [
+          "Invited",
+          "GET_PARAMETER",
+          "Invited"
+        ],
+        [
+          "Invited",
+          "PAUSE",
+          "Paused"
+        ],
+        [
+          "Invited",
+          "PLAY",
+          "Confirmed"
+        ],
+        [
+          "Invited",
+          "SETUP",
+          "Invited"
+        ],
+        [
+          "Invited",
+          "SET_PARAMETER",
+          "Invited"
+        ],
+        [
+          "Invited",
+          "TEARDOWN",
+          "Terminated"
+        ],
+        [
+          "Paused",
+          "GET_PARAMETER",
+          "Paused"
+        ],
+        [
+          "Paused",
+          "PAUSE",
+          "Paused"
+        ],
+        [
+          "Paused",
+          "PLAY",
+          "Confirmed"
+        ],
+        [
+          "Paused",
+          "SETUP",
+          "Invited"
+        ],
+        [
+          "Paused",
+          "SET_PARAMETER",
+          "Paused"
+        ],
+        [
+          "Paused",
+          "TEARDOWN",
+          "Terminated"
+        ],
+        [
+          "Registered",
+          "GET_PARAMETER",
+          "Registered"
+        ],
+        [
+          "Registered",
+          "PAUSE",
+          "Paused"
+        ],
+        [
+          "Registered",
+          "PLAY",
+          "Confirmed"
+        ],
+        [
+          "Registered",
+          "SETUP",
+          "Invited"
+        ],
+        [
+          "Registered",
+          "SET_PARAMETER",
+          "Registered"
+        ],
+        [
+          "Registered",
+          "TEARDOWN",
+          "Terminated"
+        ],
+        [
+          "Terminated",
+          "DESCRIBE",
+          "Registered"
+        ],
+        [
+          "Terminated",
+          "OPTIONS",
+          "Terminated"
+        ],
+        [
+          "Terminated",
+          "SETUP",
+          "Invited"
+        ],
+        [
+          "Terminated",
+          "TEARDOWN",
+          "Terminated"
+        ]
+      ]
+    },
+    "B_RFC14原生(不裁)": {
+      "per_run": [
+        {
+          "seeds_raw": 19,
+          "seeds_kept": 11,
+          "state_total": 70,
+          "state_on_target": 70,
+          "state_cross": 0,
+          "sec": 16.0
+        },
+        {
+          "seeds_raw": 21,
+          "seeds_kept": 11,
+          "state_total": 63,
+          "state_on_target": 63,
+          "state_cross": 0,
+          "sec": 18.1
+        },
+        {
+          "seeds_raw": 20,
+          "seeds_kept": 10,
+          "state_total": 70,
+          "state_on_target": 70,
+          "state_cross": 0,
+          "sec": 17.5
+        }
+      ],
+      "transitions": [
+        [
+          "Init",
+          "SETUP",
+          "Ready"
+        ],
+        [
+          "Init",
+          "TEARDOWN",
+          "Init"
+        ],
+        [
+          "Playing",
+          "PAUSE",
+          "Ready"
+        ],
+        [
+          "Playing",
+          "PLAY",
+          "Playing"
+        ],
+        [
+          "Playing",
+          "SETUP",
+          "Playing"
+        ],
+        [
+          "Playing",
+          "TEARDOWN",
+          "Init"
+        ],
+        [
+          "Ready",
+          "PLAY",
+          "Playing"
+        ],
+        [
+          "Ready",
+          "RECORD",
+          "Recording"
+        ],
+        [
+          "Ready",
+          "SETUP",
+          "Ready"
+        ],
+        [
+          "Ready",
+          "TEARDOWN",
+          "Init"
+        ],
+        [
+          "Recording",
+          "PAUSE",
+          "Ready"
+        ],
+        [
+          "Recording",
+          "RECORD",
+          "Recording"
+        ],
+        [
+          "Recording",
+          "SETUP",
+          "Recording"
+        ],
+        [
+          "Recording",
+          "TEARDOWN",
+          "Init"
+        ]
+      ]
+    },
+    "C_RFC14被白名单裁后": {
+      "per_run": [
+        {
+          "seeds_raw": 20,
+          "seeds_kept": 8,
+          "state_total": 86,
+          "state_on_target": 86,
+          "state_cross": 0,
+          "sec": 23.3
+        },
+        {
+          "seeds_raw": 20,
+          "seeds_kept": 8,
+          "state_total": 104,
+          "state_on_target": 104,
+          "state_cross": 0,
+          "sec": 21.1
+        },
+        {
+          "seeds_raw": 20,
+          "seeds_kept": 7,
+          "state_total": 84,
+          "state_on_target": 84,
+          "state_cross": 0,
+          "sec": 19.7
+        }
+      ],
+      "transitions": [
+        [
+          "Init",
+          "SETUP",
+          "Ready"
+        ],
+        [
+          "Init",
+          "TEARDOWN",
+          "Init"
+        ],
+        [
+          "Playing",
+          "PAUSE",
+          "Ready"
+        ],
+        [
+          "Playing",
+          "PLAY",
+          "Playing"
+        ],
+        [
+          "Playing",
+          "SETUP",
+          "Playing"
+        ],
+        [
+          "Playing",
+          "TEARDOWN",
+          "Init"
+        ],
+        [
+          "Ready",
+          "PLAY",
+          "Playing"
+        ],
+        [
+          "Ready",
+          "SETUP",
+          "Ready"
+        ],
+        [
+          "Ready",
+          "TEARDOWN",
+          "Init"
+        ],
+        [
+          "Recording",
+          "PAUSE",
+          "Ready"
+        ],
+        [
+          "Recording",
+          "SETUP",
+          "Recording"
+        ],
+        [
+          "Recording",
+          "TEARDOWN",
+          "Init"
+        ]
+      ]
+    },
+    "D_合并(骨架+RFC)": {
+      "per_run": [
+        {
+          "seeds_raw": 19,
+          "seeds_kept": 1,
+          "state_total": 91,
+          "state_on_target": 91,
+          "state_cross": 0,
+          "sec": 16.9
+        },
+        {
+          "seeds_raw": 20,
+          "seeds_kept": 5,
+          "state_total": 98,
+          "state_on_target": 98,
+          "state_cross": 0,
+          "sec": 24.2
+        },
+        {
+          "seeds_raw": 20,
+          "seeds_kept": 0,
+          "state_total": 106,
+          "state_on_target": 106,
+          "state_cross": 0,
+          "sec": 21.5
+        }
+      ],
+      "transitions": [
+        [
+          "Confirmed",
+          "DESCRIBE",
+          "Registered"
+        ],
+        [
+          "Confirmed",
+          "GET_PARAMETER",
+          "Confirmed"
+        ],
+        [
+          "Confirmed",
+          "PAUSE",
+          "Paused"
+        ],
+        [
+          "Confirmed",
+          "PLAY",
+          "Confirmed"
+        ],
+        [
+          "Confirmed",
+          "SETUP",
+          "Confirmed"
+        ],
+        [
+          "Confirmed",
+          "SET_PARAMETER",
+          "Confirmed"
+        ],
+        [
+          "Confirmed",
+          "TEARDOWN",
+          "Terminated"
+        ],
+        [
+          "Idle",
+          "DESCRIBE",
+          "Idle"
+        ],
+        [
+          "Idle",
+          "DESCRIBE",
+          "Registered"
+        ],
+        [
+          "Idle",
+          "GET_PARAMETER",
+          "Idle"
+        ],
+        [
+          "Idle",
+          "OPTIONS",
+          "Idle"
+        ],
+        [
+          "Idle",
+          "OPTIONS",
+          "Registered"
+        ],
+        [
+          "Idle",
+          "SETUP",
+          "Confirmed"
+        ],
+        [
+          "Idle",
+          "SETUP",
+          "Invited"
+        ],
+        [
+          "Idle",
+          "SET_PARAMETER",
+          "Idle"
+        ],
+        [
+          "Idle",
+          "TEARDOWN",
+          "Terminated"
+        ],
+        [
+          "Init",
+          "SETUP",
+          "Ready"
+        ],
+        [
+          "Init",
+          "TEARDOWN",
+          "Init"
+        ],
+        [
+          "Invited",
+          "GET_PARAMETER",
+          "Invited"
+        ],
+        [
+          "Invited",
+          "PAUSE",
+          "Paused"
+        ],
+        [
+          "Invited",
+          "PLAY",
+          "Confirmed"
+        ],
+        [
+          "Invited",
+          "SETUP",
+          "Invited"
+        ],
+        [
+          "Invited",
+          "SET_PARAMETER",
+          "Invited"
+        ],
+        [
+          "Invited",
+          "TEARDOWN",
+          "Terminated"
+        ],
+        [
+          "Paused",
+          "GET_PARAMETER",
+          "Paused"
+        ],
+        [
+          "Paused",
+          "PAUSE",
+          "Paused"
+        ],
+        [
+          "Paused",
+          "PLAY",
+          "Confirmed"
+        ],
+        [
+          "Paused",
+          "SETUP",
+          "Invited"
+        ],
+        [
+          "Paused",
+          "SET_PARAMETER",
+          "Paused"
+        ],
+        [
+          "Paused",
+          "TEARDOWN",
+          "Terminated"
+        ],
+        [
+          "Playing",
+          "PAUSE",
+          "Ready"
+        ],
+        [
+          "Playing",
+          "PLAY",
+          "Playing"
+        ],
+        [
+          "Playing",
+          "SETUP",
+          "Playing"
+        ],
+        [
+          "Playing",
+          "TEARDOWN",
+          "Init"
+        ],
+        [
+          "Ready",
+          "PLAY",
+          "Playing"
+        ],
+        [
+          "Ready",
+          "RECORD",
+          "Recording"
+        ],
+        [
+          "Ready",
+          "SETUP",
+          "Ready"
+        ],
+        [
+          "Ready",
+          "TEARDOWN",
+          "Init"
+        ],
+        [
+          "Recording",
+          "PAUSE",
+          "Ready"
+        ],
+        [
+          "Recording",
+          "RECORD",
+          "Recording"
+        ],
+        [
+          "Recording",
+          "SETUP",
+          "Recording"
+        ],
+        [
+          "Recording",
+          "TEARDOWN",
+          "Init"
+        ],
+        [
+          "Registered",
+          "GET_PARAMETER",
+          "Registered"
+        ],
+        [
+          "Registered",
+          "PAUSE",
+          "Paused"
+        ],
+        [
+          "Registered",
+          "PLAY",
+          "Confirmed"
+        ],
+        [
+          "Registered",
+          "SETUP",
+          "Invited"
+        ],
+        [
+          "Registered",
+          "SET_PARAMETER",
+          "Registered"
+        ],
+        [
+          "Registered",
+          "TEARDOWN",
+          "Terminated"
+        ],
+        [
+          "Terminated",
+          "DESCRIBE",
+          "Registered"
+        ],
+        [
+          "Terminated",
+          "OPTIONS",
+          "Terminated"
+        ],
+        [
+          "Terminated",
+          "SETUP",
+          "Invited"
+        ],
+        [
+          "Terminated",
+          "TEARDOWN",
+          "Terminated"
+        ]
+      ]
+    }
+  },
+  "summary": {
+    "A_现状(骨架38)": {
+      "raw_mean": 19.67,
+      "raw_rng": 1,
+      "kept_mean": 16.33,
+      "kept_rng": 2,
+      "land_rate": 1.0,
+      "cross_rate": 0.0
+    },
+    "B_RFC14原生(不裁)": {
+      "raw_mean": 20,
+      "raw_rng": 2,
+      "kept_mean": 10.67,
+      "kept_rng": 1,
+      "land_rate": 1.0,
+      "cross_rate": 0.0
+    },
+    "C_RFC14被白名单裁后": {
+      "raw_mean": 20,
+      "raw_rng": 0,
+      "kept_mean": 7.67,
+      "kept_rng": 1,
+      "land_rate": 1.0,
+      "cross_rate": 0.0
+    },
+    "D_合并(骨架+RFC)": {
+      "raw_mean": 19.67,
+      "raw_rng": 1,
+      "kept_mean": 2,
+      "kept_rng": 5,
+      "land_rate": 1.0,
+      "cross_rate": 0.0
+    }
+  }
+}

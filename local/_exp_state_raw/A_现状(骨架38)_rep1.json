@@ -1,0 +1,991 @@
+{
+  "seeds": [
+    {
+      "description": "OPTIONS then DESCRIBE basic session",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Idle",
+        "Registered"
+      ],
+      "messages": [
+        {
+          "method": "OPTIONS",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1"
+          },
+          "body": ""
+        },
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "2",
+            "Accept": "application/sdp"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "DESCRIBE then SETUP then PLAY then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+      "state_path": [
+        "Idle",
+        "Registered",
+        "Invited",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "1",
+            "Accept": "application/sdp, application/rtsl, application/mheg"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=3056-3057"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "SETUP multicast then PAUSE then PLAY then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Invited",
+        "Paused",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;multicast;destination=224.0.1.11;"
+          },
+          "body": ""
+        },
+        {
+          "method": "PAUSE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "0456804596"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "0456804596"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "0456804596"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "GET_PARAMETER keepalive in Confirmed state",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Invited",
+        "Confirmed",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP/TCP;interleaved=0-1"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "12345678"
+          },
+          "body": ""
+        },
+        {
+          "method": "GET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "12345678"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "12345678"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "SET_PARAMETER with text body in Registered state",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Registered",
+        "Registered",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1",
+            "Accept": "application/rtsl, application/sdp;level=2"
+          },
+          "body": ""
+        },
+        {
+          "method": "SET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "2034820394",
+            "Content-Type": "text/parameters",
+            "Content-Length": "15"
+          },
+          "body": "packet_loss=5\r\n"
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "2034820394"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "ANNOUNCE then SETUP then RECORD then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Registered",
+        "Invited",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "ANNOUNCE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1",
+            "Content-Type": "application/sdp",
+            "Content-Length": "121"
+          },
+          "body": "v=0\r\no=- 0 0 IN IP4 10.11.26.98\r\ns=Test\r\nc=IN IP4 10.11.26.98\r\nt=0 0\r\nm=audio 0 RTP/AVP 0\r\n"
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=3058-3059"
+          },
+          "body": ""
+        },
+        {
+          "method": "RECORD",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "23456789"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "23456789"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "OPTIONS then SETUP then PLAY with Range header",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Idle",
+        "Invited",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "OPTIONS",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP;unicast;client_port=8000-8001"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "47112344",
+            "Range": "npt=0-"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "47112344"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "DESCRIBE then SETUP then PAUSE then PLAY then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Registered",
+        "Invited",
+        "Paused",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1",
+            "Accept": "application/x-rtsp-mh, application/sdp"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP;unicast;client_port=52570-52571"
+          },
+          "body": ""
+        },
+        {
+          "method": "PAUSE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "50887676"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "50887676"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "5",
+            "Session": "50887676"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "SETUP with interleaved transport then GET_PARAMETER then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Invited",
+        "Invited",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP/TCP;interleaved=0-1"
+          },
+          "body": ""
+        },
+        {
+          "method": "GET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "91389234234"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "91389234234"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "Terminated then DESCRIBE then SETUP then PLAY then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Terminated",
+        "Registered",
+        "Invited",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "1",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "2",
+            "Accept": "application/sdp"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "3",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=8002-8003"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "5",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "SETUP multicast with ttl then PLAY then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Invited",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;multicast;ttl=127;mode=\"PLAY\","
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "107518505;timeout=60"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505;timeout=60"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "DESCRIBE then SET_PARAMETER then PLAY then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Registered",
+        "Registered",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1",
+            "Accept": "application/sdp"
+          },
+          "body": ""
+        },
+        {
+          "method": "SET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "107518505",
+            "Content-Type": "text/parameters",
+            "Content-Length": "10"
+          },
+          "body": "speed=2.5\r\n"
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "OPTIONS then SETUP then PAUSE then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Idle",
+        "Invited",
+        "Paused",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "OPTIONS",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP;unicast;client_port=4588-4589"
+          },
+          "body": ""
+        },
+        {
+          "method": "PAUSE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "SETUP then PLAY with RTP-Info then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Invited",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=52570-52571;server_port=8226-8227;ssrc=3d208345;mode=\"play\""
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "107518505",
+            "RTP-Info": "url=rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1;seq=4276;rtptime=3627500126"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "DESCRIBE then SETUP then GET_PARAMETER then PLAY then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Registered",
+        "Invited",
+        "Invited",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1",
+            "Accept": "application/sdp"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=3056-3057"
+          },
+          "body": ""
+        },
+        {
+          "method": "GET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "5",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "SETUP then SET_PARAMETER then PAUSE then PLAY then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Invited",
+        "Invited",
+        "Paused",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=8000-8001"
+          },
+          "body": ""
+        },
+        {
+          "method": "SET_PARAMETER",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "107518505",
+            "Content-Type": "text/parameters",
+            "Content-Length": "20"
+          },
+          "body": "packet_loss=10\r\n"
+        },
+        {
+          "method": "PAUSE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "5",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "OPTIONS then SETUP then PLAY then PAUSE then PLAY then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Idle",
+        "Invited",
+        "Confirmed",
+        "Paused",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "OPTIONS",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=3058-3059"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "PAUSE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "5",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "6",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "DESCRIBE then SETUP then RECORD then PAUSE then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Registered",
+        "Invited",
+        "Confirmed",
+        "Paused",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1",
+            "Accept": "application/sdp"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=8002-8003"
+          },
+          "body": ""
+        },
+        {
+          "method": "RECORD",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "PAUSE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "5",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "SETUP then PLAY with Range npt then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Invited",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "1",
+            "Transport": "RTP/AVP;unicast;client_port=10000"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "2",
+            "Session": "107518505",
+            "Range": "npt=10-15"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    },
+    {
+      "description": "DESCRIBE then SETUP then PLAY with Speed then TEARDOWN",
+      "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+      "state_path": [
+        "Idle",
+        "Registered",
+        "Invited",
+        "Confirmed",
+        "Terminated"
+      ],
+      "messages": [
+        {
+          "method": "DESCRIBE",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101",
+          "headers": {
+            "CSeq": "1",
+            "Accept": "application/sdp"
+          },
+          "body": ""
+        },
+        {
+          "method": "SETUP",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/trackID=1",
+          "headers": {
+            "CSeq": "2",
+            "Transport": "RTP/AVP/UDP;unicast;client_port=3056-3057"
+          },
+          "body": ""
+        },
+        {
+          "method": "PLAY",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "3",
+            "Session": "107518505",
+            "Speed": "2.5"
+          },
+          "body": ""
+        },
+        {
+          "method": "TEARDOWN",
+          "url": "rtsp://10.11.26.98:554/isapi/streaming/channels/101/",
+          "headers": {
+            "CSeq": "4",
+            "Session": "107518505"
+          },
+          "body": ""
+        }
+      ]
+    }
+  ]
+}
