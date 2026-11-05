@@ -798,6 +798,31 @@ def _load_rfc_config(protocol: str) -> dict:
     return cfg
 
 
+def _extract_transition_tables_by_form(text: str) -> list[dict]:
+    """**形态层表格腿**：按**列角色**解析 RFC 里的状态转移表（协议无关）。
+
+    ★ 与 `_extract_transition_table`（三列定宽硬编码）的关系：
+      - 旧实现按**固定三列 + 状态名继承**匹配 ⇒ 只认一种表格形态；
+      - 本实现先由 `core.fused.rfc_forms` 按**内容形态**切出 `table` 块，
+        再按**表头列名**判定起态/触发/目标列 ⇒ 换协议、换列名、换列数都能解析。
+    ★ 两者**合并去重**后使用 ⇒ 结果与旧实现等价（实测同协议的转移集相同），
+      但新增「按形态定位 + 逐行溯源」的能力，且不依赖章节树（附录里的表也能覆盖）。
+    ★ 通用性前提（G1）：形态层按**内容**判形态 ⇒ 表在附录里照样被识别。
+
+    Returns:
+        `[{"from":…, "method":…, "to":…}, …]`
+    """
+    from core.fused.rfc_forms import parse_state_table, split_form_blocks
+    if not text:
+        return []
+    out: list[dict] = []
+    for _b in split_form_blocks(text.splitlines()):
+        if _b.kind != "table":
+            continue
+        out.extend(parse_state_table(_b))
+    return out
+
+
 def _norm(kind: str, name: str, content: str, protocol: str,
           source: str, section: str) -> dict:
     """构造一条 rfc norm（字段对齐 norm.py 的映射器 + 溯源）。"""
@@ -1518,8 +1543,15 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
     #   ★ 表头特征足够特异（"message sent" + "next state"）⇒ 全文扫安全。
     #   ★ content 格式对齐 `norm.py::parse_transition_content`
     #     （"from=X method=Y to=Z"，按空格分隔的 key=value）。
-    for _tr in (_extract_transition_table(_full_text)
-                if cfg.get("enable_transitions") else []):
+    # ★ 两条腿合并去重：① 全文扫（三列定宽硬编码）② 形态层表格腿（按列角色）
+    #   ⇒ 结果等价但形态腿可逐行溯源、且**不依赖章节树**（附录里的表也覆盖）。
+    _trs = (_extract_transition_table(_full_text)
+             if cfg.get("enable_transitions") else [])
+    if cfg.get("enable_transitions"):
+        for _r in _extract_transition_tables_by_form(_full_text):
+            if _r not in _trs:
+                _trs.append(_r)
+    for _tr in _trs:
         _content = (f"from={_tr['from']} method={_tr['method']} "
                     f"to={_tr['to']}")
         _tn = _norm("transition", _tr["method"], _content, protocol, src_name,

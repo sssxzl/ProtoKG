@@ -330,3 +330,103 @@ __all__ = [
     "FORM_KINDS", "NOISE_KINDS", "STRUCTURED_KINDS", "FormBlock",
     "classify_line", "classify_form", "split_form_blocks", "form_candidates",
 ]
+
+
+# ===========================================================================
+# 状态转移表解析（**按列角色**，协议无关）
+# ===========================================================================
+
+#: 表头列角色关键词（**协议无关**：按列名语义，不含任何协议/章节特例）。
+COL_ROLE_KEYWORDS: dict[str, tuple[str, ...]] = {
+    "from": ("state", "current state", "from state", "old state"),
+    "trigger": ("message", "trigger", "event", "command", "request",
+                "action", "sent", "received"),
+    "to": ("next state", "next", "new state", "resulting state",
+           "to state", "new"),
+}
+
+#: 状态名里的修饰后缀（如 `Playing (changed transport)`）
+RE_STATE_SUFFIX = re.compile(r"\s*\([^)]*\)\s*$")
+
+
+def _split_columns(line: str) -> list[str]:
+    """按「2+ 空格」切成列（**不做内容假设**）。"""
+    parts = re.split(r"[ \t]{2,}", line.strip())
+    return [p.strip() for p in parts if p.strip()]
+
+
+def _match_roles(header_cols: list[str]) -> dict[str, int]:
+    """表头列 → 角色（from / trigger / to）的列序号。
+
+    ★ 协议无关：按**列名语义**判定，不按固定列号 ⇒ 换协议/换列名/换列数都能用。
+    """
+    roles: dict[str, int] = {}
+    for i, col in enumerate(header_cols):
+        low = col.lower()
+        for role, keys in COL_ROLE_KEYWORDS.items():
+            if role in roles:
+                continue
+            if any(k in low for k in keys):
+                # ★ 「next state」含 "state" ⇒ 必须先试 to 再试 from
+                if role == "from" and any(k in low for k in COL_ROLE_KEYWORDS["to"]):
+                    continue
+                roles[role] = i
+                break
+    return roles
+
+
+def parse_state_table(block: FormBlock) -> list[dict]:
+    """按**列角色**解析一个 `table` 块里的状态转移（协议无关）。
+
+    ★ 与既有「三列定宽 + 状态名继承」硬编码解析的差别：
+      按**表头列名**判定哪一列是起态 / 触发 / 目标 ⇒ 列名不同、列数不同都能解析。
+    ★ 支持**续行右对齐**：RFC 表格的续行会省略左侧列（如只有「触发 + 目标」），
+      故列数不足时按**末尾对齐**（右对齐）映射到角色。
+    ★ 状态名去掉修饰后缀（`Playing (changed transport)` → `Playing`）。
+
+    Returns:
+        `[{"from":…, "method":…, "to":…}, …]`；不是状态转移表时返回 `[]`。
+    """
+    if block.kind != "table" or len(block.refs) < 2:
+        return []
+    # ① 找表头行（含 ≥2 个角色关键词）
+    header_idx = None
+    roles: dict[str, int] = {}
+    for i, (_ln, txt) in enumerate(block.refs):
+        cols = _split_columns(txt)
+        r = _match_roles(cols)
+        if len(r) >= 2 and ("from" in r or "to" in r) and "trigger" in r:
+            header_idx, roles = i, r
+            break
+    if header_idx is None or "trigger" not in roles:
+        return []
+
+    out: list[dict] = []
+    last_from = ""
+    for _ln, txt in block.refs[header_idx + 1:]:
+        cols = _split_columns(txt)
+        if not cols:
+            continue
+        n_roles = len(roles)
+        if len(cols) >= n_roles:
+            cols = cols[-n_roles:]            # 取末尾 n 个（右对齐）
+        elif len(cols) < n_roles:
+            cols = [""] * (n_roles - len(cols)) + cols   # ★ 右对齐（续行省左侧列）
+        else:
+            continue
+        val = {role: cols[idx] if idx < len(cols) else ""
+               for role, idx in roles.items()}
+        frm = RE_STATE_SUFFIX.sub("", val.get("from", "")).strip()
+        if frm:
+            last_from = frm
+        else:
+            frm = last_from                     # ★ 状态名继承
+        trig = val.get("trigger", "").strip()
+        to = RE_STATE_SUFFIX.sub("", val.get("to", "")).strip()
+        if not (frm and trig and to):
+            continue
+        out.append({"from": frm, "method": trig, "to": to})
+    return out
+
+
+__all__ += ["parse_state_table", "COL_ROLE_KEYWORDS"]
