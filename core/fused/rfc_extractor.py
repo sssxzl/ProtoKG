@@ -2309,31 +2309,71 @@ def _apply_transition_gate(rows: list[dict], protocol: str) -> list[dict]:
     return _gated
 
 
+#: 目录行（点线）—— 必须排除，否则 `12.1.1 UAS behavior ..... 70`
+#: 会被当成方法 `UAS`（实测踩过：SIP 方法集只剩 {UAC, UAS}）
+_TOC_DOTS_RE = re.compile(r"\.{4,}|(?:\s\.){3,}")
+#: 形态 A：章节标题且**整行只有方法名**（`10.1 OPTIONS`）
+_METHOD_HEADING_RE = re.compile(r"^\d+(?:\.\d+)*\.?\s+([A-Z][A-Z_]{1,20})\s*$")
+#: 形态 A′：括号形态（`4.1.1.2. MAIL (MAIL)` → 取括号内）
+_METHOD_PAREN_RE = re.compile(
+    r"^\d+(?:\.\d+)*\.?\s+[A-Za-z][A-Za-z /()\-,]*?"
+    r"\(([A-Z][A-Z_]{1,20})\)")
+#: 形态 B：ABNF 枚举（`Method = INVITEm / ACKm / ...`，可跨行）
+_METHOD_ABNF_RE = re.compile(r"^\s*Method\s*=\s*(.+)$")
+
+
 def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
     """该协议**RFC 源**里的方法/命令名集合（数据驱动，不硬编码协议名）。
 
-    ★ 做法：按 `rfc_config.method_sections` 声明的语义章节，取其中的
-      **全大写 token**（排除 RFC 自身关键字）⇒ 即「该协议真实方法集」。
+    ★ **三种形态并取**（2026-11-06 修复，原实现只认形态 A 且未排目录行）：
+      A)  **章节标题**且整行只有方法名：``10.1 OPTIONS``（RTSP §10）
+      A′) **括号形态**：``4.1.1.2.  MAIL (MAIL)`` → 取括号内（SMTP §4.1.1）
+      B)  **ABNF 枚举**：``Method = INVITEm / ACKm / OPTIONSm / ...``（SIP §25）
+    ★ 为什么要三形态：SIP 的真实方法只出现在 §25 的 ABNF 里，
+      既不在「章节号 + 全大写」形态、也不在括号形态；只认形态 A 时
+      会抽出 {UAC, UAS} 两个**目录行噪声** ⇒ 质量闸把 SIP 的转移全过滤掉。
     ★ 数据驱动 ⇒ 换协议只需改 rfc_config，不改代码（G2）。
     """
-    import re as _re
     secs = cfg.get("method_sections") or []
     if not secs:
         return set()
     _kw = {"MUST", "SHALL", "SHOULD", "MAY", "REQUIRED", "OPTIONAL", "NOT",
-           "RFC", "TCP", "UDP", "IP", "HTTP", "ID", "URI", "URL", "OK", "ALL"}
+           "RFC", "TCP", "UDP", "IP", "HTTP", "ID", "URI", "URL", "OK", "ALL",
+           "UAC", "UAS", "TU", "UA"}
     out: set[str] = set()
+
+    def _in_sec(num: str) -> bool:
+        return any(num == _x or num.startswith(_x + ".") for _x in secs)
+
     for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
-        for _ln in _f.read_text(encoding="utf-8", errors="ignore").splitlines():
-            _m = _re.match(r"^(\d+(?:\.\d+)*)\.?\s+([A-Z][A-Z_]{1,15})\b", _ln.strip())
-            if not _m:
+        _lines = _f.read_text(encoding="utf-8", errors="ignore").splitlines()
+        for _i, _ln in enumerate(_lines):
+            _s = _ln.strip()
+            if not _s or _TOC_DOTS_RE.search(_s):
                 continue
-            _num, _name = _m.group(1), _m.group(2)
-            if not any(_num == _x or _num.startswith(_x + ".") for _x in secs):
+            # A) 章节标题（整行只有方法名）
+            _m = _METHOD_HEADING_RE.match(_s)
+            if _m and _in_sec(_s.split()[0].rstrip(".")):
+                if _m.group(1) not in _kw:
+                    out.add(_m.group(1))
                 continue
-            if _name in _kw:
+            # A′) 括号形态
+            _m2 = _METHOD_PAREN_RE.match(_s)
+            if _m2 and _in_sec(_s.split()[0].rstrip(".")):
+                if _m2.group(1) not in _kw:
+                    out.add(_m2.group(1))
                 continue
-            out.add(_name)
+            # B) ABNF 枚举（续行以 / 开头）
+            _m3 = _METHOD_ABNF_RE.match(_s)
+            if _m3:
+                _buf = _m3.group(1)
+                _j = _i + 1
+                while _j < len(_lines) and _lines[_j].strip().startswith("/"):
+                    _buf += " " + _lines[_j].strip()
+                    _j += 1
+                for _tok in re.findall(r"\b([A-Z][A-Z_]{2,20})m?\b", _buf):
+                    if _tok not in _kw:
+                        out.add(_tok)
     return out
 
 
