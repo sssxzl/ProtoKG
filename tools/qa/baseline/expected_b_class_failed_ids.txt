@@ -1,8 +1,3 @@
-tests/fused/test_edge_cover.py::test_edge_cover_covers_all_reachable_edges
-tests/fused/test_rag_seedgen.py::test_assemble_transitions_keep_method
-tests/fused/test_rag_seedgen.py::test_validate_invalid_transition
-tests/fused/test_rag_seedgen_step2.py::test_react_first_round_invalid_then_corrected
-tests/fused/test_rag_seedgen_step2.py::test_retrieve_subgraph_hops2_expands_neighbors
 tests/fused/test_rq3_dict.py::test_protocol_dict_unchanged_102
 tests/fused/test_rq3_dict.py::test_targeted_dict_sorted_and_quoted
 tests/fused/test_rq3_dict.py::test_targeted_dict_token_count
@@ -29,4 +24,3 @@ tests/fused/test_rq3_manifest.py::test_cli_manifest_complete[B-50]
 tests/fused/test_rq3_manifest.py::test_cli_manifest_complete[C-50]
 tests/fused/test_rq3_manifest.py::test_cli_manifest_complete[D-50]
 tests/fused/test_rq3_manifest.py::test_cli_manifest_records_dictionary
-tests/fused/test_strategy.py::test_generate_attack_seeds_filters_invalid

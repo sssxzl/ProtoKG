@@ -1,0 +1,22 @@
+{
+  "A_骨架38(SIP式状态名)": {
+    "edge_cover": 5,
+    "generic_danger": 25,
+    "total": 30,
+    "legal": 21,
+    "legal_rate": 0.7,
+    "illegal_reasons": {
+      "状态 Init 下不允许 PAUSE": 5,
+      "状态 Ready 下不允许 PAUSE": 3,
+      "状态 Init 下不允许 PLAY": 1
+    }
+  },
+  "B_RFC14(原生状态名)": {
+    "edge_cover": 3,
+    "generic_danger": 12,
+    "total": 15,
+    "legal": 15,
+    "legal_rate": 1.0,
+    "illegal_reasons": {}
+  }
+}

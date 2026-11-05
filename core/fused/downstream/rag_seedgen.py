@@ -722,6 +722,13 @@ def _resolve_semantic_rules(semantic_rules: Optional[list],
 #:   而是跨实验复用的协议结构 ⇒ 组装期过滤时**恒允许**）。
 SKELETON_AUTHORITY = "profile"
 
+#: ★ 2026-11-05：**规范原生**状态机的 authority（直接抽自 RFC 文本）。
+#:   ★ 已知：骨架的 ``target_state`` 实为 **source 源**派生（``skeleton.json``
+#:     的 ``origin.source`` 含 ``target_state``）—— 追查出的思想源头是
+#:     ``source_autoseeder.py`` 提示词里硬塞的 **SIP 式状态名范例**
+#:     ⇒ 骨架的状态名**不一定**属于该协议的规范。
+RFC_AUTHORITY = "rfc"
+
 
 #: ★ 批次 1.6 步 3：``(subject_type, aspect)`` → **中枢桶名**。
 #:   用于「桶级溯源统计」（`bundle["by_source"]`）。
@@ -802,21 +809,102 @@ def _dedupe_sorted(values: list) -> list:
 
 
 def _select_active_transitions(by_source: dict[str, list]) -> list:
-    """从「各源的状态机」里选出**当前采用**的一套（本期 = 协议骨架那套）。
+    """从「各源的状态机」里选出**当前采用**的一套。
 
-    ★★ **后期 LLM 判别的接入点**：用户要求「各源状态机都保存到中枢，
-      后期让 LLM 依据我们定的规则进行判别」⇒ 本函数就是那个「判别」的落点：
-      届时把这里的默认规则换成「LLM 判别结果」即可，**其它环节不必改动**。
+    ★★ 2026-11-05 修正（依据：``local/状态机消费口径对照实验报告.md``）：
+      旧实现是「**骨架优先**」⇒ RTSP 采用协议骨架那 38 条边，而它的 6 个状态名
+      （Idle/Registered/Confirmed/Invited/Paused/Terminated）在 RFC 2326 原文中
+      **0/6 命中** —— 那是 ``source_autoseeder`` 提示词里硬塞的 **SIP 式范例**
+      （``core/fused/source_autoseeder.py:182,203``）⇒ 双重危害：
+        ① **污染 prompt**：LLM 照抄这些状态名生成种子；
+        ② **校验器失效**：状态名对不上 ⇒ ``validate_seed`` 的 ``trans_by_from``
+           取不到 from 态 ⇒「有知识才校验」分支**永不触发** ⇒ 状态机对 RTSP
+           而言是**死知识**。
+      实测（4 组 × 3 次 LLM + 外部真值 = RFC A.1+A.2 共 14 条边）：
 
-    ★ 本期默认规则（**刻意保持现状** ⇒ 消费端产物逐字节不变）：
-      ① 优先用**协议骨架**（authority=profile）那套 —— 它覆盖面最广
-         （实测 rtsp：骨架 38 条 vs RFC 客户端 12 条）；
-      ② 骨架没有时 ⇒ 用**全部**（去重、排序）。
+        | 组                    | kept | 精确率 | 召回率 |
+        | 现状(骨架 38)         |16.33 |  0.0%  |  0.0%  |
+        | RFC 原生(14, 不裁)    |10.67 | 100.0%  | 93.3%  |
+        | RFC 原生(14, 裁后12)  | 7.67 | 100.0%  | 98.3%  |
+        | 两套合并(52)          | 2.00 |  0.0%  |  0.0%  |
+
+      ⇒ **规范原生优先**，且**绝不合并两套**（合并 ⇒ LLM 在两套状态名间摇摆
+        ⇒ 精确率/召回率双 0 ⇒ 是灾难）。
+
+    ★ 规则（**协议无关**，靠 authority 优先级自动适配）：
+      ① 有**规范原生**（authority=rfc = 直接抽自 RFC 文本）的那套 ⇒ 用它；
+      ② 否则用**协议骨架**（authority=profile）；
+      ③ 都没有 ⇒ 全部去重合并（兜底）。
+      ⇒ 只有真正开了 ``enable_transitions`` **且** RFC 源确实抽到状态机的协议
+        才会走第 ① 步（当前仅 rtsp）；其余协议（sip/smtp 尚无 RFC 源状态机）
+        行为**逐字节不变**。
+
+    ★ 连带影响（已实测，``edge_cover`` 纯确定性、零 LLM 成本）：
+      rtsp 的 ``edge_cover`` 种子 5 → 3 条。看似变少，但**多出来的那 2 条状态
+      路径含 Idle/Registered/… ⇒ 真实 RTSP 服务器根本没有这些状态 ⇒ 那 2 条
+      种子在协议层面**不可实现** ⇒ 净收益为正。
+      ``message_instances`` 的键含状态名 ⇒ 切到 RFC 后骨架那套实例查不到
+      （字段实例退化；``RECORD`` 无实例 ⇒ 该边消息无字段，**已知缺陷**，
+      全源模式下因 ``allowed_methods`` 不含 RECORD 会自动裁掉该边）。
     """
-    chosen = by_source.get(SKELETON_AUTHORITY) or []
-    if not chosen:
-        chosen = [t for rows in by_source.values() for t in rows]
-    return sorted(set(chosen))
+    for _auth in (RFC_AUTHORITY, SKELETON_AUTHORITY):
+        _chosen = by_source.get(_auth) or []
+        if _chosen:
+            return sorted(set(_chosen))
+    return sorted({t for rows in by_source.values() for t in rows})
+
+
+def _align_message_instances(transitions: list, message_instances: dict,
+                             *, allow_migrate: bool) -> dict:
+    """把字段级实例对齐到**当前采用**的状态机转移上。
+
+    ★ 为什么要对齐：``message_instances`` 的键是 ``(from, method, to)`` 三元组，
+      其中 from/to 是**状态名** ⇒ 一旦状态机换了来源（RTSP 从骨架那套
+      SIP 式状态名换成 RFC 原生那套），旧实例的键就再也命中不了
+      ⇒ ``edge_cover`` 取不到字段模板 ⇒ 消息只剩必填头 + **空值**
+      （实测 ``Transport: ''`` / ``Session: ''``）⇒ 字段级知识**静默失效**。
+      ⇒ 必须让实例与采用的那套转移**同源**（不变量：实例键 ⊆ 转移键）。
+
+    ★ 对齐规则：
+      ① 原样命中的实例（键恰是采用的转移）⇒ **保留**；
+      ② 未命中但**方法相同**的实例 ⇒ 按 method 迁移一份模板到该转移
+         （字段取值本身是协议级合法值，与状态名无关 ⇒ 可迁移）；
+      ③ 迁移后仍无实例的转移 ⇒ 留空（下游回退必填头 + 默认值）。
+
+    ★ ``allow_migrate``：
+      - True（全源 / 含 source 源，与 ``apply_allowed_methods`` 同义）
+        ⇒ 执行 ②；
+      - False（严格单源，如 ``--sources rfc``）⇒ **只保留命中的**、未命中的
+        **剔除** ⇒ 桶与转移严格一致（**纯净度优先**，字段回退必填头）。
+    """
+    if not message_instances:
+        return {}
+    if not transitions:
+        # ★ 没有状态机转移可对齐 ⇒ **原样保留**。
+        #   否则「单独组装一条 message_instance 事实」时（transitions 桶为空）
+        #   会被清空 ⇒ 破坏「每个 fact 组合只落到它该落的桶」的不变量
+        #   （tests/fused/test_bundle_provenance.py::test_each_kind_lands_only_in_its_bucket）。
+        return dict(message_instances)
+    trans_set = {(str(s), str(m).strip().upper(), str(d))
+                 for s, m, d in transitions}
+    # 按 method 建模板索引（确定性：同方法多个实例取字典序最小键）
+    by_method: dict[str, list] = {}
+    for key in sorted(message_instances):
+        by_method.setdefault(str(key[1]).strip().upper(), []).append(key)
+    out: dict = {}
+    for key in sorted(message_instances):
+        k = (str(key[0]), str(key[1]).strip().upper(), str(key[2]))
+        if k in trans_set:
+            out[k] = message_instances[key]
+    if allow_migrate:
+        for k in sorted(trans_set):
+            if k in out:
+                continue
+            cands = by_method.get(k[1]) or []
+            if not cands:
+                continue
+            out[k] = message_instances[cands[0]]
+    return out
 
 
 def assemble_bundle(views: list[dict], protocol: str = "rtsp",
@@ -1167,8 +1255,11 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     #   ★ 为什么分开：用户的要求是「每个知识源获取的状态机信息都保存到中枢，
     #     后期让 LLM 依据规则判别」⇒ **保存**（中枢 facts + by_source 全量）与
     #     **使用**（消费端用哪套）是两件事 ⇒ 本期只做前者 + 预留后者接口。
-    #   ★ 当前默认采用**协议骨架**（profile）那套：它是「跨实验复用的协议结构」，
-    #     覆盖面最广（rtsp 38 条 vs RFC 客户端 12 条）⇒ 保持现有产物不变。
+    #   ★ 当前采用规则见 `_select_active_transitions()`：**规范原生（rfc）优先，
+    #     协议骨架兜底**（2026-11-05 修正）。旧规则是「骨架优先」⇒ RTSP 采用了
+    #     骨架那 38 条 SIP 式状态名的边（RFC 原文命中 0/6）⇒ 种子状态路径
+    #     精确率 **0%**；改用 RFC 原生那 14 条 ⇒ 精确率 **100%**
+    #     （依据：``local/状态机消费口径对照实验报告.md``）。
     #   ★ 后期 LLM 判别时**只需替换 `_select_active_transitions()`** 这一个函数。
     transitions_by_source: dict[str, list] = {}
     for _t, _a in zip(transitions, _transitions_auth):
@@ -1202,6 +1293,15 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     # 状态机漏建模（如 double_setup 的 SETUP 自环），注入后 generic_danger / 边界探针
     # 才能自然产「重复方法」的合法危险种子（对齐「接近但不触发」原则）。
     transitions = _inject_vuln_self_loops(transitions, vuln_patterns, set(methods))
+    # ★ 2026-11-05：状态机换源后，字段级实例必须**同步对齐**到采用的那套转移
+    #   （否则键命中不了 ⇒ `edge_cover` 取不到字段 ⇒ 消息字段值全空 ⇒
+    #   字段级知识静默失效）。
+    #   `allow_migrate` 复用 `apply_allowed_methods` —— 它与「本次源集合是否
+    #   含 source 源」**完全同义**（见 scripts/seedgen.py:1039）：
+    #   全源 ⇒ 允许把源码侧的字段模板迁到规范原生的转移上；
+    #   严格单源（--sources rfc）⇒ **不迁移**，只留命中的 ⇒ 纯净度优先。
+    message_instances = _align_message_instances(
+        transitions, message_instances, allow_migrate=apply_allowed_methods)
     # P2a：method 级 precedence 消解（接入 resolver 统一消解引擎）。
     # state_changing/existence 是「单值判定」aspect，多源冲突时按认识论优先级
     #（observed > normative/must > descriptive）取最高者，而非「后遍历覆盖先遍历」。
@@ -1667,8 +1767,17 @@ def validate_seed(seed, bundle: dict) -> list[str]:
     required = bundle["required_headers"]
     transitions = bundle["transitions"]
     trans_by_from: dict = {}
+    #: ★ 2026-11-05：**状态改变方法**集合 = 出现在状态机转移里的方法。
+    #:   RFC 的状态转移表（A.1/A.2）只列改变状态的方法（RTSP：SETUP / PLAY /
+    #:   PAUSE / RECORD / TEARDOWN）；DESCRIBE / OPTIONS / GET_PARAMETER /
+    #:   SET_PARAMETER 是**状态无关**方法 —— RTSP 允许在会话进行中随时发。
+    #:   ⇒ 状态转移校验**只覆盖状态改变方法**，否则会把含 DESCRIBE/OPTIONS 的
+    #:   **合法**种子误判为非法（实测：漏洞导向的合法攻击种子被整条丢弃）。
+    state_changing_methods: set = set()
     for src, method, dst in transitions:
         trans_by_from.setdefault(src.upper(), set()).add((method.upper(), dst))
+        if method:
+            state_changing_methods.add(method.upper())
 
     current = (seed.target_state_path[0] if seed.target_state_path else "Init")
     for i, m in enumerate(seed.messages):
@@ -1681,6 +1790,9 @@ def validate_seed(seed, bundle: dict) -> list[str]:
             if h.upper() not in have:
                 errs.append(f"msg[{i}] {m.method} 缺必填头 {h!r}")
         # 状态转移校验（有知识才校验；未知状态不强制）
+        if method not in state_changing_methods:
+            # 状态无关方法（DESCRIBE/OPTIONS/…）⇒ 不做状态转移校验
+            continue
         allowed = trans_by_from.get(current.upper(), set())
         if allowed:
             # 同一状态同方法可能有多个出边（如 DESCRIBE 从 Init 可到 Init/Ready）。

@@ -60,26 +60,26 @@
         "focus_group": {
           "A": {
             "dict": "base",
-            "seeds": 75,
+            "seeds": 32,
             "dict_tokens": 24
           },
           "B": {
             "dict": "base",
-            "seeds": 80,
+            "seeds": 37,
             "dict_tokens": 24
           },
           "C": {
             "dict": "targeted",
-            "seeds": 80,
+            "seeds": 37,
             "dict_tokens": 212
           },
           "D": {
             "dict": "base",
-            "seeds": 80,
+            "seeds": 37,
             "dict_tokens": 24
           }
         },
-        "focus_group_note": "★ 批次 2.5 F9 + 2026-11-04 重标定（扩池 + ABNF 派生字段 + P 侧受控类别 ⇒ ③层 +2 条约束边界候选）：env 档（可播会话子集）独立标定（协议级 86/91/91/91，env 级见本处）"
+        "focus_group_note": "★ 2026-11-05 重标定（状态机择一改为「规范原生优先」）：骨架那 38 条 SIP 式状态名的边 ⇒ 换成 RFC 原生那 12 条 ⇒ 确定性层可构造的边更少（edge_cover 5→2、generic_danger 25→8）⇒ 协议级与 env 级均降为 32/37/37/37。★ 其中去掉了 **9 条非法种子**（真值 = RFC 2326 A.1+A.2：Init 态下的 PAUSE×5、Ready 态下的 PAUSE×3、Init 态下的 PLAY×1）⇒ 确定性层方法序列合法率 70% → 100%。★ 规模下降的补偿路径：⑤ 变异层（LLM 字段级 action-sequence）可作为「性能优先」下的正当 LLM 用法。env 档（可播会话子集）独立标定"
       }
     },
     "required_headers": {
@@ -186,22 +186,22 @@
     "focus_group": {
       "A": {
         "dict": "base",
-        "seeds": 86,
+        "seeds": 32,
         "dict_tokens": 24
       },
       "B": {
         "dict": "base",
-        "seeds": 91,
+        "seeds": 37,
         "dict_tokens": 24
       },
       "C": {
         "dict": "targeted",
-        "seeds": 91,
+        "seeds": 37,
         "dict_tokens": 223
       },
       "D": {
         "dict": "base",
-        "seeds": 91,
+        "seeds": 37,
         "dict_tokens": 24
       }
     },

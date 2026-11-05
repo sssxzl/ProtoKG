@@ -90,13 +90,31 @@ def test_transitions_by_source_has_no_unknown_source(bundle):
 # ③ 消费端行为不变（保存与使用分离）
 # ===========================================================================
 
-def test_active_transitions_unchanged(bundle):
-    """★ `transitions` 仍是**当前采用的一套**（本期 = 协议骨架那套）。"""
+def test_active_transitions_prefers_rfc_native(bundle):
+    """★ `transitions` = **当前采用的一套** = **规范原生（rfc）优先**。
+
+    ★ 2026-11-05 修正（旧断言守的是「协议骨架优先」，已推翻）：
+      协议骨架那套的 6 个状态名（Idle/Registered/…）在 RFC 2326 原文中
+      **0/6 命中**（是 `source_autoseeder` 提示词里硬塞的 SIP 式范例）
+      ⇒ 旧规则下种子的状态路径精确率 **0%**；改用 RFC 原生那套后 **100%**
+      （依据：`local/状态机消费口径对照实验报告.md`）。
+    """
     by_src = bundle.get("transitions_by_source") or {}
-    profile_rows = by_src.get("profile") or []
-    assert profile_rows, "协议骨架那套不在（本期采用它）"
-    assert set(bundle["transitions"]) == set(
-        tuple(r) for r in profile_rows), "采用的一套与协议骨架不一致"
+    rfc_rows = by_src.get("rfc") or []
+    assert rfc_rows, "RFC 源那套不在（rtsp 开了 enable_transitions）"
+    adopted = set(bundle["transitions"])
+    # ★ 采用的那套必须是 RFC 源那套的**子集**
+    #   （方法白名单 `profile.allowed_methods` 不含 RECORD ⇒ 会裁掉 RECORD 的边；
+    #    裁剪发生在择一之后 ⇒ 12 条 ⊆ 14 条）。
+    assert adopted, "采用的一套为空"
+    assert adopted <= set(tuple(r) for r in rfc_rows), (
+        "采用的一套含非 RFC 源的边："
+        f"{sorted(adopted - set(tuple(r) for r in rfc_rows))}")
+    # ★ 两套状态名**不得并存**（并存 ⇒ LLM 在两套间摇摆 ⇒ 精确率/召回率双 0）
+    prof_states = {s for r in by_src.get("profile") or [] for s in (r[0], r[2])}
+    rfc_states = {s for r in rfc_rows for s in (r[0], r[2])}
+    assert not (prof_states & rfc_states), \
+        f"两套状态名并存了：{sorted(prof_states & rfc_states)}"
 
 
 def test_transitions_are_deduplicated(bundle):
@@ -147,11 +165,14 @@ def test_select_active_transitions_is_the_llm_hook():
     """
     fn = RS._select_active_transitions
     assert callable(fn)
-    # 当前默认：优先协议骨架那套
+    # 当前默认（2026-11-05 修正）：**规范原生（rfc）优先**，协议骨架兜底
     by_src = {"profile": [("Init", "SETUP", "Ready")],
               "rfc": [("A", "B", "C")]}
-    assert fn(by_src) == [("Init", "SETUP", "Ready")]
-    # 没有协议骨架时 ⇒ 用全部
-    assert fn({"rfc": [("A", "B", "C")]}) == [("A", "B", "C")]
+    assert fn(by_src) == [("A", "B", "C")]
+    # 没有规范原生那套时 ⇒ 回退协议骨架
+    assert fn({"profile": [("Init", "SETUP", "Ready")]}) == [
+        ("Init", "SETUP", "Ready")]
+    # 两者都没有 ⇒ 用全部（去重、排序）
+    assert fn({"traffic": [("X", "Y", "Z")]}) == [("X", "Y", "Z")]
     # 空输入不炸
     assert fn({}) == []
