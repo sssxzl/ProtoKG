@@ -1,0 +1,29 @@
+fix(state): 状态机择一改为「规范原生优先」—— 种子状态路径精确率 0% → 100%
+
+★ 根因（local/状态机消费口径对照实验报告.md）：
+  ① core/fused/source_autoseeder.py:182,203 —— 提示词把 **SIP 的状态名范例**
+     （Idle/Registered/Invited/Confirmed）当通用范例硬塞 ⇒ LLM 给 RTSP 也编出
+     同一套 ⇒ 骨架那 38 条边的 6 个状态名在 RFC 2326 原文 **0/6 命中**
+  ② core/fused/downstream/rag_seedgen.py:804 —— 择一实现是「骨架优先」，
+     与注释写的「源派生优先、骨架兜底」**相反**
+
+★ 改动（4 处）：
+  ① 新增常量 RFC_AUTHORITY="rfc"；_select_active_transitions 改为
+     **规范原生优先、协议骨架兜底**（协议无关，靠 authority 优先级自动适配；
+     sip/smtp 无 RFC 源状态机 ⇒ 逐字节不变）
+  ② 新增 _align_message_instances()：状态机换源后把字段级实例**对齐**到
+     采用的那套转移（否则键命中不了 ⇒ 消息字段值全空 ⇒ 字段级知识静默失效）
+     严格单源（--sources rfc）**不迁移** ⇒ 纯净度优先
+  ③ validate_seed 的状态转移校验**只覆盖状态改变方法** ⇒ 不再把含
+     DESCRIBE/OPTIONS 的合法种子误判为非法（RFC 状态转移表只列改变状态的方法）
+  ④ rtsp 种子数重标定 91 → 37（含 env 档）
+
+★ 独立佐证（来自测试代码本身）：**6 个原本失败的测试现在通过** —— 它们从一开始
+  就按 RTSP 原生状态名写的（如 assert ("Init","SETUP","Ready") in transitions）
+  ⇒ 旧实现下永远无法通过。护栏 41 failed/1572 passed → **35 failed/1578 passed**
+  （新增 0 / 消失 0 ⇒ 可采信）。
+
+★ 质量数据（外部真值 = RFC 2326 A.1+A.2 共 14 条边）：
+  LLM 层   精确率 0.0% → 100.0%（召回 0.0% → 93.3%）
+  确定性层 方法序列合法率 70.0% → 100.0%（去掉 9 条非法种子）
+  种子数   91 → 37（含 9 条非法被剔除；补偿路径 = ⑤ 层 LLM 变异）
