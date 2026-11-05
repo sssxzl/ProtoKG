@@ -745,6 +745,14 @@ def _load_rfc_config(protocol: str) -> dict:
         #      表格抽不到）⇒ 覆盖**显著变小** ⇒ 需要先补齐服务端状态机
         #     （P1b：LLM 抽自然语言状态机）才宜开启。
         "enable_transitions": False,
+        # ★ 2026-11-05（F 阶段 F1）：RFC 源抽「**消息级**必填头」的开关
+        #   （**默认关闭** ⇒ 产物逐字节不变）。
+        #   ★ 能力依据：确定性路线实测不可行（RFC 用指代句式表达必填性 ⇒ 正则抓不到），
+        #     LLM 路线可行（实测 sip 覆盖 6/8=75%、误报 0；
+        #     详见 local/必填头抽取可行性报告.md）。
+        #   ★ 产出 aspect=required_header_global ⇒ **不进任何 bundle 桶**
+        #     ⇒ 只作为可审计的 RFC 源证据留在中枢，供「替代骨架那份」的决策使用。
+        "enable_required_headers": False,
         "method_excludes": [],
         "numeric_bounds": [],
         "expected_response_classes": [],
@@ -766,6 +774,8 @@ def _load_rfc_config(protocol: str) -> dict:
         # ★ 布尔键（不属列表白名单）
         if isinstance(data.get("enable_transitions"), bool):
             cfg["enable_transitions"] = data["enable_transitions"]
+        if isinstance(data.get("enable_required_headers"), bool):
+            cfg["enable_required_headers"] = data["enable_required_headers"]
         # method_excludes 统一大写（与旧路径语义一致）
         cfg["method_excludes"] = [str(x).upper() for x in cfg["method_excludes"]]
         return cfg
@@ -2014,6 +2024,146 @@ def extract_transition_candidates(protocol: str) -> list[dict]:
 # ===========================================================================
 
 
+
+# ===========================================================================
+# F 阶段 F1：RFC 源的**消息级必填头**（LLM，默认关闭）
+# ===========================================================================
+
+_PROMPT_REQUIRED_HEADER = """你是协议规范分析助手。下面是 {protocol} 协议 RFC 规范中的相关章节。
+
+请判断：该协议的**每一个请求报文**都必须携带哪些头部字段？
+
+只输出 JSON：
+{{"required_headers": [{{"name": "<头名>", "evidence": "<RFC 原句>"}}]}}
+
+规则：
+1. 只收**所有请求都必带**的头（例如消息序号、会话标识、传输参数这类协议级必带项）。
+2. ★ **不要**收：
+   - 只在**响应**里出现的头（响应码、认证挑战等）；
+   - **条件性**必填的头（"仅当……时 MUST"）；
+   - 内容协商类可选头（Accept*、Content-Type 等可选项）；
+   - 方法专属的头（只对某一个方法必带）。
+3. `name` 必须**原样照抄**下面列表里的头名（不要自造、不要改大小写）：
+   {allowed}
+4. `evidence` 给出 RFC 原句（可截断到 160 字）。
+5. 判不出就返回空列表。
+
+{body}
+"""
+
+
+def _rfc_source_headers(protocol: str, cfg: dict) -> set[str]:
+    """该协议**RFC 源**里的头名集合（数据驱动：`rfc_config.field_sections`）。
+
+    ★ 做法：在 `field_sections` 声明的**头字段章节**里，取「编号 + 头名」形态
+      的标题（如 `12.10 CSeq`）⇒ 即该协议的头名集合。
+    ★ 换协议只改 rfc_config，不改代码（G2）。
+    """
+    import re as _re
+    secs = cfg.get("field_sections") or []
+    if not secs:
+        return set()
+    out: set[str] = set()
+    for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
+        for _ln in _f.read_text(encoding="utf-8", errors="ignore").splitlines():
+            _m = _re.match(r"^(\d+(?:\.\d+)*)\.?\s+(\S[^\s].*?)\s*$",
+                           _ln.strip())
+            if not _m:
+                continue
+            _num, _title = _m.group(1), _m.group(2)
+            if not any(_num == _x or _num.startswith(_x + ".")
+                       for _x in secs):
+                continue
+            if _re.match(r"^[A-Z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*$", _title):
+                out.add(_title)
+    return out
+
+
+def infer_required_headers(protocol: str, llm=None) -> list[dict]:
+    """LLM 抽「消息级必填头」⇒ RFC 源的 ``required_header_global`` norm。
+
+    ★ **默认关闭**（`rfc_config.enable_required_headers`）⇒ 产物逐字节不变。
+    ★ 能力依据见 ``local/必填头抽取可行性报告.md``：
+      确定性路线不可行（RFC 用指代句式表达必填性）；LLM 路线可行。
+    ★ 带磁盘缓存 ⇒ 同一份 RFC 命中缓存不调 LLM ⇒ 可复现。
+    """
+    from core.fused.rfc_forms import split_form_blocks
+    from core.fused.source_retrieval import CACHE_DIR
+    cfg = _load_rfc_config(protocol)
+    if not cfg.get("enable_required_headers"):
+        return []
+    known = _rfc_source_headers(protocol, cfg)
+    if not known:
+        return []
+    if llm is None:
+        from core.llm import DeepSeekClient
+        llm = DeepSeekClient()
+    # 候选：形态层的 table + normative 块（协议无关、位置无关）
+    cands: list[dict] = []
+    for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
+        _lines = _f.read_text(encoding="utf-8", errors="ignore").splitlines()
+        for _b in split_form_blocks(_lines):
+            if _b.kind in ("table", "normative"):
+                cands.append({"text": _b.text, "kind": _b.kind,
+                              "hash": hashlib.sha256(
+                                  _b.text.encode("utf-8")).hexdigest(),
+                              "source": f"file:{_f.name}#@{_b.line_start}"})
+    if not cands:
+        return []
+    cache_file = CACHE_DIR / f"{protocol}.required_headers.json"
+    block_hash = hashlib_sha256("|".join(c["hash"] for c in cands))
+    rows = None
+    if cache_file.exists():
+        try:
+            cached = json.loads(cache_file.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            cached = None
+        if isinstance(cached, dict) and cached.get("block_hash") == block_hash:
+            rows = cached.get("rows")
+    if rows is None:
+        rows = []
+        allowed = ", ".join(sorted(known))
+        for _c in cands:
+            try:
+                _r = llm.chat_json(
+                    system="你输出 JSON。",
+                    user=_PROMPT_REQUIRED_HEADER.format(
+                        protocol=protocol.upper(), allowed=allowed,
+                        body=_c["text"][:7000]),
+                    temperature=0.0, max_tokens=2000)
+            except Exception:  # noqa: BLE001
+                continue
+            if not isinstance(_r, dict):
+                continue
+            for _it in (_r.get("required_headers") or []):
+                if not isinstance(_it, dict):
+                    continue
+                _n = str(_it.get("name", "")).strip()
+                if _n and _n in known:
+                    rows.append({"name": _n,
+                                 "evidence": str(_it.get("evidence", ""))[:300],
+                                 "source": _c["source"]})
+        try:
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            cache_file.write_text(json.dumps(
+                {"block_hash": block_hash, "rows": rows},
+                ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        except OSError:
+            pass
+    # norm 化（kind=required_header_global ⇒ 走 norm.py 的新转换器）
+    norms: list[dict] = []
+    for _r in rows:
+        _name = str(_r.get("name", "")).strip()
+        if not _name:
+            continue
+        _n = _norm("required_header_global", _name, f"name={_name}",
+                   protocol, str(_r.get("source", "")), "@rfc-required-header")
+        _n["name"] = _name
+        _n["evidence"] = str(_r.get("evidence", ""))
+        norms.append(_n)
+    return norms
+
+
 def _rfc_full_text(protocol: str) -> str:
     """该协议 RFC 原文的全量文本（质量闸判「状态名是否可溯源」用）。"""
     out = []
@@ -2270,6 +2420,15 @@ def extract_rfc_norms(protocol: str) -> list[dict]:
                 continue
             seen_protocol_level.add(_tn["norm_id"])
             norms.append(_tn)
+    # ---- 通道 H：RFC 源的**消息级必填头**（★ F 阶段 F1，**默认关闭**）----
+    #   aspect=required_header_global ⇒ **不进任何 bundle 桶** ⇒ 产物逐字节不变；
+    #   仅作为可审计的 RFC 源证据留在中枢（供「替代骨架那份」的决策使用）。
+    if cfg.get("enable_required_headers"):
+        for _hn in infer_required_headers(protocol):
+            if _hn["norm_id"] in seen_protocol_level:
+                continue
+            seen_protocol_level.add(_hn["norm_id"])
+            norms.append(_hn)
     return norms
 
 

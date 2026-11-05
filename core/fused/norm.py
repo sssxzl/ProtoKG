@@ -391,6 +391,26 @@ def constraint_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
     return facts
 
 
+
+def required_header_global_norm_to_fact(norm: dict[str, Any]) -> list[Fact]:
+    """rfc ``required_header_global`` norm → Fact（aspect=required_header_global）。
+
+    ★ 语义：**消息级**必填头 —— 「**所有请求**都必须携带」的头
+      （区别于「仅某方法必带」的方法级头，也区别于「服务器返回」的响应级头）。
+    ★ **不进任何 bundle 桶**（`_BUCKET_BY_KIND` 不含该 aspect）⇒
+      消费端行为与产物**逐字节不变**；该知识仅作为**可审计的 RFC 源证据**留在中枢，
+      供论文报告与后续「替代骨架那份」的决策使用。
+    """
+    name = str(norm.get("name") or "").strip()
+    if not name:
+        return []
+    subject = Subject(type="field", name=name,
+                      qualifiers={"scope": "global"})
+    return [_make_fact(subject, "required_header_global",
+                       Value(type="text", data=name),
+                       "normative_unspecified", norm)]
+
+
 #: rfc 源 kind → 映射函数（返回 list[Fact]）
 RFC_KIND_MAP = {
     "transition": lambda n: [transition_norm_to_fact(n)],
@@ -400,6 +420,8 @@ RFC_KIND_MAP = {
     "outcome": outcome_norm_to_facts,
     "method": method_norm_to_facts,
     "constraint": constraint_norm_to_facts,
+    # ★ 2026-11-05（F 阶段 F1）：RFC 源的**消息级必填头**（不进 bundle 桶）
+    "required_header_global": required_header_global_norm_to_fact,
 }
 
 
