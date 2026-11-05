@@ -8,7 +8,6 @@
       "methods": {
         "count": 11,
         "by_source": {
-          "profile": 10,
           "rfc": 11
         }
       },
@@ -154,9 +153,8 @@
     "apply_allowed_methods": false,
     "buckets": {
       "methods": {
-        "count": 8,
+        "count": 6,
         "by_source": {
-          "profile": 8,
           "rfc": 6
         }
       },
@@ -277,11 +275,9 @@
       "ACK",
       "BYE",
       "CANCEL",
-      "INFO",
       "INVITE",
       "OPTIONS",
-      "REGISTER",
-      "SUBSCRIBE"
+      "REGISTER"
     ],
     "dropped_by_allowed_methods": [],
     "transitions_by_source": {
@@ -297,9 +293,8 @@
     "apply_allowed_methods": false,
     "buckets": {
       "methods": {
-        "count": 11,
+        "count": 10,
         "by_source": {
-          "profile": 6,
           "rfc": 10
         }
       },
@@ -409,7 +404,6 @@
     },
     "rfc_methods_only": [],
     "bundle_methods": [
-      "AUTH",
       "DATA",
       "EHLO",
       "EXPN",

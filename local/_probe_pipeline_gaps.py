@@ -53,7 +53,9 @@ def probe(protocol: str) -> dict:
     apply_allowed = (not src_set) or ("source" in {s.lower() for s in src_set})
     bundle = RS.assemble_bundle(
         views, protocol, source_set=src_set,
-        apply_allowed_methods=apply_allowed)
+        apply_allowed_methods=apply_allowed,
+        # ★ 与 scripts/seedgen.py 一致：严格单源下不并入骨架的方法存在性
+        include_skeleton_methods=apply_allowed)
     by_source = bundle.get("by_source") or {}
 
     rows = {}

@@ -1040,9 +1040,15 @@ def main() -> int:
     if not _apply_allowed:
         print("方法白名单: ★ 本次源集合不含 source ⇒ **不启用** "
               "profile.allowed_methods（它是源码侧白名单，会裁掉 RFC 抽到的真实方法）")
+        print("方法集口径: ★ P0-1 严格单源 ⇒ **不并入**骨架的 method existence "
+              "（否则会注入该 RFC 文档未定义的 INFO/SUBSCRIBE/AUTH 等扩展方法）")
     bundle = assemble_bundle(views, semantic_rules=semantic_rules,
                               source_set=source_set or None,
-                              apply_allowed_methods=_apply_allowed)
+                              apply_allowed_methods=_apply_allowed,
+                              # ★ P0-1：严格单源 ⇒ 方法集只由 RFC 事实定义。
+                              #   与 apply_allowed_methods 同源判定，但语义不同：
+                              #   那个开关管「裁剪」，这个管「并入」。
+                              include_skeleton_methods=_apply_allowed)
     if semantic_rules:
         print(f"语义规则: 装载 {len(semantic_rules)} 条 → "
               f"legal_boundary {sum(len(v) for v in (bundle.get('legal_boundary') or {}).values())} 条 / "

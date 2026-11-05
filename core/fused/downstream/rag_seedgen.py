@@ -910,7 +910,8 @@ def _align_message_instances(transitions: list, message_instances: dict,
 def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                     *, semantic_rules: Optional[list] = None,
                     source_set: Optional[Iterable[str]] = None,
-                    apply_allowed_methods: bool = True) -> dict:
+                    apply_allowed_methods: bool = True,
+                    include_skeleton_methods: bool = True) -> dict:
     """把 fact views 按 aspect 分桶成「种子生成知识」。
 
     产出:
@@ -986,6 +987,24 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
             ★ 协议骨架（authority = ``profile``）**恒允许** —— 它是跨实验复用的
               协议结构（状态机 / 消息实例 / 方法存在性 / 头取值），
               **不是**某次抽取的源派生知识 ⇒ 单源调试时链路不断。
+        apply_allowed_methods: 是否用 ``profile.allowed_methods``（源码侧命令白名单）
+            对方法集做**裁剪**。缺省 True（与历史行为一致）。
+        include_skeleton_methods: ★ P0-1 —— 是否允许骨架（authority = ``profile``）的
+            ``existence`` 事实**新建** ``methods`` 桶条目（**并入**）。
+            缺省 True（与历史行为逐字节一致）。
+
+            ⚠ 为什么需要它：``apply_allowed_methods`` 只管**裁剪**（删掉 RFC 抽到、
+              但不在源码白名单里的方法），**管不到并入** —— 骨架的 ``existence``
+              事实经 ``_BUCKET_BY_KIND[("method","existence")]`` 直接落到 ``methods``
+              ⇒ 会**注入**该 RFC 文档未定义的方法。实测：sip 被注入
+              ``INFO``（RFC 2976）/ ``SUBSCRIBE``（RFC 3265），smtp 被注入
+              ``AUTH``（RFC 4954）—— 都不在本次入库的那份 RFC 里。
+
+            严格单源实验（``--sources rfc``）应传 False ⇒ 方法集只由 RFC 事实定义
+            （实测 sip 8→6、smtp 11→10、rtsp 11→11 不变，因 rtsp 的骨架方法集
+            本来就是 RFC 方法集的子集）。
+            ★ 只挡**新建**条目：某方法若已有 RFC 侧的 ``definition`` 事实，
+              骨架的 ``existence`` 仍会补 ``observed_by`` 等溯源字段（不丢知识）。
 
     五源分工传导（P0）：分桶时保留 provenance——
       - methods[*].declared_by：哪些源「声明」了该方法（definition/state_changing 等）
@@ -1069,6 +1088,21 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                       if str(c.get("authority") or "").strip().lower() in _allowed]
             if not claims:
                 continue
+        # ★★ P0-1：严格单源（`include_skeleton_methods=False`）下，
+        #   骨架（profile）的 method `existence` 事实**不得新建 `methods` 桶条目**。
+        #   为什么必须挡在**这里**（by_source 登记之前）：
+        #     · `apply_allowed_methods` 只做**裁剪**（删 RFC 有、白名单没有的），
+        #       做不了**并入**；而 `("method","existence") → "methods"` 的映射
+        #       会让骨架事实直接**注入** RFC 文档里没有的方法；
+        #     · 因此必须在「进桶」之前拦，否则 `by_source` 台账会把「未采用」的
+        #       事实记成「已采用」⇒ 溯源失真。
+        #   只挡「新建」：已有条目（RFC 侧 `definition` 建过）仍允许补 `observed_by`。
+        if (not include_skeleton_methods
+                and stype == "method" and aspect == "existence"
+                and sname not in methods
+                and all(str(c.get("authority") or "").strip().lower()
+                        == SKELETON_AUTHORITY for c in claims)):
+            continue
         val = None
         main_auth = ""    # P0：主 claim 的来源
         main_epi = ""     # P0：主 claim 的认识论类型
