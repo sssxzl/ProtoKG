@@ -1,0 +1,42 @@
+{
+  "rtsp": {
+    "total": 5247,
+    "lines": {
+      "descriptive": 4375,
+      "boilerplate": 184,
+      "toc": 154,
+      "example": 104,
+      "normative": 109,
+      "diagram": 23,
+      "abnf": 118,
+      "table": 180
+    }
+  },
+  "sip": {
+    "total": 15336,
+    "lines": {
+      "descriptive": 12509,
+      "boilerplate": 539,
+      "example": 316,
+      "toc": 317,
+      "table": 266,
+      "diagram": 99,
+      "normative": 953,
+      "figure_cap": 16,
+      "abnf": 321
+    }
+  },
+  "smtp": {
+    "total": 10329,
+    "lines": {
+      "descriptive": 8718,
+      "boilerplate": 365,
+      "example": 212,
+      "normative": 507,
+      "table": 189,
+      "diagram": 101,
+      "toc": 17,
+      "abnf": 220
+    }
+  }
+}
