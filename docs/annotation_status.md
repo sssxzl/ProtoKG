@@ -658,6 +658,8 @@ derived/exp_semantic/truth/*.json              -text
 | 脚本 | `scripts/freeze_annotation_candidates.py` | 冻结 + 分层抽样（确定性）+ **泄漏剔除（`--guide`）** |
 | 脚本 | `scripts/annotate_candidates.py` | 模板生成 / 校验器 / 指南泄漏自检 / 统计 / **粒度影响分析** |
 | 脚本 | `scripts/calc_cohen_kappa.py` | Cohen's κ + 分歧率（只算不改） |
+| 脚本 | `scripts/annotation_sheet.py` | **标注表导出 / 回收**：`export` 把 117 条 pending 导成 Excel（下拉 + 判定速查页 + 进度统计页，只给题面不预填答案）；`import` 把填好的表回收成标注 JSON 并复用标注器 10 条校验 ⇒ 人工标注不必直接编辑 JSON |
+| 产物 | `derived/exp_semantic/标注表_117条待标.xlsx` | 117 条待标的可填写表格（`derived/` 下，不入版本库；由 `scripts/annotation_sheet.py export` 可重现） |
 | 测试 | `tests/fused/test_annotation_tools.py` | **84 条回归测试**，覆盖确定性/分层/10 条校验规则/κ 两个场景/泄漏闸/词表一致性/**CRLF 鲁棒性**/**粒度影响分析** |
 | 产物 | `derived/exp_semantic/candidates_frozen.jsonl` | 120 条全集（当前轮指纹 `6060457e…`） |
 | 产物 | `derived/exp_semantic/candidates_train.jsonl` | 100 条 |
