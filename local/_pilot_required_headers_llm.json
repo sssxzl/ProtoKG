@@ -1,0 +1,62 @@
+{
+  "rtsp": {
+    "skeleton_headers": [
+      "CSeq",
+      "Session",
+      "Transport"
+    ],
+    "found": {
+      "CSeq": [
+        "The CSeq field of a request MUST be echoed in the response.",
+        "The CSeq field of a request MUST be incremented for each request sent by the client."
+      ],
+      "Require": [
+        "Require R req. all"
+      ]
+    },
+    "coverage": 0.3333,
+    "rfc_only": [
+      "Require"
+    ]
+  },
+  "sip": {
+    "skeleton_headers": [
+      "CSeq",
+      "Call-ID",
+      "Contact",
+      "Event",
+      "From",
+      "Max-Forwards",
+      "To",
+      "Via"
+    ],
+    "found": {
+      "CSeq": [
+        "CSeq: A sequence number and method name.",
+        "A CSeq header field in a request contains the request method and a decimal sequence number."
+      ],
+      "Call-ID": [
+        "Call-ID: A globally unique identifier for this call.",
+        "The Call-ID header field acts as a unique identifier to group together a series of messages."
+      ],
+      "From": [
+        "From: The logical identity of the initiator of the request.",
+        "The From header field indicates the logical identity of the initiator of the request."
+      ],
+      "Max-Forwards": [
+        "Max-Forwards: Limits the number of hops a request can take.",
+        "The Max-Forwards header field must be used with any SIP request method."
+      ],
+      "To": [
+        "To: The logical recipient of the request.",
+        "The To header field specifies the logical recipient of the request."
+      ],
+      "Via": [
+        "Via: The transport protocol used to send the request and the client's address.",
+        "The Via header field indicates the transport used for the transaction and identifies the location where the response is to be sent."
+      ]
+    },
+    "coverage": 0.75,
+    "rfc_only": []
+  }
+}

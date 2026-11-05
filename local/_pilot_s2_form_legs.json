@@ -1,0 +1,181 @@
+{
+  "rtsp": {
+    "candidates": {
+      "diagram": 4,
+      "normative": 29
+    },
+    "n_transitions": 1,
+    "states": [
+      "PAUSE",
+      "PLAY"
+    ],
+    "state_hit": 2,
+    "state_hit_rate": 1.0,
+    "methods": [
+      "PLAY"
+    ],
+    "command_like": [
+      "PLAY"
+    ],
+    "event_like": [],
+    "kind_declared": {
+      "command": 1
+    }
+  },
+  "sip": {
+    "candidates": {
+      "diagram": 32,
+      "normative": 289
+    },
+    "n_transitions": 56,
+    "states": [
+      "Accepted",
+      "Calling",
+      "Completed",
+      "Confirmed",
+      "Proceeding",
+      "Terminated",
+      "Trying",
+      "calling",
+      "client transaction",
+      "confirmed",
+      "existing dialog",
+      "server transaction",
+      "session and the dialog",
+      "terminated"
+    ],
+    "state_hit": 14,
+    "state_hit_rate": 1.0,
+    "methods": [
+      "101-199 from TU",
+      "1xx",
+      "1xx from TU",
+      "1xx resp to TU",
+      "1xx resp. to TU",
+      "200-699",
+      "200-699 from TU",
+      "200-699 resp. to TU",
+      "2xx",
+      "2xx from TU",
+      "2xx response",
+      "300-699",
+      "300-699 from TU",
+      "ACK",
+      "INVITE",
+      "Request",
+      "Timer A fires",
+      "Timer B fires",
+      "Timer D fires",
+      "Timer F",
+      "Timer F or Transport Err. inform TU",
+      "Timer G fires",
+      "Timer H fires",
+      "Timer I fires",
+      "Timer J",
+      "Timer J fires",
+      "Timer K -",
+      "Transport Err.",
+      "Trnsprt Err",
+      "failure",
+      "final response (status codes 200-699)",
+      "provisional response",
+      "retransmitted by the server transaction",
+      "timeout",
+      "timer A fires",
+      "timer D fires",
+      "transport failure"
+    ],
+    "command_like": [],
+    "event_like": [
+      "101-199 from TU",
+      "1xx",
+      "1xx from TU",
+      "1xx resp to TU",
+      "1xx resp. to TU",
+      "200-699",
+      "200-699 from TU",
+      "200-699 resp. to TU",
+      "2xx",
+      "2xx from TU",
+      "2xx response",
+      "300-699",
+      "300-699 from TU",
+      "ACK",
+      "INVITE",
+      "Request",
+      "Timer A fires",
+      "Timer B fires",
+      "Timer D fires",
+      "Timer F",
+      "Timer F or Transport Err. inform TU",
+      "Timer G fires",
+      "Timer H fires",
+      "Timer I fires",
+      "Timer J",
+      "Timer J fires",
+      "Timer K -",
+      "Transport Err.",
+      "Trnsprt Err",
+      "failure",
+      "final response (status codes 200-699)",
+      "provisional response",
+      "retransmitted by the server transaction",
+      "timeout",
+      "timer A fires",
+      "timer D fires",
+      "transport failure"
+    ],
+    "kind_declared": {
+      "command": 4,
+      "event": 52
+    }
+  },
+  "smtp": {
+    "candidates": {
+      "diagram": 20,
+      "normative": 116
+    },
+    "n_transitions": 9,
+    "states": [
+      "DATA",
+      "I",
+      "S",
+      "SMTP",
+      "TLS negotiation",
+      "after having issued the STARTTLS command",
+      "closing the connection",
+      "data",
+      "initial connection opening",
+      "initial state",
+      "message data sent",
+      "no message data sent",
+      "wait for QUIT"
+    ],
+    "state_hit": 9,
+    "state_hit_rate": 0.6923,
+    "methods": [
+      "220",
+      "354",
+      "503",
+      "554",
+      "QUIT",
+      "S: 250",
+      "security layer takes effect"
+    ],
+    "command_like": [
+      "QUIT"
+    ],
+    "event_like": [
+      "220",
+      "354",
+      "503",
+      "554",
+      "S: 250",
+      "security layer takes effect"
+    ],
+    "kind_declared": {
+      "event": 8,
+      "command": 1
+    }
+  }
+}
