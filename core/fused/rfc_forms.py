@@ -350,9 +350,19 @@ RE_STATE_SUFFIX = re.compile(r"\s*\([^)]*\)\s*$")
 
 
 def _split_columns(line: str) -> list[str]:
-    """按「2+ 空格」切成列（**不做内容假设**）。"""
-    parts = re.split(r"[ \t]{2,}", line.strip())
-    return [p.strip() for p in parts if p.strip()]
+    """按列分隔符切成列（**协议无关**：支持「2+ 空格 / tab / 竖线」）。
+
+    ★ 必须支持竖线分隔：RFC 里的表格常用 `state | message | next state`
+      形式（实测：只按 2+ 空格切会整行切成 1 列 ⇒ 表头角色匹配失败 ⇒
+      该表被整段漏掉）。
+    ★ 竖线优先（比多空格是更强的列边界信号）；表格块内才用本函数。
+    """
+    s = line.strip()
+    if "|" in s:
+        parts = [q.strip() for q in s.strip("|").split("|")]
+        return [q for q in parts if q]
+    parts = re.split(r"[ \t]{2,}", s)
+    return [q.strip() for q in parts if q]
 
 
 def _match_roles(header_cols: list[str]) -> dict[str, int]:
