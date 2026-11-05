@@ -404,7 +404,7 @@ def required_header_global_norm_to_fact(norm: dict[str, Any]) -> list[Fact]:
     name = str(norm.get("name") or "").strip()
     if not name:
         return []
-    subject = Subject(type="field", name=name,
+    subject = Subject(type="header", name=name,
                       qualifiers={"scope": "global"})
     return [_make_fact(subject, "required_header_global",
                        Value(type="text", data=name),

@@ -1,6 +1,7 @@
 {
   "protocol": "sip",
   "spec_version": "RFC 3261",
+  "enable_required_headers": true,
   "method_sections": [
     "7.1",
     "9",

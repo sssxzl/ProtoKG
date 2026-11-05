@@ -2103,11 +2103,17 @@ def infer_required_headers(protocol: str, llm=None) -> list[dict]:
     for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
         _lines = _f.read_text(encoding="utf-8", errors="ignore").splitlines()
         for _b in split_form_blocks(_lines):
-            if _b.kind in ("table", "normative"):
-                cands.append({"text": _b.text, "kind": _b.kind,
-                              "hash": hashlib.sha256(
-                                  _b.text.encode("utf-8")).hexdigest(),
-                              "source": f"file:{_f.name}#@{_b.line_start}"})
+            if _b.kind not in ("table", "normative"):
+                continue
+            # ★ 候选**相关性过滤**：块内至少出现 2 个已知头名 ⇒ 才是候选。
+            #   必要性（实测）：不加过滤时某协议有 **312** 个候选块 ⇒ 312 次 LLM
+            #   调用且引入大量噪声；加过滤后降到 8 / 58 个。
+            _hits = sum(1 for _h in known if _h in _b.text)
+            if _hits < 2:
+                continue
+            cands.append({"text": _b.text, "kind": _b.kind,
+                          "hash": hashlib_sha256(_b.text),
+                          "source": f"file:{_f.name}#@{_b.line_start}"})
     if not cands:
         return []
     cache_file = CACHE_DIR / f"{protocol}.required_headers.json"

@@ -1,0 +1,95 @@
+{
+  "rtsp": {
+    "rfc_message_level": [
+      "CSeq"
+    ],
+    "skeleton_union": [
+      "CSeq",
+      "Session",
+      "Transport"
+    ],
+    "intersection": [
+      "CSeq"
+    ],
+    "rfc_only_suspect": [],
+    "skeleton_only_method_level": [
+      "Session",
+      "Transport"
+    ],
+    "method_level_detail": {
+      "GET_PARAMETER": [
+        "Session"
+      ],
+      "PAUSE": [
+        "Session"
+      ],
+      "PLAY": [
+        "Session"
+      ],
+      "SETUP": [
+        "Transport"
+      ],
+      "SET_PARAMETER": [
+        "Session"
+      ],
+      "TEARDOWN": [
+        "Session"
+      ]
+    },
+    "verdict": "一致（RFC 抽到的全部被骨架覆盖）",
+    "rfc_subset_of_skeleton": true
+  },
+  "sip": {
+    "rfc_message_level": [
+      "CSeq",
+      "Call-ID",
+      "From",
+      "Max-Forwards",
+      "To",
+      "Via"
+    ],
+    "skeleton_union": [
+      "CSeq",
+      "Call-ID",
+      "Contact",
+      "Event",
+      "From",
+      "Max-Forwards",
+      "To",
+      "Via"
+    ],
+    "intersection": [
+      "CSeq",
+      "Call-ID",
+      "From",
+      "Max-Forwards",
+      "To",
+      "Via"
+    ],
+    "rfc_only_suspect": [],
+    "skeleton_only_method_level": [
+      "Contact",
+      "Event"
+    ],
+    "method_level_detail": {
+      "REGISTER": [
+        "Contact"
+      ],
+      "SUBSCRIBE": [
+        "Event"
+      ]
+    },
+    "verdict": "一致（RFC 抽到的全部被骨架覆盖）",
+    "rfc_subset_of_skeleton": true
+  },
+  "smtp": {
+    "rfc_message_level": [],
+    "skeleton_union": [],
+    "intersection": [],
+    "rfc_only_suspect": [],
+    "skeleton_only_method_level": [],
+    "method_level_detail": {},
+    "verdict": "一致（RFC 抽到的全部被骨架覆盖）",
+    "rfc_subset_of_skeleton": true
+  }
+}

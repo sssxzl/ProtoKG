@@ -15,6 +15,7 @@
     "11"
   ],
   "enable_transitions": true,
+  "enable_required_headers": true,
   "transition_sections": [],
   "method_excludes": [
     "EMBEDDED"

@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import inspect
+import pathlib
 import re
 
 from core.fused import rfc_extractor as RX
@@ -20,13 +21,20 @@ from core.fused.downstream import rag_seedgen as RS
 # ① 默认关闭 ⇒ 零影响
 # ===========================================================================
 
-def test_switch_defaults_off():
-    """★ 默认关闭 ⇒ `infer_required_headers` 直接返回空 ⇒ 产物不受影响。"""
+def test_switch_code_default_off():
+    """★ **代码内置默认**是关闭 ⇒ 未声明该键的协议不受影响。
+
+    ★ 协议配置（`rfc_config.json`）**可以显式开启** —— 那时该协议会产出
+      这批 RFC 源证据（但仍不进 bundle 桶 ⇒ 产物不变）。
+    """
+    import core.fused.rfc_extractor as _rx
+    # 内置默认：构造一个「无协议专属配置」时的 cfg ⇒ 默认必须为 False
+    import inspect
+    src = inspect.getsource(_rx._load_rfc_config)
+    assert '"enable_required_headers": False' in src, "代码内置默认必须是关闭"
+    # 协议配置可显式开启
     cfg = RX._load_rfc_config("rtsp")
     assert "enable_required_headers" in cfg
-    assert cfg["enable_required_headers"] is False, "默认必须是关闭"
-    # 即使显式调用也返回空（开关未开）
-    assert RX.infer_required_headers("rtsp") == []
 
 
 def test_no_bundle_bucket_for_new_aspect():
@@ -91,3 +99,76 @@ def test_rfc_source_headers_are_config_driven():
     assert "CSeq" in hs, "缺 CSeq"
     # 配置为空 ⇒ 头名集为空（不猜、不硬编码）
     assert RX._rfc_source_headers("rtsp", {"field_sections": []}) == set()
+
+
+# ===========================================================================
+# ⑤ 抽取主路径（★ 补 S0 之后才暴露的缺口：`3ee21ea` 提交里
+#    infer_required_headers 用了**未 import 的 hashlib** ⇒ 开关一开即 NameError，
+#    而当时的测试只覆盖「开关关闭」路径 ⇒ 未被发现。
+#    本节用 StubLLM 覆盖**真实抽取路径**，防止同类问题复发。）
+# ===========================================================================
+
+def test_infer_required_headers_runs_with_stub_llm():
+    """★ 开关开启 + 假 LLM ⇒ 能跑通全路径（候选→提示→解析→norm→缓存）。"""
+    from core.fused import rfc_extractor as RX
+    from core import paths
+    d = paths.kb_source_dir("rtsp", "rfc")
+    if not d.is_dir():
+        import pytest
+        pytest.skip("无 RFC 底料")
+    calls = []
+
+    class _Stub:
+        def chat_json(self, **kw):
+            calls.append(kw)
+            return {"required_headers": [
+                {"name": "CSeq", "evidence": "This field MUST be present in all requests."}]}
+
+    import tempfile
+    import core.fused.source_retrieval as _sr
+    cfg = RX._load_rfc_config("rtsp")
+    cfg["enable_required_headers"] = True
+    orig_cfg, orig_cache = RX._load_rfc_config, _sr.CACHE_DIR
+    RX._load_rfc_config = lambda _p: dict(cfg)
+    with tempfile.TemporaryDirectory() as _td:
+        _sr.CACHE_DIR = pathlib.Path(_td)      # ★ 隔离磁盘缓存
+        try:
+            norms = RX.infer_required_headers("rtsp", llm=_Stub())
+        finally:
+            RX._load_rfc_config, _sr.CACHE_DIR = orig_cfg, orig_cache
+    assert calls, "LLM 未被调用（候选为空 ⇒ 抽取路径没走到）"
+    assert norms, "应产出至少一条 norm"
+    assert norms[0]["name"] == "CSeq"
+    # ★ 每次调用都必须带上「已知头名列表」约束（否则会自造头名）
+    assert "CSeq" in calls[0]["user"]
+
+
+def test_infer_required_headers_filters_unknown_names():
+    """★ LLM 自造的头名必须被丢弃（不在已知头集内）。"""
+    from core.fused import rfc_extractor as RX
+    from core import paths
+    d = paths.kb_source_dir("rtsp", "rfc")
+    if not d.is_dir():
+        import pytest
+        pytest.skip("无 RFC 底料")
+
+    class _Stub:
+        def chat_json(self, **kw):
+            return {"required_headers": [
+                {"name": "X-Fake-Header", "evidence": "invented"},
+                {"name": "CSeq", "evidence": "real"}]}
+
+    import tempfile
+    import core.fused.source_retrieval as _sr
+    cfg = RX._load_rfc_config("rtsp")
+    cfg["enable_required_headers"] = True
+    orig_cfg, orig_cache = RX._load_rfc_config, _sr.CACHE_DIR
+    RX._load_rfc_config = lambda _p: dict(cfg)
+    with tempfile.TemporaryDirectory() as _td:
+        _sr.CACHE_DIR = pathlib.Path(_td)      # ★ 隔离磁盘缓存
+        try:
+            norms = RX.infer_required_headers("rtsp", llm=_Stub())
+        finally:
+            RX._load_rfc_config, _sr.CACHE_DIR = orig_cfg, orig_cache
+    names = {n["name"] for n in norms}
+    assert "X-Fake-Header" not in names, "自造头名未被过滤"
