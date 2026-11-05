@@ -1941,6 +1941,11 @@ _PROMPT_TRANSITION = """你是协议规范分析助手。下面的文本来自 {
 {text}
 """
 
+#: 提示词的**契约版本标识** —— 并入 LLM 缓存键
+#: （``block_hash = sha256(prompt_version + 各候选块 hash)``）
+#: ⇒ **改动提示词内容必须同步改它**，否则会读到旧缓存、改动静默不生效。
+TRANSITION_PROMPT_VERSION = "rfc-transition-prose"
+
 
 def extract_transition_candidates(protocol: str) -> list[dict]:
     """定位 RFC 里的**状态机段落**（供 LLM 抽状态转移）。
@@ -2051,6 +2056,9 @@ _PROMPT_REQUIRED_HEADER = """你是协议规范分析助手。下面是 {protoco
 {body}
 """
 
+#: 提示词的**契约版本标识** —— 并入 LLM 缓存键（同 ``TRANSITION_PROMPT_VERSION``）
+REQUIRED_HEADER_PROMPT_VERSION = "rfc-required-header-llm"
+
 
 def _rfc_source_headers(protocol: str, cfg: dict) -> set[str]:
     """该协议**RFC 源**里的头名集合（数据驱动：`rfc_config.field_sections`）。
@@ -2079,13 +2087,95 @@ def _rfc_source_headers(protocol: str, cfg: dict) -> set[str]:
     return out
 
 
+#: 消息级必填的两种**规范原文表述**（协议无关，不依赖章节号/协议名）：
+#:   A) 枚举式（SIP §8.1.1）：``MUST, at a minimum, contain the following
+#:      header fields: To, From, CSeq, Call-ID, Max-Forwards, and Via``
+#:   B) 逐头式（RTSP §12.17）：``This field MUST be present in all requests``
+_REQ_ENUM_RE = re.compile(
+    r"MUST[^.]{0,80}?contain\s+the\s+following\s+header\s+fields?\s*:\s*"
+    r"([^.;]{3,400})",
+    re.IGNORECASE | re.DOTALL)
+_REQ_PER_HEADER_RE = re.compile(
+    r"MUST\s+be\s+present\s+in\s+all\s+(?:SIP\s+)?requests?", re.IGNORECASE)
+#: 头定义章节标题（``12.17 CSeq`` / ``20.42 Via``）—— 逐头式窗口的边界
+_REQ_HEADING_RE = re.compile(r"^\d+(?:\.\d+)*\s+(\S[A-Za-z0-9-]*)\s*$")
+
+
+def _deterministic_message_required_headers(
+        protocol: str, known: set[str]) -> dict[str, str]:
+    """**确定性**抽「消息级必填头」⇒ ``{头名: RFC 原句证据}``。
+
+    ★ 为什么需要它（2026-11-06 实测）：只用 LLM 时，RTSP §12 的**头部汇总表**
+      （``CSeq g req. all`` / ``Unsupported r req. all``）会被 LLM 把 ``req.``
+      （= request header）误读成「required」⇒ 抽出 Require / Proxy-Require /
+      Unsupported 三个**假阳性**。本函数给出可审计的确定性裁决。
+
+    ★ 覆盖两种规范写法（协议无关）：
+      A) **枚举式**：``MUST ... contain the following header fields: X, Y, Z``
+      B) **逐头式**：头定义章节内 ``<Head> ... MUST be present in all requests``
+    ★ 窗口在**下一个章节标题**处截断 —— 否则会「借用」邻节的 MUST 句
+      （实测 v1 因此把 Content-Length / Content-Language 误判为必填）。
+
+    Args:
+        protocol: 协议名（决定读哪份 RFC 原文）。
+        known: 该协议 RFC 源的头名全集（``_rfc_source_headers``）。
+
+    Returns:
+        ``{头名: 证据句}``；判不出时返回空字典（**宁缺勿滥**）。
+    """
+    if not known:
+        return {}
+    lines: list[str] = []
+    for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
+        lines.extend(
+            _f.read_text(encoding="utf-8", errors="ignore").splitlines())
+    if not lines:
+        return {}
+    full = "\n".join(lines)
+    hits: dict[str, str] = {}
+
+    # A) 枚举式（SIP §8.1.1 风格）
+    for _m in _REQ_ENUM_RE.finditer(full):
+        _frag = _m.group(1)
+        for _h in known:
+            if re.search(r"\b" + re.escape(_h) + r"\b", _frag):
+                hits.setdefault(_h, " ".join(_frag.split())[:200])
+
+    # B) 逐头式（RTSP §12.17 风格；窗口在下一个章节标题处截断）
+    for _i, _ln in enumerate(lines):
+        _m = _REQ_HEADING_RE.match(_ln.strip())
+        if not _m or _m.group(1) not in known:
+            continue
+        _name = _m.group(1)
+        _body: list[str] = []
+        for _j in range(_i + 1, min(_i + 40, len(lines))):
+            if _REQ_HEADING_RE.match(lines[_j].strip()):
+                break
+            _body.append(lines[_j])
+        _blob = "\n".join(_body)
+        _mm = _REQ_PER_HEADER_RE.search(_blob)
+        if _mm:
+            _s = max(0, _mm.start() - 120)
+            hits.setdefault(
+                _name, " ".join(_blob[_s:_mm.end() + 40].split())[:200])
+    return hits
+
+
 def infer_required_headers(protocol: str, llm=None) -> list[dict]:
-    """LLM 抽「消息级必填头」⇒ RFC 源的 ``required_header_global`` norm。
+    """抽「消息级必填头」⇒ RFC 源的 ``required_header_global`` norm。
+
+    ★ **三级证据策略**（StatePre §3.2.1 结构化优先 / §3.2.2 LLM 兜底）：
+      ① **确定性判据**（首选，**零 LLM 调用**）：从 RFC 原文找两种规范表述
+         —— 枚举式 / 逐头式。实测：rtsp → CSeq（§12.17）；
+         sip → To/From/CSeq/Call-ID/Max-Forwards/Via（§8.1.1）
+         （与 LLM 结果**双向印证**）。
+      ② **LLM 兜底**：确定性判据**判不出**时才调 LLM（带磁盘缓存）。
+      ③ ★ 为什么确定性优先：实测只用 LLM 时，RTSP §12 的**头部汇总表**
+         （``CSeq g req. all`` / ``Unsupported r req. all``）会被把 ``req.``
+         （= request header）误读成「required」⇒ 抽 3 个**假阳性**
+         （Require / Proxy-Require / Unsupported）。
 
     ★ **默认关闭**（`rfc_config.enable_required_headers`）⇒ 产物逐字节不变。
-    ★ 能力依据见 ``local/必填头抽取可行性报告.md``：
-      确定性路线不可行（RFC 用指代句式表达必填性）；LLM 路线可行。
-    ★ 带磁盘缓存 ⇒ 同一份 RFC 命中缓存不调 LLM ⇒ 可复现。
     """
     from core.fused.rfc_forms import split_form_blocks
     from core.fused.source_retrieval import CACHE_DIR
@@ -2095,78 +2185,99 @@ def infer_required_headers(protocol: str, llm=None) -> list[dict]:
     known = _rfc_source_headers(protocol, cfg)
     if not known:
         return []
-    if llm is None:
-        from core.llm import DeepSeekClient
-        llm = DeepSeekClient()
-    # 候选：形态层的 table + normative 块（协议无关、位置无关）
-    cands: list[dict] = []
-    for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
-        _lines = _f.read_text(encoding="utf-8", errors="ignore").splitlines()
-        for _b in split_form_blocks(_lines):
-            if _b.kind not in ("table", "normative"):
-                continue
-            # ★ 候选**相关性过滤**：块内至少出现 2 个已知头名 ⇒ 才是候选。
-            #   必要性（实测）：不加过滤时某协议有 **312** 个候选块 ⇒ 312 次 LLM
-            #   调用且引入大量噪声；加过滤后降到 8 / 58 个。
-            _hits = sum(1 for _h in known if _h in _b.text)
-            if _hits < 2:
-                continue
-            cands.append({"text": _b.text, "kind": _b.kind,
-                          "hash": hashlib_sha256(_b.text),
-                          "source": f"file:{_f.name}#@{_b.line_start}"})
-    if not cands:
-        return []
-    cache_file = CACHE_DIR / f"{protocol}.required_headers.json"
-    block_hash = hashlib_sha256("|".join(c["hash"] for c in cands))
-    rows = None
-    if cache_file.exists():
-        try:
-            cached = json.loads(cache_file.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            cached = None
-        if isinstance(cached, dict) and cached.get("block_hash") == block_hash:
-            rows = cached.get("rows")
-    if rows is None:
+
+    # ---- ① 确定性判据（首选，零 LLM 调用）---------------------------
+    _det = _deterministic_message_required_headers(protocol, known)
+    if _det:
+        rows: list[dict] = [
+            {"name": _n, "evidence": _e, "source": "rfc:deterministic"}
+            for _n, _e in sorted(_det.items())]
+    else:
+        # ---- ② 兜底：LLM（带磁盘缓存）------------------------------
         rows = []
-        allowed = ", ".join(sorted(known))
-        for _c in cands:
-            try:
-                _r = llm.chat_json(
-                    system="你输出 JSON。",
-                    user=_PROMPT_REQUIRED_HEADER.format(
-                        protocol=protocol.upper(), allowed=allowed,
-                        body=_c["text"][:7000]),
-                    temperature=0.0, max_tokens=2000)
-            except Exception:  # noqa: BLE001
-                continue
-            if not isinstance(_r, dict):
-                continue
-            for _it in (_r.get("required_headers") or []):
-                if not isinstance(_it, dict):
+        if llm is None:
+            from core.llm import DeepSeekClient
+            llm = DeepSeekClient()
+        # 候选：形态层的 table + normative 块（协议无关、位置无关）
+        cands: list[dict] = []
+        for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
+            _lines = _f.read_text(
+                encoding="utf-8", errors="ignore").splitlines()
+            for _b in split_form_blocks(_lines):
+                if _b.kind not in ("table", "normative"):
                     continue
-                _n = str(_it.get("name", "")).strip()
-                if _n and _n in known:
-                    rows.append({"name": _n,
-                                 "evidence": str(_it.get("evidence", ""))[:300],
-                                 "source": _c["source"]})
-        try:
-            CACHE_DIR.mkdir(parents=True, exist_ok=True)
-            cache_file.write_text(json.dumps(
-                {"block_hash": block_hash, "rows": rows},
-                ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        except OSError:
-            pass
+                # ★ 候选**相关性过滤**：块内至少出现 2 个已知头名 ⇒ 才是候选。
+                #   必要性（实测）：不加过滤时某协议有 **312** 个候选块 ⇒ 312 次
+                #   LLM 调用且引入大量噪声；加过滤后降到 8 / 58 个。
+                _hits = sum(1 for _h in known if _h in _b.text)
+                if _hits < 2:
+                    continue
+                cands.append({"text": _b.text, "kind": _b.kind,
+                              "hash": hashlib_sha256(_b.text),
+                              "source": f"file:{_f.name}#@{_b.line_start}"})
+        if cands:
+            cache_file = CACHE_DIR / f"{protocol}.required_headers.json"
+            # ★ E′（2026-11-06）：缓存键**并入 prompt_version**（同 infer_transitions）
+            block_hash = hashlib_sha256("|".join(
+                [REQUIRED_HEADER_PROMPT_VERSION]
+                + [c["hash"] for c in cands]))
+            _rows: list[dict] | None = None
+            if cache_file.exists():
+                try:
+                    _cached = json.loads(
+                        cache_file.read_text(encoding="utf-8"))
+                except (json.JSONDecodeError, OSError):
+                    _cached = None
+                if (isinstance(_cached, dict)
+                        and _cached.get("block_hash") == block_hash):
+                    _rows = _cached.get("rows")
+            if _rows is None:
+                _rows = []
+                allowed = ", ".join(sorted(known))
+                for _c in cands:
+                    try:
+                        _r = llm.chat_json(
+                            system="你输出 JSON。",
+                            user=_PROMPT_REQUIRED_HEADER.format(
+                                protocol=protocol.upper(), allowed=allowed,
+                                body=_c["text"][:7000]),
+                            temperature=0.0, max_tokens=2000)
+                    except Exception:  # noqa: BLE001
+                        continue
+                    if not isinstance(_r, dict):
+                        continue
+                    for _it in (_r.get("required_headers") or []):
+                        if not isinstance(_it, dict):
+                            continue
+                        _n = str(_it.get("name", "")).strip()
+                        if _n and _n in known:
+                            _rows.append({
+                                "name": _n,
+                                "evidence": str(
+                                    _it.get("evidence", ""))[:300],
+                                "source": _c["source"]})
+                try:
+                    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+                    cache_file.write_text(json.dumps(
+                        {"block_hash": block_hash, "rows": _rows},
+                        ensure_ascii=False, indent=2) + "\n",
+                        encoding="utf-8")
+                except OSError:
+                    pass
+            rows = _rows
+
     # norm 化（kind=required_header_global ⇒ 走 norm.py 的新转换器）
     norms: list[dict] = []
-    for _r in rows:
-        _name = str(_r.get("name", "")).strip()
+    for _row in rows:
+        _name = str(_row.get("name", "")).strip()
         if not _name:
             continue
-        _n = _norm("required_header_global", _name, f"name={_name}",
-                   protocol, str(_r.get("source", "")), "@rfc-required-header")
-        _n["name"] = _name
-        _n["evidence"] = str(_r.get("evidence", ""))
-        norms.append(_n)
+        _n2 = _norm("required_header_global", _name, f"name={_name}",
+                    protocol, str(_row.get("source", "")),
+                    "@rfc-required-header")
+        _n2["name"] = _name
+        _n2["evidence"] = str(_row.get("evidence", ""))
+        norms.append(_n2)
     return norms
 
 
@@ -2277,8 +2388,11 @@ def infer_transitions(protocol: str, llm=None) -> list[dict]:
         return []
     from core.fused.source_retrieval import CACHE_DIR
     cache_file = CACHE_DIR / f"{protocol}.transitions.json"
+    # ★ E′（2026-11-06）：缓存键**并入 prompt_version** ⇒ 改提示词自动失效。
+    #   历史缺陷：只哈希候选块文本 ⇒ 改提示词但缓存命中 ⇒ 改动静默不生效。
     block_hash = hashlib_sha256(
-        "|".join(c["hash"] for c in candidates))
+        "|".join([TRANSITION_PROMPT_VERSION]
+                 + [c["hash"] for c in candidates]))
     if cache_file.exists():
         try:
             cached = json.loads(cache_file.read_text(encoding="utf-8"))

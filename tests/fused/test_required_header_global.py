@@ -129,13 +129,18 @@ def test_infer_required_headers_runs_with_stub_llm():
     cfg = RX._load_rfc_config("rtsp")
     cfg["enable_required_headers"] = True
     orig_cfg, orig_cache = RX._load_rfc_config, _sr.CACHE_DIR
+    # ★ 2026-11-06：rtsp 现在由**确定性判据**直接命中（§12.17，不需 LLM）⇒
+    #   本测试的对象是「LLM 兜底分支」，故先临时关掉确定性判据以走到该分支。
+    orig_det = RX._deterministic_message_required_headers
     RX._load_rfc_config = lambda _p: dict(cfg)
+    RX._deterministic_message_required_headers = lambda *_a, **_k: {}
     with tempfile.TemporaryDirectory() as _td:
         _sr.CACHE_DIR = pathlib.Path(_td)      # ★ 隔离磁盘缓存
         try:
             norms = RX.infer_required_headers("rtsp", llm=_Stub())
         finally:
             RX._load_rfc_config, _sr.CACHE_DIR = orig_cfg, orig_cache
+            RX._deterministic_message_required_headers = orig_det
     assert calls, "LLM 未被调用（候选为空 ⇒ 抽取路径没走到）"
     assert norms, "应产出至少一条 norm"
     assert norms[0]["name"] == "CSeq"
@@ -163,12 +168,16 @@ def test_infer_required_headers_filters_unknown_names():
     cfg = RX._load_rfc_config("rtsp")
     cfg["enable_required_headers"] = True
     orig_cfg, orig_cache = RX._load_rfc_config, _sr.CACHE_DIR
+    # ★ 2026-11-06：同上 —— 本测试测的是 LLM 分支的头名过滤，先关确定性判据。
+    orig_det = RX._deterministic_message_required_headers
     RX._load_rfc_config = lambda _p: dict(cfg)
+    RX._deterministic_message_required_headers = lambda *_a, **_k: {}
     with tempfile.TemporaryDirectory() as _td:
         _sr.CACHE_DIR = pathlib.Path(_td)      # ★ 隔离磁盘缓存
         try:
             norms = RX.infer_required_headers("rtsp", llm=_Stub())
         finally:
             RX._load_rfc_config, _sr.CACHE_DIR = orig_cfg, orig_cache
+            RX._deterministic_message_required_headers = orig_det
     names = {n["name"] for n in norms}
     assert "X-Fake-Header" not in names, "自造头名未被过滤"
