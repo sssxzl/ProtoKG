@@ -2008,6 +2008,108 @@ def extract_transition_candidates(protocol: str) -> list[dict]:
     return out
 
 
+
+# ===========================================================================
+# 状态机抽取的**质量闸**（协议无关）
+# ===========================================================================
+
+
+def _rfc_full_text(protocol: str) -> str:
+    """该协议 RFC 原文的全量文本（质量闸判「状态名是否可溯源」用）。"""
+    out = []
+    for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
+        out.append(_f.read_text(encoding="utf-8", errors="ignore"))
+    return "\n".join(out)
+
+
+def _apply_transition_gate(rows: list[dict], protocol: str) -> list[dict]:
+    """对状态机转移过**质量闸**，并把闸的统计**落盘**（可审计）。
+
+    ★ 闸是**纯后处理**（缓存存原始抽取结果）⇒ 调整判据不需要重抽 LLM。
+    ★ 统计落盘到 `derived/per_source/<协议>/transition_quality_gate.json`
+      ⇒ 论文可报告「抽到 N 条 / 放行 M 条 / 拦下 K 条（状态名纯但触发列是事件）」。
+    """
+    _gated, _stat = _transition_quality_gate(
+        rows, protocol, _load_rfc_config(protocol), _rfc_full_text(protocol))
+    try:
+        _d = paths.per_source_root(protocol)
+        _d.mkdir(parents=True, exist_ok=True)
+        (_d / "transition_quality_gate.json").write_text(
+            json.dumps(_stat, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8")
+    except OSError:
+        pass
+    return _gated
+
+
+def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
+    """该协议**RFC 源**里的方法/命令名集合（数据驱动，不硬编码协议名）。
+
+    ★ 做法：按 `rfc_config.method_sections` 声明的语义章节，取其中的
+      **全大写 token**（排除 RFC 自身关键字）⇒ 即「该协议真实方法集」。
+    ★ 数据驱动 ⇒ 换协议只需改 rfc_config，不改代码（G2）。
+    """
+    import re as _re
+    secs = cfg.get("method_sections") or []
+    if not secs:
+        return set()
+    _kw = {"MUST", "SHALL", "SHOULD", "MAY", "REQUIRED", "OPTIONAL", "NOT",
+           "RFC", "TCP", "UDP", "IP", "HTTP", "ID", "URI", "URL", "OK", "ALL"}
+    out: set[str] = set()
+    for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
+        for _ln in _f.read_text(encoding="utf-8", errors="ignore").splitlines():
+            _m = _re.match(r"^(\d+(?:\.\d+)*)\.?\s+([A-Z][A-Z_]{1,15})\b", _ln.strip())
+            if not _m:
+                continue
+            _num, _name = _m.group(1), _m.group(2)
+            if not any(_num == _x or _num.startswith(_x + ".") for _x in secs):
+                continue
+            if _name in _kw:
+                continue
+            out.add(_name)
+    return out
+
+
+def _transition_quality_gate(rows: list[dict], protocol: str,
+                             cfg: dict, rfc_text: str,
+                             known_methods: Optional[set[str]] = None,
+                             ) -> tuple[list[dict], dict]:
+    """状态机转移的**质量闸**（协议无关）：只放行「可溯源 + 可驱动」的转移。
+
+    ★ 动机（实测依据）：SIP / SMTP 的 RFC 状态机**状态名很纯**（RFC 原文命中
+      100% / 69%），但其**触发列是事件**（`1xx` / `2xx` / `Timer F` / `220` …）
+      ⇒ 若直接进 `transitions` 桶，下游 `edge_cover` / `generic_danger` 会生成
+      **方法名为 `1xx` 的假报文** ⇒ 反而污染种子。
+    ⇒ 两条判据（均可机器判定、协议无关）：
+      ① **可溯源**：状态名必须出现在该协议的 RFC 原文里；
+      ② **可驱动**：method 必须是该协议 RFC 源里的**真实方法名**。
+    ⇒ 被闸拦下的条目**不丢弃**，而是单独计数上报（便于论文说明"抽到但不可驱动"）。
+
+    Returns:
+        `(放行的转移, 统计字典)`
+    """
+    _known = (_rfc_source_methods(protocol, cfg)
+              if known_methods is None else set(known_methods))
+    kept: list[dict] = []
+    stat = {"total": len(rows), "kept": 0, "dropped_state_not_in_rfc": 0,
+            "dropped_method_not_a_method": 0}
+    for _r in rows:
+        _frm = str(_r.get("from", "")).strip()
+        _to = str(_r.get("to", "")).strip()
+        _m = str(_r.get("method", "")).strip()
+        if not (_frm and _to and _m):
+            continue
+        if _frm not in rfc_text or _to not in rfc_text:
+            stat["dropped_state_not_in_rfc"] += 1
+            continue
+        if _m.upper() not in _known:
+            stat["dropped_method_not_a_method"] += 1
+            continue
+        kept.append(_r)
+    stat["kept"] = len(kept)
+    return kept, stat
+
+
 def infer_transitions(protocol: str, llm=None) -> list[dict]:
     """LLM 抽状态转移（**带磁盘缓存** ⇒ 确定性 + 零重复成本）。
 
@@ -2029,7 +2131,9 @@ def infer_transitions(protocol: str, llm=None) -> list[dict]:
         if isinstance(cached, dict) and cached.get("block_hash") == block_hash:
             rows = cached.get("transitions")
             if isinstance(rows, list):
-                return [r for r in rows if isinstance(r, dict)]
+                # ★ 缓存里存的是**原始抽取结果**；闸是**纯后处理** ⇒ 改闸不需重抽
+                return _apply_transition_gate(
+                    [r for r in rows if isinstance(r, dict)], protocol)
 
     if llm is None:
         try:
@@ -2072,7 +2176,7 @@ def infer_transitions(protocol: str, llm=None) -> list[dict]:
             ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     except OSError:
         pass
-    return out
+    return _apply_transition_gate(out, protocol)
 
 
 def hashlib_sha256(text: str) -> str:
