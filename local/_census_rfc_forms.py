@@ -43,7 +43,7 @@ RE_ABNF = re.compile(r"::=|^\s*[A-Za-z][A-Za-z0-9\-]{1,30}\s*=\s*\S")
 RE_NORMATIVE = re.compile(r"\b(MUST|MUST NOT|SHALL|SHALL NOT|SHOULD|SHOULD NOT|REQUIRED|MAY|OPTIONAL)\b")
 #: 图示字符（ASCII art）：★ 收紧 —— 去掉正文常见的 `/ = # * { } v`
 #:   （否则 "HTTP/1.1 [2]" 这类正文会被误判为图）
-DIAGRAM_CHARS = set("+-|<>^[]")
+DIAGRAM_CHARS = set("+|<>^")
 #: 示例报文行：★ 放宽 —— 「缩进≥2 且 首 token 为全大写单词 + 后跟参数」
 #:   （RFC 的示例常不带协议头，只写 "PLAY rtsp://..." 或 "MAIL FROM:<x>"）
 RE_EXAMPLE = re.compile(r"^\s{2,}([A-Z][A-Z_]{1,15})\s+\S")
@@ -105,7 +105,7 @@ def classify_block(block: list[str]) -> str:
     votes: Counter = Counter(classify_line(ln) for ln in rows)
     # ① 图：块内多数行含图形字符，且块长 ≥3
     if len(block) >= 3:
-        dg_rows = sum(1 for ln in rows if len(DIAGRAM_CHARS & set(ln)) >= 3)
+        dg_rows = sum(1 for ln in rows if sum(ln.count(c) for c in DIAGRAM_CHARS) >= 3)
         if dg_rows / len(rows) >= 0.6:
             return "diagram"
         # ② 表：块内多数行是列式（≥2 处 2+ 空格分隔）
