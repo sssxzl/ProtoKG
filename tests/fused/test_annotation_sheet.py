@@ -97,6 +97,19 @@ def test_export_marks_holdout_and_prefills_nothing(tmp_path):
         assert r[6] is None and r[7] is None and r[8] is None and r[9] is None
 
 
+def test_export_include_labeled_gives_120(tmp_path):
+    """★ 给第二标注者出表时必须给**全 120 条** —— 只给 117 条会泄漏
+    「这 3 条已标过」这一信息，且会让两人的可比样本不一致。"""
+    _skip_if_no_data()
+    out = tmp_path / "all.xlsx"
+    AS.main(["export", "--xlsx", str(out), "--include-labeled"])
+    rows = _rows(out)
+    assert len(rows) == 120
+    # 已标条目的答案**不得**出现在表里（B 必须盲标）
+    for r in rows:
+        assert r[6] is None and r[7] is None and r[8] is None and r[9] is None
+
+
 def test_export_is_deterministic(tmp_path):
     _skip_if_no_data()
     a, b = tmp_path / "a.xlsx", tmp_path / "b.xlsx"

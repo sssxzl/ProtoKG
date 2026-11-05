@@ -105,14 +105,21 @@ def load_frozen(path: Path = FROZEN) -> dict[str, dict]:
     return out
 
 
-def pending_rows(truth_dir: Path, frozen: dict[str, dict]) -> list[dict]:
-    """跨 6 个 truth 文件收集 `pending: true` 的条目，按协议→切分→id 稳定排序。"""
+def pending_rows(truth_dir: Path, frozen: dict[str, dict],
+                 only_pending: bool = True) -> list[dict]:
+    """跨 6 个 truth 文件收集待标条目，按协议→切分→id 稳定排序。
+
+    Args:
+        only_pending: True（默认）只取 ``pending: true`` 的条目 —— 用于**续标**；
+            False 取**全部 120 条** —— 用于给「第二标注者」出空白表
+            （B 轮必须看不到 A 的任何判定，所以不能只给 117 条）。
+    """
     rows: list[dict] = []
     for f in sorted(truth_dir.glob("*.json")):
         split = "holdout" if f.stem.endswith(".holdout") else "train"
         proto = f.name.split(".")[0]
         for rec in json.loads(f.read_text(encoding="utf-8")):
-            if not rec.get("pending"):
+            if only_pending and not rec.get("pending"):
                 continue
             cid = rec["candidate_id"]
             if cid not in frozen:
@@ -150,8 +157,9 @@ def build_workbook(rows: list[dict]) -> Workbook:
     # ---- 标题行 ----
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=ncol)
     t = ws.cell(row=1, column=1)
-    t.value = (f"ProtoRAG B 阶段人工标注表 · {len(rows)} 条待标 · "
-               "判定只依据「候选文本」一列，不得翻 RFC 上下文或任何实现产物")
+    t.value = (f"ProtoRAG B 阶段人工标注表 · 共 {len(rows)} 条 · "
+               "判定只依据「候选文本」一列，不得翻 RFC 上下文或任何实现产物"
+               "（本表不含任何既往判定）")
     t.font = Font(bold=True, size=12, color="1F3864")
     t.fill = _FILL_TITLE
     t.alignment = Alignment(horizontal="left", vertical="center")
@@ -405,12 +413,13 @@ def _add_stats_sheet(wb: Workbook, rows: list[dict], last: int) -> None:
 
 def cmd_export(args: argparse.Namespace) -> int:
     frozen = load_frozen()
-    rows = pending_rows(Path(args.truth_dir), frozen)
+    rows = pending_rows(Path(args.truth_dir), frozen,
+                        only_pending=not getattr(args, "include_labeled", False))
     wb = build_workbook(rows)
     out = Path(args.xlsx)
     out.parent.mkdir(parents=True, exist_ok=True)
     wb.save(out)
-    print(f"[OK] 导出 {len(rows)} 条待标 → {out}")
+    print(f"[OK] 导出 {len(rows)} 条 → {out}")
     import collections
     print("     协议×切分:", dict(collections.Counter(
         (r["protocol"], r["split"]) for r in rows)))
@@ -540,6 +549,9 @@ def main(argv: list[str] | None = None) -> int:
     e = sub.add_parser("export", help="truth/*.json 的 pending 条目 → xlsx")
     e.add_argument("--xlsx", required=True)
     e.add_argument("--truth-dir", default=str(TRUTH_DIR))
+    e.add_argument("--include-labeled", action="store_true",
+                   help="连同已标条目一起导出（全部 120 条）—— "
+                        "给第二标注者出空白表时用，避免其只见 117 条")
     e.set_defaults(func=cmd_export)
 
     i = sub.add_parser("import", help="填好的 xlsx → 标注 JSON")
