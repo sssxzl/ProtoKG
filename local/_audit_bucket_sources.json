@@ -1,0 +1,169 @@
+{
+  "rtsp": {
+    "headers/values": {
+      "rfc": 16,
+      "profile": 30,
+      "other": 0,
+      "total": 46,
+      "non_rfc_rate": 0.6522
+    },
+    "message_instances": {
+      "rfc": 0,
+      "profile": 38,
+      "other": 0,
+      "total": 38,
+      "non_rfc_rate": 1.0
+    },
+    "method_sequences": {
+      "rfc": 0,
+      "profile": 5,
+      "other": 0,
+      "total": 5,
+      "non_rfc_rate": 1.0
+    },
+    "methods": {
+      "rfc": 71,
+      "profile": 10,
+      "other": 0,
+      "total": 81,
+      "non_rfc_rate": 0.1235
+    },
+    "occurrence": {
+      "rfc": 0,
+      "profile": 24,
+      "other": 0,
+      "total": 24,
+      "non_rfc_rate": 1.0
+    },
+    "required_headers": {
+      "rfc": 0,
+      "profile": 8,
+      "other": 0,
+      "total": 8,
+      "non_rfc_rate": 1.0
+    },
+    "syntax": {
+      "rfc": 45,
+      "profile": 0,
+      "other": 0,
+      "total": 45,
+      "non_rfc_rate": 0.0
+    },
+    "transitions": {
+      "rfc": 14,
+      "profile": 38,
+      "other": 0,
+      "total": 52,
+      "non_rfc_rate": 0.7308
+    }
+  },
+  "sip": {
+    "headers/values": {
+      "rfc": 25,
+      "profile": 37,
+      "other": 0,
+      "total": 62,
+      "non_rfc_rate": 0.5968
+    },
+    "message_instances": {
+      "rfc": 0,
+      "profile": 51,
+      "other": 0,
+      "total": 51,
+      "non_rfc_rate": 1.0
+    },
+    "method_sequences": {
+      "rfc": 0,
+      "profile": 17,
+      "other": 0,
+      "total": 17,
+      "non_rfc_rate": 1.0
+    },
+    "methods": {
+      "rfc": 102,
+      "profile": 8,
+      "other": 0,
+      "total": 110,
+      "non_rfc_rate": 0.0727
+    },
+    "occurrence": {
+      "rfc": 0,
+      "profile": 5,
+      "other": 0,
+      "total": 5,
+      "non_rfc_rate": 1.0
+    },
+    "required_headers": {
+      "rfc": 0,
+      "profile": 14,
+      "other": 0,
+      "total": 14,
+      "non_rfc_rate": 1.0
+    },
+    "syntax": {
+      "rfc": 46,
+      "profile": 0,
+      "other": 0,
+      "total": 46,
+      "non_rfc_rate": 0.0
+    },
+    "transitions": {
+      "rfc": 0,
+      "profile": 51,
+      "other": 0,
+      "total": 51,
+      "non_rfc_rate": 1.0
+    }
+  },
+  "smtp": {
+    "headers/values": {
+      "rfc": 1,
+      "profile": 1,
+      "other": 0,
+      "total": 2,
+      "non_rfc_rate": 0.5
+    },
+    "message_instances": {
+      "rfc": 0,
+      "profile": 64,
+      "other": 0,
+      "total": 64,
+      "non_rfc_rate": 1.0
+    },
+    "method_sequences": {
+      "rfc": 0,
+      "profile": 226,
+      "other": 0,
+      "total": 226,
+      "non_rfc_rate": 1.0
+    },
+    "methods": {
+      "rfc": 29,
+      "profile": 6,
+      "other": 0,
+      "total": 35,
+      "non_rfc_rate": 0.1714
+    },
+    "occurrence": {
+      "rfc": 0,
+      "profile": 7,
+      "other": 0,
+      "total": 7,
+      "non_rfc_rate": 1.0
+    },
+    "syntax": {
+      "rfc": 19,
+      "profile": 0,
+      "other": 0,
+      "total": 19,
+      "non_rfc_rate": 0.0
+    },
+    "transitions": {
+      "rfc": 0,
+      "profile": 64,
+      "other": 0,
+      "total": 64,
+      "non_rfc_rate": 1.0
+    }
+  }
+}

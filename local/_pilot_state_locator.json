@@ -1,0 +1,58 @@
+{
+  "rtsp": {
+    "n_candidates": 4,
+    "n_transitions": 35,
+    "states": [
+      "Init",
+      "Playing",
+      "Ready",
+      "Recording"
+    ],
+    "rfc_hit_states": [
+      "Init",
+      "Playing",
+      "Ready",
+      "Recording"
+    ],
+    "methods": [
+      "PAUSE",
+      "PLAY",
+      "RECORD",
+      "SETUP",
+      "TEARDOWN"
+    ],
+    "real_methods_used": [
+      "PAUSE",
+      "PLAY",
+      "RECORD",
+      "SETUP",
+      "TEARDOWN"
+    ]
+  },
+  "sip": {
+    "n_candidates": 14,
+    "n_transitions": 1,
+    "states": [
+      "Completed",
+      "Confirmed"
+    ],
+    "rfc_hit_states": [
+      "Completed",
+      "Confirmed"
+    ],
+    "methods": [
+      "ACK"
+    ],
+    "real_methods_used": [
+      "ACK"
+    ]
+  },
+  "smtp": {
+    "n_candidates": 5,
+    "n_transitions": 0,
+    "states": [],
+    "rfc_hit_states": [],
+    "methods": [],
+    "real_methods_used": []
+  }
+}
