@@ -902,14 +902,18 @@ def _select_active_transitions(by_source: dict[str, list]) -> list:
 
 
 def _align_message_instances(transitions: list, message_instances: dict,
-                             *, allow_migrate: bool) -> dict:
+                             *, allow_migrate: bool,
+                             provenance: Optional[dict] = None,
+                             instance_authority: Optional[dict] = None) -> dict:
     """把字段级实例对齐到**当前采用**的状态机转移上。
 
     ★ 为什么要对齐：``message_instances`` 的键是 ``(from, method, to)`` 三元组，
       其中 from/to 是**状态名** ⇒ 一旦状态机换了来源（RTSP 从骨架那套
       SIP 式状态名换成 RFC 原生那套），旧实例的键就再也命中不了
-      ⇒ ``edge_cover`` 取不到字段模板 ⇒ 消息只剩必填头 + **空值**
-      （实测 ``Transport: ''`` / ``Session: ''``）⇒ 字段级知识**静默失效**。
+      ⇒ ``edge_cover`` 取不到字段模板 ⇒ 消息只能退回「必填头 + 中枢 headers
+      取值池首值（池空则空串）」⇒ **同一字段在所有方法上取值相同**，且丢掉
+      方法特有的字段组合（实测 rtsp 修复后 SETUP 才带上 Session、PLAY 才带上
+      ``Range: npt=0.000-``、url 才有值）⇒ 字段级知识**静默失效**。
       ⇒ 必须让实例与采用的那套转移**同源**（不变量：实例键 ⊆ 转移键）。
 
     ★ 对齐规则：
@@ -918,12 +922,38 @@ def _align_message_instances(transitions: list, message_instances: dict,
          （字段取值本身是协议级合法值，与状态名无关 ⇒ 可迁移）；
       ③ 迁移后仍无实例的转移 ⇒ 留空（下游回退必填头 + 默认值）。
 
-    ★ ``allow_migrate``：
-      - True（全源 / 含 source 源，与 ``apply_allowed_methods`` 同义）
-        ⇒ 执行 ②；
-      - False（严格单源，如 ``--sources rfc``）⇒ **只保留命中的**、未命中的
-        **剔除** ⇒ 桶与转移严格一致（**纯净度优先**，字段回退必填头）。
+    ★ ``allow_migrate``（2026-11-06 修正：与 ``apply_allowed_methods`` **解耦**）：
+      - True（默认）⇒ 执行 ②；
+      - False ⇒ **只保留命中的**、未命中的剔除（纯净度极限模式，
+        字段回退必填头 + 默认值）。
+
+      ★ 为什么要解耦（实测 bug）：原实现写的是
+        ``allow_migrate=apply_allowed_methods`` —— 把「**是否裁剪方法**」和
+        「**是否搬迁字段实例**」两个**正交**语义绑在同一个旗标上。后果是
+        **信息最多的模式拿到的字段知识最少**：
+          · 默认路径（全源、不裁剪方法）⇒ ``allow_migrate=False``
+            ⇒ 骨架实例键 ``Idle--SETUP-->Ready`` 与采用的转移
+            ``Init--SETUP-->Ready`` 精确命中 **0** 条、又不许迁移
+            ⇒ rtsp 的 ``message_instances`` **恒为 0**；
+          · 严格单源（会裁剪方法）⇒ ``allow_migrate=True`` ⇒ 反而迁移出 12 条。
+        实测（三协议 × 两模式）只有 rtsp 坏，且只在默认路径坏。
+
+    ★ ``provenance``（出参，可选）：迁移出来的实例，字段值来自**另一个来源**
+      的模板（通常是协议骨架 ``profile``）⇒ **必须标注**，否则外面会把骨架值
+      当成本源的原生知识（在论文里就是「骨架值冒充 RFC」）。
+      形如 ``{key: {"authority": 原模板来源, "origin": "exact"|"migrated",
+                    "migrated_from": 原键或 None}}``；
+      ``instance_authority``（入参）给 ``{key: authority}`` 用于回填原模板来源。
     """
+    def _mark(key, auth_key, origin, migrated_from):
+        if provenance is None:
+            return
+        provenance[key] = {
+            "authority": (instance_authority or {}).get(auth_key, ""),
+            "origin": origin,
+            "migrated_from": migrated_from,
+        }
+
     if not message_instances:
         return {}
     if not transitions:
@@ -931,6 +961,8 @@ def _align_message_instances(transitions: list, message_instances: dict,
         #   否则「单独组装一条 message_instance 事实」时（transitions 桶为空）
         #   会被清空 ⇒ 破坏「每个 fact 组合只落到它该落的桶」的不变量
         #   （tests/fused/test_bundle_provenance.py::test_each_kind_lands_only_in_its_bucket）。
+        for key in sorted(message_instances):
+            _mark(key, key, "exact", None)
         return dict(message_instances)
     trans_set = {(str(s), str(m).strip().upper(), str(d))
                  for s, m, d in transitions}
@@ -943,6 +975,7 @@ def _align_message_instances(transitions: list, message_instances: dict,
         k = (str(key[0]), str(key[1]).strip().upper(), str(key[2]))
         if k in trans_set:
             out[k] = message_instances[key]
+            _mark(k, key, "exact", None)
     if allow_migrate:
         for k in sorted(trans_set):
             if k in out:
@@ -950,7 +983,9 @@ def _align_message_instances(transitions: list, message_instances: dict,
             cands = by_method.get(k[1]) or []
             if not cands:
                 continue
-            out[k] = message_instances[cands[0]]
+            src_key = cands[0]
+            out[k] = message_instances[src_key]
+            _mark(k, src_key, "migrated", src_key)
     return out
 
 
@@ -958,7 +993,8 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                     *, semantic_rules: Optional[list] = None,
                     source_set: Optional[Iterable[str]] = None,
                     apply_allowed_methods: bool = True,
-                    include_skeleton_methods: bool = True) -> dict:
+                    include_skeleton_methods: bool = True,
+                    allow_instance_migrate: bool = True) -> dict:
     """把 fact views 按 aspect 分桶成「种子生成知识」。
 
     产出:
@@ -980,6 +1016,8 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
 
     ★★ 批次 1.6 步 3：**溯源保留**（**只加顶层新键** ⇒ 既有桶结构逐字节不变
       ⇒ prompt 渲染不变 ⇒ 种子产物逐字节不变）：
+      message_instance_provenance  {(from,m,to): {authority, origin, migrated_from}}
+                       ⇒ 迁移来的字段模板**标明出处**（不冒充本源知识）
       by_source        桶级统计 {桶名: {源名: 事实条数}}
       bucket_fact_ids  桶 → 事实 id（有序）⇒ 桶里每条都能回指
       fact_index       事实 id → {authority, aspect, subject, bucket}（双向可追）
@@ -1101,6 +1139,7 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     response_expectations: dict[str, list] = {}  # 处理期望（SemFuzz 的 P）
     vuln_patterns: dict[str, list] = {}  # 漏洞模式（GLMFuzz 式，vuln 源）
     message_instances: dict = {}  # {(from, method, to): [(field, value), ...]}
+    _mi_auth: dict = {}  # {(from, method, to): 模板来源 authority}
     available_sources: set = set()  # P0：参与的事实来源
 
     # ★ 批次 1.6 步 3：**溯源保留**（只加字段、不改旧字段 ⇒ 旧消费者零影响）
@@ -1303,8 +1342,12 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                     fields = [(f.get("name"), f.get("value"))
                               for f in (val.get("fields") or [])
                               if isinstance(f, dict)]
-                    message_instances[(_normalize_state(src), method,
-                                       _normalize_state(dst))] = fields
+                    _mi_key = (_normalize_state(src), method,
+                               _normalize_state(dst))
+                    message_instances[_mi_key] = fields
+                    # ★ 记下模板来源：迁移到别的转移时必须能如实标注
+                    _mi_auth[_mi_key] = (claims[0].get("authority", "")
+                                         if claims else "")
         elif stype == "status":
             if aspect == "definition":
                 statuses[sname] = val or ""
@@ -1386,12 +1429,20 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     # ★ 2026-11-05：状态机换源后，字段级实例必须**同步对齐**到采用的那套转移
     #   （否则键命中不了 ⇒ `edge_cover` 取不到字段 ⇒ 消息字段值全空 ⇒
     #   字段级知识静默失效）。
-    #   `allow_migrate` 复用 `apply_allowed_methods` —— 它与「本次源集合是否
-    #   含 source 源」**完全同义**（见 scripts/seedgen.py:1039）：
-    #   全源 ⇒ 允许把源码侧的字段模板迁到规范原生的转移上；
-    #   严格单源（--sources rfc）⇒ **不迁移**，只留命中的 ⇒ 纯净度优先。
+    #   ★ 2026-11-06 修正（P1-1c）：`allow_migrate` 与 `apply_allowed_methods`
+    #     **解耦**。原实现让两者共用一个旗标 ⇒ 默认路径（全源、不裁剪方法）
+    #     反而禁止迁移 ⇒ rtsp 的骨架实例键（Idle--SETUP-->Ready）与采用的转移
+    #     （Init--SETUP-->Ready）精确命中 0 条 ⇒ `message_instances` **恒为 0**
+    #     ⇒ 消息退回「必填头 + 取值池首值（池空则空串）」，同字段全方法同值、
+    #     方法特有字段组合全丢（实测）。
+    #     解耦后默认允许迁移；迁移出来的实例**逐个标注出处**（provenance），
+    #     字段值来自骨架就记 `authority=profile`，不冒充 RFC 原生知识。
+    _mi_provenance: dict = {}
     message_instances = _align_message_instances(
-        transitions, message_instances, allow_migrate=apply_allowed_methods)
+        transitions, message_instances,
+        allow_migrate=allow_instance_migrate,
+        provenance=_mi_provenance,
+        instance_authority=_mi_auth)
     # P2a：method 级 precedence 消解（接入 resolver 统一消解引擎）。
     # state_changing/existence 是「单值判定」aspect，多源冲突时按认识论优先级
     #（observed > normative/must > descriptive）取最高者，而非「后遍历覆盖先遍历」。
@@ -1459,6 +1510,10 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
             message_instances[_key] = [
                 (fn, _traffic_real.get(fn, fv)) for fn, fv in _fields
             ]
+            if _key in _mi_provenance:
+                # 字段值被流量观测覆盖过 ⇒ provenance 里如实记一笔
+                _mi_provenance[_key] = dict(_mi_provenance[_key],
+                                           value_from="traffic")
     bundle = {
         "methods": methods,
         "headers": headers,
@@ -1478,6 +1533,8 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                                  for k, v in response_expectations.items()},
         "vuln_pattern": {k: [dict(x) for x in v] for k, v in vuln_patterns.items()},
         "message_instances": message_instances,
+        # ★ P1-1c（2026-11-06）：字段模板的**出处**（迁移来的标 profile）
+        "message_instance_provenance": _mi_provenance,
         "available_sources": sorted(available_sources),  # P0
         "method_order": _derive_method_order(method_sequences),  # P2b 拓扑序
         # ★★ 批次 2.3：**各源的状态机全量**（按来源分组）—— 后期 LLM 判别的输入
