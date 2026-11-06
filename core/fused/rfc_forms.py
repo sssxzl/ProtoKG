@@ -22,6 +22,18 @@
 ★ 两条实测得来的实现要点（否则分类器不可靠）：
   ① 图形字符集必须**收紧** —— 含 `/ = # * { } v` 会把正文 `HTTP/1.1 [2]` 误判成图；
   ② **块切分不能只按空行** —— ASCII 图内部常有空行 ⇒ 需「图形窗口合并」规则 M2。
+
+★ `example` 判据的一次证伪与收紧（P1-1a，2026-11-06）：
+  旧判据 = 「缩进 + 短全大写词 + 任意 token」⇒ 把大量**散文**判成示例报文。
+  按 `kind == "example"` 取块再人工核对，实测：rtsp 14 块里真报文 **0**
+  （`IP address hosts several document trees` 因缩进 + `IP` + `address` 命中）；
+  sip 45 块里 12；smtp 39 块里多为散文。
+  ⇒ 当时流传的「98 块示例报文原料」是**假象**，P1-1「从 RFC 示例取字段值」这条路被证伪。
+  新判据只认三种**协议无关**的报文语法形态：
+    ① 请求行 `METHOD  uri  PROTO/ver`；② 状态行 `PROTO/ver  200  reason`；
+    ③ 行命令协议的对话前缀 `C:` / `S:`。
+  收紧后块数 rtsp 14→1 / sip 45→13 / smtp 39→22，而抽取产物**逐字节不变**
+  —— 因为该标签在 core 里没有消费方（只有一处 LLM 兜底且另按 `table/normative` 过滤）。
 """
 from __future__ import annotations
 
@@ -65,11 +77,18 @@ RE_ABNF = re.compile(r"::=|^\s*[A-Za-z][A-Za-z0-9\-]{0,30}\s*=\s*\S")
 #: 规范性关键词
 RE_NORMATIVE = re.compile(
     r"\b(MUST NOT|SHALL NOT|SHOULD NOT|MUST|SHALL|SHOULD|REQUIRED|MAY|OPTIONAL)\b")
-#: 示例报文行：缩进 ≥2 + 全大写首词 + 参数。
-#: ★ 第二 token **不能是纯大写词** —— 否则状态转移表的「续行」
-#:   （继承状态名的行，如 `TEARDOWN         Init`）会被误判成示例报文
-#:   （实测踩过：它让整张 A.1 表被投票带偏成 example）。
-RE_EXAMPLE = re.compile(r"^\s{2,}([A-Z][A-Z_]{1,15})\s+(?!\s*[A-Z][A-Z0-9_]*\s*$)(\S+)")
+#: 示例报文行：**必须有报文语法特征**（2026-11-06 收紧，P1-1a）。
+#: 只认三种**协议无关**形态（不写协议名，靠 ``[A-Za-z]+/[0-9.]+`` 识别版本）：
+#:   ① 请求行 ``METHOD  uri  PROTO/ver``；
+#:   ② 状态行 ``PROTO/ver  200  reason``；
+#:   ③ 行命令协议的对话前缀 ``C:`` / ``S:``。
+#: ★ 为什么换掉旧判据、收紧前后的实测数字，见模块 docstring「example 判据」一节。
+RE_EXAMPLE = re.compile(
+    r"^\s{2,}(?:"
+    r"[A-Z][A-Z_]{1,15}\s+\S+\s+[A-Za-z]+/[0-9.]+\s*$"   # ① 请求行
+    r"|[A-Za-z]+/[0-9.]+\s+\d{3}\b"                      # ② 状态行
+    r"|[CS]\s*:\s*\S"                                    # ③ 对话前缀
+    r")")
 #: 纯大写词（用于示例判据的否定条件）
 _RE_UPPER_WORD = re.compile(r"^[A-Z][A-Z0-9_]*$")
 #: 列式行：≥2 处「2+ 空格或 tab」分隔
