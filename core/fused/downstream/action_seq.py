@@ -48,6 +48,11 @@ from core.fused.downstream.target_env import (  # noqa: E402
 )
 from core.models import SeedCorpus, SeedMessage
 
+#: ★ P2-1（2026-11-06）：``required_headers`` 桶里既有**方法级**清单，
+#:   也有 ``"*"`` 键下的**消息级**清单（RFC 源的 ``required_header_global``）。
+#:   ⇒ 一律用 ``required_headers_for()`` 读，避免「只 .get(method)」漏掉全局头。
+from core.fused.downstream.rag_seedgen import required_headers_for  # noqa: E402
+
 # ===========================================================================
 # 0. 封闭取值域（常量）
 # ===========================================================================
@@ -506,7 +511,7 @@ def _reject_reason(action: Action, message: Optional[SeedMessage],
         if kind == "header":
             method = str(getattr(message, "method", "") or "").upper()
             reqs = {str(r).lower()
-                    for r in (required_headers.get(method) or [])}
+                    for r in required_headers_for(required_headers, method)}
             if name.lower() in reqs:
                 return REJECT_HEADER_IS_REQUIRED
     # ★ P0-1 纵深防御：``url`` 字段的端点必须在**合法端点集合**内。
@@ -764,7 +769,8 @@ def _rule_plan(seed: SeedCorpus, bundle: dict, *, protocol: str,
     # --- R1 缺失必填头补齐 -------------------------------------------------
     before = len(names)
     for index, message in enumerate(messages):
-        for header in required_headers.get(str(message.method).upper()) or []:
+        for header in required_headers_for(required_headers,
+                                           str(message.method)):
             if find_header(message.headers, header) is not None:
                 continue
             value = _default_header_value(headers_bucket, header)
@@ -823,7 +829,8 @@ def _rule_plan(seed: SeedCorpus, bundle: dict, *, protocol: str,
     before = len(names)
     for index, message in enumerate(messages):
         reqs = {str(r).lower()
-                for r in (required_headers.get(str(message.method).upper()) or [])}
+                for r in required_headers_for(required_headers,
+                                              str(message.method))}
         for header in list(message.headers.keys()):
             if str(header).lower() in reqs:
                 continue

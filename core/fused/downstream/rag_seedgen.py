@@ -729,6 +729,48 @@ SKELETON_AUTHORITY = "profile"
 #:     ⇒ 骨架的状态名**不一定**属于该协议的规范。
 RFC_AUTHORITY = "rfc"
 
+#: ★ P2-1（2026-11-06）：``required_headers`` 桶里表示「**所有方法**都要带」的键。
+#:   RFC 源的 ``required_header_global`` 事实（rtsp→CSeq；sip→To/From/CSeq/
+#:   Call-ID/Max-Forwards/Via）语义就是**消息级**必填头 ⇒ 收在这个键下，
+#:   由 :func:`required_headers_for` 与方法级清单合并。
+#:   ⚠ 用 ``"*"`` 而不是给每个方法复制一份：方法集是可变的（RFC/骨架/白名单都
+#:     能改），复制会在「新增方法」时漏同步；单一真相 + 读取时合并更稳。
+_GLOBAL_REQUIRED_KEY = "*"
+
+
+def required_headers_for(headers_map: dict, method: str) -> list[str]:
+    """某方法的**实际必填头** = 全局（``"*"``）+ 方法级，去重保序。
+
+    ★ 为什么需要这个函数：``required_headers`` 桶里有两类键 ——
+      方法名（方法级清单）与 ``"*"``（消息级/全局清单）。
+      消费端若只 ``.get(method)`` 就会**漏掉全局必填头**
+      （实测 rtsp 的 CSeq、sip 的 To/From/CSeq/Call-ID/Max-Forwards/Via）。
+
+    Args:
+        headers_map: ``bundle["required_headers"]``（``{方法名或 "*": [头名…]}``）。
+        method: 方法名（大小写不敏感）。
+
+    Returns:
+        去重后的头名列表（全局在前、方法级在后）。
+    """
+    if not headers_map:
+        return []
+    key = str(method or "").strip().upper()
+    # 方法名匹配**大小写不敏感**：桶里的键可能是 profile 给的原样写法
+    # （`setup` / `Setup`），而调用方拿到的是 `message.method`（多为大写）。
+    specific: list = []
+    for _k, _v in headers_map.items():
+        if str(_k) == _GLOBAL_REQUIRED_KEY:
+            continue
+        if str(_k).strip().upper() == key:
+            specific.extend(_v or [])
+    out: list[str] = []
+    for _name in list(headers_map.get(_GLOBAL_REQUIRED_KEY) or []) + specific:
+        _n = str(_name or "").strip()
+        if _n and _n not in out:
+            out.append(_n)
+    return out
+
 
 #: ★ 批次 1.6 步 3：``(subject_type, aspect)`` → **中枢桶名**。
 #:   用于「桶级溯源统计」（`bundle["by_source"]`）。
@@ -743,6 +785,11 @@ _BUCKET_BY_KIND: dict[tuple[str, str], str] = {
     # ★ 批次 1.6 步 4：`required_headers` **物化进中枢**后的 aspect
     #   （由 profile.json 的必填头清单物化而来，authority=profile）
     ("method", "required_headers"): "required_headers",
+    # ★ P2-1（2026-11-06）：RFC 源的**消息级**必填头（aspect 名就带 global）
+    #   ⇒ 用 `"*"` 键并入同一个桶，表示「**所有方法**都要带」。
+    #   修复前该 aspect **不在本表** ⇒ 抽出来的事实直接丢弃
+    #   （实测 rtsp 1 条 / sip 6 条被丢），是条**死通道**。
+    ("header", "required_header_global"): "required_headers",
     ("method", "security_property"): "security",
     ("method", "precondition"): "precondition",
     ("method", "session_header"): "session_header",
@@ -1145,6 +1192,15 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
             _has_required_facts = True
             required_headers.setdefault(sname, []).extend(
                 list((val or {}).get("headers") or []))
+        elif stype == "header" and aspect == "required_header_global":
+            # ★ P2-1：RFC 源的**消息级**必填头（`subject.type=header`，
+            #   `subject.name` = 头名）⇒ 收进 `"*"` 键 = 「所有方法都要带」。
+            #   与上面方法级分支分开，是因为主体类型不同（header vs method）：
+            #   方法级事实的 `subject.name` 是**方法名**，它的头清单在 value 里；
+            #   全局事实的 `subject.name` 是**头名**，value 也是头名（冗余自证）。
+            _has_required_facts = True
+            if sname:
+                required_headers.setdefault(_GLOBAL_REQUIRED_KEY, []).append(sname)
         elif stype == "method":
             info = methods.setdefault(sname, {})
             if aspect == "state_changing":

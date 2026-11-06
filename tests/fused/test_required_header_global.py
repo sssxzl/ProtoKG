@@ -37,11 +37,25 @@ def test_switch_code_default_off():
     assert "enable_required_headers" in cfg
 
 
-def test_no_bundle_bucket_for_new_aspect():
-    """★ 新 aspect **不进任何 bundle 桶** ⇒ 消费端行为不变。"""
-    for (_stype, _aspect), _bucket in RS._BUCKET_BY_KIND.items():
-        assert _aspect != "required_header_global", (
-            f"新 aspect 不该进 bundle 桶（会改产物）：{(_stype, _aspect)}")
+def test_global_required_headers_land_in_required_headers_bucket():
+    """★ P2-1（2026-11-06）：消息级必填头**进** ``required_headers`` 桶（``"*"`` 键）。
+
+    ★ 这条改了契约：修复前该 aspect 刻意**不进任何桶**（当初的理由是
+      「消费端行为不变」），代价是**抽出来就被丢掉** —— 实测 rtsp 1 条 /
+      sip 6 条（To/From/CSeq/Call-ID/Max-Forwards/Via）全进了黑洞，
+      ``required_headers`` 桶 100% 由 profile 骨架提供。
+
+    现在的契约：**只进 ``required_headers``**（用 ``"*"`` 表示「所有方法都要带」），
+    **不得**顺手映射到 ``methods`` —— 那会给 methods 桶造成空条目 ⇒ 种子漂移。
+    消费端要用 ``required_headers_for()`` 读（全局 + 方法级合并）。
+    """
+    got = RS._BUCKET_BY_KIND.get(("header", "required_header_global"))
+    assert got == "required_headers", (
+        f"应映射到 required_headers，实际 {got!r}")
+    # 该 aspect 只能有这一个桶归属
+    owners = {b for (st, asp), b in RS._BUCKET_BY_KIND.items()
+              if asp == "required_header_global"}
+    assert owners == {"required_headers"}, f"桶归属不唯一：{owners}"
 
 
 # ===========================================================================
