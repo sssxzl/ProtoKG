@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_source_methods.py —— 「RFC 源方法集」的三种形态。
+"""tests/fused/test_rfc_source_methods.py —— 「RFC 源方法集」的四种形态。
+
+★ 四种形态（① 章节标题 / A′ 括号 / B ABNF 枚举 / **D ABNF 命令规则字面量**）：
+  §④ 是 2026-11-06 补的第 4 种 —— RFC 4954 用
+  `auth-command = "AUTH" SP sasl-mech` 定义 AUTH，前三种全不命中。
 
 ★ 背景（2026-11-06 实测缺陷）：原实现只认**形态 A**（章节标题 + 全大写 token），
   且**未排除目录行** ⇒ 三个协议全部抽错：
@@ -161,3 +165,62 @@ def test_no_protocol_or_method_hardcode():
     for bad in ("rtsp", "sip", "smtp", "INVITE", "RCPT", "SETUP", "OPTIONS"):
         assert not re.search(rf"\b{re.escape(bad)}\b", src), (
             f"方法集抽取出现了协议/方法特例「{bad}」⇒ 违反 G2")
+
+
+# ===========================================================================
+# ④ 形态 D：ABNF「命令规则 = "大写字面量"」（2026-11-06 新增）
+# ===========================================================================
+
+def test_abnf_quoted_command_form():
+    """`auth-command = "AUTH" SP sasl-mech` ⇒ 抽出 AUTH。
+
+    这是 RFC 4954 §8 定义 AUTH 的方式：**既不是**章节标题（§4 的标题是
+    小写的 "The AUTH Command"），**也不是** hex 伴生规则（SIP 那种）
+    ⇒ 三种既有形态全不命中，AUTH 只能靠 profile 骨架"补"（单源口径下即污染）。
+    """
+    text = (
+        "8.  ABNF\n\n"
+        "   auth-command      = \"AUTH\" SP sasl-mech [SP initial-response]\n"
+        "   sasl-mech         = \"PLAIN\" / \"LOGIN\" / \"CRAM-MD5\"\n"
+    )
+    assert RX._extract_abnf_quoted_commands(text) == ["AUTH"]
+
+
+def test_abnf_quoted_ignores_non_command_rules():
+    """非 `*-command` 规则一律不采信（否则 `version = "HTTP/1.1"` 会混进来）。"""
+    text = (
+        "   version  = \"HTTP/1.1\"\n"
+        "   separator = \"/\"\n"
+        "   method-list = \"GET\" / \"PUT\"\n"
+    )
+    assert RX._extract_abnf_quoted_commands(text) == []
+
+
+def test_abnf_quoted_requires_uppercase_literal():
+    """小写字面量不是命令名（ABNF 里小写通常表示关键字/参数值）。"""
+    assert RX._extract_abnf_quoted_commands('   foo-command = "bar"\n') == []
+
+
+def test_smtp_auth_extracted_from_real_rfc():
+    """★ 真实语料：smtp 必须有 AUTH（来自 rfc4954），且两个消费者一致。"""
+    if not _has_spec("smtp"):
+        pytest.skip("无 smtp RFC 底料")
+    cfg = RX._load_rfc_config("smtp")
+    ms = RX._rfc_source_methods("smtp", cfg)
+    norm_methods = {n["name"] for n in RX.extract_rfc_norms("smtp")
+                    if n.get("kind") == "method"}
+    assert "AUTH" in ms, f"AUTH 缺失，实得 {sorted(ms)}"
+    assert "AUTH" in norm_methods, f"norms 里没有 AUTH，实得 {sorted(norm_methods)}"
+    # 两个消费者必须一致（否则质量闸与 norms 会互相矛盾）
+    assert ms == norm_methods, (
+        f"方法集两处不一致：_rfc_source_methods={sorted(ms)} "
+        f"vs extract_rfc_norms={sorted(norm_methods)}")
+
+
+def test_abnf_quoted_no_false_positive_on_rtsp_sip():
+    """rtsp / sip 的 RFC 里没有 `*-command` 规则 ⇒ 该通道不得增产方法。"""
+    for proto in ("rtsp", "sip"):
+        if not _has_spec(proto):
+            continue
+        text = RX._rfc_full_text(proto)
+        assert RX._extract_abnf_quoted_commands(text) == [], proto

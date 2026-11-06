@@ -136,23 +136,34 @@ def test_real_corpus_meaning_has_no_when_marker():
 
 
 def test_real_corpus_total_outcomes_all_parsed():
-    """★ 合计口径：三协议 outcome 总数 65，condition 解析失败数 = 0（修前 52/65）。
+    """★ 合计口径：三协议 outcome 总数 89，condition 解析失败数 = 0（修前 52/65）。
 
     逐协议断言（上面的参数化用例）之外，再加一条**合计**断言 ——
     防止「某个协议被整体漏检」这类逐协议用例看不出的回归。
+
+    ★ 65 → 89（2026-11-06，P1-2）：smtp 由 **0 → 24**。原因是两个缺陷叠加：
+      ① ``fused_hub/targets/smtp/rfc_config.json`` 的 ``4.2`` 同时列在
+         ``method_sections`` 与 ``status_sections``，而 ``_section_kind``
+         旧实现是**固定 method 优先** ⇒ 整章「SMTP Replies」被判成 method；
+      ② 状态码通道只认**章节标题**形态（``^\\d{3}\\s+title``），
+         而 RFC 5321 §4.2.3 是**缩进表格** ⇒ 即使判对类型也抽不出。
+      现由「跨类别最长前缀 + status 优先破平局」+「通道 C 缩进码表」共同修复。
     """
-    total = 0
+    per_protocol: dict[str, int] = {}
     failed = 0
     for protocol in ("rtsp", "sip", "smtp"):
         for n in extract_rfc_norms(protocol):
             if n["kind"] != "outcome":
                 continue
-            total += 1
+            per_protocol[protocol] = per_protocol.get(protocol, 0) + 1
             content = n.get("content", "") or ""
             _meaning, condition = parse_outcome_content(content)
             if "| when:" in content and not condition:
                 failed += 1
-    assert total == 65, f"三协议 outcome 总数变了：{total}（预期 65）"
+    total = sum(per_protocol.values())
+    assert per_protocol.get("smtp") == 24, \
+        f"smtp 状态码应为 24 条（RFC 5321 §4.2.3），实测 {per_protocol.get('smtp')}"
+    assert total == 89, f"三协议 outcome 总数变了：{total}（预期 89）"
     assert failed == 0, f"共 {failed} 个 outcome 的 condition 未被解析（修前 52）"
 
 

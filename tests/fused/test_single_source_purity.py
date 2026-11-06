@@ -99,10 +99,15 @@ def test_default_flag_keeps_skeleton_methods_unchanged():
 def test_skeleton_only_methods_are_actually_dropped():
     """严格单源**确实**减少了条目（证明修复有效，而不是空转）。
 
-    实测：sip −2（INFO/SUBSCRIBE）、smtp −1（AUTH）、rtsp ±0（骨架是 RFC 子集）。
+    实测：sip −2（INFO/SUBSCRIBE）、rtsp ±0（骨架是 RFC 子集）、
+    smtp ±0 —— ⚠ smtp 的 ``AUTH`` 原本也是骨架独有的，但它在 **RFC 4954 §8**
+    里有定义（``auth-command = "AUTH" SP ...``），已由「ABNF 命令规则字面量」
+    通道补成 rfc 事实 ⇒ 严格单源下**不再消失**（这才是正确形态：
+    该由 RFC 提供的方法，不能靠关掉骨架来"纯净"，要先把抽取补上）。
+
     用「差集」而不是硬编码条数 ⇒ 数据更新时测试不脆。
     """
-    expected = {"rtsp": 0, "sip": 2, "smtp": 1}
+    expected = {"rtsp": 0, "sip": 2, "smtp": 0}
     for p, n in expected.items():
         loose = set(_assemble(p, strict=False)["methods"])
         strict = set(_assemble(p, strict=True)["methods"])
@@ -110,6 +115,21 @@ def test_skeleton_only_methods_are_actually_dropped():
         assert len(loose) - len(strict) == n, (
             f"[{p}] 期望严格单源减少 {n} 个骨架方法，实测减少 "
             f"{len(loose) - len(strict)} 个：{sorted(loose - strict)}")
+
+
+def test_smtp_auth_comes_from_rfc_not_skeleton():
+    """★ smtp 的 ``AUTH`` 必须由 **RFC 事实**提供（RFC 4954 §8 的 ABNF 规则）。
+
+    修复前它只存在于骨架（authority=profile）里 ⇒ 「RFC 单源」实际上是
+    「RFC + 骨架」；把它从骨架里挡掉又会**丢方法**。正解是先补抽取。
+    """
+    views = load_fact_views("smtp")
+    rfc_methods = _rfc_defined_methods(views)
+    assert "AUTH" in rfc_methods, (
+        "AUTH 应由 rfc4954 的 auth-command ABNF 规则抽到；"
+        f"当前 RFC 定义集 = {sorted(rfc_methods)}")
+    # 且严格单源下仍在 methods 桶里（说明它不是靠骨架补的）
+    assert "AUTH" in _assemble("smtp", strict=True)["methods"]
 
 
 def test_strict_single_source_does_not_touch_transitions():

@@ -632,14 +632,43 @@ def _section_number_path(node: SectionNode) -> tuple[str, ...]:
     return tuple(c.number for c in chain if c.number)
 
 
+#: `_section_kind` 的**破平局优先级**（同一章节号同时被多个清单声明时用）。
+#: 数值越大越优先。理由见 `_section_kind` 的文档字符串。
+_KIND_TIE_PRIORITY: dict[str, int] = {
+    "status": 3, "method": 2, "field": 1, "transition": 0,
+}
+
+
 def _section_kind(window: dict, cfg: dict) -> Optional[str]:
     """按 rfc_config 判定窗口类型（评审 T7：语义判定替代形态猜测）。
 
-    查 cfg 的 method_sections / field_sections / status_sections，按**最长前缀**
-    匹配（更具体的子节优先）。返回 "method" / "field" / "status" / None。
+    查 cfg 的 method_sections / field_sections / status_sections /
+    transition_sections，按**最长前缀**匹配（更具体的子节优先）。
+    返回 "method" / "field" / "status" / "transition" / None。
 
     注意：状态码标题（`21.1.1 100 Trying`）优先判为 status —— 标题本身以
     3 位数字开头是协议通用特征，比章节号更可靠。
+
+    ★ 2026-11-06 修正（P1-2）：**跨类别**比长度，长度并列时按
+      ``status > method > field > transition`` 确定性破平局。
+
+      修正前的实现是「method 匹配到就返回、field 匹配到就返回」，即
+      **固定类别优先**而非「最长前缀优先」，与文档说明不符 ⇒ 两个后果：
+
+      ① 同一章节号同时列在两个清单里时**静默判错**。实测 smtp：``4.2``
+         同时在 ``method_sections`` 与 ``status_sections``
+         （``fused_hub/targets/smtp/rfc_config.json``）⇒ 整章
+         「SMTP Replies」被判成 method ⇒ 状态码抽成 **0** 条（应为 24）。
+      ② **短前缀盖住长子节**：smtp 的 ``method_sections`` 含 ``"3"``
+         （覆盖 rfc4954/rfc3207 的扩展命令章），而 ``field_sections`` 含
+         ``"3.6"`` ⇒ 旧实现让 ``3.6.1``（RFC 5322 字段定义）被判成 **method**。
+
+      破平局顺序的理由：
+        · **status 最高** —— 同一章节号被声明为 status 时，那一章**就是**码表
+          （``4.2 SMTP Replies``）；名字冲突是配置冗余，不是「两种可能」。
+        · **method 次之（高于 field）** —— 沿用修正前的实际行为（有测试锁定）；
+          方法章是「动词定义」，字段章是「字段语法」，同号时方法更具体。
+        · transition 最低 —— 它是可选的旧通道。
     """
     number = window.get("section_no") or ""
     title = window.get("title") or ""
@@ -657,20 +686,19 @@ def _section_kind(window: dict, cfg: dict) -> Optional[str]:
                     best = sec
         return best
 
-    m = _match(cfg.get("method_sections"))
-    if m is not None:
-        return "method"
-    f = _match(cfg.get("field_sections"))
-    if f is not None:
-        return "field"
-    s = _match(cfg.get("status_sections"))
-    if s is not None:
-        return "status"
-    # ★ 批次 2.1（P1）：状态机章节（状态转移表）
-    t = _match(cfg.get("transition_sections"))
-    if t is not None:
-        return "transition"
-    return None
+    # ★ 跨类别收集候选，按 (前缀长度, 破平局优先级) 取最大
+    _cands: list[tuple[int, int, str]] = []
+    for _kind, _key in (("method", "method_sections"),
+                        ("field", "field_sections"),
+                        ("status", "status_sections"),
+                        ("transition", "transition_sections")):
+        _m = _match(cfg.get(_key))
+        if _m is not None:
+            _cands.append((len(_m), _KIND_TIE_PRIORITY[_kind], _kind))
+    if not _cands:
+        return None
+    return max(_cands)[2]
+
 
 
 def _infer_kind_from_content(window: dict) -> Optional[str]:
@@ -1433,6 +1461,19 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
             seen_ids.add(_mn["norm_id"])
             norms.append(_mn)
 
+    # ---- 通道 A0b：ABNF 命令规则字面量（rfc4954 的 `auth-command = "AUTH"`）----
+    #   ★ 与通道 A0 同属「ABNF 通道」：SIP 用 hex 伴生规则、SMTP 扩展用命令规则
+    #     字面量 ⇒ 两种排版各自独立的客观判据，互不干扰。
+    for _m in _extract_abnf_quoted_commands(
+            "\n".join(text for _, text in content_lines)):
+        if _m.upper() in method_excludes:
+            continue
+        method_names.add(_m.upper())
+        _mn = _norm("method", _m, _m, protocol, src_name, "@abnf")
+        if _mn["norm_id"] not in seen_ids:
+            seen_ids.add(_mn["norm_id"])
+            norms.append(_mn)
+
     for w in windows:
         kind = _section_kind(w, cfg)
         if kind is None:
@@ -1478,6 +1519,20 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
             fname = _normalize_field_name(entry_name)
             if fname:
                 _add_field(fname, _first_sentence(entry_body), line_no)
+
+        # ---- 通道 C：缩进状态码表（smtp 的 §4.2.3 / 同类「码表」形态）----
+        #   ★ 只在 kind == "status" 的窗口里做 —— 否则正文里的「300 秒超时」
+        #     之类数字会被误当状态码。
+        if kind == "status":
+            for code, reason in _extract_status_code_entries(text):
+                if not reason:
+                    continue
+                snorm = _norm("outcome", code, reason, protocol, src_name,
+                              f"@{line_no}")
+                if snorm["norm_id"] in seen_ids:
+                    continue
+                seen_ids.add(snorm["norm_id"])
+                norms.append(snorm)
 
         if kind is None:
             continue
@@ -1716,6 +1771,68 @@ _RE_INDENTED_ENTRY = re.compile(
     r"\s*$")
 
 
+#: 缩进状态码表条目（`   211  System status, or system help reply`）。
+#: ★ 只匹配**恰好三位**数字 + 空白 + 非空描述 ⇒ `2yz` / `4.2.3.` 不会命中。
+_RE_INDENTED_STATUS = re.compile(r"^( {2,})(\d{3})[ \t]+(\S.*)$")
+
+
+def _extract_status_code_entries(text: str) -> list[tuple[str, str]]:
+    """从一段文本里抽取「缩进状态码表」→ [(code, reason), ...]。
+
+    ★ 为什么需要（P1-2 实测）：RFC 5321 §4.2.3 *Reply Codes in Numeric Order*
+      把 24 个回复码排成**缩进表格**，**没有逐码章节标题**：
+
+          211  System status, or system help reply
+          214  Help message (Information on how to use the receiver or the
+                meaning of a particular non-standard command; ...)
+
+      而原有的状态码通道只认**章节标题**形态（`^\\d{3}\\s+title`）——
+      RFC 3261 §21 / RFC 2326 §11 的码是标题，故能抽到；RFC 5321 是表格，
+      故抽成 **0 条**（实测）。
+
+    判定（保守，协议无关）：
+      ① 行首缩进 ≥2 空格，紧接**恰好三位**数字，其后空白 + 非空描述；
+      ② 描述可**续行**（缩进比码行更深且非空、且不是下一条码行）⇒ 拼进
+         ``reason``；空行继续看（RFC 用空行分隔条目）、遇到同级或更浅缩进即结束；
+      ③ 同一 code 只取**首次**出现（§4.2.2「by Function Groups」与
+         §4.2.3「in Numeric Order」会重复列出同一批码）。
+
+    ★ 边界：调用方**必须**只在 ``kind == "status"`` 的窗口里调用它，
+      否则正文里的「300 秒超时」之类三位数会被误当状态码。
+    """
+    if not text:
+        return []
+    raw = text.split("\n")
+    out: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    i, n = 0, len(raw)
+    while i < n:
+        m = _RE_INDENTED_STATUS.match(raw[i])
+        if not m:
+            i += 1
+            continue
+        indent = len(m.group(1))
+        code = m.group(2)
+        parts = [m.group(3).strip()]
+        j = i + 1
+        while j < n:
+            line = raw[j]
+            if not line.strip():
+                j += 1
+                continue
+            if _RE_INDENTED_STATUS.match(line):
+                break
+            if len(line) - len(line.lstrip()) <= indent:
+                break
+            parts.append(line.strip())
+            j += 1
+        reason = " ".join(parts).strip()
+        if code not in seen:
+            seen.add(code)
+            out.append((code, reason))
+        i = j
+    return out
+
 
 def _extract_indented_entries(text: str) -> list[tuple[str, str]]:
     """从一段文本里抽取「缩进定义条目」→ [(条目名, 定义正文), ...]。
@@ -1852,6 +1969,35 @@ _RE_ABNF_HEX_METHOD = re.compile(
     r"^\s*([A-Z][A-Z0-9]*)m\s*=\s*%x([0-9A-Fa-f]+(?:\.[0-9A-Fa-f]+)*)"
     r"\s*;\s*([A-Z][A-Z0-9]*)\s+in\s+caps\s*$",
     re.MULTILINE)
+
+#: ABNF「命令规则 = "大写字面量"」形态（RFC 4954 §8 的 `auth-command = "AUTH" SP ...`）。
+#: ★ 为什么只认 ``*-command`` 结尾的规则名：ABNF 里以引号字面量开头的规则很多
+#:   （`version = "HTTP/1.1"` / `separator = "/"`），只有 **命令规则** 的
+#:   规则名带 `-command` 后缀 ⇒ 用后缀做「这条规则描述的是命令」的客观判据，
+#:   不靠协议特例。实测：smtp 由此补出 ``AUTH``（rfc4954），rtsp/sip 无命中。
+_RE_ABNF_QUOTED_COMMAND = re.compile(
+    r"^\s{0,8}[a-z][a-z0-9]*(?:-[a-z0-9]+)*-command\s*=\s*"
+    r"\"([A-Z][A-Z0-9_\-]{1,19})\"",
+    re.MULTILINE)
+
+
+def _extract_abnf_quoted_commands(text: str) -> list[str]:
+    """从 ABNF 的「``*-command = "VERB"``」规则里抽命令名（协议无关）。
+
+    ★ 为什么需要（2026-11-06 实测）：RFC 4954 §8 用
+        ``auth-command = "AUTH" SP sasl-mech [SP initial-response]``
+      定义 ``AUTH``。它**不是**章节标题（§4 的标题是 "The AUTH Command"，
+      全小写形态、无缩写括号），也**不是** hex 伴生规则
+      （``_extract_abnf_methods`` 只认 ``INVITEm = %x49.4E...``）
+      ⇒ 三种既有形态全都不命中 ⇒ smtp 的方法集漏掉 AUTH，
+      只能靠 profile 骨架"补"，这在「RFC 单源」口径下就是污染。
+
+    ★ 边界（诚实标注）：RFC 3207 的 ``STARTTLS`` **没有** ABNF 规则
+      （正文只写 "The format for the STARTTLS command is: / STARTTLS"），
+      ⇒ 本通道抽不到它，仍属未覆盖率；要覆盖需另做「散文命令格式」通道。
+    """
+    return [m.group(1) for m in _RE_ABNF_QUOTED_COMMAND.finditer(text or "")]
+
 
 
 def _extract_abnf_methods(text: str) -> list[str]:
@@ -2325,10 +2471,11 @@ _METHOD_ABNF_RE = re.compile(r"^\s*Method\s*=\s*(.+)$")
 def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
     """该协议**RFC 源**里的方法/命令名集合（数据驱动，不硬编码协议名）。
 
-    ★ **三种形态并取**（2026-11-06 修复，原实现只认形态 A 且未排目录行）：
+    ★ **四种形态并取**（2026-11-06 修复，原实现只认形态 A 且未排目录行）：
       A)  **章节标题**且整行只有方法名：``10.1 OPTIONS``（RTSP §10）
       A′) **括号形态**：``4.1.1.2.  MAIL (MAIL)`` → 取括号内（SMTP §4.1.1）
       B)  **ABNF 枚举**：``Method = INVITEm / ACKm / OPTIONSm / ...``（SIP §25）
+      D)  **ABNF 命令规则字面量**：``auth-command = "AUTH" SP sasl-mech``（RFC 4954 §8）
     ★ 为什么要三形态：SIP 的真实方法只出现在 §25 的 ABNF 里，
       既不在「章节号 + 全大写」形态、也不在括号形态；只认形态 A 时
       会抽出 {UAC, UAS} 两个**目录行噪声** ⇒ 质量闸把 SIP 的转移全过滤掉。
@@ -2362,6 +2509,13 @@ def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
             if _m2 and _in_sec(_s.split()[0].rstrip(".")):
                 if _m2.group(1) not in _kw:
                     out.add(_m2.group(1))
+                continue
+            # D) ABNF「命令规则 = "大写字面量"」（rfc4954: auth-command = "AUTH" ...）
+            #    ★ 不看章节号：`-command` 规则名后缀本身就是「这是命令」的判据。
+            _m4 = _RE_ABNF_QUOTED_COMMAND.match(_s)
+            if _m4:
+                if _m4.group(1) not in _kw:
+                    out.add(_m4.group(1))
                 continue
             # B) ABNF 枚举（续行以 / 开头）
             _m3 = _METHOD_ABNF_RE.match(_s)

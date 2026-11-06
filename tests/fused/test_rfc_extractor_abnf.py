@@ -116,11 +116,19 @@ def test_smtp_methods_not_duplicated_as_fields():
 
 
 def test_smtp_methods_complete():
-    """SMTP 的 10 个命令仍完整。"""
+    """SMTP 的命令完整：10 个 RFC 5321 命令 + **AUTH**（RFC 4954 §8）。
+
+    ★ 2026-11-06：AUTH 由「ABNF 命令规则字面量」通道补出
+      （``auth-command = "AUTH" SP sasl-mech [SP initial-response]``）。
+      修复前它只能靠 profile 骨架"补"，在 RFC 单源口径下就是污染。
+    ★ 仍未覆盖（诚实标注）：``STARTTLS``（RFC 3207）**没有** ABNF 规则，
+      正文只写 "The format for the STARTTLS command is: / STARTTLS" ⇒
+      需另做「散文命令格式」通道才能抽到。
+    """
     methods = {n["name"] for n in rx.extract_rfc_norms("smtp")
                if n["kind"] == "method"}
     assert methods == {"DATA", "EHLO", "EXPN", "HELP", "MAIL",
-                       "NOOP", "QUIT", "RCPT", "RSET", "VRFY"}
+                       "NOOP", "QUIT", "RCPT", "RSET", "VRFY", "AUTH"}
 
 
 # ===========================================================================

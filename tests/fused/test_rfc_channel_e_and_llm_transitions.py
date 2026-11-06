@@ -104,15 +104,24 @@ def test_channel_e_does_not_affect_rtsp_or_sip_norms():
         assert len(names) == len(set(names)), f"{proto} 出现重复字段名"
 
 
-def test_smtp_section_kind_cannot_locate_fields():
-    """★ 记录一个**必须知道的事实**：`_section_kind` 对 SMTP 的 §3.6
-    判成 **method**（因 `method_sections` 含 "3"）⇒ 通道 E 不能依赖它
-    ⇒ 这正是通道 E 走**全文扫**的原因。
+def test_smtp_section_kind_resolves_field_subsection():
+    """★ 2026-11-06（P1-2）修正记录：`_section_kind` 对 SMTP §3.6.1 **曾**判成
+    **method**（因 `method_sections` 含短前缀 `"3"`、且旧实现是固定类别优先），
+    ⇒ 通道 E 不能依赖它，这就是通道 E 走**全文扫**的原因。
+
+    现在改为「跨类别最长前缀」⇒ `3.6`（field，长度 3）胜过 `3`（method，长度 1）
+    ⇒ `3.6.1` 正确判为 **field**。通道 E 仍走全文扫（协议无关、不依赖章节号），
+    但不再是因为这个缺陷。
     """
     cfg = RX._load_rfc_config("smtp")
     assert "3" in cfg.get("method_sections", [])
-    # 模拟：section_no="3.6.1" 会被判成 method
-    assert RX._section_kind({"section_no": "3.6.1", "title": "x"}, cfg) == "method"
+    assert "3.6" in cfg.get("field_sections", [])
+    # 长子节归属 field（旧实现会误判成 method）
+    assert RX._section_kind({"section_no": "3.6.1", "title": "x"}, cfg) == "field"
+    # 命令章子节仍归 method（不受影响）
+    assert RX._section_kind({"section_no": "4.1.1.2", "title": "x"}, cfg) == "method"
+    # 回复码章归 status（旧实现因 method_sections 含 "4.2" 而误判成 method）
+    assert RX._section_kind({"section_no": "4.2.3", "title": "x"}, cfg) == "status"
 
 
 # ===========================================================================

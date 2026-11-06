@@ -293,9 +293,9 @@
     "apply_allowed_methods": false,
     "buckets": {
       "methods": {
-        "count": 10,
+        "count": 11,
         "by_source": {
-          "rfc": 10
+          "rfc": 11
         }
       },
       "headers": {
@@ -310,8 +310,10 @@
         "by_source": {}
       },
       "statuses": {
-        "count": 0,
-        "by_source": {}
+        "count": 24,
+        "by_source": {
+          "rfc": 24
+        }
       },
       "transitions": {
         "count": 64,
@@ -393,6 +395,10 @@
         "facts": false,
         "profile": false
       },
+      "statuses": {
+        "facts": true,
+        "profile": false
+      },
       "transitions": {
         "facts": true,
         "profile": false
@@ -404,6 +410,7 @@
     },
     "rfc_methods_only": [],
     "bundle_methods": [
+      "AUTH",
       "DATA",
       "EHLO",
       "EXPN",
