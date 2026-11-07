@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_source_methods.py —— 「RFC 源方法集」的四种形态。
+"""tests/fused/test_rfc_source_methods.py —— 「RFC 源方法集」的五种形态。
 
-★ 四种形态（① 章节标题 / A′ 括号 / B ABNF 枚举 / **D ABNF 命令规则字面量**）：
+★ 五种形态（① 章节标题 / A′ 括号 / B ABNF 枚举 / **D ABNF 命令规则字面量**
+  / **E 散文命令格式声明**）：
   §④ 是 2026-11-06 补的第 4 种 —— RFC 4954 用
-  `auth-command = "AUTH" SP sasl-mech` 定义 AUTH，前三种全不命中。
+  `auth-command = "AUTH" SP sasl-mech` 定义 AUTH，前三种全不命中；
+  §⑤ 是 2026-11-07 补的第 5 种 —— RFC 3207 用散文
+  "The format for the STARTTLS command is:" 定义 STARTTLS，前四种全不命中。
 
 ★ 背景（2026-11-06 实测缺陷）：原实现只认**形态 A**（章节标题 + 全大写 token），
   且**未排除目录行** ⇒ 三个协议全部抽错：
@@ -142,13 +145,21 @@ def test_sip_methods_from_abnf():
 
 
 def test_smtp_methods_use_real_commands():
-    """★ smtp 取真命令名（括号形态）；描述词 EXPAND/RECIPIENT/RESET/VERIFY 不得混入。"""
+    """★ smtp 取真命令名（括号形态 + 散文格式声明）。
+
+    ★ 描述词 EXPAND/RECIPIENT/RESET/VERIFY **不得**混入（章节标题的
+      描述词 ≠ 命令名）。
+    ★ ``SMTP`` 是**协议自身名**（不是命令）⇒ 形态 E 的排除项之一。
+    ★ ``STARTTLS`` 是 **RFC 3207 §4 定义的命令**（形态 E 抽出）⇒ 必须出现；
+      它此前被列为「描述词」是 2026-11-06 的真实缺口，本次已补上。
+    """
     if not _has_spec("smtp"):
         pytest.skip("无 smtp RFC 底料")
     ms = RX._rfc_source_methods("smtp", RX._load_rfc_config("smtp"))
     for name in ("MAIL", "RCPT", "DATA", "QUIT", "RSET", "VRFY", "EXPN"):
         assert name in ms, f"smtp 真命令 {name} 缺失，实得 {sorted(ms)}"
-    for bad in ("EXPAND", "RECIPIENT", "RESET", "VERIFY", "SMTP", "STARTTLS"):
+    assert "STARTTLS" in ms, f"STARTTLS（RFC 3207 §4）缺失，实得 {sorted(ms)}"
+    for bad in ("EXPAND", "RECIPIENT", "RESET", "VERIFY", "SMTP"):
         assert bad not in ms, f"描述词 {bad} 被当成命令，实得 {sorted(ms)}"
 
 

@@ -28,7 +28,7 @@ import re
 import sys
 from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Any, Iterable, Optional
 
 from core import paths
 from core.fused.norm import constraint_identity_digest
@@ -93,6 +93,17 @@ _GENERIC_SECTION_WORDS = {
     "MESSAGES", "MESSAGE FORMATS", "COMMAND SYNTAX",
     "BACKGROUND",   # SMTP RFC5321 §2.2.1 的历史背景小节名（非协议字段）
 }
+
+#: **方法名**里必须排除的「关键字原子」（**协议无关**）：RFC 关键字
+#: （MUST/SHALL/…）+ 协议/角色缩写（RFC/TCP/UDP/IP/HTTP/ID/URI/URL/OK/
+#: ALL/UAC/UAS/TU/UA）。它们不是任何协议的命令名，被当成方法即污染方法集。
+#: ★ 提到模块级是为了让**形态 E**（散文命令格式声明）与其它形态共用同一份
+#:   排除表 ⇒ 「方法集」与「norms」两个消费者口径必然一致。
+_METHOD_KEYWORD_ATOMS = frozenset({
+    "MUST", "SHALL", "SHOULD", "MAY", "REQUIRED", "OPTIONAL", "NOT",
+    "RFC", "TCP", "UDP", "IP", "HTTP", "ID", "URI", "URL", "OK", "ALL",
+    "UAC", "UAS", "TU", "UA",
+})
 
 #: RFC 页眉页脚（需清理）
 _RE_PAGE_MARK = re.compile(r"\[Page\s+\d+\]")
@@ -1474,6 +1485,18 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
             seen_ids.add(_mn["norm_id"])
             norms.append(_mn)
 
+    # ---- 通道 A0c：散文「命令格式声明」句式（RFC 3207 的 STARTTLS）----
+    #   ★ 与 A0/A0b 同属**确定性抽取**：句式（"the format of the X command is"）
+    #     + 全大写词形 ⇒ **协议无关** ⇒ STARTTLS 成为 **RFC 事实**而非骨架补丁。
+    #   ★ 放在窗口循环**之前**登记 `method_names` ⇒ 命令名不会被重复当 field。
+    for _m, _ml in _extract_prose_command_formats(
+            raw_lines, protocol, method_excludes):
+        method_names.add(_m.upper())
+        _mn = _norm("method", _m, _m, protocol, src_name, f"@{_ml}")
+        if _mn["norm_id"] not in seen_ids:
+            seen_ids.add(_mn["norm_id"])
+            norms.append(_mn)
+
     for w in windows:
         kind = _section_kind(w, cfg)
         if kind is None:
@@ -1994,10 +2017,102 @@ def _extract_abnf_quoted_commands(text: str) -> list[str]:
 
     ★ 边界（诚实标注）：RFC 3207 的 ``STARTTLS`` **没有** ABNF 规则
       （正文只写 "The format for the STARTTLS command is: / STARTTLS"），
-      ⇒ 本通道抽不到它，仍属未覆盖率；要覆盖需另做「散文命令格式」通道。
+      ⇒ 本（ABNF）通道抽不到它；已由**形态 E**（散文命令格式声明）覆盖，
+      见 :func:`_extract_prose_command_formats`。
     """
     return [m.group(1) for m in _RE_ABNF_QUOTED_COMMAND.finditer(text or "")]
 
+
+#: 形态 E：**散文里的「命令格式声明」句式**（**协议无关**）。
+#:   "The format of|for [the] <全大写词> command|method is|are"
+#: ★ 判据是**句式**本身，不是协议名/命令名白名单 ⇒ 换协议无需改代码（G2）。
+#: ★ 客观性：句中出现 "command|method" 这一**名词** ⇒ RFC 自己断言
+#:   「<全大写词> 是一条命令」—— 与形态 D 靠 "-command" 规则名后缀判
+#:   「这条规则描述的是命令」是同一思路：**用文本自身的证据**判定。
+#: ★ 被捕获的词**必须全大写**（RFC 里命令/方法名一律大写）⇒ 不会把
+#:   "the format of the local part" 之类散文里的普通名词误当命令。
+_RE_PROSE_COMMAND_FORMAT = re.compile(
+    r"\b(?:[Tt]he\s+)?(?:[Ff]ormat|[Ss]yntax)\s+(?:of|for)\s+(?:[Tt]he\s+)?"
+    r"([A-Z][A-Z0-9_\-]{1,19})\s+(?:command|method)\s+(?:is|are)\b")
+
+
+def _extract_prose_command_formats(
+        lines: list[str],
+        protocol: str = "",
+        excludes: Iterable[str] = (),
+) -> list[tuple[str, int]]:
+    """形态 E：从散文里抽「命令格式声明」里的命令名（**协议无关**）。
+
+    ★ 为什么需要形态 E（2026-11-07 实测缺口）：RFC 3207 用**散文**声明
+      STARTTLS 的命令格式 ——
+          "The format for the STARTTLS command is:" / "STARTTLS"
+      它**既没有** ABNF 规则（形态 D 不命中）、也不是 "描述名 (缩写)" 形态
+      （形态 A′ 不命中）⇒ 前四种形态全不命中 ⇒ smtp 的方法集漏掉 STARTTLS，
+      只能靠 profile 骨架"补"（在「RFC 单源」口径下就是污染）。
+
+    ★ 判据（**协议无关**，只认句式）：
+      ① **句式**：``<format|syntax> of|for [the] <全大写词> command|method is|are``
+         —— RFC 自己断言「<全大写词> 是一条命令」；
+      ② **词形**：被捕获的词必须**全大写**（命令名的书写惯例）；
+      ③ **排除**：RFC 关键字原子、配置排除名单、**协议自身名**
+         （"the SMTP command" 里的 SMTP 是协议名，不是命令）。
+      ⇒ 抽出的名字**逐字来自原文**，不臆造任何名字。
+
+    ★ 段落处理：RFC 正文按 ~72 列**硬换行**，一句声明可能横跨多行 ⇒
+      按**空行**切段、段内用空格拼回整句后再匹配。
+      （页眉页脚/目录行不参与 ⇒ 避免把目录文字拼进正文造成误抽。）
+
+    Args:
+        lines: RFC 原文行（``read_text().splitlines()`` 口径，1-based 行号）。
+        protocol: 协议名（小写）；用于排除「协议自身名」，空串则不排除。
+        excludes: 额外的排除名（大小写不敏感，通常来自 rfc_config）。
+
+    Returns:
+        ``[(命令名, 原文行号), ...]``（按出现顺序，同名只保留首次出现）。
+    """
+    excl = {str(x).upper() for x in excludes}
+    excl |= _METHOD_KEYWORD_ATOMS
+    if protocol:
+        excl.add(protocol.upper())
+
+    # ---- ① 切段：空行分隔；页眉页脚/目录行不参与 ----
+    paras: list[list[tuple[int, str]]] = []
+    cur: list[tuple[int, str]] = []
+    for _i, _raw in enumerate(lines, start=1):
+        _s = _raw.strip()
+        if (not _s or _RE_PAGE_MARK.search(_s) or _RE_RFC_TITLE.match(_s)
+                or _is_toc_line(_s)):
+            if cur:
+                paras.append(cur)
+                cur = []
+            continue
+        cur.append((_i, _s))
+    if cur:
+        paras.append(cur)
+
+    # ---- ② 逐段匹配句式 ----
+    out: list[tuple[str, int]] = []
+    seen: set[str] = set()
+    for _para in paras:
+        _parts = [_s for _, _s in _para]
+        _segs: list[tuple[int, int, int]] = []
+        _off = 0
+        for _ln, _s in _para:
+            _segs.append((_off, _off + len(_s), _ln))
+            _off += len(_s) + 1        # +1 = 段内拼接用的空格
+        _text = " ".join(_parts)
+        for _m in _RE_PROSE_COMMAND_FORMAT.finditer(_text):
+            _name = _m.group(1)
+            if _name in seen or _name.upper() in excl:
+                continue
+            _ln = _para[0][0]
+            for _s0, _s1, _no in _segs:
+                if _s0 <= _m.start(1) < _s1:
+                    _ln = _no
+                    break
+            seen.add(_name)
+            out.append((_name, _ln))
+    return out
 
 
 def _extract_abnf_methods(text: str) -> list[str]:
@@ -2471,11 +2586,14 @@ _METHOD_ABNF_RE = re.compile(r"^\s*Method\s*=\s*(.+)$")
 def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
     """该协议**RFC 源**里的方法/命令名集合（数据驱动，不硬编码协议名）。
 
-    ★ **四种形态并取**（2026-11-06 修复，原实现只认形态 A 且未排目录行）：
+    ★ **五种形态并取**（2026-11-06 修复 A/A′/B/D；2026-11-07 补形态 E）：
       A)  **章节标题**且整行只有方法名：``10.1 OPTIONS``（RTSP §10）
       A′) **括号形态**：``4.1.1.2.  MAIL (MAIL)`` → 取括号内（SMTP §4.1.1）
       B)  **ABNF 枚举**：``Method = INVITEm / ACKm / OPTIONSm / ...``（SIP §25）
       D)  **ABNF 命令规则字面量**：``auth-command = "AUTH" SP sasl-mech``（RFC 4954 §8）
+      E)  **散文命令格式声明**：``The format for the STARTTLS command is:``
+          （RFC 3207 §4）—— 句式 + 全大写词形（协议无关，见
+          :func:`_extract_prose_command_formats`）
     ★ 为什么要三形态：SIP 的真实方法只出现在 §25 的 ABNF 里，
       既不在「章节号 + 全大写」形态、也不在括号形态；只认形态 A 时
       会抽出 {UAC, UAS} 两个**目录行噪声** ⇒ 质量闸把 SIP 的转移全过滤掉。
@@ -2484,9 +2602,7 @@ def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
     secs = cfg.get("method_sections") or []
     if not secs:
         return set()
-    _kw = {"MUST", "SHALL", "SHOULD", "MAY", "REQUIRED", "OPTIONAL", "NOT",
-           "RFC", "TCP", "UDP", "IP", "HTTP", "ID", "URI", "URL", "OK", "ALL",
-           "UAC", "UAS", "TU", "UA"}
+    _kw = _METHOD_KEYWORD_ATOMS
     out: set[str] = set()
 
     def _in_sec(num: str) -> bool:
@@ -2494,6 +2610,13 @@ def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
 
     for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
         _lines = _f.read_text(encoding="utf-8", errors="ignore").splitlines()
+        # E) 散文里的「命令格式声明」句式（RFC 3207 的 STARTTLS 走这条）——
+        #    ★ **整篇扫描**：RFC 正文硬换行会把一句声明拆到多行 ⇒ 不能按行判定。
+        #    ★ **不看章节号**：句式自带「这是命令」的客观证据（与形态 D 同理）。
+        for _m, _ml in _extract_prose_command_formats(
+                _lines, protocol, cfg.get("method_excludes") or ()):
+            if _m not in _kw:
+                out.add(_m)
         for _i, _ln in enumerate(_lines):
             _s = _ln.strip()
             if not _s or _TOC_DOTS_RE.search(_s):
