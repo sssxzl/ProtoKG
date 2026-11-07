@@ -178,8 +178,21 @@ def project_bundle_to_graph(bundle: dict[str, Any],
         for fname in (fields or []):
             if not fname:
                 continue
+            # ★ **字段名归一**（2026-11-08 实测）：message_instances 的值
+            #   可能是 ``('cseq', '5')`` 这样的 **(字段名, 取值)** 元组
+            #   ⇒ 直接 str() 会把整个元组当节点名（实测产出
+            #     ``entity:('cseq', '5')`` 这种垃圾节点 ⇒ 边端点悬空
+            #     ⇒ 社区检测全部退化孤立）。
+            #   ⇒ 只取**第一个元素**（字段名）。
+            if isinstance(fname, (list, tuple)):
+                if not fname:
+                    continue
+                fname = fname[0]
+            fname = str(fname).strip()
+            if not fname:
+                continue
             add_edge("co_occurs", _nid("message", method),
-                     _nid("entity", str(fname)), "semantic",
+                     _nid("entity", fname), "semantic",
                      owner="profile", conf="medium")
 
     # ---- 弱边：同方法的 required_headers（已在上面加过 required_by，
@@ -194,9 +207,29 @@ def project_bundle_to_graph(bundle: dict[str, Any],
 
 def split_by_graph(nodes: list[dict], edges: list[dict],
                    graph: str) -> tuple[list[dict], list[dict]]:
-    """按 ``graph`` 字段分层（``structure`` = 精确图 / ``semantic`` = 社区图）。"""
+    """按 ``graph`` 字段分层（``structure`` = 精确图 / ``semantic`` = 社区图）。
+
+    ★ **端点补全**（2026-11-08 实测）：社区图的边（``required_by`` /
+      ``co_occurs``）的一端是 **message 节点**，而 message 节点在
+      **structure 图**里 ⇒ 若只按 ``graph`` 字段切节点，边会**端点悬空**
+      （实测 rtsp 的 36 条社区边全部悬空 ⇒ 社区检测退化成全孤立）。
+    ⇒ 这里**补上被本层边引用到的端点节点**（不改它们的 graph 标记）。
+    """
     ns = [n for n in nodes if n.get("graph") in (graph, "both")]
     es = [e for e in edges if e.get("graph") in (graph, "both")]
+    have = {n["node_id"] for n in ns}
+    need = set()
+    for e in es:
+        for side in ("from", "to"):
+            nid = e.get(side)
+            if nid and nid not in have:
+                need.add(nid)
+    if need:
+        by_id = {n["node_id"]: n for n in nodes}
+        for nid in sorted(need):
+            n = by_id.get(nid)
+            if n is not None:
+                ns.append(n)
     return ns, es
 
 
@@ -263,6 +296,159 @@ def graph_metrics(nodes: list[dict], edges: list[dict]) -> dict[str, Any]:
     }
 
 
+# ===========================================================================
+# B2.1 / B2.4：图合并与**社区检测**（Leiden）
+# ===========================================================================
+
+def merge_multidigraph(nodes: list[dict], edges: list[dict]
+                       ) -> tuple[list[dict], list[dict]]:
+    """B2.1：合并成 **MultiDiGraph**（同对节点允许多条不同条件的边）。
+
+    ★ 边的唯一性键 = ``(type, from, to, label)`` ⇒ 同对节点的不同条件**都保留**。
+    ★ 节点按 ``node_id`` 去重（保留 confidence 更高者）。
+    """
+    nodes_out: dict[str, dict] = {}
+    for n in nodes:
+        nid = n["node_id"]
+        prev = nodes_out.get(nid)
+        if prev is None or (prev.get("confidence") == "medium"
+                            and n.get("confidence") == "high"):
+            nodes_out[nid] = dict(n)
+    edges_out: dict[tuple, dict] = {}
+    for e in edges:
+        key = (e.get("type"), e.get("from"), e.get("to"), e.get("label", ""))
+        edges_out.setdefault(key, dict(e))
+    return list(nodes_out.values()), list(edges_out.values())
+
+
+#: ★ **不参与社区划分**的边类型（2026-11-08 实测）
+#:   ``defines``（协议 → 字段/状态码）是**归属边**（不是语义相似边）——
+#:   它把**所有**字段连到协议节点 ⇒ 整图连通 ⇒ 社区检测必然只出 1 个社区
+#:   （实测 rtsp 69 节点全部落进一个社区）。
+#:   ⇒ 社区划分时排除它；但**保留在图里**（检索时仍可用）。
+COMMUNITY_EXCLUDED_EDGE_TYPES: frozenset[str] = frozenset({"defines"})
+
+
+def detect_communities(nodes: list[dict], edges: list[dict],
+                       resolution: float = 1.0,
+                       min_size: int = 2) -> tuple[list[list[str]], str]:
+    """B2.4：**社区检测**（Leiden）⇒ 社区成员列表 + 实际用的算法名。
+
+    ★ **三级降级**（实测：networkx 的 ``leiden_communities`` 只是
+      **API 占位**，需 igraph / nx-cs 后端 ⇒ 不能依赖）：
+      ① **Leiden**（若装了 igraph 等后端）
+      ② **Louvain**（纯 Python；与 Leiden 同属 CPM 类模块度优化 ⇒ 效果接近）
+      ③ **贪心模块度**（networkx 自带）
+      ④ **连通分量**（兜底）
+      ⇒ **零外部依赖也能跑**（只用 networkx）。
+    ★ 只在**社区图**（semantic）上跑 ⇒ 状态机的精确边不会被社区切分打散（D2）。
+    ★ 社区过小（< ``min_size``）的**合并到「未归类」**（不丢弃）。
+    """
+    ids = [n["node_id"] for n in nodes]
+    if not ids:
+        return [], "none"
+    id_set = set(ids)
+    # 只保留**两端都在节点集里**的边（投影后可能有悬挂端点）
+    # ★ 且排除 ``COMMUNITY_EXCLUDED_EDGE_TYPES``（归属边 ⇒ 会把整图连成一片）
+    usable = [e for e in edges
+              if e.get("from") in id_set and e.get("to") in id_set
+              and e.get("type") not in COMMUNITY_EXCLUDED_EDGE_TYPES]
+    if not usable:
+        return [[i] for i in ids], "isolated"
+
+    # ---- 社区算法（**三级降级**，优先纯 Python ⇒ 零外部依赖）----
+    try:
+        import networkx as nx
+    except ImportError:
+        return [[i] for i in ids], "isolated"
+
+    g = nx.MultiDiGraph()
+    for n in nodes:
+        g.add_node(n["node_id"], **{k: v for k, v in n.items()
+                                    if k != "node_id"})
+    for e in usable:
+        g.add_edge(e["from"], e["to"], **{k: v for k, v in e.items()
+                                         if k not in ("from", "to")})
+    und = g.to_undirected()
+
+    comms = None
+    algo = "connected_components"
+    # ① **Leiden**（最优，需 igraph / nx-cs 后端）
+    try:
+        comms = nx.community.leiden_communities(
+            und, resolution=resolution, seed=42)
+        algo = "leiden"
+    except Exception:                           # noqa: BLE001
+        comms = None
+    # ② **Louvain**（纯 Python；与 Leiden 同属 CPM 类模块度优化 ⇒ 效果接近）
+    if comms is None:
+        try:
+            comms = nx.community.louvain_communities(
+                und, resolution=resolution, seed=42)
+            algo = "louvain"
+        except Exception:                       # noqa: BLE001
+            comms = None
+    # ③ **贪心模块度**（networkx 自带，无随机性）
+    if comms is None:
+        try:
+            comms = nx.community.greedy_modularity_communities(und)
+            algo = "greedy_modularity"
+        except Exception:                       # noqa: BLE001
+            comms = None
+    # ④ **连通分量**（兜底）
+    if comms is None:
+        comms = list(nx.connected_components(und))
+        algo = "connected_components"
+
+    out: list[list[str]] = []
+    for c in comms:
+        members = sorted(c)
+        if len(members) >= min_size:
+            out.append(members)
+    covered = {m for c in out for m in c}
+    rest = sorted(set(ids) - covered)
+    if rest:
+        out.append(rest)          # ★ **不丢弃**（只标记未归类）
+    return out, algo
+
+
+def community_owner_mix(members: list[str], nodes: list[dict],
+                        edges: list[dict]) -> dict[str, int]:
+    """社区的**知识通道构成**（``owner_mix``）。
+
+    ★ 融合点：GraphRAG 的社区摘要 + 知识通道台账 ⇒
+      论文可用「按知识层分层的社区视图」（L1 规范层 / L2 实现层）。
+    """
+    member_set = set(members)
+    mix: dict[str, int] = {}
+    # ★ **只统计节点的 owner**（2026-11-08 实测修正）：
+    #   若把**边**的 owner 也计入，``defines`` 边（owner=rfc，数量压倒性多）
+    #   会把每个社区的 class 都压成 MIXED ⇒ 分类失去区分度。
+    #   ⇒ owner 是**知识实体**的属性 ⇒ 只看节点。
+    for n in nodes:
+        if n["node_id"] in member_set:
+            o = str(n.get("source_owner") or "rfc")
+            mix[o] = mix.get(o, 0) + 1
+    return dict(sorted(mix.items(), key=lambda kv: -kv[1]))
+
+
+def community_class(mix: dict[str, int]) -> str:
+    """社区的**知识层级**（L1 规范 / L2 实现 / MIXED）。
+
+    ★ 判据：若贡献全部来自 ``rfc`` ⇒ L1（规范知识）；
+      全部来自实现类源 ⇒ L2；混合 ⇒ MIXED。
+    """
+    if not mix:
+        return "L1"
+    total = sum(mix.values())
+    rfc_n = mix.get("rfc", 0)
+    if rfc_n == total:
+        return "L1"
+    if rfc_n == 0:
+        return "L2"
+    return "MIXED"
+
+
 def isolated_nodes(nodes: list[dict], edges: list[dict]) -> list[str]:
     """度为 0 的节点 id（**只标记不删除** ⇒ 避免掩盖箭头解析缺陷）。"""
     deg: dict[str, int] = {n["node_id"]: 0 for n in nodes}
@@ -319,4 +505,6 @@ __all__ = [
     "graph_dir", "nodes_path", "edges_path", "graph_meta_path",
     "project_bundle_to_graph", "split_by_graph", "graph_metrics",
     "isolated_nodes", "write_graph", "read_graph",
+    "merge_multidigraph", "detect_communities", "community_owner_mix",
+    "community_class",
 ]

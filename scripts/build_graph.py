@@ -37,8 +37,8 @@ def _fingerprint(nodes: list[dict], edges: list[dict]) -> str:
     return h.hexdigest()[:16]
 
 
-def build_one(protocol: str) -> dict:
-    """构建一个协议的图。"""
+def build_one(protocol: str, use_llm: bool = False) -> dict:
+    """构建一个协议的图（含 B2：社区检测 + 社区报告）。"""
     from core.fused.graph_ops import (project_bundle_to_graph, split_by_graph,
                                       write_graph)
     from core.fused.rfc_graph import extract_graph
@@ -75,7 +75,17 @@ def build_one(protocol: str) -> dict:
     # ---- ③ B1：分层 + 度量 + 落盘 ----
     struct_nodes, struct_edges = split_by_graph(node_list, edge_list, "structure")
     sem_nodes, sem_edges = split_by_graph(node_list, edge_list, "semantic")
+    # ---- B2：社区检测 + 社区报告（Phase B2.1~B2.5）----
+    from core.fused.graph_reports import (generate_community_reports,
+                                          write_communities)
+    reports = generate_community_reports(protocol, use_llm=use_llm)
+    comms_path = write_communities(protocol, reports)
+
     paths = write_graph(protocol, node_list, edge_list, extra_meta={
+        "community_count": len(reports),
+        "community_algorithm": (reports[0].get("algorithm") if reports
+                                else "none"),
+        "communities_file": str(comms_path.name),
         "phase_a_node_count": len(phase_a_nodes),
         "phase_a_edge_count": len(phase_a_edges),
         "projected_node_count": len(proj_nodes),
@@ -88,6 +98,7 @@ def build_one(protocol: str) -> dict:
         "nodes": len(node_list), "edges": len(edge_list),
         "structure": (len(struct_nodes), len(struct_edges)),
         "semantic": (len(sem_nodes), len(sem_edges)),
+        "communities": len(reports),
         "paths": paths,
     }
 
@@ -97,6 +108,8 @@ def main() -> int:
     ap.add_argument("--protocol", default="")
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--quiet", action="store_true")
+    ap.add_argument("--llm", action="store_true",
+                    help="用 LLM 生成社区报告（默认用缓存或确定性降级）")
     args = ap.parse_args()
 
     protos: list[str] = []
@@ -111,14 +124,15 @@ def main() -> int:
 
     for p in protos:
         try:
-            r = build_one(p)
+            r = build_one(p, use_llm=args.llm)
         except Exception as exc:                   # noqa: BLE001
             print(f"[图] {p}: 失败 {type(exc).__name__}: {exc}")
             continue
         if not args.quiet:
             print(f"[图] {p:9s} 节点 {r['nodes']:4d} 边 {r['edges']:4d} | "
                   f"精确图 {r['structure'][0]:3d}/{r['structure'][1]:3d} | "
-                  f"社区图 {r['semantic'][0]:3d}/{r['semantic'][1]:3d}")
+                  f"社区图 {r['semantic'][0]:3d}/{r['semantic'][1]:3d} | "
+                  f"社区 {r['communities']:2d}")
     return 0
 
 
