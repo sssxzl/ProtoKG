@@ -11,6 +11,7 @@ from core.fused.models import (
     Claim, Evidence, Scope, Resolution, Support, Generalization,
     Alignment, LocatorLine,
 )
+from core.fused import export
 from core.fused.export import (
     get_fact_view, get_claim_view, get_evidence_view, export_facts_for_llm,
 )
@@ -129,3 +130,77 @@ def test_export_to_jsonl_round_trip(tmp_path):
     p.write_text(json.dumps(v, default=str), encoding="utf-8")
     out = export_facts_for_llm("rtsp", "1.0", p)
     assert len(out["facts"]) == 1
+
+# ===========================================================================
+# ★ evidence_summary 带文件锚点（2026-11-07，多 RFC 协议可溯源）
+# ===========================================================================
+
+def test_evidence_summary_includes_document_anchor():
+    """★ 多 RFC 协议时，中枢里要能分清某条知识来自**哪份 RFC**。
+
+    ★ 旧形态只有 ``{source_type}:{source_id}``，而 source_id 是**协议级**的
+      （norm_id = ``{protocol}.{kind}.{name}``）⇒ 一个协议有多份 RFC 时全混在一起。
+    """
+    ev = Evidence(evidence_id="e1_y", claim_id="c1_y",
+                  source_type="rfc", source_id="smtp.method.starttls",
+                  document="file:rfc3207.txt#@99",
+                  locator=LocatorLine(file="rfc3207.txt", line=99, col=0),
+                  quote=None, content_fingerprint="", extraction_fingerprint="")
+    c = Claim(claim_id="c1_y", fact_id="f1_y",
+              value=Value(type="text", data="STARTTLS"),
+              epistemic_type="normative", authority="rfc", scope=Scope(),
+              evidence=(ev,), confidence=None)
+    item = export._evidence_summary_item(ev)
+    assert item.startswith("rfc:smtp.method.starttls"), item
+    assert "rfc3207.txt" in item, item
+    assert "99" in item, item
+
+
+def test_evidence_summary_prefix_unchanged():
+    """★ **前缀不变** ⇒ 现有按 split(":")[1] / startswith 解析的代码不受影响。"""
+    ev = Evidence(evidence_id="e1_z", claim_id="c1_z",
+                  source_type="rfc", source_id="smtp.field.date",
+                  document="file:rfc5322.txt#@abnf-field",
+                  locator=None, quote=None,
+                  content_fingerprint="", extraction_fingerprint="")
+    item = export._evidence_summary_item(ev)
+    assert item.split("@")[0] == "rfc:smtp.field.date", item
+
+
+def test_evidence_summary_without_document_is_unchanged():
+    """★ document 为空 ⇒ 输出与旧形态**完全一致**（不引入 @）。"""
+    ev = Evidence(evidence_id="e1_w", claim_id="c1_w",
+                  source_type="rfc", source_id="smtp.x",
+                  document="", locator=None, quote=None,
+                  content_fingerprint="", extraction_fingerprint="")
+    assert export._evidence_summary_item(ev) == "rfc:smtp.x"
+
+
+def test_evidence_summary_no_redundant_suffix():
+    """★ document 与 source_id 重复 ⇒ 不重复附加（避免 rfc:X@X）。"""
+    ev = Evidence(evidence_id="e1_v", claim_id="c1_v",
+                  source_type="rfc", source_id="rfc2326.txt",
+                  document="rfc2326.txt", locator=None, quote=None,
+                  content_fingerprint="", extraction_fingerprint="")
+    assert export._evidence_summary_item(ev) == "rfc:rfc2326.txt"
+
+
+def test_real_multi_rfc_hub_has_file_anchors():
+    """★ 端到端：smtp 有 4 份 RFC ⇒ 中枢里的 RFC 事实要能分出来源文件。"""
+    import glob
+    import json as _json
+    from core import paths as _paths
+    root = _paths.derived_root() / "per_source" / "smtp" / "facts"
+    if not root.is_dir():
+        pytest.skip("无 smtp 中枢产物")
+    files = set()
+    for p in sorted(root.glob("*.jsonl")):
+        for line in p.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            d = _json.loads(line)
+            for cl in (d.get("all_claims") or []):
+                for es in (cl.get("evidence_summary") or []):
+                    if es.startswith("rfc:") and "@file:" in es:
+                        files.add(es.split("@file:", 1)[1].split("#")[0])
+    assert len(files) >= 2, f"多 RFC 协议应能分出来源文件，实得 {files}"

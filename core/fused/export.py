@@ -46,6 +46,33 @@ def get_evidence_view(evidence: Evidence) -> dict:
     }
 
 
+def _evidence_summary_item(evidence) -> str:
+    """一条 evidence 的摘要串：**协议级锚点 + 文件锚点**（多 RFC 协议可溯源）。
+
+    ★ 2026-11-07：旧形态只有 ``{source_type}:{source_id}``，而 source_id 是
+      **协议级**的（norm_id = ``{protocol}.{kind}.{name}``）⇒ 一个协议有多份 RFC
+      时，中枢里**分不清某条知识来自哪份 RFC**（实测 smtp 的 4 份 RFC 全混在一起）。
+
+    ★ 新形态：``{source_type}:{source_id}@{document}``
+      —— ``document`` 形如 ``file:rfc5321.txt#@1814``（**文件名 + 行号锚点**）。
+
+    ★ 三条兼容约束：
+      ① **前缀不变**（``{source_type}:{source_id}`` 原样保留）⇒ 现有按
+         ``split(":")[1]`` / ``startswith`` 解析的代码不受影响；
+      ② ``document`` 为空 ⇒ 输出与旧形态**完全一致**（不引入 ``@``）；
+      ③ ``document`` 与 ``source_id`` **重复**时（如 source_id 本身就是文件名）
+         ⇒ 不重复附加，避免 ``rfc:rfc2326.txt@rfc2326.txt`` 这种冗余。
+    """
+    base = f"{evidence.source_type}:{evidence.source_id}"
+    doc = str(getattr(evidence, "document", "") or "")
+    if not doc:
+        return base
+    # ③ document 与 source_id 重复 ⇒ 只在「含文件名部分」时才附加
+    if doc == evidence.source_id:
+        return base
+    return f"{base}@{doc}"
+
+
 def get_claim_view(claim: Claim) -> dict:
     v = claim.value
     return {
@@ -56,9 +83,16 @@ def get_claim_view(claim: Claim) -> dict:
         "authority": claim.authority,
         # 注：原 scope 字段用 claim.scope.in_scope，但 Scope dataclass 无 in_scope
         # 属性（恒 None），属死字段，已移除。Scope 细节不进 LLM 安全视图。
+        # ★ 2026-11-07：evidence_summary **带文件锚点**（多 RFC 协议可溯源）。
+        #   旧形态只拼 ``{source_type}:{source_id}`` ⇒ source_id 是**协议级**的
+        #   （norm_id = ``{protocol}.{kind}.{name}``）⇒ 一个协议有多份 RFC 时，
+        #   中枢里**分不清某条知识来自哪份 RFC**（实测 smtp 4 份 RFC 全部混在一起）。
+        #   新形态：``{source_type}:{source_id}@{document}``，其中 document 形如
+        #   ``file:rfc5321.txt#@1814``（**文件名 + 行号锚点**）。
+        #   ★ 向后兼容：``@`` 之后的部分是**附加**信息，原前缀不变
+        #     ⇒ 现有按 ``split(":")[1]`` 或 ``startswith`` 解析的代码不受影响。
         "evidence_summary": [
-            f"{e.source_type}:{e.source_id}"
-            for e in claim.evidence
+            _evidence_summary_item(e) for e in claim.evidence
         ],
         "confidence": claim.confidence,
     }
