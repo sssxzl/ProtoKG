@@ -22,6 +22,7 @@ RFC xxxx 标题行）。
 """
 from __future__ import annotations
 
+import collections
 import json
 import os
 import re
@@ -2317,6 +2318,37 @@ _PROMPT_REQUIRED_HEADER = """你是协议规范分析助手。下面是 {protoco
 {body}
 """
 
+_PROMPT_METHOD_REQUIRED_HEADER = """你是协议规范分析助手。下面是 {protocol} 协议 RFC 规范的相关章节。
+
+请判断：**每个请求方法**分别**必须**携带哪些头部字段？
+
+只输出 JSON：
+{{"methods": [{{"method": "<方法名>", "headers": [{{"name": "<头名>", "evidence": "<RFC 原句>"}}]}}]}}
+
+规则：
+1. 只收该方法的**请求报文**里**必带**的头。
+2. ★ **不要**收：
+   - 只在**响应**里出现的头；
+   - **条件性**必填的头（"仅当……时 MUST"）；
+   - 内容协商类**可选**头（Accept*、Content-Type 等）；
+   - **协议级通用**的头（每个方法都必带的那些，如消息序号）——
+     ★ 那些由消息级抽取负责，本题只问**该方法特有**的。
+3. `method` 必须原样照抄下面的方法名；`name` 必须原样照抄下面的头名。
+4. `evidence` 给出 RFC 原句（可截断到 160 字）。
+5. 判不出就返回空列表。
+
+【方法名】
+{methods}
+
+【可用头名】
+{allowed}
+
+{body}
+"""
+
+#: 方法级必填头 prompt 的契约版本（并入缓存键）
+METHOD_REQUIRED_HEADER_PROMPT_VERSION = "v1"
+
 #: 提示词的**契约版本标识** —— 并入 LLM 缓存键（同 ``TRANSITION_PROMPT_VERSION``）
 REQUIRED_HEADER_PROMPT_VERSION = "rfc-required-header-llm"
 
@@ -2420,6 +2452,389 @@ def _deterministic_message_required_headers(
             hits.setdefault(
                 _name, " ".join(_blob[_s:_mm.end() + 40].split())[:200])
     return hits
+
+
+#: ★ 2026-11-07：**示例请求里出现的头** ≠ 必填头。
+#:   RFC 的方法章节示例常带**可选**头（``Date`` / ``Content-Type`` / ``Content-Length``
+#:   / ``Accept`` / ``Require`` / ``Proxy-Require`` / ``Public`` / ``Location`` …），
+#:   把它们当必填会造成**假阳性**（种子多带无关头，掩盖真缺项）。
+#:   ⇒ 只保留「该方法**结构性依赖**」的头：出现在**两个以上**方法的示例里
+#:   （= 协议级通用头，如 CSeq / Session / Transport）或
+#:   被 RFC 明确表述为该方法的必需头。
+#:   ★ 这是**跨方法统计**出来的，不是硬编码名单 ⇒ 协议无关。
+_METHOD_EXAMPLE_OPTIONAL_HINT = ("date", "content-type", "content-length",
+                                "content-base", "accept", "require",
+                                "proxy-require", "public", "location",
+                                "note", "expires", "allow", "supported",
+                                "bandwidth", "user-agent", "referer",
+                                "from", "to", "call-id", "max-forwards",
+                                "via", "contact", "event")
+
+
+def _method_example_required_headers(
+        protocol: str, known: set[str],
+        methods: Optional[set[str]] = None) -> dict[str, dict[str, str]]:
+    """**确定性**抽「方法级必填头」⇒ ``{方法名: {头名: RFC 原句证据}}``。
+
+    ★ 判据（**协议无关**，只用 RFC 结构）：
+      ① 定位每个方法的**章节**（形如 ``10.4 SETUP`` 的标题行）；
+      ② 在该章节内找**示例请求**（``C->S: <METHOD> ...`` 之后的缩进头行）；
+      ③ 收集这些头名 → 统计**跨方法出现频次**；
+      ④ **出现在 ≥2 个方法示例里**的头 ⇒ 判为「协议级通用必填头」
+         （如 CSeq 出现在每个方法、Session 出现在所有会话内方法）；
+         **只出现在 1 个方法**的头 ⇒ 判为「该方法特有」，**不自动判必填**
+         （可能是可选头）⇒ 留给 LLM 兜底判定。
+      ⇒ 协议无关：新协议用同一套判据，不认任何协议名或头名。
+
+    ★ 为什么不做「示例里出现就是必填」：实测 RTSP §10.2 DESCRIBE 的示例带
+      ``Accept`` / ``Date`` / ``Content-Type`` / ``Content-Length``，
+      其中只有部分是真必填 ⇒ 直接采信会抽 4 个假阳性。
+
+    Returns:
+        ``{方法名: {头名: 证据}}``；判不出返回空字典（**宁缺勿滥**）。
+    """
+    if not known:
+        return {}
+    _methods = {str(m).strip().upper() for m in (methods or set())}
+    if not _methods:
+        return {}
+    lines: list[str] = []
+    for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
+        lines.extend(
+            _f.read_text(encoding="utf-8", errors="ignore").splitlines())
+    if not lines:
+        return {}
+
+    # ① **形态无关**地扫「示例请求块」：一个**请求行**（首词是方法名）
+    #    + 其后连续的「头名: 值」行。
+    #    ★ 为什么不用「章节定位」：RFC 的示例位置差异极大 ——
+    #      RTSP 是 ``10.4 SETUP`` 章节内、示例带 ``C->S:`` 前缀；
+    #      SIP 的示例是**独立成块**（§3 概览图旁）、**无前缀**、无方法章节。
+    #      ⇒ 改成「扫全文找请求块」，两种协议都能命中，且不认协议名。
+    #
+    #    请求行判据：首 token 是**全大写词**（方法/命令名惯例），
+    #    且该 token 在 ``known_methods`` 里（避免把散文行当请求）。
+    _per_method: dict[str, dict[str, str]] = {}
+    _i = 0
+    _n = len(lines)
+    while _i < _n:
+        _st = lines[_i].strip()
+        # ★ 先剥掉方向前缀（`C->S:` / `UAC->UAS:` 等）再匹配 —— 否则前缀后
+        #   残留的前导空格会让 `^` 锚点失效（实测踩过）。
+        _st = re.sub(r"^[A-Za-z]+(?:->[A-Za-z]+)+:\s*", "", _st)
+        _m = re.match(r"^([A-Z][A-Za-z0-9_-]*)\s+\S", _st)
+        if not _m:
+            _i += 1
+            continue
+        _meth = _m.group(1)
+        if _meth not in _methods:
+            _i += 1
+            continue
+        # 请求行之后：连续的「头名: 值」行（缩进 ≥3 空格或原样缩进）
+        _hdrs: dict[str, str] = {}
+        _j = _i + 1
+        while _j < _n:
+            _h = lines[_j].strip()
+            if not _h:
+                break                          # 空行 ⇒ 块结束
+            _hm = re.match(r"^([A-Z][A-Za-z0-9-]*):\s*(.+)$", _h)
+            if not _hm:
+                break
+            _name = _hm.group(1)
+            if _name.lower() in _METHOD_EXAMPLE_OPTIONAL_HINT:
+                _j += 1
+                continue
+            if _name in known:
+                _hdrs.setdefault(_name, _h[:200])
+            _j += 1
+        if _hdrs:
+            _per_method.setdefault(_meth, {}).update(_hdrs)
+            _i = _j
+        else:
+            _i += 1
+
+    # ③ 统计跨方法频次
+    _freq: collections.Counter = collections.Counter()
+    for _hdrs in _per_method.values():
+        for _h in _hdrs:
+            _freq[_h] += 1
+
+    # ④ 只保留「≥2 个方法都出现」的头 ⇒ 协议级通用必填头
+    out: dict[str, dict[str, str]] = {}
+    for _meth, _hdrs in _per_method.items():
+        _keep = {h: ev for h, ev in _hdrs.items() if _freq[h] >= 2}
+        if _keep:
+            out[_meth] = _keep
+    return out
+
+
+#: ★ 2026-11-07：**头汇总表**的行格式（RFC 2326 §12 那种「头 → 方向 → 必填性 → 方法」表）。
+#:   格式：``<头名>  <方向标记>  <req.|opt.>  <适用方法>``
+#:   方向标记：``r``=仅响应 / ``R``=双向 / ``g``=仅请求 / ``e``=实体头
+#:   ★ **``req.`` 才是「请求必带」**，``opt.`` 是可选 ⇒ 这是**权威且精确**的判据，
+#:     比 LLM 判定可靠得多。
+#:   ★ 方向标记可能是**一个或两个字母**（实测 RTSP 有 ``Rr`` = 双向）⇒ 用 ``[RrGgEe]+``。
+_METHOD_HEADER_TABLE_RE = re.compile(
+    r"^\s{2,}([A-Z][A-Za-z0-9-]*)\s+([RrGgEe]+)\s+(req\.|opt\.)\s+(.+?)\s*$")
+
+
+def _deterministic_method_required_headers(
+        protocol: str, known: set[str],
+        methods: set[str]) -> dict[str, dict[str, str]]:
+    """**确定性**抽「方法级必填头」⇒ ``{方法名: {头名: 证据}}``。
+
+    ★ 依据：RFC 里的**头汇总表**（如 RFC 2326 §12「Header Quick Reference」）：
+      ``<头名>  <方向>  req.|opt.  <适用方法>``
+      ⇒ ``req.`` 行里点名的方法 ⇒ 该头对该方法**必带**。
+
+    ★ 为什么这条比 LLM 可靠：LLM 会把表里的 ``r req. PLAY`` 读成「PLAY 请求
+      必带 RTP-Info」（实测），而 ``r`` 表示**仅响应** ⇒ 假阳性。
+      确定性解析直接看方向标记 ⇒ 不会有方向误读。
+
+    ★ 方向标记的语义（协议无关的通用记号）：
+      · ``r`` = response only（仅响应）⇒ **请求不需要**；
+      · ``R`` = request & response（双向）；
+      · ``g`` = general/request（仅请求）；
+      · ``e`` = entity（实体头，多半是可选）。
+      ⇒ 只收 ``R`` / ``g`` 方向的 ``req.`` 行。
+
+    ★ 没有汇总表的协议（SIP 就没有）⇒ 返回空字典 ⇒ 由 LLM 兜底。
+
+    Returns:
+        ``{方法名: {头名: 证据}}``。
+    """
+    if not known or not methods:
+        return {}
+    lines: list[str] = []
+    for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
+        lines.extend(
+            _f.read_text(encoding="utf-8", errors="ignore").splitlines())
+    out: dict[str, dict[str, str]] = {}
+    for _ln in lines:
+        _m = _METHOD_HEADER_TABLE_RE.match(_ln.rstrip())
+        if not _m:
+            continue
+        _name, _dirn, _req, _scope = _m.group(1), _m.group(2), _m.group(3), _m.group(4)
+        if _name not in known:
+            continue
+        if _req != "req.":
+            continue                     # opt. ⇒ 可选，不是必填
+        # 方向：含 'e' ⇒ 实体头；含 'r' 且**不含** 'g'/'R' ⇒ 仅响应
+        _dl = _dirn.lower()
+        if "e" in _dl:
+            continue                     # 实体头 ⇒ 请求侧不需要
+        if "r" in _dl and "g" not in _dl and "R" not in _dirn:
+            continue                     # 仅响应（如 'r' / 'Rr'）⇒ 请求侧不需要
+        # 适用方法：逗号分隔。
+        # ★ 必须处理 ``all but X``（排除项）—— 实测 RTSP 写的是
+        #   ``Session  Rr  req.  all but SETUP, OPTIONS``
+        #   ⇒ Session 对 SETUP/OPTIONS **不适用**（客户端那时还没有 Session，
+        #   它是服务器在 SETUP 响应里分配的，§12.37）。
+        #   ★ 早先的 `.replace("all but", "")` 恰好把排除项**也删掉了**
+        #   ⇒ 反向假阳性（给 SETUP/OPTIONS 加了 Session）。
+        _excl: set[str] = set()
+        _scope_txt = _scope
+        if "all but" in _scope_txt.lower():
+            _head, _tail = re.split(r"all\s+but", _scope_txt, flags=re.I)
+            _excl = {x.strip().upper() for x in _tail.split(",") if x.strip()}
+            _scope_txt = _head
+        _hit = [m for m in methods
+                if m.upper() not in _excl
+                and re.search(r"\b" + re.escape(m) + r"\b", _scope_txt)]
+        if not _hit:
+            continue
+        for _mm in _hit:
+            out.setdefault(_mm, {}).setdefault(_name, _ln.strip()[:200])
+    return out
+
+
+def infer_method_required_headers(protocol: str, llm=None) -> list[dict]:
+    """抽「**方法级**必填头」⇒ RFC 源的 ``required_header_by_method`` norm。
+
+    ── 与消息级的分工（2026-11-07 设计，实测得出）──────────────────────────────
+      · **消息级**（`infer_required_headers`）：每个请求都必带的头
+        （rtsp → CSeq；sip → CSeq/Call-ID/From/Max-Forwards/To/Via）
+        —— 由 RFC 的「所有请求 MUST 含 X」这类**规范表述**判定。
+      · **方法级**（本函数）：**只该方法**必带的头
+        （rtsp → SETUP 的 Transport、RECORD 的 Session；
+          sip → REGISTER 的 Contact、SUBSCRIBE 的 Event）
+        —— 只能从**方法章节的语义**判定。
+
+    ★ **为什么不用「示例请求里出现的头」当判据**（实测踩过）：
+      RFC 示例常带**可选**头 ⇒ 直接采信会出**假阳性**。实测 RTSP：
+        PLAY  示例带 Range ⇒ 但 RFC 原文明说「A PLAY request without a
+              Range header is legal」⇒ Range **不是**必填；
+        SETUP 示例带 Session ⇒ 但 Session 是**服务器在 SETUP 响应里**分配的
+              （§3.4「a session identifier MUST be chosen randomly」）
+              ⇒ 客户端 SETUP 请求**还没有** Session。
+      ⇒ 示例法只能当**候选生成器**，判定必须靠规范语义 ⇒ **LLM 兜底**。
+
+    ★ 抽取策略（与消息级对称）：
+      ① **候选生成**：方法章节的散文块（形态层的 normative/table 块）
+         —— 协议无关、位置无关；
+      ② **LLM 判定**：只问「该方法特有必填头」，prompt 明确排除
+         协议级通用头（那些由消息级负责）；
+      ③ **证据锚点**：每条都带 RFC 原句（⇒ M3 可验证率可算）。
+
+    ★ **不臆造**：判不出就不产出；`authority` 仍记 RFC（`source_class` 走
+      `normative_spec`）⇒ 不污染「RFC 单源纯净度」口径 ——
+      它的底料是 RFC 文本，与消息级抽取同性质。
+
+    Returns:
+        ``[{"method": ..., "name": ..., "evidence": ..., "source": ...}, ...]``
+    """
+    from core.fused.rfc_forms import split_form_blocks
+    from core.fused.source_retrieval import CACHE_DIR
+    cfg = _load_rfc_config(protocol)
+    if not cfg.get("enable_required_headers"):
+        return []
+    known = _rfc_source_headers(protocol, cfg)
+    methods = _rfc_source_methods(protocol, cfg)
+    if not known or not methods:
+        return []
+
+    # ---- ① 确定性优先：**头汇总表**（若该协议有）------------------------
+    _det = _deterministic_method_required_headers(protocol, known, methods)
+    if _det:
+        _rows = [{"method": _m, "name": _h,
+                  "evidence": _ev, "source": "rfc:header-table"}
+                 for _m, _hs in sorted(_det.items())
+                 for _h, _ev in sorted(_hs.items())]
+        norms: list[dict] = []
+        for _row in _rows:
+            _n2 = _norm("required_header_by_method", _row["name"],
+                        f"method={_row['method']};name={_row['name']}",
+                        protocol, _row["source"], "@rfc-method-required-header")
+            _n2["name"] = _row["name"]
+            _n2["method"] = _row["method"]
+            _n2["evidence"] = _row["evidence"]
+            norms.append(_n2)
+        return norms
+
+    # ---- ② 候选：形态层块（含方法名 + 至少 1 个已知头名）--------------
+    cands: list[dict] = []
+    for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
+        _lines = _f.read_text(encoding="utf-8", errors="ignore").splitlines()
+        for _b in split_form_blocks(_lines):
+            if _b.kind not in ("table", "normative", "prose"):
+                continue
+            _txt = _b.text
+            _hit_m = [m for m in methods if re.search(r"\b" + re.escape(m) + r"\b", _txt)]
+            if not _hit_m:
+                continue
+            _hit_h = [h for h in known if re.search(r"\b" + re.escape(h) + r"\b", _txt)]
+            if len(_hit_h) < 1:
+                continue
+            cands.append({"text": _txt, "source": f"rfc:{_f.name}",
+                          "methods": _hit_m, "headers": _hit_h})
+    if not cands:
+        return []
+
+    # ---- ② LLM 判定（带磁盘缓存）---------------------------------------
+    if llm is None:
+        from core.llm import DeepSeekClient
+        llm = DeepSeekClient()
+    cache_file = CACHE_DIR / f"{protocol}.method_required_headers.json"
+    block_hash = hashlib_sha256("|".join(
+        [METHOD_REQUIRED_HEADER_PROMPT_VERSION]
+        + [c["hash"] if "hash" in c else c["text"] for c in cands]))
+    _rows: list[dict] | None = None
+    if cache_file.exists():
+        try:
+            _cached = json.loads(cache_file.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            _cached = None
+        if (isinstance(_cached, dict)
+                and _cached.get("block_hash") == block_hash):
+            _rows = _cached.get("rows")
+    if _rows is None:
+        _rows = []
+        allowed = ", ".join(sorted(known))
+        mnames = ", ".join(sorted(methods))
+        for _c in cands:
+            try:
+                _r = llm.chat_json(
+                    system="你输出 JSON。",
+                    user=_PROMPT_METHOD_REQUIRED_HEADER.format(
+                        protocol=protocol.upper(), allowed=allowed,
+                        methods=mnames,
+                        body=_c["text"][:7000]),
+                    temperature=0.0, max_tokens=2000)
+            except Exception:  # noqa: BLE001
+                continue
+            if not isinstance(_r, dict):
+                continue
+            for _m in (_r.get("methods") or []):
+                if not isinstance(_m, dict):
+                    continue
+                _mn = str(_m.get("method", "")).strip().upper()
+                if _mn not in methods:
+                    continue
+                for _h in (_m.get("headers") or []):
+                    if not isinstance(_h, dict):
+                        continue
+                    _hn = str(_h.get("name", "")).strip()
+                    if not _hn or _hn not in known:
+                        continue
+                    # ★ 去重：同一 (method, name) 只留**第一条**证据
+                    #   （实测 LLM 会对同一方法重复输出同一头，INVITE→Contact×4）
+                    if any(r["method"] == _mn and r["name"] == _hn
+                           for r in _rows):
+                        continue
+                    _rows.append({
+                        "method": _mn, "name": _hn,
+                        "evidence": str(_h.get("evidence", ""))[:300],
+                        "source": _c["source"]})
+        try:
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            cache_file.write_text(json.dumps(
+                {"block_hash": block_hash, "rows": _rows},
+                ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        except OSError:
+            pass
+
+    # ---- ②′ 读缓存后**再去一次重**（缓存里可能已有重复，LLM 会重复输出）----
+    _seen_pairs: set[tuple[str, str]] = set()
+    _deduped: list[dict] = []
+    for _r in _rows:
+        _k = (str(_r.get("method", "")).strip().upper(),
+              str(_r.get("name", "")).strip())
+        if not _k[0] or not _k[1] or _k in _seen_pairs:
+            continue
+        _seen_pairs.add(_k)
+        _deduped.append(_r)
+    if len(_deduped) != len(_rows):
+        print(f"[必填头·方法级] {protocol}: 去重 {len(_rows)} → {len(_deduped)} 条")
+    _rows = _deduped
+
+    # ---- ③ 排除**消息级通用头**（确定性兜底）-----------------------------
+    #   prompt 已要求 LLM 排除协议级通用头，但实测 LLM 仍会输出
+    #   （sip ACK → CSeq/Call-ID/From/To/Via）⇒ 在此**确定性剔除**：
+    #   凡是已由消息级抽取认定的头，一律不算「方法特有」。
+    _global_heads = {str(r.get("name", "")).strip()
+                     for r in infer_required_headers(protocol)}
+    if _global_heads:
+        _before = len(_rows)
+        _rows = [r for r in _rows if r["name"] not in _global_heads]
+        if len(_rows) != _before:
+            print(f"[必填头·方法级] {protocol}: 剔除消息级通用头 "
+                  f"{sorted(_global_heads)} ⇒ {len(_rows)}/{_before} 条")
+
+    # ---- ④ norm 化（kind=required_header_by_method）--------------------
+    norms: list[dict] = []
+    for _row in _rows:
+        _mn = str(_row.get("method", "")).strip()
+        _hn = str(_row.get("name", "")).strip()
+        if not _mn or not _hn:
+            continue
+        _n2 = _norm("required_header_by_method", _hn,
+                    f"method={_mn};name={_hn}", protocol,
+                    str(_row.get("source", "")), "@rfc-method-required-header")
+        _n2["name"] = _hn
+        _n2["method"] = _mn
+        _n2["evidence"] = str(_row.get("evidence", ""))
+        norms.append(_n2)
+    return norms
 
 
 def infer_required_headers(protocol: str, llm=None) -> list[dict]:
@@ -3011,6 +3426,16 @@ def extract_rfc_norms(protocol: str) -> list[dict]:
                 continue
             seen_protocol_level.add(_hn["norm_id"])
             norms.append(_hn)
+    # ---- 通道 H′：RFC 源的**方法级必填头**（2026-11-07，**默认关闭**）----
+    #   aspect=required_header_by_method ⇒ **不进任何 bundle 桶** ⇒ 产物逐字节不变；
+    #   仅作为可审计的 RFC 源证据留在中枢（供「替代手写清单」的决策使用）。
+    #   ★ 与通道 H 的分工：H 是「所有请求都必带」，H′ 是「仅该方法必带」。
+    if cfg.get("enable_required_headers"):
+        for _mn in infer_method_required_headers(protocol):
+            if _mn["norm_id"] in seen_protocol_level:
+                continue
+            seen_protocol_level.add(_mn["norm_id"])
+            norms.append(_mn)
     return norms
 
 
