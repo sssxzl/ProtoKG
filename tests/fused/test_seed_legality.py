@@ -244,3 +244,69 @@ def test_url_fallback_is_protocol_agnostic():
         generated_by="test", message_instances=mi, protocol="fakeproto")
     assert seed.messages[0].url == "scheme://h/p"
     assert seed.messages[1].url == "scheme://h/p"    # 缺 url 的那条被兜底
+
+
+# ===========================================================================
+# ⑤ required_headers 的桶键也要过骨架闸（同一次审计的第 6 项）
+# ===========================================================================
+
+@pytest.mark.parametrize("proto", ["rtsp", "sip", "smtp"])
+def test_strict_mode_required_header_keys_are_all_defined(proto):
+    """★ 严格单源：`required_headers` 的键必须是方法名（在 methods 桶里）或 ``"*"``。
+
+    实测修复前 sip 严格单源：methods 6 个，桶里却有 15 个键 ——
+    多出 INFO/MESSAGE/NOTIFY/PRACK/PUBLISH/REFER/SUBSCRIBE/UPDATE。
+    消费端按实际报文的方法查表 ⇒ 无害，但**桶级纯净度统计会失真**。
+    """
+    b = _bundle(proto, apply_allowed_methods=True, include_skeleton_methods=False)
+    mm = {str(m).strip().upper() for m in b["methods"]}
+    for key in b["required_headers"]:
+        assert str(key) == "*" or str(key).strip().upper() in mm, (proto, key)
+
+
+def test_sip_required_header_keys_shrink_in_strict_mode():
+    """★ 实测锚点：sip 严格单源 15→7 键（6 个方法 + `"*"`），剔除 8 个并留痕。"""
+    b = _bundle("sip", apply_allowed_methods=True, include_skeleton_methods=False)
+    assert len(b["required_headers"]) == 7
+    assert set(b["required_headers_dropped_undefined"]) == {
+        "INFO", "MESSAGE", "NOTIFY", "PRACK", "PUBLISH", "REFER",
+        "SUBSCRIBE", "UPDATE"}
+
+
+def test_required_header_gate_keeps_global_key():
+    """`"*"` 是消息级全局必填头，不是方法名 ⇒ 闸门必须**保留**它。"""
+    b = _bundle("rtsp", apply_allowed_methods=True, include_skeleton_methods=False)
+    assert "*" in b["required_headers"]
+
+
+def test_required_header_gate_only_in_strict_mode():
+    """全源路径（默认）一条键都不许动。"""
+    for proto, expect in (("rtsp", 9), ("sip", 15), ("smtp", 0)):
+        b = _bundle(proto, apply_allowed_methods=False)
+        assert len(b["required_headers"]) == expect, proto
+        assert b["required_headers_dropped_undefined"] == [], proto
+
+
+# ===========================================================================
+# ⑥ 台账口径守卫（桶名必须与 bundle 实际键对齐）
+# ===========================================================================
+
+def test_ledger_universe_covers_every_declared_bucket():
+    """★ 守卫：`BUCKET_UNIVERSE` 必须覆盖 `_BUCKET_BY_KIND` 的全部 value。
+
+    修前 `vulnerability` 是个**不存在的桶名**（真名 `vuln_pattern`），
+    且 `security` / `actors` / `protocol` 不在全集里 ⇒ 它们为空时台账完全不显示。
+    """
+    from core.knowledge_channels import BUCKET_UNIVERSE
+    declared = set(RS._BUCKET_BY_KIND.values())
+    missing = declared - set(BUCKET_UNIVERSE)
+    assert not missing, f"台账全集缺桶：{sorted(missing)}"
+
+
+def test_vuln_pattern_bucket_has_channel():
+    """`vuln_pattern` 必须能查到 channel（否则 class/owner 标注静默失效）。"""
+    from core.knowledge_channels import BUCKET_CHANNEL, load_channels
+    chan = BUCKET_CHANNEL.get("vuln_pattern")
+    assert chan, "vuln_pattern 缺通道映射"
+    info = load_channels("rtsp").get(chan, {})
+    assert info.get("class") and info.get("owner"), info

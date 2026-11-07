@@ -879,6 +879,11 @@ _BUCKET_BY_KIND: dict[tuple[str, str], str] = {
     ("relation", "method_sequence"): "method_sequences",
     ("relation", "message_instance"): "message_instances",
     # ── status 主体 ──
+    # ★ 2026-11-07：`("status", "occurrence")` **有意不映射**（不进任何桶）。
+    #   实测中枢里有 13 条该组合的 fact（rtsp 2 / sip 5 / smtp 6），值是
+    #   「状态码在 RFC 原文里出现几次」（如 200 → 5）。它不指导报文构造，
+    #   下游无消费者 ⇒ 进 bundle 只会增加体积与误读风险。
+    #   ⇒ 保持「白名单式映射」语义：没列进本表 = 有意不投影。
     ("status", "definition"): "statuses",
     # ★ `("status", "occurrence")` **刻意不在此表**：`assemble_bundle` 只处理
     #   `status` + `definition` ⇒ status/occurrence 事实**不进任何桶**
@@ -1508,6 +1513,7 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     #   · rtsp 不受影响：它的 transitions 来自 rfc 且方法全在桶内；
     #   · 一旦某协议的 methods 桶为空（极端情况），本闸不生效（避免全清空）。
     _dropped_undefined: list = []
+    _dropped_required_keys: list = []
     if not include_skeleton_methods and methods:
         _defined_m = {str(m).strip().upper() for m in methods}
         _dropped_undefined = sorted({
@@ -1517,6 +1523,21 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         if _dropped_undefined:
             transitions = [t for t in transitions
                            if str(t[1]).strip().upper() in _defined_m]
+        # ★ 2026-11-07（同一次审计的第 6 项）：`required_headers` 的**桶键**也要过闸。
+        #   它是 {方法名: [头名]}，骨架方法即使已不在 `methods` 桶里，键仍留在桶中
+        #   （实测 sip 严格单源：methods 6 个、桶里却有 15 个键，多出 INFO/MESSAGE/
+        #   NOTIFY/PRACK/PUBLISH/REFER/SUBSCRIBE/UPDATE）。
+        #   消费端按「实际报文的方法」查表 ⇒ 无害，但**桶级纯净度统计会失真**。
+        #   判据与 transitions 闸同源（方法在不在 methods 桶里），不引入协议特例。
+        #   `"*"`（消息级全局必填头）不是方法名 ⇒ **恒保留**。
+        _extra_keys = sorted(
+            str(k) for k in required_headers
+            if str(k) != "*" and str(k).strip().upper() not in _defined_m)
+        if _extra_keys:
+            _dropped_required_keys = _extra_keys
+            required_headers = {
+                k: v for k, v in required_headers.items()
+                if str(k) == "*" or str(k).strip().upper() in _defined_m}
     # ★ 2026-11-05：状态机换源后，字段级实例必须**同步对齐**到采用的那套转移
     #   （否则键命中不了 ⇒ `edge_cover` 取不到字段 ⇒ 消息字段值全空 ⇒
     #   字段级知识静默失效）。
@@ -1629,6 +1650,8 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         # ★ 2026-11-07：严格单源下被「骨架闸」剔除的转移（方法不在 methods 桶）
         #   ⇒ 审计可见，避免「纯净度提升」变成看不见的静默丢边
         "transitions_dropped_undefined": _dropped_undefined,
+        # ★ 2026-11-07：同上，`required_headers` 里因「方法不在 methods 桶」被剔除的键
+        "required_headers_dropped_undefined": _dropped_required_keys,
         "available_sources": sorted(available_sources),  # P0
         "method_order": _derive_method_order(method_sequences),  # P2b 拓扑序
         # ★★ 批次 2.3：**各源的状态机全量**（按来源分组）—— 后期 LLM 判别的输入

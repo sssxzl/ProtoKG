@@ -62,7 +62,10 @@ BUCKET_CHANNEL: dict[str, str] = {
     #   分档，不能整体称「规范直出」。
     "legal_boundary": "seedgen.legal_boundary",
     "response_expectation": "seedgen.response_expectation",
-    "vulnerability": "vuln",
+    # ★ 2026-11-07：bundle 里这个桶的实际键名是 `vuln_pattern`（`_BUCKET_BY_KIND`
+    #   的 value 就是它）。原名 `vulnerability` **在 bundle 中不存在** ⇒ 台账查不到
+    #   该桶的 channel/class/owner，标注静默失效。
+    "vuln_pattern": "vuln",
     "statuses": "seedgen.required_headers",
 }
 
@@ -181,7 +184,11 @@ BUCKET_UNIVERSE: tuple[str, ...] = (
     "methods", "headers", "transitions", "method_sequences",
     "message_instances", "required_headers", "precondition",
     "session_header", "url_template", "statuses", "legal_boundary",
-    "response_expectation", "vulnerability",
+    "response_expectation",
+    # ★ 2026-11-07：以下四个此前**不在全集里** ⇒ 它们为空时台账完全不显示
+    #   （漏报缺口）；其中 `vulnerability` 还是个**不存在的桶名**（真名 `vuln_pattern`）。
+    #   现在与 `_BUCKET_BY_KIND` 的 value 集合逐一对齐。
+    "security", "actors", "protocol", "vuln_pattern",
 )
 
 
