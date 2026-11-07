@@ -377,6 +377,33 @@ _OPERATOR_DOMAINS: dict[str, tuple[str, str]] = {
     "absent": ("缺失（不得出现）", "存在（出现即非法）"),
 }
 
+#: 可**确定性推断**处理期望的算子（存在性 / 取值约束）。
+#: ★ 推断规则（协议无关）：客户端发出的报文违反「必须存在 / 取值须在域内」的
+#:   约束 ⇒ 服务端应拒 ⇒ ``protocol_error``。
+#: ★ 只推断 ``protocol_error``，**不推断** ``silence`` / ``application_error``
+#:   —— 证据里没有区分这三者的依据，硬分会造出假精度（2026-11-07）。
+_INFERABLE_OPERATORS = frozenset({
+    "present", "eq", "ne", "in", "range", "ge", "le", "lt", "gt",
+})
+
+#: ★ 2026-11-07：``operator == "absent"`` 的规则在**当前抽取链路上语义不可靠**
+#:   ⇒ 投影层**拒收**（不进 legal_boundary / response_expectation）。
+#:
+#:   实测依据：权威规则库里 ``absent`` 只有 3 条，**3/3 全部错位**——
+#:     · ``Accept``（RFC 3261 §Bodies/Message Body Type）原文是
+#:       「**若**远端要求不带 multipart 的 Accept，则必须发非 multipart 的
+#:       session description」⇒ 条件约束，被抽成「Accept 不得出现」；
+#:     · ``From``（RFC 5322 §Originator Fields）原文是「From **不应包含**不属于
+#:       作者的邮箱」⇒ 内容约束，被抽成「From 不得出现」（From 还是必填头）；
+#:     · ``Reply-To``（RFC 5322 同节）原文是「**没有** Reply-To 时回复默认发给
+#:       From」⇒ 缺省行为描述，被抽成「Reply-To 不得出现」。
+#:   这三条会经 `_render_constraints()` 原样进 prompt，标题还写着「生成时字段
+#:   取值须落在合法域」⇒ 等于教 LLM「SIP 报文不要带 From」，属**知识污染**。
+#:
+#:   ⇒ 放开条件：抽取器能区分「字段禁止」与「内容约束 / 条件描述」之后
+#:     （届时应补一条 `absent` 的正例测试再改回 False）。
+_REJECT_ABSENT_OPERATOR = True
+
 
 def get_bundle_schema_version(bundle: dict) -> str:
     """读 bundle 的契约版本。
@@ -507,17 +534,49 @@ def _render_domains(operator: str, operand: tuple[str, ...],
     return legal_t.format(op=op_text), illegal_t.format(op=op_text)
 
 
+def _resolve_expected_behavior(constraint: dict,
+                               operator: str) -> tuple[str, str]:
+    """决定**处理期望**（P）的值与来源，返回 ``(expected_behavior, source)``。
+
+    三档来源（**不猜、可审计**）：
+
+      · ``evidence`` —— 规则里本来就有值（抽取期写入）。**注意**：实测已有值的
+        9 条里，没有一条的证据原文规定了「违反后返回什么」，它们同样是按协议
+        常识推断出来的 ⇒ 论文里只能称「推断」，不能称「规范直出」。
+      · ``rule_corrected`` —— 原值与本条约束**语义矛盾**，按确定性规则改。
+        唯一判据：`operator` 属存在/取值类（非 ``absent``）却说违反后
+        ``success`` ⇒ 不可能（被违反的约束若仍成功，就不成其为约束）。
+        实测命中 1 条（``SIP-Version``：原文 "MUST send upper-case"）。
+      · ``rule_inferred`` —— 原值为空，按 `_INFERABLE_OPERATORS` 的确定性规则
+        推断（客户端违反存在/取值约束 ⇒ 服务端应拒 ⇒ ``protocol_error``）。
+
+    ★ 为什么要分档而不是直接填：把「推断」混进「抽取结果」会让
+      `response_expectation` 的条数看起来像抽取能力，属于虚增指标。
+      分档后指标可写「evidence 7 / rule_corrected 1 / rule_inferred 12」。
+    """
+    raw = str(constraint.get("expected_behavior") or "").strip()
+    if raw:
+        if raw == "success" and operator in _INFERABLE_OPERATORS:
+            return "protocol_error", "rule_corrected"
+        return raw, "evidence"
+    if operator in _INFERABLE_OPERATORS:
+        return "protocol_error", "rule_inferred"
+    return "", ""
+
+
 def _project_rule(rule: Any) -> Optional[tuple[str, dict, Optional[dict]]]:
     """投影**一条**规则 → (归组键, legal_boundary 条目, response_expectation 条目)。
 
-    返回 `None` 表示**不投影**，理由只有四类（不猜、不臆造）：
+    返回 `None` 表示**不投影**，理由只有五类（不猜、不臆造）：
 
       ① `rule_state != "authoritative"` —— candidate / revoked / feedback
          **不进权威桶**（与 `rule_store` 的四库隔离一致：反馈只影响调度，
          不进权威知识）；
       ② `constraint is None` —— 不可转换（不是知识候选，也不是可执行规则）；
       ③ operator 不在词表内 / 有参算子缺 operand —— **不可渲染**；
-      ④ 归组键为空（既无 `target_field` 又无 `subject_name`）—— 无处安放。
+      ④ 归组键为空（既无 `target_field` 又无 `subject_name`）—— 无处安放；
+      ⑤ `operator == "absent"` —— 语义不可靠会污染 prompt
+         （见 `_REJECT_ABSENT_OPERATOR` 的实测依据，2026-11-07 新增）。
     """
     plain = _rule_to_plain(rule)
     if plain is None:
@@ -531,6 +590,9 @@ def _project_rule(rule: Any) -> Optional[tuple[str, dict, Optional[dict]]]:
         return None
     operator = str(constraint.get("operator") or "").strip()
     if operator not in _OPERATOR_DOMAINS:
+        return None
+    # 过滤⑤（2026-11-07）：absent 语义不可靠 ⇒ 拒收（见常量处实测依据）
+    if _REJECT_ABSENT_OPERATOR and operator == "absent":
         return None
     operand = _as_operand_tuple(constraint.get("operand"))
     if operator not in ("present", "absent") and not operand:
@@ -546,14 +608,17 @@ def _project_rule(rule: Any) -> Optional[tuple[str, dict, Optional[dict]]]:
         return None
 
     legal, illegal = _render_domains(operator, operand, operand_source, operand_ref)
-    expected_behavior = str(constraint.get("expected_behavior") or "").strip()
+    expected_behavior, eb_source = _resolve_expected_behavior(constraint, operator)
     lb_entry = {
         "dim": group_key,
         "legal": legal,
         "illegal": illegal,
         "trigger": expected_behavior,
+        # ★ 2026-11-07：处理期望的**来源**（evidence / rule_corrected /
+        #   rule_inferred）⇒ 指标与论文可区分「抽取得来」与「按规则推断」。
+        "expected_behavior_source": eb_source,
     }
-    # 无处理期望（expected_behavior 为空）⇒ 不产出 response_expectation 条目
+    # 处理期望仍为空 ⇒ 不产出 response_expectation 条目
     # （与 `norm.constraint_norm_to_facts` 的既有口径一致：缺 P 时只出 C）。
     re_entry: Optional[dict] = None
     if expected_behavior:
@@ -561,6 +626,7 @@ def _project_rule(rule: Any) -> Optional[tuple[str, dict, Optional[dict]]]:
             "violation": illegal,
             "expected_code": _EXPECTED_BEHAVIOR_CODES.get(expected_behavior, ""),
             "expected_behavior": expected_behavior,
+            "expected_behavior_source": eb_source,
         }
     return group_key, lb_entry, re_entry
 
@@ -636,8 +702,11 @@ def project_semantic_rules(bundle: dict) -> dict:
               （该字段**不得出现** ⇒ 出现即**非法**）。
       · **response_expectation 条目**：
         `{"violation": 非法域, "expected_code": 状态码族,
-          "expected_behavior": constraint.expected_behavior}`
-        —— `expected_behavior` 为空 ⇒ **不产出**本桶条目（缺 P 时只出 C）；
+          "expected_behavior": 处理期望, "expected_behavior_source": 来源}`
+        —— 处理期望由 `_resolve_expected_behavior()` 决定：
+            有值 ⇒ `evidence`（或语义矛盾时改判 `rule_corrected`）；
+            为空且算子属存在/取值类 ⇒ 确定性推断为 `protocol_error`
+            （`rule_inferred`）；仍为空 ⇒ **不产出**本桶条目（缺 P 时只出 C）。
         `expected_code` 由响应类经**封闭词表**映射（词表外留空，不臆造）。
 
     ── 合并语义（幂等的关键）────────────────────────────────────────────

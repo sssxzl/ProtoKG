@@ -25,6 +25,8 @@ from core.fused.downstream.boundary_probe import derive_constraint_candidates
 from core.fused.llm_ensemble import ENV_KEY as SEMANTIC_RULES_ENV_KEY
 from core.fused.downstream.rag_seedgen import (
     BUNDLE_SCHEMA_VERSION,
+    _render_domains,
+    _resolve_expected_behavior,
     assemble_bundle,
     get_bundle_schema_version,
     load_semantic_rules,
@@ -187,8 +189,10 @@ def test_project_maps_rule_into_both_buckets():
         ("in", ("a", "b"), "属于 {a, b}", "不属于 {a, b}"),
         ("range", ("1", "63"), "介于 [1, 63] 之间", "超出 [1, 63] 区间"),
         ("present", (), "存在（必须出现）", "缺失（不得出现）"),
-        # absent ⇒「该字段不得出现」⇒ **出现即非法**
-        ("absent", (), "缺失（不得出现）", "存在（出现即非法）"),
+        # ★ 2026-11-07：`absent` 已移出本参数化用例 —— 投影层**拒收**该算子
+        #   （语义不可靠，见 `_REJECT_ABSENT_OPERATOR`），故无法经
+        #   `project_semantic_rules` 观察渲染结果。渲染映射本身仍作守卫，
+        #   见下方 `test_absent_domain_mapping_preserved_but_not_projected`。
     ],
 )
 def test_operator_domain_mapping(operator, operand, legal, illegal):
@@ -199,6 +203,25 @@ def test_operator_domain_mapping(operator, operand, legal, illegal):
     entry = bundle["legal_boundary"]["QNAME"][0]
     assert entry["legal"] == legal
     assert entry["illegal"] == illegal
+
+
+def test_absent_domain_mapping_preserved_but_not_projected():
+    """★ 分离两件事：渲染映射**仍正确**，但投影层**拒收** `absent`。
+
+    ★ 为什么拒收见 `rag_seedgen._REJECT_ABSENT_OPERATOR` 的实测依据：
+      权威库 3 条 `absent` 全部语义错位（条件约束 / 内容约束 / 缺省描述被压成
+      「字段不得出现」）⇒ 进 prompt 就是知识污染。
+    ★ 保留映射是为了抽取器修好后可直接放开（届时补正例测试）。
+    """
+    legal, illegal = _render_domains("absent", (), "constant", None)
+    assert legal == "缺失（不得出现）"
+    assert illegal == "存在（出现即非法）"
+
+    constraint = _constraint(operator="absent", operand=())
+    bundle = _bundle_with([_rule(constraint=constraint)])
+    project_semantic_rules(bundle)
+    assert bundle["legal_boundary"] == {}
+    assert bundle["response_expectation"] == {}
 
 
 def test_grouping_prefers_target_field_over_subject_name():
@@ -257,13 +280,29 @@ def test_knowledge_candidate_is_not_projected():
     assert bundle["response_expectation"] == {}
 
 
-def test_rule_without_expected_behavior_has_no_response_expectation():
-    """缺 P（处理期望）⇒ 只出 C（legal_boundary），不出 response_expectation。"""
+def test_rule_without_expected_behavior_is_inferred():
+    """★ 契约变更（2026-11-07）：缺 P 时按**确定性规则**推断，不再「只出 C」。
+
+    旧契约是「缺 P ⇒ 留空、只出 C」（与 `norm.constraint_norm_to_facts` 同口径）。
+    新契约：留空会让 prompt 里那条约束缺少「违反会被拒」的强度信息，而推断
+    规则（客户端违反存在/取值约束 ⇒ 服务端应拒 ⇒ protocol_error）是协议无关、
+    可审计的 ⇒ 填 `protocol_error` 并标 `rule_inferred`。
+    ★ 指标引用必须按 `expected_behavior_source` 分档，不得把推断算成抽取。
+    """
     constraint = _constraint(expected_behavior="")
     bundle = _bundle_with([_rule(constraint=constraint)])
     project_semantic_rules(bundle)
-    assert bundle["legal_boundary"]["QNAME"][0]["trigger"] == ""
-    assert bundle["response_expectation"] == {}
+    lb = bundle["legal_boundary"]["QNAME"][0]
+    assert lb["trigger"] == "protocol_error"
+    assert lb["expected_behavior_source"] == "rule_inferred"
+    re_entry = bundle["response_expectation"]["QNAME"][0]
+    assert re_entry["expected_behavior"] == "protocol_error"
+    assert re_entry["expected_code"] == "4xx"
+
+
+def test_uninferable_operator_keeps_p_empty():
+    """不可推断算子（`absent`）⇒ 解析函数返回空，不硬填。"""
+    assert _resolve_expected_behavior({"expected_behavior": ""}, "absent") == ("", "")
 
 
 # ===========================================================================

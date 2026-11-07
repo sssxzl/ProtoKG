@@ -53,8 +53,15 @@ BUCKET_CHANNEL: dict[str, str] = {
     "session_header": "seedgen.session_header",
     "url_template": "seedgen.url_template",
     "required_headers": "seedgen.required_headers",
-    "legal_boundary": "seedgen.required_headers",      # 语义规则投影（L1/rfc）
-    "response_expectation": "seedgen.required_headers",
+    # ★ 2026-11-07：语义规则投影的两个桶改用具名通道 —— 原先与
+    #   `required_headers` 共用一个通道名，台账里看不出「这是约束投影」。
+    #   class/owner 仍按「约束出自 RFC 规范」定为 SPEC/rfc，但注意
+    #   **P 侧（response_expectation）的内容多为按确定性规则推断**：
+    #   见 `rag_seedgen._resolve_expected_behavior()` 的三档来源
+    #   （evidence / rule_corrected / rule_inferred）⇒ 引用条数时必须按来源
+    #   分档，不能整体称「规范直出」。
+    "legal_boundary": "seedgen.legal_boundary",
+    "response_expectation": "seedgen.response_expectation",
     "vulnerability": "vuln",
     "statuses": "seedgen.required_headers",
 }
@@ -67,6 +74,8 @@ DEFAULT_CHANNELS: dict[str, dict[str, str]] = {
     "seedgen.url_template":     {"class": CLASS_IMPL, "owner": "expert_note"},
     "seedgen.state_changing":   {"class": CLASS_IMPL, "owner": "expert_note"},
     "seedgen.required_headers": {"class": CLASS_SPEC, "owner": "rfc"},
+    "seedgen.legal_boundary":       {"class": CLASS_SPEC, "owner": "rfc"},
+    "seedgen.response_expectation": {"class": CLASS_SPEC, "owner": "rfc"},
     "allowed_methods":          {"class": CLASS_IMPL, "owner": "source"},
     "vuln":                     {"class": CLASS_IMPL, "owner": "vuln"},
     "traffic_schema":           {"class": CLASS_IMPL, "owner": "traffic"},
