@@ -109,7 +109,9 @@ def select_seeds(bundle: dict, resources: Optional[list] = None,
     # ① 结构覆盖（永远）
     seeds += edge_cover(transitions, required_headers, headers,
                         message_instances, protocol=protocol,
-                        method_order=bundle.get("method_order"))
+                        method_order=bundle.get("method_order"),
+                        # ★ B2（2026-11-07）：**实体头**（如 SMTP DATA 的邮件头）
+                        entity_headers=bundle.get("entity_headers"))
     # ② 通用危险（永远）：会话语义（前置方法/会话头）由知识中枢 bundle 驱动
     seeds += generic_danger(transitions, headers, required_headers,
                             minimal=minimal,

@@ -963,9 +963,13 @@ VALUE_SAMPLE_SEP = " |~| "
 #
 #: ABNF 字段定义行：``   orig-date       =   "Date:" date-time CRLF``
 #:   ⇒ 捕获组 1 = **字段名**（`Date`）、捕获组 2 = 右侧 ABNF
+#: ★ 2026-11-07（B2）修正：**必须带 ``re.MULTILINE``**。
+#:   没有它时 ``^`` 只匹配**整个字符串的开头** ⇒ 在整篇 RFC 文本上
+#:   ``finditer`` **永远命中 0 条**（实测 RFC 5322 的 20 个 ABNF 头全丢）。
+#:   （逐行 ``match`` 能命中 ⇒ 所以这个 bug 极隐蔽：单行测试通过、全文扫描全灭。）
 _RE_ABNF_FIELD = re.compile(
-    r'^\s+[a-z][a-z0-9-]*\s+=\s+"([A-Za-z][A-Za-z0-9_-]*):"'
-    r'(?P<rhs>[^"]*)$')
+    r'^[ \t]+[a-z][a-z0-9-]*[ \t]+=[ \t]+"([A-Za-z][A-Za-z0-9_-]*):"'
+    r'(?P<rhs>[^"]*)$', re.MULTILINE)
 
 #: ABNF 字段的**散文说明** —— 形态：
 #:   `The origination date field consists of the field name "Date" followed by`
@@ -1178,12 +1182,35 @@ def _is_example_host_value(val: str) -> bool:
     return False
 
 
-def _clean_sample_value(val: str) -> str:
+#: ★ 2026-11-07（B2）：**地址类头**的取值 —— 判据来自 RFC 的 **ABNF rhs**
+#:   （``mailbox-list`` / ``address-list`` / ``mailbox``），**协议无关**。
+#:   实测 RFC 5322：``from = "From:" mailbox-list CRLF`` / ``to = "To:" address-list``。
+_ADDRESS_RHS_RE = re.compile(r"\b(mailbox-list|address-list|mailbox)\b")
+
+
+def _is_address_header(field_name: str, abnf_rhs: str) -> bool:
+    """该头是否是「邮箱地址类」（判据：ABNF rhs 里的 mailbox/address 记号）。
+
+    ★ 协议无关：只看 **ABNF 语义**，不认协议名、不认具体头名。
+    """
+    if not abnf_rhs:
+        return False
+    return bool(_ADDRESS_RHS_RE.search(abnf_rhs))
+
+
+def _clean_sample_value(val: str, is_address: bool = False) -> str:
     """清洗一条取值样本；不合格返回空串。
 
     ★ 含空格时：**每个逗号分隔项**的首 token 都得像 token 才收
       ⇒ 既放过多值取值（"application/rtsl, application/sdp;level=2"），
         又挡住散文（"A server is a network element…"）。
+
+    ★ 2026-11-07（B2）：``is_address=True``（该头是**邮箱地址类**，判据见
+      `_is_address_header`）⇒ **不套用「整条地址实例」的排除规则**。
+      理由：``From: John Doe <jdoe@machine.example>`` 的**整个值**就是邮箱地址
+      （不是「URI 实例」）⇒ 按 URI 规则排除会把 RFC 5322 的 20+ 个邮件头的
+      取值**全灭**（实测 `From`/`To`/`Subject` 的 values 全为 None）。
+      ★ 但仍保留「保留域名/超长」的通用清洗（不引入垃圾）。
     """
     val = (val or "").rstrip("\\").strip()
     if not val or len(val) > _MAX_SAMPLE_VALUE_LEN:
@@ -1191,34 +1218,47 @@ def _clean_sample_value(val: str) -> str:
     # ★ 批次 2.5：排除「RFC 文档示例地址 / 示例域名」
     #   （理由见 `_is_example_host_value` 的 docstring：粒度错、对 ⑤ 层零收益、
     #    且污染 corpus_gate 的 G1 ⇒ SIP 语料不可发布）
-    if _is_example_host_value(val):
+    #   ★ B2：地址类头**豁免**此规则（它的值本来就是地址）。
+    if not is_address and _is_example_host_value(val):
         return ""
     if " " in val:
         for part in val.split(","):
             # ★ 先 strip 再取首 token（否则 "SETUP, PLAY" 的第二项首 token 是空串）
             if not _looks_like_token(part.strip().split(" ", 1)[0]):
-                return ""
+                # ★ B2：地址类头**豁免**「像 token」判定 ——
+                #   邮箱的显示名是人名（"John Doe <jdoe@machine.example>"），
+                #   首 token 是散文词 ⇒ 按通用规则会被当成散文拒掉
+                #   （实测 RFC 5322 的 From/To/Subject 取值全灭）。
+                #   ★ 仍要求「**含 @**」⇒ 只对邮箱地址放宽，不放行普通散文。
+                if not (is_address and "@" in part):
+                    return ""
     return val
 
 
-def _extract_field_value_samples(text_lines: list[str],
-                                  known: dict[str, str]) -> dict[str, list[str]]:
+def _extract_field_value_samples(
+        text_lines: list[str], known: dict[str, str],
+        address_fields: Optional[set] = None) -> dict[str, list[str]]:
     """从 RFC 正文抽「字段 → 取值样本」。
 
     Args:
         text_lines: **已清洗、已隔离 TOC** 的正文行（逐行）。
         known: ``{小写头名: 规范头名}``（来自本文件已抽出的 field 名）。
+        address_fields: **地址类头**的小写名集合（B2 2026-11-07）——
+            判据见 `_is_address_header`（ABNF rhs 里的 mailbox/address 记号）。
+            这些头的取值**豁免**「整条地址实例」的排除规则。
 
     Returns:
         ``{规范头名: [取值样本, ...]}``（按出现序、去重）。
     """
     out: dict[str, list[str]] = {}
+    _addr = {str(a).lower() for a in (address_fields or set())}
 
     def _add(raw_name: str, raw_val: str) -> None:
         canon = known.get(raw_name.lower())
         if not canon:
             return
-        val = _clean_sample_value(raw_val)
+        val = _clean_sample_value(
+            raw_val, is_address=raw_name.lower() in _addr)
         if not val:
             return
         bucket = out.setdefault(canon, [])
@@ -1607,7 +1647,9 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
     #   全文扫（**不依赖** `_section_kind` ⇒ 不受 method/field 章节判定影响）
     #   ⇒ SMTP 的 §3.6 Field Definitions 能被抽到（实测 22 个字段）。
     _full_text = "\n".join(t for _, t in content_lines)
-    for _fld in _extract_abnf_fields(_full_text):
+    # ★ B2：存下 ABNF 字段（后面要据其 rhs 判定「地址类头」）
+    _abnf_fields = _extract_abnf_fields(_full_text)
+    for _fld in _abnf_fields:
         _fname = _fld["name"]
         if _fname.upper() in _GENERIC_SECTION_WORDS:
             continue
@@ -1661,8 +1703,12 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
     #   ⇒ 压制 ⑤ 层 value-pool-boundary 规则。
     #   ★ 全文扫描（不受窗口预算限制），但**只认已知字段名** ⇒ 精确无污染。
     if field_names:
+        # ★ B2：把「地址类头」集合传下去（判据来自 ABNF rhs，协议无关）
+        _addr_fields = {f["name"].lower() for f in _abnf_fields
+                        if _is_address_header(f["name"], f.get("abnf") or "")}
         _samples = _extract_field_value_samples(
-            [t for _, t in content_lines], field_names)
+            [t for _, t in content_lines], field_names,
+            address_fields=_addr_fields)
         for _fname, _vals in sorted(_samples.items()):
             if not _vals:
                 continue
@@ -2359,6 +2405,15 @@ def _rfc_source_headers(protocol: str, cfg: dict) -> set[str]:
     ★ 做法：在 `field_sections` 声明的**头字段章节**里，取「编号 + 头名」形态
       的标题（如 `12.10 CSeq`）⇒ 即该协议的头名集合。
     ★ 换协议只改 rfc_config，不改代码（G2）。
+
+    ★ 2026-11-07（B2）补 **ABNF 兜底**：有些 RFC 的字段章节**不按「编号+头名」**
+      组织 —— 典型是 RFC 5322 §3.6：它的子节标题是**描述性文字**
+      （如 ``3.6.1.  The Origination Date Field``、``3.6.3.  Destination
+      Address Fields``），头名只出现在 **ABNF 定义**里（如 ``from = 'From:'``）。
+      ⇒ 只按标题形态抽 ⇒ 实测 smtp 只得到 1 个头（``Background``，还是误抽），
+        RFC 5322 的 20+ 个邮件头**全丢**（Date/From/To/Subject…）。
+      ⇒ 追加一条**协议无关**的兜底：从全文的 ABNF 定义里取头名
+        （形如 ``<rule> = 'Head:'``）。
     """
     import re as _re
     secs = cfg.get("field_sections") or []
@@ -2377,6 +2432,18 @@ def _rfc_source_headers(protocol: str, cfg: dict) -> set[str]:
                 continue
             if _re.match(r"^[A-Z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*$", _title):
                 out.add(_title)
+    # ---- ABNF 兜底（B2 2026-11-07）：从 ABNF 定义的**字面量头名**取头名 ----
+    #   协议无关：只认 ABNF 的字面量头名形态（形如 ``<rule> = 'Head:'``）。
+    #   ★ 为什么需要：有些 RFC 的字段章节**不按「编号+头名」**组织 ——
+    #     典型是邮件格式规范（RFC 5322）的 §3.6：子节标题是**描述性文字**
+    #     （如 ``3.6.3.  Destination Address Fields``）⇒ 上面那条
+    #     「编号+头名」的路径拿不到任何头名 ⇒ 该规范的 20+ 个邮件头全丢。
+    for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
+        _txt = _f.read_text(encoding="utf-8", errors="ignore")
+        for _m in _RE_ABNF_FIELD.finditer(_txt):
+            _n = _m.group(1)
+            if _re.match(r"^[A-Z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*$", _n):
+                out.add(_n)
     return out
 
 

@@ -11,7 +11,15 @@
     "trailing_blank_line": false,
     "command_extra": {
       "DATA": "Subject: ProtoRAG SMTP fuzz seed\r\n\r\nProtoRAG SMTP fuzz test body.\r\n."
-    }
+    },
+    "entity_headers": {
+      "DATA": [
+        "Date",
+        "From",
+        "To"
+      ]
+    },
+    "entity_header_line": "{key}: {value}"
   },
   "message_schema": {
     "hint": "SMTP 是命令行文本协议：客户端发「命令动词 + 参数」行，服务器回 3 位响应码。消息实例字段请给：command（命令动词）+ argument（参数）。命令动词【只能】从源码中的命令分发表（cmd_list/命令数组）提取，不要凭协议先验补充源码里不存在的命令。命令只用动词本身：MAIL/RCPT（不要把「MAIL FROM」「RCPT TO」当成整体命令名——MAIL 是命令，「FROM:<地址>」是 argument）。argument 取值示例：FROM:<sender@example.com>、TO:<recipient@example.com>、client.example.com（HELO/EHLO 域名）、AUTH 的机制名。不要生成 url 字段。"

@@ -1156,7 +1156,9 @@ def main() -> int:
         ec = edge_cover(transitions, bundle.get("required_headers"),
                         bundle.get("headers"),
                         bundle.get("message_instances"), protocol=protocol,
-                        method_order=bundle.get("method_order"))
+                        method_order=bundle.get("method_order"),
+                        # ★ B2（2026-11-07）：**实体头**（如 SMTP DATA 的邮件头）
+                        entity_headers=bundle.get("entity_headers"))
         seeds += ec
         print(f"① 结构覆盖: {len(ec)} 条种子")
     else:

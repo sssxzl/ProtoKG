@@ -184,7 +184,8 @@ def build_message(method: str, *, required_headers: Optional[dict],
                   headers: Optional[dict], cseq: int,
                   instance_fields=None, cseq_with_method: bool = False,
                   url_fallback: str = "",
-                  known_fields: Optional[set] = None) -> SeedMessage:
+                  known_fields: Optional[set] = None,
+                  entity_headers: Optional[list] = None) -> SeedMessage:
     """构造一条消息：填必填头 + 默认值，再用字段级实例覆盖；CSeq 用递增序号。
 
     cseq_with_method：SIP 等协议 CSeq 需「序号 + 方法」（如 ``CSeq: 1 REGISTER``），
@@ -193,6 +194,11 @@ def build_message(method: str, *, required_headers: Optional[dict],
     url_fallback：实例没给 URL 时的兜底值（见 `_instance_url_pool`）。
       ★ 空串 ⇒ 不兜底（命令类协议本来就无 URL）。
     known_fields：传给 `_apply_instance_fields` 的「已知头部字段集」，见其 docstring。
+    entity_headers：**实体头**清单（如 SMTP DATA 的邮件头 Date/From/To）。
+      ★ 2026-11-07（B2）：这类头**不属于命令的头**，而是**消息内容里的头段**
+        （RFC 5321 §2.3.9「message content includes the message header section」）
+        ⇒ 单独一个参数，不混进 `required_headers`。
+        值同样取自 `headers` 桶（RFC 抽取的取值池）⇒ **不硬编码**。
     """
     reqs = (required_headers or {}).get(method, []) or []
     msg_headers: dict = {}
@@ -201,6 +207,11 @@ def build_message(method: str, *, required_headers: Optional[dict],
             msg_headers[h] = f"{cseq} {method}" if cseq_with_method else str(cseq)
         else:
             msg_headers[h] = _default_header_value(h, headers)
+    # ★ 实体头（B2）：与命令头**分开**，值同样取自 headers 桶（RFC 抽取的取值池）
+    for h in (entity_headers or []):
+        _hn = str(h or "").strip()
+        if _hn and _hn not in msg_headers:
+            msg_headers[_hn] = _default_header_value(_hn, headers)
     url, argument = _apply_instance_fields(msg_headers, instance_fields, cseq,
                                            known_fields=known_fields)
     if not url and url_fallback:
@@ -214,7 +225,8 @@ def build_seed_from_edges(edges: list, *, required_headers: Optional[dict],
                           description: str, generated_by: str,
                           message_instances: Optional[dict] = None,
                           protocol: str = "rtsp",
-                          cseq_with_method: bool = False) -> SeedCorpus:
+                          cseq_with_method: bool = False,
+                          entity_headers: Optional[dict] = None) -> SeedCorpus:
     """把一条边序列（路径）转成 SeedCorpus，messages 顺序 = 边顺序。
 
     message_instances: {(from, method, to): [(field, value), ...]}，命中则用实例
@@ -232,6 +244,8 @@ def build_seed_from_edges(edges: list, *, required_headers: Optional[dict],
             (_src, method.strip().upper(), dst))
         messages.append(build_message(method, required_headers=required_headers,
                                       headers=headers, cseq=i,
+                                      entity_headers=(entity_headers or {}).get(
+                                          method.strip().upper()),
                                       instance_fields=inst,
                                       cseq_with_method=cseq_with_method,
                                       url_fallback=_url_fb,
@@ -312,7 +326,8 @@ def _greedy_walk(adj: dict, init: str, uncovered: set,
 
 def edge_cover(transitions, required_headers=None, headers=None,
                message_instances=None, protocol: str = "rtsp",
-               method_order: Optional[list] = None) -> list:
+               method_order: Optional[list] = None,
+               entity_headers: Optional[dict] = None) -> list:
     """① 结构覆盖层：贪心最小边覆盖，返回 list[SeedCorpus]。
 
     Args:
@@ -324,6 +339,10 @@ def edge_cover(transitions, required_headers=None, headers=None,
         protocol:          协议名（写入 SeedCorpus.protocol，供 raw_writer 派发）
         method_order:      traffic 观测的会话语序 [method, ...]（P2b），优先遵循
                            该顺序覆盖边，否则字典序兜底
+        entity_headers:    {method: [header, ...]}（**实体头**，B2 2026-11-07）
+                           —— 只该命令的**消息内容**里要带的头
+                           （如 SMTP DATA 的邮件头 Date/From/To），
+                           与「命令头」`required_headers` 分开。
     """
     if not transitions:
         return []
@@ -347,6 +366,7 @@ def edge_cover(transitions, required_headers=None, headers=None,
             init=init, message_instances=message_instances,
             protocol=protocol,
             cseq_with_method=cseq_with_method(protocol),
+            entity_headers=entity_headers,
             description="edge-cover path #%d: %s"
                         % (index, " -> ".join(m for _, m, _ in path)),
             generated_by="rule-based:edge-cover",

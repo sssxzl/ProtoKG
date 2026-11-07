@@ -331,6 +331,13 @@ def _render_from_profile(seed: SeedCorpus, profile: dict, url: str) -> bytes:
     request_line = fmt.get("request_line", "{method} {url} {version}")
     version = fmt.get("version", "")
     header_line = fmt.get("header_line", "{key}: {value}")
+    # ★ 2026-11-07（B2）：**实体头行模板** —— 实体内容（如 SMTP DATA 之后的
+    #   邮件）的头段模板。缺省**继承** ``header_line``；
+    #   命令协议可设 ``header_line=""``（命令本身无头）但
+    #   ``entity_header_line="{key}: {value}"``（消息内容有头，
+    #   依据 RFC 5321 §2.3.9「message content includes the message header
+    #   section」）。
+    entity_header_line = fmt.get("entity_header_line") or header_line
     trailing_blank = fmt.get("trailing_blank_line", True)
     command_extra = fmt.get("command_extra", {}) or {}
 
@@ -346,15 +353,32 @@ def _render_from_profile(seed: SeedCorpus, profile: dict, url: str) -> bytes:
                                  version=version, argument=argument)
         rl = rl.rstrip()  # argument/version 为空时去掉请求行尾部空格
         out += (rl + line_ending).encode("utf-8")
-        # 行命令协议的附加内容（如 SMTP DATA 的消息体 + 结束符）
+        # ★ 2026-11-07（B2）：**头必须在 command_extra 之前**输出。
+        #   理由：`command_extra` 是**信体内容**（如 SMTP DATA 的邮件正文 + "."），
+        #   而 RFC 5321 §2.3.9 规定「message content includes the **message header
+        #   section** and the possibly structured message body」⇒ 邮件头属于
+        #   message content 的一部分，**必须在正文之前**。
+        #   旧实现把 extra 排在头之前 ⇒ 信体头会落在正文**后面** ⇒ 非法邮件。
+        # ★ B2：区分「命令头」与「实体头」的渲染模板 ——
+        #   命令头走 ``header_line``；实体头走 ``entity_header_line``。
+        #   两者通常相同（继承），但命令协议会设 ``header_line=""`` 而
+        #   实体内容仍有头段 ⇒ 必须分开。
+        _cmd_hdr_tpl = header_line
+        _ent_hdr_tpl = entity_header_line
+        if _cmd_hdr_tpl and msg.headers:
+            for key, value in msg.headers.items():
+                value = _resolve_all_placeholders(value)
+                hl = _cmd_hdr_tpl.format(key=key, value=value)
+                out += (hl + line_ending).encode("utf-8")
+        elif _ent_hdr_tpl and msg.headers:
+            # ★ 命令无头部行语法、但消息内容有头段 ⇒ 用实体头模板渲染
+            for key, value in msg.headers.items():
+                value = _resolve_all_placeholders(value)
+                hl = _ent_hdr_tpl.format(key=key, value=value)
+                out += (hl + line_ending).encode("utf-8")
         extra = command_extra.get(method, "")
         if extra:
             out += (extra + line_ending).encode("utf-8")
-        if header_line and msg.headers:
-            for key, value in msg.headers.items():
-                value = _resolve_all_placeholders(value)
-                hl = header_line.format(key=key, value=value)
-                out += (hl + line_ending).encode("utf-8")
         if msg.body:
             body = _resolve_all_placeholders(msg.body)
             out += (line_ending + body + line_ending).encode("utf-8")

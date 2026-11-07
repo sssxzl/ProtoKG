@@ -1641,6 +1641,15 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         "precondition": {k: _dedupe_sorted(v) for k, v in preconditions.items()},
         "session_header": {k: [dict(x) for x in v] for k, v in session_headers.items()},
         "url_template": url_templates,
+        # ★ 2026-11-07（B2）：**实体头** —— 只该命令的**消息内容**里要带的头
+        #   （如 SMTP DATA 的邮件头 Date/From/To）。
+        #   ★ 与「命令头」`required_headers` **分开**：前者是消息内容的一部分
+        #   （RFC 5321 §2.3.9「message content includes the message header
+        #   section」），后者是协议请求行的头。
+        #   ★ 来自 profile 的 `raw_format.entity_headers`（配置层，不是 facts 桶）。
+        #   ★ 用 `_protocol_name`（保存的协议名）—— `protocol` 变量在此已被
+        #   「protocol 桶 dict」覆盖（见上方注释）。
+        "entity_headers": _entity_headers_from_profile(_protocol_name),
         "legal_boundary": {k: [dict(x) for x in v] for k, v in legal_boundaries.items()},
         "response_expectation": {k: [dict(x) for x in v]
                                  for k, v in response_expectations.items()},
@@ -1934,6 +1943,41 @@ def _url_scheme_prefix(bundle: dict) -> str:
             if _m:
                 return _m.group(1)
     return ""
+
+
+def _entity_headers_from_profile(protocol: str) -> dict:
+    """读 profile 的 ``raw_format.entity_headers`` ⇒ ``{方法名: [头名, ...]}``。
+
+    ★ 2026-11-07（B2）：**实体头**（只该命令的消息内容里要带的头）。
+      典型场景：SMTP 的 ``DATA`` 命令之后是**邮件内容**，其头部段按
+      RFC 5322 要求要含 ``Date`` / ``From`` / ``To``（§3.6 逐头定义）
+      —— 但这些头**不是 SMTP 命令的头** ⇒ 不能混进 ``required_headers``。
+
+    ★ 协议无关：判据只看 ``profile.raw_format.entity_headers`` 这个**配置段**，
+      不认协议名 ⇒ 新协议要带实体头时，在自己的 profile 里声明即可。
+    """
+    try:
+        from core import paths as _paths
+        import json as _json
+        _p = _paths.target_profile(protocol)
+        if not _p.is_file():
+            return {}
+        _d = _json.loads(_p.read_text(encoding="utf-8")) or {}
+        _raw = (_d.get("raw_format") or {}).get("entity_headers") or {}
+        if not isinstance(_raw, dict):
+            return {}
+        out: dict[str, list] = {}
+        for _m, _hs in _raw.items():
+            if isinstance(_hs, str):
+                _hs = [_hs]
+            if not isinstance(_hs, list):
+                continue
+            _lst = [str(h).strip() for h in _hs if str(h).strip()]
+            if _lst:
+                out[str(_m).strip().upper()] = _lst
+        return out
+    except (OSError, ValueError):
+        return {}
 
 
 def _render_session_semantics(bundle: dict) -> str:
