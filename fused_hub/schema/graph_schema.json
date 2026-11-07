@@ -1,0 +1,274 @@
+{
+  "core_version": "1.0",
+  "notes": [
+    "★ 图模式注册表（2026-11-08，GraphRAG 改造批次 1）——与 aspect_registry.json 并列：",
+    "  · aspect_registry 冻结「知识维度」（fact 的 aspect 契约）；",
+    "  · graph_schema 冻结「图结构」（节点类型 / 边类型 / 遍历配置）。",
+    "★ 设计原则：**判据一律来自 RFC 内容**；protocol_overrides 只是**加速定位的提示**，",
+    "  不是判据（换协议自动生效）。",
+    "★ 边类型从「代码硬编码」变「数据驱动」⇒ retrieve_subgraph 扩边不改代码。",
+    "★ 两张图（D2：两类知识分开）：",
+    "  · 精确图（graph='structure'）—— state/message/timer + 精确边；**不做社区切分**；",
+    "  · 社区图（graph='semantic'）—— header/status/method/constraint + 弱边；供 Leiden。",
+    "  ⇒ 状态机的精确边不会被社区切分打散。"
+  ],
+  "node_types": [
+    {
+      "name": "state",
+      "graph": "structure",
+      "description": "协议状态（客户端/服务器侧）。来自全大写术语 + 图形/表格交叉校验"
+    },
+    {
+      "name": "message",
+      "graph": "structure",
+      "description": "协议消息/方法类型。来源：RFC 消息名 + ABNF 方法枚举（通道 A0）"
+    },
+    {
+      "name": "timer",
+      "graph": "structure",
+      "description": "定时器/超时（租约 T1/T2、keepalive 等）"
+    },
+    {
+      "name": "header",
+      "graph": "semantic",
+      "description": "头字段/选项名"
+    },
+    {
+      "name": "status",
+      "graph": "semantic",
+      "description": "状态码/响应类别"
+    },
+    {
+      "name": "constraint",
+      "graph": "semantic",
+      "description": "状态相关的消息字段约束（来自「状态 × 字段」表格）"
+    },
+    {
+      "name": "entity",
+      "graph": "semantic",
+      "description": "其它协议实体（选项/参数/角色/协议元信息）"
+    },
+    {
+      "name": "anchor",
+      "graph": "both",
+      "description": "溯源锚点（章节号 / 图形号 / 表号）"
+    }
+  ],
+  "edge_types": [
+    {
+      "name": "transitions_to",
+      "graph": "structure",
+      "from": [
+        "state"
+      ],
+      "to": [
+        "state"
+      ],
+      "meaning": "状态迁移（源状态 → 目标状态）",
+      "note": "迁移三元组 (src, method, dst) 拆成：transitions_to(src→dst) + triggers(method→dst)"
+    },
+    {
+      "name": "triggers",
+      "graph": "structure",
+      "from": [
+        "message",
+        "timer"
+      ],
+      "to": [
+        "state"
+      ],
+      "meaning": "触发迁移的事件（消息/定时器）→ 迁移的**目标状态**",
+      "note": "★ 端点是**节点**不是边：`transitions_to` 是边类型，边的 from/to 不能引用边 ⇒ 触发者连到迁移的**目标状态**，配合 `transition_of` 边还原完整三元组"
+    },
+    {
+      "name": "sends",
+      "graph": "structure",
+      "from": [
+        "state"
+      ],
+      "to": [
+        "message"
+      ],
+      "meaning": "该状态下发出的消息"
+    },
+    {
+      "name": "receives",
+      "graph": "structure",
+      "from": [
+        "state"
+      ],
+      "to": [
+        "message"
+      ],
+      "meaning": "该状态下收到的消息"
+    },
+    {
+      "name": "instance_of",
+      "graph": "structure",
+      "from": [
+        "message"
+      ],
+      "to": [
+        "state"
+      ],
+      "meaning": "该状态/迁移上携带的消息实例模板（字段取值）",
+      "note": "★ 原设计引用了边类型 transitions_to ⇒ 改为连到状态节点"
+    },
+    {
+      "name": "required_by",
+      "graph": "semantic",
+      "from": [
+        "message"
+      ],
+      "to": [
+        "header"
+      ],
+      "meaning": "该方法必须携带的头字段"
+    },
+    {
+      "name": "constrained_by",
+      "graph": "semantic",
+      "from": [
+        "message"
+      ],
+      "to": [
+        "constraint"
+      ],
+      "meaning": "消息的字段约束（状态相关）"
+    },
+    {
+      "name": "bounded_by",
+      "graph": "semantic",
+      "from": [
+        "message",
+        "header"
+      ],
+      "to": [
+        "constraint"
+      ],
+      "meaning": "合法边界 / 响应期望"
+    },
+    {
+      "name": "followed_by",
+      "graph": "semantic",
+      "from": [
+        "message"
+      ],
+      "to": [
+        "message"
+      ],
+      "meaning": "方法序列相邻对"
+    },
+    {
+      "name": "marked_by",
+      "graph": "semantic",
+      "from": [
+        "message",
+        "header"
+      ],
+      "to": [
+        "entity"
+      ],
+      "meaning": "安全属性 / 漏洞模式标注"
+    },
+    {
+      "name": "defined_in",
+      "graph": "both",
+      "from": [
+        "*"
+      ],
+      "to": [
+        "anchor"
+      ],
+      "meaning": "溯源锚点（文件 + 行号 + 图形/表号）"
+    },
+    {
+      "name": "co_occurs",
+      "graph": "semantic",
+      "from": [
+        "message"
+      ],
+      "to": [
+        "header"
+      ],
+      "meaning": "弱边：该方法的消息里**可能出现**的头字段（来自同一方法的实例/必填头证据）",
+      "note": "★ 社区图的结构基础：headers 桶里的字段若不挂到方法上，就会全部孤立（实测 rtsp 58 个 header 里 48 个孤立）⇒ 需要弱连接把字段织进图里。"
+    },
+    {
+      "name": "defines",
+      "graph": "semantic",
+      "from": [
+        "entity"
+      ],
+      "to": [
+        "header",
+        "status",
+        "constraint"
+      ],
+      "meaning": "协议级定义：该协议定义了这些头字段/状态码（**不绑定到具体方法**）",
+      "note": "★ 社区图必需的「锚边」：headers 桶里的字段多数来自 header/definition|syntax|value_enum —— 它们是**协议级**事实（实测 rtsp 58 个字段里 48 个不属于任何方法）⇒ 若不连到协议节点，它们在图里全是孤立的。"
+    }
+  ],
+  "traversal": {
+    "notes": "retrieve_subgraph 的 BFS 边类型映射——**加边类型只改这里，不改代码**",
+    "method_to_header": [
+      "required_by"
+    ],
+    "state_to_state": [
+      "transitions_to"
+    ],
+    "method_to_transition": [
+      "triggers"
+    ],
+    "state_to_message": [
+      "sends",
+      "receives"
+    ],
+    "message_to_constraint": [
+      "constrained_by"
+    ]
+  },
+  "community": {
+    "notes": "Leiden 社区检测的配置（D3：直接上完整 GraphRAG）",
+    "graph": "semantic",
+    "algorithm": "leiden",
+    "resolution": 1.0,
+    "min_community_size": 2,
+    "fallback": "connected_components",
+    "report_fields": [
+      "members",
+      "summary",
+      "owner_mix",
+      "class"
+    ]
+  },
+  "protocol_overrides": {
+    "notes": "★ **只是提示**（加速定位），不是判据；抽取逻辑不认协议名",
+    "dhcpv4": {
+      "state_hints": [
+        "INIT",
+        "SELECTING",
+        "REQUESTING",
+        "BOUND",
+        "RENEWING",
+        "REBINDING",
+        "INIT-REBOOT",
+        "REBOOTING"
+      ],
+      "message_hints": [
+        "DHCPDISCOVER",
+        "DHCPOFFER",
+        "DHCPREQUEST",
+        "DHCPACK",
+        "DHCPNAK",
+        "DHCPDECLINE",
+        "DHCPRELEASE",
+        "DHCPINFORM"
+      ],
+      "timer_hints": [
+        "T1",
+        "T2"
+      ]
+    }
+  }
+}
