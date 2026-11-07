@@ -434,6 +434,15 @@ def seedcorpus_to_raw(seed: SeedCorpus, *, url: str = "rtsp://localhost/seed",
     # 优先走协议 Profile 驱动（换协议只换 profile.json，RTSP 不再特化）
     profile = _load_profile(seed.protocol)
     if profile is not None:
+        # ★ 2026-11-07：二进制协议走**字节布局**渲染（文本协议**零改动**）。
+        #   判据 = profile 里有 ``raw_format.binary_fields``（**纯数据**判据，
+        #   不认协议名）⇒ 不需要额外的「协议类型」开关。
+        #   ★ 与 `core/kinds` 的协议类型判定**互补**：这里是「能不能按布局渲染」，
+        #     kinds 是「这个协议是什么类型」——两者都在 profile 这一层汇合。
+        _raw_fmt = profile.get("raw_format") or {}
+        if _raw_fmt.get("binary_fields"):
+            from core.raw_writers_binary import render_binary_from_profile
+            return render_binary_from_profile(seed, profile)
         return _render_from_profile(seed, profile, url)
     if proto == "rtsp":
         return _rtsp_to_raw(seed, url=url)

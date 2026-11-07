@@ -868,6 +868,10 @@ _BUCKET_BY_KIND: dict[tuple[str, str], str] = {
     ("method", "vuln_pattern"): "vuln_pattern",
     # ── header 主体 ──
     ("header", "syntax"): "headers",
+    # ★ 2026-11-07：二进制协议的**布局**（字段布局 / TLV 选项布局）
+    #   ⇒ 也落进 headers 桶 ⇒ 下游零改动（字段被 known_fields 认识）。
+    ("header", "binary_layout"): "headers",
+    ("header", "option_layout"): "headers",
     ("header", "definition"): "headers",
     ("header", "value_enum"): "headers",
     ("header", "occurrence"): "headers",
@@ -1374,6 +1378,13 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
                         main_auth, set()).update(list(val or []))
             elif aspect == "occurrence":
                 headers.setdefault(sname, {})["occurrence"] = val
+            elif aspect == "binary_layout":
+                # ★ 2026-11-07：二进制协议的**字段布局**
+                #   （offset/length/order/encoding，来自 RFC 的位域图）
+                headers.setdefault(sname, {})["binary_layout"] = val
+            elif aspect == "option_layout":
+                # ★ 2026-11-07：二进制协议的**TLV 选项布局**（code/length）
+                headers.setdefault(sname, {})["option_layout"] = val
             elif aspect == "security_property":
                 security.append(("header", sname, val))
             elif aspect == "legal_boundary":

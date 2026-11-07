@@ -3503,6 +3503,25 @@ def extract_rfc_norms(protocol: str) -> list[dict]:
                 continue
             seen_protocol_level.add(_mn["norm_id"])
             norms.append(_mn)
+
+    # ---- 通道 B1/B2：**二进制协议**的布局（2026-11-07）----------------------
+    #   ★ **协议类型判断阶段**在这里生效：`core.kinds` 判定该协议是
+    #     text 还是 binary ⇒ binary 才走布局通道（位域图 / 选项表）。
+    #   ★ 文本协议**完全不受影响**（判定为 text ⇒ 这段不执行 ⇒ 产物逐字节不变）。
+    #   ★ 布局是**知识**（来自 RFC）⇒ 进中枢、可溯源、论文可引；
+    #     且落进 `headers` 桶 ⇒ 下游零改动。
+    try:
+        from core.kinds import detect_protocol_kind
+        _kind = detect_protocol_kind(protocol)
+    except Exception:                     # noqa: BLE001 —— 判定失败不阻断构建
+        _kind = None
+    if _kind is not None and _kind.is_binary:
+        from core.fused.rfc_extractor_binary import extract_binary_norms
+        for _bn in extract_binary_norms(protocol):
+            if _bn["norm_id"] in seen_protocol_level:
+                continue
+            seen_protocol_level.add(_bn["norm_id"])
+            norms.append(_bn)
     return norms
 
 

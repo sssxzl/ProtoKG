@@ -191,6 +191,26 @@
       "description": "方法级必填头 —— 「仅某方法的请求必带」的头（区别于 required_header_global 的「所有请求都必带」）"
     },
     {
+      "name": "binary_layout",
+      "value_type": "text",
+      "applicable_subject_types": [
+        "header"
+      ],
+      "resolution_semantics": "consensus",
+      "cardinality": "one",
+      "description": "二进制协议的**字段布局**（offset/length/order/encoding）—— 来自 RFC 的位域图或定长字段表；落进 headers 桶"
+    },
+    {
+      "name": "option_layout",
+      "value_type": "text",
+      "applicable_subject_types": [
+        "header"
+      ],
+      "resolution_semantics": "consensus",
+      "cardinality": "one",
+      "description": "二进制协议的**TLV 选项布局**（code/length/encoding）—— 来自 RFC 的选项表或独立小节；落进 headers 桶"
+    },
+    {
       "name": "response_expectation",
       "value_type": "struct",
       "applicable_subject_types": [

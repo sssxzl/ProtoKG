@@ -247,6 +247,43 @@ def field_value_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
         "normative_unspecified", norm)]
 
 
+def binary_layout_norm_to_fact(norm: dict[str, Any]) -> list[Fact]:
+    """rfc ``binary_layout`` norm → [binary_layout fact]（二进制**字段布局**）。
+
+    ★ 2026-11-07（B 二进制协议）：aspect 契约见
+      ``fused_hub/schema/aspect_registry.json``。
+      语义 = 该字段在报文里的**字节布局**（offset / length / order / encoding），
+      来自 RFC 的**位域图**或**定长字段表**。
+
+    ★ **落进 ``headers`` 桶** ⇒ 下游零改动（字段被 ``known_fields`` 认识
+      ⇒ 不会再被当「未知字段」丢进 argument —— 这正是实测踩过的坑）。
+    """
+    name = str(norm.get("name") or "").strip()
+    content = str(norm.get("content") or "").strip()
+    if not name or not content:
+        return []
+    subject = _qualified_subject("header", name, norm)
+    return [_make_fact(subject, "binary_layout",
+                       Value(type="text", data=content),
+                       "normative_unspecified", norm)]
+
+
+def option_layout_norm_to_fact(norm: dict[str, Any]) -> list[Fact]:
+    """rfc ``option_layout`` norm → [option_layout fact]（**TLV 选项**布局）。
+
+    ★ 2026-11-07（B 二进制协议）：语义 = 该选项的 TLV 布局
+      （code / length / encoding），来自 RFC 的选项表或「独立小节」形态。
+    """
+    name = str(norm.get("name") or "").strip()
+    content = str(norm.get("content") or "").strip()
+    if not name or not content:
+        return []
+    subject = _qualified_subject("header", name, norm)
+    return [_make_fact(subject, "option_layout",
+                       Value(type="text", data=content),
+                       "normative_unspecified", norm)]
+
+
 def outcome_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
     """rfc outcome norm → [definition fact]（when 条件暂存 evidence.quote）。"""
     meaning, condition = parse_outcome_content(norm.get("content", ""))
@@ -438,6 +475,9 @@ RFC_KIND_MAP = {
     "field": field_norm_to_facts,
     # ★ 批次 2.0（P0）：字段取值样本 → value_enum fact
     "field_value": field_value_norm_to_facts,
+    # ★ 2026-11-07：二进制协议的布局通道
+    "binary_layout": binary_layout_norm_to_fact,
+    "option_layout": option_layout_norm_to_fact,
     "outcome": outcome_norm_to_facts,
     "method": method_norm_to_facts,
     "constraint": constraint_norm_to_facts,
