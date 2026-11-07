@@ -356,8 +356,34 @@ def _has_migration_context(lines: list[str], name: str) -> bool:
     #   （实测 rtsp 附录 A.1 的 ``Init:`` 段落描述里只有
     #    "the client changes state on receipt of replies"，**不含 "Init"**）。
     #   ⇒ 判据：该名字所在**段落**（空行分隔）里出现 ``state`` 词。
+    #   ⚠ **收紧**（2026-11-08 实测）：段落级共现在 rtsp 上**太宽** ——
+    #     ``AUTHENTICATION``/``CONFERENCE``/``CONNECTION``/``ENTITY`` 全被放行
+    #     （实测 13 个「状态」里 11 个是误抽）。
+    #   ⇒ 加一道**同句**校验：名字必须与迁移语义**在同一句**里。
+    #     （rtsp 真状态：``in Playing state`` / ``state Recording is entered``）
     if _in_paragraph_with_state(lines, name):
         return True
+    return False
+
+
+def _same_sentence_migration(lines: list[str], name: str) -> bool:
+    """该名字是否与「迁移语义」出现在**同一句**里。
+
+    ★ 判据（协议无关）：句内同时含该名字与迁移动词/状态词。
+    ★ 实测：rtsp 的真状态（Playing/Recording/Ready）都在
+      「``in Playing state``」「``state Recording is entered``」这类**同句**里；
+      而 AUTHENTICATION/CONFERENCE 只在**段落级**与 state 共现。
+    """
+    re_name = re.compile(r"\b" + re.escape(name) + r"\b", re.IGNORECASE)
+    re_mig = re.compile(
+        r"\bstate[sd]?\b|\btransition(?:s|ed|ing)?\b|\bmove[sd]?\s+to\b|"
+        r"\brevert(?:s|ed)?\s+to\b|\benter(?:s|ed)?\b|\bleads?\s+to\b|"
+        r"\bproceed(?:s|ed)?\s+to\b|\bback\s+to\b|"
+        r"\breturn(?:s|ed)?\s+to\b|\bchanges?\s+state\b",
+        re.IGNORECASE)
+    for ln in lines:
+        if re_name.search(ln) and re_mig.search(ln):
+            return True
     return False
 
 

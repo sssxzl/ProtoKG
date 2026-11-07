@@ -129,14 +129,27 @@ def test_smtp_section_kind_resolves_field_subsection():
 # ===========================================================================
 
 def test_transition_candidates_locate_state_machine_sections():
-    """★ 状态机段落**候选定位**能命中（RTSP 附录 A、SIP §17）。"""
+    """★ 状态机段落**候选定位**能命中（RTSP 附录 A、SIP §17）。
+
+    ★ 2026-11-08（批次 3 / A1）：候选定位新增**实体共现**判据
+      （「消息名 + 迁移动词」同句共现），与旧的 ``state machine`` 字样判据**并集**。
+      ★ **断言变更**（实测驱动，非降标准）：
+        原断言「SMTP 没有状态机 ⇒ 不该有候选」的前提**被实测推翻** ——
+        RFC 3207 里确实有状态转换描述：
+          「After the client gives the STARTTLS command, the server responds with」
+          「After receiving a 220 response to a STARTTLS command, the client MUST」
+        ⇒ 旧判据（只认 "state machine" 字样）**漏掉了**这段。
+      ★ 改后的断言**保留原意图**（smtp 不该有大量候选），只是把「0 个」
+        放宽为「少量」—— 因为**候选定位扩大是本批次的预期行为**。
+    """
     rtsp = RX.extract_transition_candidates("rtsp")
     assert rtsp, "rtsp 没定位到状态机段落"
     assert any("rfc2326" in c["source"] for c in rtsp)
     sip = RX.extract_transition_candidates("sip")
     assert sip, "sip 没定位到状态机段落"
-    # SMTP 没有状态机 ⇒ 不该有候选
-    assert RX.extract_transition_candidates("smtp") == []
+    # ★ SMTP 的候选应**很少**（它的状态机只在 STARTTLS 扩展里 ⇒ 1~3 个）
+    smtp = RX.extract_transition_candidates("smtp")
+    assert len(smtp) <= 3, f"smtp 候选过多（{len(smtp)} 个）⇒ 判据过宽"
 
 
 def test_transition_candidates_are_merged_when_overlapping():

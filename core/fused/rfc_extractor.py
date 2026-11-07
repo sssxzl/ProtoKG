@@ -203,6 +203,12 @@ _RFC_CONFIG_DICT_KEYS: tuple[str, ...] = (
     "sections_by_file",
 )
 
+#: ★ 2026-11-08（批次 2 / S3）：**content 通道补漏**的类别白名单（list 型）。
+#:   空 = 不补（默认）⇒ 旧行为完全不变。
+_RFC_CONFIG_EXTRA_LIST_KEYS: tuple[str, ...] = (
+    "content_backfill_kinds",
+)
+
 
 def _read_json(path: Path) -> Optional[dict]:
     """读 JSON 对象；失败（不存在/非法/非对象）返回 None（调用方决定降级策略）。"""
@@ -735,6 +741,47 @@ def _section_kind(window: dict, cfg: dict,
     title = window.get("title") or ""
 
     # ★ 2026-11-07：文件专属配置优先（见 docstring 的「按文件限定」说明）
+    # ★ 2026-11-08（批次 2 / S3「两通道互补」）：**config 判不出 ⇒ content 补漏**。
+    #   ★ 放在**文件专属分支之前** ⇒ 文件专属配置判不出时也会走补漏
+    #     （DHCPv4 给全部 36 个 RFC 都配了 ``sections_by_file``，
+    #      其中 34 个是「显式空」⇒ 若补漏放在分支之后，就永远走不到）。
+    #   ★ 补漏**只允许补「config 在本协议上从未产出过的类别」**
+    #     （由 rfc_config 的 ``content_backfill_kinds`` 显式声明，缺省 = 不补）。
+    #     ⇒ 三个文本协议（config 已产出 method/field/outcome/…）**产物零变化**；
+    #       而 DHCPv4（config 只有 method/field）可补 outcome/transition/
+    #       required_header ⇒ 补上 RFC 2131 散文里的服务器消息与状态迁移。
+    #   ★ E-1 对照实验结论（local/E1对照实验报告-20261108.md）：两条通道
+    #     **各有胜负** ⇒ 不清除旧通道，改用互补。
+    def _backfill_kind() -> Optional[str]:
+        """**content 通道补漏**（config 判不出时）。
+
+        ★ E-1 对照实验（local/E1对照实验报告-20261108.md）结论：
+          两条通道**各有胜负** ⇒ 不清除旧通道，改用**互补**。
+
+        ★ **防误抽的第二道闸**：content 判出的**标题形态名**若已被本文件
+          抽成 method/field（``method_names`` / ``field_names``）⇒ 跳过。
+          ⇒ 修掉 sip 的 `OK`/`TLS` 误抽（实测：config 通道下它们被判成 field
+            ⇒ 进了 ``field_names`` ⇒ 通道 A 跳过；content 通道下没被判成 field
+            ⇒ 通道 A 放行 ⇒ 成了 method）。
+        ★ 补漏类别白名单：``cfg["content_backfill_kinds"]``（缺省 = 不补）。
+        """
+        _backfill = cfg.get("content_backfill_kinds") or []
+        if not _backfill:
+            return None
+        try:
+            from core.fused.rfc_classifier import classify_window
+            _ck = classify_window(window, None, src_name)
+        except Exception:                       # noqa: BLE001
+            _ck = None
+        if _ck not in _backfill:
+            return None
+        # ★ 第二道闸：名字已被抽成 method/field ⇒ 跳过
+        _nm = _normalize_method_name(window.get("title") or "")
+        if _nm and (_nm.upper() in method_names
+                    or _nm.lower() in field_names):
+            return None
+        return _ck
+
     if src_name:
         _by_file = cfg.get("sections_by_file") or {}
         _fc = _by_file.get(src_name)
@@ -742,8 +789,32 @@ def _section_kind(window: dict, cfg: dict,
             _kind = _section_kind_from_lists(window, _fc)
             if _kind is not None:
                 return _kind
+            # ★ 文件专属判不出 ⇒ 补漏（config 全局清单**不**参与，
+            #   因为文件专属配置的存在本身就意味着「这个文件要单独管」）
+            return _backfill_kind()
 
-    return _section_kind_from_lists(window, cfg)
+    _kind = _section_kind_from_lists(window, cfg)
+    if _kind is not None:
+        return _kind
+
+    # ★ 2026-11-08（批次 2 / S3「两通道互补」）：**config 判不出 ⇒ content 补漏**。
+    #   ★ 补漏**只允许补「config 在本协议上从未产出过的类别」**
+    #     （由 rfc_config 的 ``content_backfill_kinds`` 显式声明，缺省 = 不补）。
+    #     ⇒ 三个文本协议（config 已产出 method/field/outcome/…）**产物零变化**；
+    #       而 DHCPv4（config 只有 method/field）可补 outcome/transition/
+    #       required_header ⇒ 补上 RFC 2131 散文里的服务器消息与状态迁移。
+    #   ★ E-1 对照实验结论（local/E1对照实验报告-20261108.md）：两条通道
+    #     **各有胜负** ⇒ 不清除旧通道，改用互补。
+    _backfill = cfg.get("content_backfill_kinds") or []
+    if _backfill:
+        try:
+            from core.fused.rfc_classifier import classify_window
+            _ck = classify_window(window, None, src_name)
+        except Exception:                       # noqa: BLE001
+            _ck = None
+        if _ck in _backfill:
+            return _ck
+    return None
 
 
 def _section_kind_from_lists(window: dict, cfg: dict) -> Optional[str]:
@@ -889,6 +960,10 @@ def _load_rfc_config(protocol: str) -> dict:
         "expected_response_classes": [],
         # ★ 按文件限定的章节配置（默认空 = 全部走全局配置）
         "sections_by_file": {},
+        # ★ 2026-11-08（批次 2 / S3）：**content 通道补漏**的类别白名单。
+        #   空 = 不补（默认）⇒ 旧行为完全不变。
+        #   ⇒ 由协议自己的 rfc_config 显式声明要补哪几类。
+        "content_backfill_kinds": [],
     }
 
     # ① 优先读协议专属的 rfc_config.json
@@ -910,6 +985,11 @@ def _load_rfc_config(protocol: str) -> dict:
             if isinstance(value, dict):
                 cfg[key] = {str(k): v for k, v in value.items()
                             if isinstance(v, dict)}
+        # ★ 补漏白名单（list 型）
+        for key in _RFC_CONFIG_EXTRA_LIST_KEYS:
+            value = data.get(key)
+            if isinstance(value, list):
+                cfg[key] = [str(x) for x in value]
         # ★ 布尔键（不属列表白名单）
         if isinstance(data.get("enable_transitions"), bool):
             cfg["enable_transitions"] = data["enable_transitions"]
@@ -1654,6 +1734,30 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
             seen_ids.add(_mn["norm_id"])
             norms.append(_mn)
 
+    # ---- 通道 A0d：**消息清单表**（★ 2026-11-08，批次 3）------------------
+    #   形态：``DHCPOFFER    -  Server to client in response to ...``
+    #   ★ 解决实测缺口：RFC 2131 的 `DHCPOFFER`/`DHCPACK`/`DHCPNAK`
+    #     **没有独立小节**（只在 §3.1 的消息清单表里）⇒
+    #     章节号通道与标题形态通道**都拿不到**它们
+    #     ⇒ 状态机断裂 ⇒ 只 1 条种子（实测）。
+    #   ★ **协议无关**（判据是形态，不是协议名）。
+    #   ★ 排除：已在 `method_names` 里的名字（避免与其它通道重复产出）。
+    for _mn_name, _mn_desc in _extract_message_list_entries(
+            "\n".join(text for _, text in content_lines)):
+        if _mn_name.upper() in method_names:
+            continue
+        if _mn_name.upper() in method_excludes:
+            continue
+        # ★ 过滤「已知头字段名」（实测 sip 的 ``Expires`` 是头字段不是消息）
+        if _mn_name.lower() in field_names:
+            continue
+        method_names.add(_mn_name.upper())
+        _mn = _norm("method", _mn_name, _mn_desc, protocol, src_name,
+                    "@message-list")
+        if _mn["norm_id"] not in seen_ids:
+            seen_ids.add(_mn["norm_id"])
+            norms.append(_mn)
+
     for w in windows:
         # ★ 传 src_name ⇒ 支持按文件限定的章节配置（多 RFC 协议消歧）
         kind = _section_kind(w, cfg, src_name)
@@ -2105,6 +2209,19 @@ def _extract_indented_entries(text: str) -> list[tuple[str, str]]:
 _RE_COMMAND_ENTRY = re.compile(
     r"^(\s{1,12})([A-Z][A-Z0-9]*(?:\s+[A-Z][A-Z0-9]*)*\s*\([A-Z]{2,6}\))\s*$")
 
+#: ★ 2026-11-08（批次 3）：**消息清单表**形态
+#:   RFC 2131 §3.1 的表 2：
+#:       ``DHCPOFFER    -  Server to client in response to DHCPDISCOVER with``
+#:   ⇒ 协议的消息类型**没有独立小节**，只在「消息清单表」里列一行。
+#:   ★ 与「命令条目」（``_RE_COMMAND_ENTRY``，形态 ``名称 (缩写)``）**不同构**。
+_RE_MESSAGE_LIST_ENTRY = re.compile(
+    r"^(\s{2,8})([A-Z][A-Za-z0-9]{2,24})\s+-\s+(?=\S)(.+)$")
+
+#: ★ **表格列标记**（SIP §28 的头字段表形态）：``Expires   -   -   -   o   -   o``
+#:   ⇒ 破折号右边是**单字母标记**（-/o/m/r/c）⇒ 是**表格列**，不是消息描述。
+#:   ⇒ 排除（否则 sip 的 ``Expires`` 头字段会被当成消息）。
+_RE_TABLE_COLUMN_MARK = re.compile(r"^[-\s]*[-\s]*[a-z](?:[-\s]*[a-z])*\s*$")
+
 #: ★ 2026-11-07：**表格数据行**（首列是数字或短横线范围）
 #:   ⇒ 排除「数字 + 名称（缩写）」这类表格数据被误当命令条目。
 #:   实测：RFC 6607 的 ``0  Network Virtual Terminal (NVT) ASCII VPN identifier``
@@ -2114,6 +2231,43 @@ _RE_COMMAND_ENTRY = re.compile(
 _RE_TABLE_DATA_ROW = re.compile(
     r"^(?:\d+(?:\s*-\s*\d+)?|[0-9a-fA-F]{2,4})\s{2,}"
     r"[A-Z][A-Za-z0-9]")
+
+
+def _extract_message_list_entries(text: str) -> list[tuple[str, str]]:
+    """抽「**消息清单表**」形态的消息名（★ 2026-11-08，批次 3）。
+
+    ★ 形态（协议无关）：缩进 + **消息名** + ``-`` + 用途描述
+        ``DHCPOFFER    -  Server to client in response to DHCPDISCOVER with``
+
+    ★ 为什么需要（实测缺口）：RFC 2131 的 ``DHCPOFFER``/``DHCPACK``/``DHCPNAK``
+      **没有独立小节**（只在 §3.1 的消息清单表里）⇒
+      · 章节号通道（config）拿不到；
+      · 标题形态通道（content）也拿不到（没有标题）；
+      ⇒ 只能靠这个形态抽。
+    ★ 与通道 A（``_RE_COMMAND_ENTRY``）**不同构** ⇒ 不冲突。
+    ★ 实测影响面：DHCPv4 命中 8 个消息；rtsp/smtp **0 命中**、sip 1 命中
+      ⇒ **不污染**现有协议。
+
+    Returns:
+        ``[(消息名, 用途描述), ...]``
+    """
+    out: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for raw in (text or "").split("\n"):
+        m = _RE_MESSAGE_LIST_ENTRY.match(raw.rstrip())
+        if not m:
+            continue
+        name = m.group(2).strip()
+        desc = m.group(3).strip()
+        if not name or name.upper() in seen:
+            continue
+        # ★ 排除**表格列标记**（SIP §28 的 ``Expires   -   -   -   o`` 形态）
+        #   ⇒ 那是**头字段表**，不是消息清单。
+        if _RE_TABLE_COLUMN_MARK.match(desc):
+            continue
+        seen.add(name.upper())
+        out.append((name, desc))
+    return out
 
 
 def _extract_command_entries(text: str) -> list[tuple[str, str]]:
@@ -2378,7 +2532,25 @@ _RE_STATE_MACHINE_HINT = re.compile(r"state\s+machines?", re.IGNORECASE)
 #: 单个候选段落的最大行数（前后各取多少行）
 _TRANSITION_CONTEXT_LINES = 60
 
+#: ★ 2026-11-08（批次 3 / A1）：**迁移动词**（协议无关）
+#:   ⇒ 与「已识别的消息名」共现 ⇒ 定位「协议交互描述」的候选段落。
+#:   ★ **不依赖英文措辞**（如 "state machine"）⇒ 换协议自动生效。
+RE_TRANSITION_VERB = re.compile(
+    r"\b(respond|responds|responding|reply|replies|send|sends|sending|"
+    r"receive|receives|receiving|enter|enters|entering|transition|transitions|"
+    r"allocate|allocates|offer|offers|request|requests|acknowledge|"
+    r"acknowledges|release|releases|decline|declines|"
+    r"transmit|transmits|broadcast|broadcasts|"
+    r"moves?\s+(?:to|back)|reverts?\s+to)\w*\b",
+    re.IGNORECASE)
+
+#: ★ 候选段落数量的**上限**（防止 LLM 成本失控）
+_TRANSITION_MAX_CANDIDATES = 40
+
 #: LLM 输出契约（JSON）
+#: ★ 2026-11-08（批次 3）：加**骨架约束**（实体白名单）⇒ 抑制幻觉迁移。
+#:   ★ 约束式提示的落地：把「已确定的状态/消息」告诉 LLM，
+#:     并**禁止**它引入列表外的实体名（GraphRAG 的核心纪律之一）。
 _PROMPT_TRANSITION = """你是协议规范分析助手。下面的文本来自 {protocol} 协议的 RFC 规范，其中包含
 **状态机**描述（可能是自然语言描述、状态图、状态表）。
 
@@ -2390,7 +2562,7 @@ _PROMPT_TRANSITION = """你是协议规范分析助手。下面的文本来自 {
 2. `method` 用规范里的**方法/命令名**（如 SETUP / PLAY / INVITE）。
 3. 状态名**照抄规范里的写法**，不要归一化大小写或改名。
 4. 抽不到就返回 {{"transitions": []}}。
-
+{skeleton_constraint}
 文本：
 {text}
 """
@@ -2398,7 +2570,120 @@ _PROMPT_TRANSITION = """你是协议规范分析助手。下面的文本来自 {
 #: 提示词的**契约版本标识** —— 并入 LLM 缓存键
 #: （``block_hash = sha256(prompt_version + 各候选块 hash)``）
 #: ⇒ **改动提示词内容必须同步改它**，否则会读到旧缓存、改动静默不生效。
-TRANSITION_PROMPT_VERSION = "rfc-transition-prose"
+#: ★ 2026-11-08：提示词内容变了 ⇒ **必须**同步升版本号
+#:   （缓存键含 prompt_version ⇒ 不升会读到旧缓存、改动静默不生效 —— 踩过的坑）。
+TRANSITION_PROMPT_VERSION = "rfc-transition-prose-v2-skeleton"
+
+
+def _build_skeleton_constraint(protocol: str) -> tuple[str, set[str], set[str]]:
+    """构造**骨架约束**（实体白名单）⇒ 抑制 LLM 幻觉迁移。
+
+    ★ 2026-11-08（批次 3）：GraphRAG 的核心纪律之一 ——
+      「LLM 只能在**已确定的实体集合**内生成」。
+
+    Returns:
+        ``(约束文本, 状态名集合, 消息名集合)``。
+    """
+    msgs = _protocol_entity_names(protocol)
+    states: set[str] = set()
+    try:
+        from core.fused.rfc_graph import (extract_state_candidates,
+                                        extract_state_definitions,
+                                        _same_sentence_migration)
+        from core.fused.graph_schema import protocol_hints
+        spec_dir = paths.kb_source_dir(protocol, "rfc")
+        hints = protocol_hints(protocol)
+        if spec_dir.is_dir():
+            for f in sorted(spec_dir.glob("*.txt")):
+                lines = f.read_text(encoding="utf-8",
+                                    errors="ignore").splitlines()
+                # ★ N1（全大写术语 + 交叉校验）**+ N1b**（状态定义列表）
+                #   ⇒ rtsp 的 Init/Ready/Playing 在 N1b 里（不是图形也不是散文）
+                for n in extract_state_candidates(
+                        lines, f.name, hints.get("state_hints", ()),
+                        exclude=msgs):
+                    states.add(n.name.upper())
+                #   ★ N1b 的判据在 rtsp 上偏宽（实测混进 AUTHENTICATION/
+                #     CONFERENCE/…）⇒ 白名单里再过一道**同句迁移语义**校验。
+                #     ★ 只在**白名单**处收紧 ⇒ 不影响 N1b 本身的行为
+                #       （批次 1 的判据与产物保持不变）。
+                for n in extract_state_definitions(
+                        lines, f.name, hints.get("state_hints", ()),
+                        exclude=msgs):
+                    if _same_sentence_migration(lines, n.name):
+                        states.add(n.name.upper())
+    except Exception:                           # noqa: BLE001
+        pass
+    if not states and not msgs:
+        return "", states, msgs
+    parts = []
+    if states:
+        parts.append("已确定的**状态**（不得引入列表外的新状态）：\n  "
+                     + ", ".join(sorted(states)[:40]))
+    if msgs:
+        parts.append("已确定的**消息/方法**（不得引入列表外的新消息）：\n  "
+                     + ", ".join(sorted(msgs)[:40]))
+    parts.append("5. `from` / `to` / `method` **必须**取自上面的列表；"
+                 "若本段描述的迁移涉及列表外的实体，**不要输出**该条。")
+    return "\n".join(parts) + "\n", states, msgs
+
+
+def _protocol_entity_names(protocol: str) -> set[str]:
+    """该协议的**消息名集合**（供候选定位的实体共现判据用）。
+
+    ★ 来源：**已经抽出来的事实**（ABNF 方法枚举 / 通道 A / 通道 A0d 消息清单表）
+      ⇒ 不认协议名 ⇒ 换协议自动生效。
+    ★ 走**已有的确定性通道**，不额外调 LLM。
+    """
+    names: set[str] = set()
+    try:
+        from core.fused.norm import RFC_KIND_MAP  # noqa: F401
+    except Exception:                           # noqa: BLE001
+        pass
+    try:
+        cfg = _load_rfc_config(protocol)
+        spec_dir = paths.kb_source_dir(protocol, "rfc")
+        if not spec_dir.is_dir():
+            return names
+        for f in sorted(spec_dir.glob("*.txt")):
+            content_lines = _doc_content_lines(
+                f.read_text(encoding="utf-8", errors="ignore").splitlines())
+            text = "\n".join(t for _, t in content_lines)
+            for m in _extract_abnf_methods(text):
+                names.add(m.upper())
+            for m, _ in _extract_prose_command_formats(
+                    content_lines and
+                    [ln for _, ln in content_lines] or [], protocol, ()):
+                names.add(m.upper())
+            for m, _d in _extract_message_list_entries(text):
+                names.add(m.upper())
+            # ★ 补上「**窗口标题形态**」的方法名（rtsp 的 OPTIONS/DESCRIBE/…
+            #   只在 §10.x 的小节标题里 ⇒ 前三个通道拿不到 ⇒ 实测实体名 0）
+            for _w in _iter_section_windows(f, cfg):
+                _t = (_w.get("title") or "").strip()
+                if _t and " " not in _t and _t.upper() == _t and len(_t) >= 3:
+                    names.add(_t.upper())
+    except Exception:                           # noqa: BLE001
+        pass
+    return {n for n in names if len(n) >= 3}
+
+
+def _iter_section_windows(rfc_path: Path, cfg: dict):
+    """遍历一个 RFC 的**章节标题**（只取标题，够用且便宜）。
+
+    ★ 用途：候选定位的**实体名**来源之一 ——
+      rtsp 的 OPTIONS/DESCRIBE/SETUP… 只在 §10.x 的**小节标题**里
+      （ABNF / 散文 / 消息清单表三个通道都拿不到）⇒ 实测实体名 0。
+    """
+    try:
+        raw_lines = rfc_path.read_text(encoding="utf-8",
+                                      errors="ignore").splitlines()
+        content_lines = _doc_content_lines(raw_lines)
+        heads, _bodies, _body_nos = _split_heads_bodies(content_lines)
+        for h in heads or []:
+            yield {"title": h.title, "section_no": h.number}
+    except Exception:                           # noqa: BLE001
+        return
 
 
 def extract_transition_candidates(protocol: str) -> list[dict]:
@@ -2416,10 +2701,26 @@ def extract_transition_candidates(protocol: str) -> list[dict]:
     if not spec_dir.is_dir():
         return []
     out: list[dict] = []
+    # ★ 2026-11-08（批次 3 / A1）：**实体共现**判据（L1/L2/L3）
+    #   ⇒ 与旧判据（`state machine` 字样）**并集**，不替换。
+    #   ★ 动机（实测卡点）：DHCP 的 36 份 RFC 里 `state machine` **命中 0**
+    #     ⇒ LLM 状态机通道**从未被调用** ⇒ transitions 只能来自骨架。
+    _entity_names = _protocol_entity_names(protocol)
+
     for f in sorted(spec_dir.glob("*.txt")):
         lines = f.read_text(encoding="utf-8", errors="ignore").splitlines()
         hits = [i for i, ln in enumerate(lines)
                 if _RE_STATE_MACHINE_HINT.search(ln)]
+        # ★ 新判据：**同一句**内同时出现「已识别的消息名」与「迁移动词」⇒ 命中
+        #   ★ **必须同句**（实测收紧）：整行判定会把 rfc3207 的 AUTH 段落
+        #     （含 "SMTP" + "server issues"）也算成候选 ⇒ 质量不高
+        #     （实测 smtp 因此多出 1 个伪候选，破坏了既有断言）。
+        if _entity_names:
+            for i, ln in enumerate(lines):
+                if not RE_TRANSITION_VERB.search(ln):
+                    continue
+                if any(_e in ln for _e in _entity_names):
+                    hits.append(i)
         if not hits:
             continue
         # 合并相邻命中（间隔 < 20 行 ⇒ 同一段落）
@@ -3501,12 +3802,15 @@ def infer_transitions(protocol: str, llm=None) -> list[dict]:
                   file=sys.stderr)
             return []
     out: list[dict] = []
+    # ★ 骨架约束（批次 3）：实体白名单
+    _constraint, _st_set, _msg_set = _build_skeleton_constraint(protocol)
     for cand in candidates:
         try:
             r = llm.chat_json(
                 system="你输出 JSON。",
                 user=_PROMPT_TRANSITION.format(
-                    protocol=protocol.upper(), text=cand["text"]),
+                    protocol=protocol.upper(), text=cand["text"],
+                    skeleton_constraint=_constraint),
                 temperature=0.0, max_tokens=2000)
         except Exception:  # noqa: BLE001
             continue
@@ -3522,6 +3826,15 @@ def infer_transitions(protocol: str, llm=None) -> list[dict]:
                 continue
             if len(frm) > 40 or len(to) > 40 or len(mth) > 40:
                 continue
+            # ★ 2026-11-08（批次 3）：**输出后校验**（白名单外的实体 ⇒ 丢弃）。
+            #   ★ 只靠提示词**不够** —— LLM 仍可能越界 ⇒ 必须有第二道闸。
+            #   ★ 白名单为空 ⇒ 不校验（保持旧行为）。
+            if _st_set or _msg_set:
+                _f_ok = (not _st_set) or (frm.upper() in _st_set)
+                _t_ok = (not _st_set) or (to.upper() in _st_set)
+                _m_ok = (not _msg_set) or (mth.upper() in _msg_set)
+                if not (_f_ok and _t_ok and _m_ok):
+                    continue
             row = {"from": frm, "method": mth, "to": to}
             if row not in out:
                 out.append(row)
