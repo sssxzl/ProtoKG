@@ -107,40 +107,91 @@ _NON_REQUEST_FIELDS = {
 _ARGUMENT_FIELDS = {"argument", "arg", "operand", "param"}
 
 
-def _apply_instance_fields(msg_headers: dict, instance_fields, cseq: int) -> tuple[str, str]:
+def _apply_instance_fields(msg_headers: dict, instance_fields, cseq: int,
+                           known_fields: Optional[set] = None) -> tuple[str, str]:
     """把 AutoSeeder 字段级实例的字段值写入 header（跳过元/响应字段，CSeq 用递增）。
 
     返回 (url, argument)：
       - url      消息级 URL（URL 类协议，LLM 现场生成的会话语义结构）
       - argument 消息级命令参数（行命令协议，如 SMTP 的 FROM:<addr>），无则为空串
+
+    ``known_fields``：该协议**已知头部字段名**的小写集合（来自中枢 ``headers`` 桶）。
+
+      ★ 为什么需要它（2026-11-07 修复）：行命令类协议的实例里，**命令参数名**与
+        头部字段混在一起。旧实现只认 ``argument`` 等 4 个别名，其余字段名一律当
+        头部塞进报文 ⇒ 实测 SMTP 生成出
+
+            AUTH
+            mechanism: <值>          ← 非法：smtp 是命令协议，没有头部
+
+        而正确形态是 ``AUTH PLAIN``（命令 + 参数）。
+        ⇒ 现在用**中枢自己的字段知识**判断「这是不是头部」：不在 ``known_fields``
+          里的字段名不写头部；若 ``argument`` 尚空，就用它充当命令参数。
+        ★ 该判据**协议无关**：不认协议名、不列字段白名单，只问「中枢认不认识这个头」。
+          实测 rtsp 0 个、sip 1 个（``url``，已单独处理）未知字段 ⇒ 对它们零影响。
+      ★ ``known_fields is None``（调用方没给，或该协议 headers 桶为空）⇒ **保持旧行为**
+        （不做该判断），避免把真实头部误移进 argument。
     """
     url = ""
     argument = ""
+    _unknown_value = ""      # 未知字段的值 ⇒ 候选命令参数
     for name, value in (instance_fields or []):
         name = (name or "").strip()
-        if name.lower() == "url":
+        if not name:
+            continue
+        low = name.lower()
+        if low == "url":
             url = str(value) if value is not None else ""
             continue
-        if name.lower() in _ARGUMENT_FIELDS:
+        if low in _ARGUMENT_FIELDS:
             argument = str(value) if value is not None else ""
             continue
-        if not name or name.lower() in _NON_REQUEST_FIELDS:
+        if low in _NON_REQUEST_FIELDS:
             continue
-        if name.lower() == "cseq":
+        if low == "cseq":
             # CSeq 由 build_message 统一递增赋值（含 SIP 的「序号+方法」），
             # 实例里的 CSeq 序号是流量源原始值，会打乱递增序，这里跳过。
             continue
+        if known_fields is not None and low not in known_fields:
+            if value is not None and not _unknown_value:
+                _unknown_value = str(value)
+            continue
         msg_headers[name] = str(value) if value is not None else ""
+    if not argument:
+        argument = _unknown_value
     return url, argument
+
+
+def _instance_url_pool(message_instances: Optional[dict]) -> list[str]:
+    """实例里出现过的 URL 取值（**协议无关**：只认字段名 ``url``，不认协议）。
+
+    ★ 用途（2026-11-07 修复）：URL 类协议里，部分方法的实例不带 ``url``
+      （实测 sip 51 条实例只有 14 条带）⇒ 生成的报文缺 Request-URI ⇒ **非法报文**。
+      而 ``url_template`` 桶可能为空（当前就是空的），没有别的兜底来源。
+      ⇒ 用**同协议同批实例里已出现过的 url** 作为兜底（协议级迁移，不跨协议）。
+      对命令类协议（实例里根本没有 url 字段）⇒ 池为空 ⇒ 不兜底，行为不变。
+    """
+    out = set()
+    for fields in (message_instances or {}).values():
+        for n, v in (fields or []):
+            if str(n or "").strip().lower() == "url" and v:
+                out.add(str(v))
+    return sorted(out)
 
 
 def build_message(method: str, *, required_headers: Optional[dict],
                   headers: Optional[dict], cseq: int,
-                  instance_fields=None, cseq_with_method: bool = False) -> SeedMessage:
+                  instance_fields=None, cseq_with_method: bool = False,
+                  url_fallback: str = "",
+                  known_fields: Optional[set] = None) -> SeedMessage:
     """构造一条消息：填必填头 + 默认值，再用字段级实例覆盖；CSeq 用递增序号。
 
     cseq_with_method：SIP 等协议 CSeq 需「序号 + 方法」（如 ``CSeq: 1 REGISTER``），
     为 True 时 CSeq 渲染为 ``<cseq> <method>``；RTSP 等保持纯序号。
+
+    url_fallback：实例没给 URL 时的兜底值（见 `_instance_url_pool`）。
+      ★ 空串 ⇒ 不兜底（命令类协议本来就无 URL）。
+    known_fields：传给 `_apply_instance_fields` 的「已知头部字段集」，见其 docstring。
     """
     reqs = (required_headers or {}).get(method, []) or []
     msg_headers: dict = {}
@@ -149,7 +200,10 @@ def build_message(method: str, *, required_headers: Optional[dict],
             msg_headers[h] = f"{cseq} {method}" if cseq_with_method else str(cseq)
         else:
             msg_headers[h] = _default_header_value(h, headers)
-    url, argument = _apply_instance_fields(msg_headers, instance_fields, cseq)
+    url, argument = _apply_instance_fields(msg_headers, instance_fields, cseq,
+                                           known_fields=known_fields)
+    if not url and url_fallback:
+        url = url_fallback
     return SeedMessage(method=method, headers=msg_headers, body="",
                        url=url, argument=argument)
 
@@ -165,6 +219,11 @@ def build_seed_from_edges(edges: list, *, required_headers: Optional[dict],
     message_instances: {(from, method, to): [(field, value), ...]}，命中则用实例
     字段值填充消息（AutoSeeder 字段级实例），否则回退必填头 + 默认值。
     """
+    # ★ 2026-11-07：本批实例的「已知头部字段集」与「URL 兜底值」各算一次
+    #   （都在 build 前确定，逐报文复用 ⇒ 不改变确定性，也不引入协议特例）
+    _known = ({str(k).strip().lower() for k in headers} if headers else None)
+    _pool = _instance_url_pool(message_instances)
+    _url_fb = _pool[0] if _pool else ""
     messages: list = []
     states: list = [init]
     for i, (_src, method, dst) in enumerate(edges, start=1):
@@ -173,7 +232,9 @@ def build_seed_from_edges(edges: list, *, required_headers: Optional[dict],
         messages.append(build_message(method, required_headers=required_headers,
                                       headers=headers, cseq=i,
                                       instance_fields=inst,
-                                      cseq_with_method=cseq_with_method))
+                                      cseq_with_method=cseq_with_method,
+                                      url_fallback=_url_fb,
+                                      known_fields=_known))
         states.append(dst)
     return SeedCorpus(
         protocol=protocol,

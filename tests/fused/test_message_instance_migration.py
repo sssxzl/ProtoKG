@@ -70,15 +70,23 @@ def test_rtsp_strict_single_source_unchanged(bundles):
 
 
 def test_sip_and_smtp_unchanged(bundles):
-    """sip/smtp 的实例键本来就命中⇒ 两模式都必须与改动前一致。"""
-    for proto, expect in (("sip", 51), ("smtp", 64)):
-        for mode in ("default", "strict"):
-            b = bundles[(proto, mode)]
-            assert len(b["message_instances"]) == expect, (proto, mode)
-            # 全量 exact，一条迁移都不该出现
-            origins = {v["origin"] for v in
-                       b["message_instance_provenance"].values()}
-            assert origins == {"exact"}, (proto, mode, origins)
+    """sip/smtp 的实例键本来就命中 ⇒ **全源**模式必须与改动前一致。
+
+    ★ 2026-11-07 更新：`strict` 模式不再与全源相同 —— transitions 加了骨架闸
+      （剔除方法不在 methods 桶的边），实例跟着收缩（sip 51→21、smtp 64→50）。
+      这是预期的连带效果：实例键 ⊆ 转移键 这个不变量必须继续成立。
+    """
+    for proto, expect_default in (("sip", 51), ("smtp", 64)):
+        b = bundles[(proto, "default")]
+        assert len(b["message_instances"]) == expect_default, proto
+        origins = {v["origin"] for v in b["message_instance_provenance"].values()}
+        assert origins == {"exact"}, (proto, origins)
+
+        b_s = bundles[(proto, "strict")]
+        tr_s = {(str(a), str(m).upper(), str(c))
+                for a, m, c in b_s["transitions"]}
+        assert set(b_s["message_instances"]) <= tr_s, proto
+        assert len(b_s["message_instances"]) < expect_default, proto
 
 
 def test_instances_are_subset_of_transitions(bundles):

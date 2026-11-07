@@ -1495,6 +1495,28 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
     # 状态机漏建模（如 double_setup 的 SETUP 自环），注入后 generic_danger / 边界探针
     # 才能自然产「重复方法」的合法危险种子（对齐「接近但不触发」原则）。
     transitions = _inject_vuln_self_loops(transitions, vuln_patterns, set(methods))
+    # ★★ 2026-11-07（P0-1 补漏）：**transitions 也必须受「骨架闸」约束**。
+    #   原实现里 `include_skeleton_methods` 只挡
+    #   `_BUCKET_BY_KIND[("method","existence")]` 新建 `methods` 桶条目，
+    #   **管不到 transitions** —— 而种子是 transitions 驱动的 ⇒ 严格单源下
+    #   sip 仍有 8 个、smtp 仍有 4 个「methods 桶里没有」的方法在生成报文
+    #   （实测：sip 14→6 个方法、smtp 15→11）。
+    #
+    #   判据（**协议无关**）：转移里的方法必须出现在**最终 methods 桶**里。
+    #   桶本身已经是「按 allowed_methods 与本次源集合过滤后的方法集」，
+    #   所以这里不需要再引入任何协议名或方法白名单。
+    #   · rtsp 不受影响：它的 transitions 来自 rfc 且方法全在桶内；
+    #   · 一旦某协议的 methods 桶为空（极端情况），本闸不生效（避免全清空）。
+    _dropped_undefined: list = []
+    if not include_skeleton_methods and methods:
+        _defined_m = {str(m).strip().upper() for m in methods}
+        _dropped_undefined = sorted({
+            (str(t[0]), str(t[1]).strip().upper(), str(t[2]))
+            for t in transitions
+            if str(t[1]).strip().upper() not in _defined_m})
+        if _dropped_undefined:
+            transitions = [t for t in transitions
+                           if str(t[1]).strip().upper() in _defined_m]
     # ★ 2026-11-05：状态机换源后，字段级实例必须**同步对齐**到采用的那套转移
     #   （否则键命中不了 ⇒ `edge_cover` 取不到字段 ⇒ 消息字段值全空 ⇒
     #   字段级知识静默失效）。
@@ -1604,6 +1626,9 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
         "message_instances": message_instances,
         # ★ P1-1c（2026-11-06）：字段模板的**出处**（迁移来的标 profile）
         "message_instance_provenance": _mi_provenance,
+        # ★ 2026-11-07：严格单源下被「骨架闸」剔除的转移（方法不在 methods 桶）
+        #   ⇒ 审计可见，避免「纯净度提升」变成看不见的静默丢边
+        "transitions_dropped_undefined": _dropped_undefined,
         "available_sources": sorted(available_sources),  # P0
         "method_order": _derive_method_order(method_sequences),  # P2b 拓扑序
         # ★★ 批次 2.3：**各源的状态机全量**（按来源分组）—— 后期 LLM 判别的输入

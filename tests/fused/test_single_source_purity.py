@@ -132,16 +132,32 @@ def test_smtp_auth_comes_from_rfc_not_skeleton():
     assert "AUTH" in _assemble("smtp", strict=True)["methods"]
 
 
-def test_strict_single_source_does_not_touch_transitions():
-    """★ 修复只动 ``methods`` 桶 —— 状态机（transitions）必须逐条不变。
+def test_strict_single_source_gates_skeleton_only_transitions():
+    """★ 契约变更（2026-11-07）：严格单源**必须**剔除「方法不在 methods 桶」的转移。
 
-    否则就是「修一个洞开另一个洞」：P0-1 只负责方法集纯净度，
-    状态机的换源是另一条已收口的线（rtsp rfc 优先、sip/smtp 骨架兜底）。
+    旧契约是「P0-1 只动 `methods` 桶，transitions 逐条不变」。实测证明那是**漏洞**：
+    种子是 transitions 驱动的，只清桶不清边 ⇒ 严格单源下 sip 仍有 8 个、smtp 仍有
+    4 个 RFC 未定义的方法在生成报文（INFO/MESSAGE/NOTIFY/… 与 BDAT/ETRN/HELO/STARTTLS）。
+
+    新契约（协议无关）：`strict=True` 时 transitions 的方法集 ⊆ methods 桶；
+    被剔除的边记入 `transitions_dropped_undefined`（审计可见，不静默丢边）。
     """
     for p in PROTOCOLS:
-        loose = [tuple(t) for t in _assemble(p, strict=False)["transitions"]]
-        strict = [tuple(t) for t in _assemble(p, strict=True)["transitions"]]
-        assert loose == strict, f"[{p}] 严格单源不应改变状态机"
+        loose = _assemble(p, strict=False)
+        strict = _assemble(p, strict=True)
+        # ① 全源路径一条都不许动（默认路径零影响）
+        assert loose["transitions_dropped_undefined"] == [], p
+        # ② 严格单源：方法集必须落在桶内
+        tm = {str(t[1]).strip().upper() for t in strict["transitions"]}
+        mm = {str(m).strip().upper() for m in strict["methods"]}
+        assert tm <= mm, f"[{p}] 仍有桶外方法：{sorted(tm - mm)}"
+        # ③ 剔除的边必须留痕，且确实是因为「方法不在桶里」
+        for _s, _m, _d in strict["transitions_dropped_undefined"]:
+            assert str(_m).upper() not in mm, (p, _m)
+        # ④ 严格单源是子集关系（只删不加）
+        assert {(str(a), str(b).upper(), str(c))
+                for a, b, c in strict["transitions"]} <= {
+            (str(a), str(b).upper(), str(c)) for a, b, c in loose["transitions"]}, p
 
 
 # ===========================================================================
