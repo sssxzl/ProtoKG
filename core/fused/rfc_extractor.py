@@ -82,7 +82,11 @@ _RE_DATA_ROW = re.compile(r"^[0-9a-fA-F]{2,}(?:\s+[0-9a-fA-F]{2,})*$")
 _GENERIC_SECTION_WORDS = {
     "INTRODUCTION", "OVERVIEW", "TERMINOLOGY", "REQUIREMENTS", "PURPOSE",
     "CONVENTIONS", "NOTATION", "DEFINITIONS", "GLOSSARY", "HISTORY",
-    "SECURITY", "CONSIDERATIONS", "EXAMPLES", "SYNTAX", "MODEL", "USAGE",
+    # ★ 2026-11-07：移出 "SECURITY" —— 它虽是 RFC 通用章节名（Security
+    #   Considerations），但**某些协议确实有 Security 头**（如 HTTP/RTSP 的
+    #   认证头命名）⇒ 留在表里有误伤风险。章节名的过滤交给下面的
+    #   "CONSIDERATIONS" 等更专的词。
+    "CONSIDERATIONS", "EXAMPLES", "SYNTAX", "MODEL", "USAGE",
     "PARAMETERS", "PROPERTIES", "OPERATION", "REFERENCES",
     "ACKNOWLEDGEMENTS", "ACKNOWLEDGMENTS", "CONTENTS", "ABSTRACT",
     "COPYRIGHT", "AUTHORS", "PIPELINING", "STATUS",
@@ -93,6 +97,25 @@ _GENERIC_SECTION_WORDS = {
     "TRANSFER PARAMETER COMMANDS", "FTP SERVICE COMMANDS",
     "MESSAGES", "MESSAGE FORMATS", "COMMAND SYNTAX",
     "BACKGROUND",   # SMTP RFC5321 §2.2.1 的历史背景小节名（非协议字段）
+    # ★ 2026-11-07：**通用元词**（不是任何协议的字段名）——
+    #   实测 DHCPv4 的 headers 桶里混进了这些**章节标题**：
+    #   Authentication / Message / Options / Type / Length / Value / DHCP / DHCPv4
+    #   ⇒ 它们是「元信息词」而非协议字段 ⇒ 抽出即污染取值池。
+    #   ★ 协议无关（不认协议名、不认具体头名），只收「在 RFC 里专表元信息」的词。
+    #   ⚠ **只收「几乎不可能是协议字段」的词** —— 实测踩坑：
+    #     加了 OPTIONS / SERVER ⇒ **误伤 RTSP 的真字段**
+    #     （``rtsp.field.server`` = RTSP 的 Server 头、``rtsp.method.options``
+    #     = OPTIONS 方法）⇒ 头字段与方法**双双丢失**。
+    #   ⇒ 判据：这个词若是**某协议的合法头名/方法名**，就不能进停用词表。
+    "AUTHENTICATION", "MESSAGE", "MESSAGES",
+    "TYPE", "LENGTH", "VALUE", "VALUES", "NAME", "NAMES",
+    "PROTOCOL", "VERSION", "HEADER", "HEADERS", "FIELD", "FIELDS",
+    "FORMAT", "FORMATS", "ENCODING", "ERROR", "ERRORS",
+    "RESPONSES", "RELAY",
+    "BOOTREQUEST", "BOOTREPLY", "SPECIFICATION", "IMPLEMENTATION",
+    "INTERFACE", "CONFIGURATION", "PARAMETER", "PARAMETERS",
+    "ACKNOWLEDGMENT", "ACKNOWLEDGMENTS", "PRIVACY",
+    "IANA", "REGISTRY", "ASSIGNMENT", "NUMBERS",
 }
 
 #: **方法名**里必须排除的「关键字原子」（**协议无关**）：RFC 关键字
@@ -168,6 +191,16 @@ _RFC_CONFIG_LIST_KEYS: tuple[str, ...] = (
     "method_excludes",
     "numeric_bounds",
     "expected_response_classes",
+)
+
+#: ★ 2026-11-07：**按文件限定**的章节配置（dict 型，单独处理）。
+#:   一个协议有多份 RFC 时章节号**大面积重号**（每份都有 §1–§8，语义各异）
+#:   ⇒ 全局的 ``*_sections`` 会把别的 RFC 的同名章节也判成同类
+#:   （实测 DHCPv4 的方法集混入 ``NVT`` —— 来自 rfc6607 的 §4.3）。
+#:   形如：``{"rfc2131.txt": {"method_sections": ["4.3"], ...}}``
+#:   ⇒ 命中该文件时用**文件专属配置**，否则回退全局配置。
+_RFC_CONFIG_DICT_KEYS: tuple[str, ...] = (
+    "sections_by_file",
 )
 
 
@@ -372,6 +405,12 @@ def _parse_heading_shape(line: str, line_no: int = 0) -> Optional[SectionHead]:
     # ③ 一级标题：N. Title / N Title
     #    排除「行首数字 + 空格 + 普通句子」——RFC 正文里常有 `1 概述` 这类
     #    列表项。用「标题长度受限 + 无句末标点」降低误判。
+    #    ★ **不在此处排除表格数据行**（实测踩坑）：折行的**目录条目**
+    #      （``26         Security Considerations: Threat Model and Security``）
+    #      形态上与表格数据行同构 ⇒ 在此排除会破坏「目录块兜底」机制
+    #      （目录条目靠 `_toc_block_ranges` 在别处隔离，见 test_p1_fixes）。
+    #      ⇒ 表格数据行的排除改在**窗口层**做（见 `_section_kind_from_lists`
+    #        之前的 `number == "0"` 特判）。
     #    ★ 再加「标题内不含句号」：RFC 编号列表项（`8. The registrar returns
     #      a 200 (OK) response.  The response MUST ...`）是**完整句子**、
     #      中间含句号，被误判成一级标题后，「(OK)」括号内全大写缩写又被
@@ -651,8 +690,18 @@ _KIND_TIE_PRIORITY: dict[str, int] = {
 }
 
 
-def _section_kind(window: dict, cfg: dict) -> Optional[str]:
+def _section_kind(window: dict, cfg: dict,
+                  src_name: Optional[str] = None) -> Optional[str]:
     """按 rfc_config 判定窗口类型（评审 T7：语义判定替代形态猜测）。
+
+    ★ 2026-11-07：支持**按文件限定**的章节配置（``sections_by_file``）——
+      一个协议有多份 RFC 时，**章节号会大面积重号**（每份都有 §1–§8，语义各异）
+      ⇒ 全局的 ``*_sections`` 会把别的 RFC 的同名章节也判成同类
+      （实测 DHCPv4 的方法集混入 ``NVT`` —— 来自 rfc6607 的 §4.3）。
+      ⇒ ``sections_by_file`` 形如：
+          ``{"rfc2131.txt": {"method_sections": ["4.3"],
+                             "field_sections": [...]}}``
+      ⇒ 命中该文件时**用文件专属配置**，否则回退全局配置。
 
     查 cfg 的 method_sections / field_sections / status_sections /
     transition_sections，按**最长前缀**匹配（更具体的子节优先）。
@@ -685,6 +734,39 @@ def _section_kind(window: dict, cfg: dict) -> Optional[str]:
     number = window.get("section_no") or ""
     title = window.get("title") or ""
 
+    # ★ 2026-11-07：文件专属配置优先（见 docstring 的「按文件限定」说明）
+    if src_name:
+        _by_file = cfg.get("sections_by_file") or {}
+        _fc = _by_file.get(src_name)
+        if isinstance(_fc, dict):
+            _kind = _section_kind_from_lists(window, _fc)
+            if _kind is not None:
+                return _kind
+
+    return _section_kind_from_lists(window, cfg)
+
+
+def _section_kind_from_lists(window: dict, cfg: dict) -> Optional[str]:
+    """按「章节号 × 各类清单」判定窗口类型（**判定核心**）。
+
+    ★ 与 :func:`_section_kind` 的关系：后者是入口（先查文件专属配置），
+      本函数是**判定核心**（全局配置与文件专属配置**共用**同一套逻辑）
+      ⇒ 避免两份判据分裂（踩过的坑：norm 侧与候选侧判据不一致 ⇒ 污染）。
+    """
+    number = window.get("section_no") or ""
+    title = window.get("title") or ""
+
+    # ★ 2026-11-07：**表格数据行**排除（章节号为 ``0`` 时）。
+    #   RFC 的表格数据行（``0  Network Virtual Terminal (NVT) ...``）会被
+    #   `_RE_TOP_HEADING` 判成一级标题（number='0'）⇒ 整段被当「方法章」
+    #   ⇒ 抽出误抽的方法（实测 RFC 6607 的 VSS 表 ⇒ ``NVT``）。
+    #   ★ **只在此处排除、且只判 ``number == "0"``**：
+    #     · 不放在 `_parse_heading` 里 ⇒ 不破坏「目录块兜底」机制
+    #       （折行目录条目形态同构，实测踩过：会误伤 SIP 的目录条目）；
+    #     · 只判 "0" ⇒ 真章节号（``26``、``4.3``）**不受影响**。
+    if number == "0":
+        return None
+
     # 状态码：标题形如「100 Trying」
     if re.match(r"^\d{3}\s", title):
         return "status"
@@ -696,7 +778,7 @@ def _section_kind(window: dict, cfg: dict) -> Optional[str]:
             if number == sec or number.startswith(sec + "."):
                 if best is None or len(sec) > len(best):
                     best = sec
-        return best
+        return best          # ★ 必须返回 best（重构时误写成 None ⇒ 判定恒失效）
 
     # ★ 跨类别收集候选，按 (前缀长度, 破平局优先级) 取最大
     _cands: list[tuple[int, int, str]] = []
@@ -737,6 +819,15 @@ def _infer_kind_from_content(window: dict) -> Optional[str]:
       FTP 的多个章节正文含语法示例 → 判定大面积漂移（method 32 → 6）。
       **正文里出现语法块是常态，不是方法特征。**
     """
+    # ★ 2026-11-07：**表格数据行**排除（章节号为 ``0``）。
+    #   RFC 的表格数据行（``0  Network Virtual Terminal (NVT) ...``）的标题里
+    #   含 ``(NVT)`` ⇒ 命中下面的「括号全大写缩写」启发式 ⇒ 被判成 method
+    #   ⇒ 抽出误抽的方法（实测 RFC 6607 的 VSS 表 ⇒ ``NVT``）。
+    #   ★ 判据：章节号为 ``"0"`` ⇒ 是**表格行的首列**（真章节号不会从 0 起）。
+    #     ★ **不能**放在 `_parse_heading` 里（会破坏「目录块兜底」机制 ——
+    #       折行目录条目形态同构，实测会误伤 SIP 的目录条目）。
+    if (window.get("section_no") or "") == "0":
+        return None
     title = (window.get("title") or "").strip()
     # 带括号的命令（括号内是全大写缩写）—— 强特征
     m = _RE_HAS_PAREN.search(title)
@@ -796,6 +887,8 @@ def _load_rfc_config(protocol: str) -> dict:
         "method_excludes": [],
         "numeric_bounds": [],
         "expected_response_classes": [],
+        # ★ 按文件限定的章节配置（默认空 = 全部走全局配置）
+        "sections_by_file": {},
     }
 
     # ① 优先读协议专属的 rfc_config.json
@@ -811,6 +904,12 @@ def _load_rfc_config(protocol: str) -> dict:
             value = data.get(key)
             if isinstance(value, list):
                 cfg[key] = [str(x) for x in value]
+        # ★ dict 型键（按文件限定的章节配置）
+        for key in _RFC_CONFIG_DICT_KEYS:
+            value = data.get(key)
+            if isinstance(value, dict):
+                cfg[key] = {str(k): v for k, v in value.items()
+                            if isinstance(v, dict)}
         # ★ 布尔键（不属列表白名单）
         if isinstance(data.get("enable_transitions"), bool):
             cfg["enable_transitions"] = data["enable_transitions"]
@@ -1483,6 +1582,23 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
         """加入一条 field norm（同文件内按 norm_id 去重）。"""
         if not name or name.upper() in _GENERIC_SECTION_WORDS:
             return
+        # ★ 2026-11-07：排除**协议自身名**（含版本后缀形态）。
+        #   实测：RFC 3396 §2 Terminology 的缩进术语条目
+        #       ``   DHCP``（正文「the acronym "DHCP" is used to refer to…」）
+        #   ⇒ 被缩进字段通道当成字段 ``DHCP`` / ``DHCPv4``（协议自身名不是字段）。
+        #   ★ 判据**协议无关**：拿协议名本身 + 「协议名+数字」的版本形态比对。
+        if protocol:
+            _pn = protocol.lower()
+            _nl = name.lower()
+            # 协议名的**词干**形态也要排除（协议名 `dhcpv4` ⇒ 词干 `dhcp`
+            #   ⇒ 排除字段 `DHCP`；RFC 里常有「协议缩写」单独作术语条目）。
+            _stem = re.sub(r"[\-_]?v?\d+.*$", "", _pn) or _pn
+            for _form in {_pn, _stem}:
+                if not _form:
+                    continue
+                if _nl == _form or (_nl.startswith(_form)
+                                    and _nl[len(_form):].isdigit()):
+                    return
         # ★ 排除英语停用词（become/not/or 等正文虚词被缩进条目识别误抽）。
         #   ⚠ 只对**全小写**单词生效：From/To/Via 等大写开头的协议字段名
         #   （PascalCase 形态）**不得**被停用词过滤 —— 停用词是「全小写
@@ -1539,7 +1655,8 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
             norms.append(_mn)
 
     for w in windows:
-        kind = _section_kind(w, cfg)
+        # ★ 传 src_name ⇒ 支持按文件限定的章节配置（多 RFC 协议消歧）
+        kind = _section_kind(w, cfg, src_name)
         if kind is None:
             kind = _infer_kind_from_content(w)
 
@@ -1978,6 +2095,16 @@ def _extract_indented_entries(text: str) -> list[tuple[str, str]]:
 _RE_COMMAND_ENTRY = re.compile(
     r"^(\s{1,12})([A-Z][A-Z0-9]*(?:\s+[A-Z][A-Z0-9]*)*\s*\([A-Z]{2,6}\))\s*$")
 
+#: ★ 2026-11-07：**表格数据行**（首列是数字或短横线范围）
+#:   ⇒ 排除「数字 + 名称（缩写）」这类表格数据被误当命令条目。
+#:   实测：RFC 6607 的 ``0  Network Virtual Terminal (NVT) ASCII VPN identifier``
+#:   ⇒ 曾被误抽成方法 ``NVT``。
+#:   ★ 注意：``_parse_heading`` 会先 ``strip()`` ⇒ 行首缩进**不可依赖**；
+#:   核心判据是「**编号 + 2+ 空格 + 名称**」（真标题用单空格）。
+_RE_TABLE_DATA_ROW = re.compile(
+    r"^(?:\d+(?:\s*-\s*\d+)?|[0-9a-fA-F]{2,4})\s{2,}"
+    r"[A-Z][A-Za-z0-9]")
+
 
 def _extract_command_entries(text: str) -> list[tuple[str, str]]:
     """从一段文本里抽取「命令条目」→ [(条目名, 定义正文), ...]（A1.5）。
@@ -2004,6 +2131,15 @@ def _extract_command_entries(text: str) -> list[tuple[str, str]]:
         name = m.group(2)
         # ③ 本身是章节标题 → 跳过
         if _parse_heading(raw[i].strip(), 0) is not None:
+            i += 1
+            continue
+        # ★ 2026-11-07：**表格数据行**排除 —— 首列是**数字/短横线**的
+        #   「名称（缩写）」行是**表格数据**，不是命令条目。
+        #   实测：RFC 6607 的 VSS 表
+        #       ``0       Network Virtual Terminal (NVT) ASCII VPN identifier``
+        #   ⇒ 被误抽成方法 ``NVT``（与 DHCP 消息类型无关）。
+        #   判据：**名称前有数字列**（形如 ``<数字>  <名称>``）⇒ 表格行。
+        if _RE_TABLE_DATA_ROW.match(raw[i]):
             i += 1
             continue
         j = i + 1

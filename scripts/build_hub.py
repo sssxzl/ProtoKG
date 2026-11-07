@@ -1326,7 +1326,14 @@ def main(argv=None) -> int:
     protocol = args.protocol
 
     # ---- 单协议语义：校验协议存在 ----
-    known = {p.name for p in paths.kb_root().iterdir() if p.is_dir()}
+    # ★ 2026-11-07 修正：**两侧都要折叠大小写**。
+    #   改前：``known = {p.name ...}``（不折叠）vs ``protocol.lower() not in known``
+    #   ⇒ 目录名**含大写字母**的协议（如 ``DHCPv4``）**双向都过不了**：
+    #       'DHCPv4'.lower() = 'dhcpv4' ∉ {DHCPv4, rtsp, sip, smtp}
+    #       'dhcpv4'.lower() = 'dhcpv4' ∉ {DHCPv4, ...}     （同样不过）
+    #   ⇒ 而 `paths.kb_source_dir()` 用 `protocol.lower()` 且 Windows 路径
+    #     **不区分大小写** ⇒ 实际能读到文件，只是被这道字符串校验拦住。
+    known = {p.name.lower() for p in paths.kb_root().iterdir() if p.is_dir()}
     if protocol.lower() not in known:
         print(f"[错误] 协议 {protocol!r} 不在 kb/ 下（可用: "
               f"{', '.join(sorted(known))}）", file=sys.stderr)

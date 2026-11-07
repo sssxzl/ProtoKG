@@ -1,38 +1,8 @@
 {
   "protocol": "dhcpv4",
   "spec_version": "RFC 2131 / RFC 2132 / RFC 951 等 36 份",
-  "method_sections": [
-    "4.3"
-  ],
-  "field_sections": [
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "11",
-    "12",
-    "13",
-    "14",
-    "15",
-    "16",
-    "17",
-    "18",
-    "19",
-    "20",
-    "21",
-    "22",
-    "23",
-    "24",
-    "25",
-    "26",
-    "27",
-    "28"
-  ],
+  "method_sections": [],
+  "field_sections": [],
   "status_sections": [],
   "enable_transitions": true,
   "enable_required_headers": false,
@@ -41,5 +11,256 @@
   "numeric_bounds": [],
   "expected_response_classes": [],
   "_source": "章节号实测自 kb/dhcpv4/spec/ 的 RFC 正文标题。★ 本协议有 **36 份 RFC**，章节号**大面积重号**（每份都有 §1–§8，语义各不相同）⇒ `*_sections` 是**全局**的、**不分文件** ⇒ 一旦声明某章节号，所有 RFC 的同名章节都会被判成同类。",
-  "_notes": "★ 2026-11-07 首轮接入（DHCPv4，全流程测试）：\n  ① DHCP 是 **UDP 二进制协议**（BOOTP 固定 236 字节 + magic cookie + 选项 TLV）\n     ⇒ 与现有三协议（rtsp/sip/smtp 全是**文本**）根本不同；\n     `raw_writers` **没有 DHCP 派发** ⇒ 落盘走「其他」分支（文本 key=value）\n     ⇒ **生成的 .raw 不会是真正的 DHCP 报文**（已知缺口，见报告）。\n  ② `method_sections=[\"4.3\"]` 命中 RFC 2131 §4.3.x 的**消息类型**；\n     ⚠ 但 36 份 RFC 里 §4.3 也出现在别的文件（如 rfc3679）⇒ 可能误抽。\n  ③ RFC 2132 的选项是「小节标题 + ASCII 图」形态，**无 ABNF**\n     ⇒ 现有 ABNF 通道抽不到（实测全协议 0 个 ABNF 字段）。\n  ④ `enable_required_headers=false` —— DHCP 是二进制，「必填头」概念不适用。"
+  "_notes": "★ 2026-11-07 首轮接入（DHCPv4，全流程测试）：\n  ① DHCP 是 **UDP 二进制协议**（BOOTP 固定 236 字节 + magic cookie + 选项 TLV）\n     ⇒ 与现有三协议（rtsp/sip/smtp 全是**文本**）根本不同；\n     `raw_writers` **没有 DHCP 派发** ⇒ 落盘走「其他」分支（文本 key=value）\n     ⇒ **生成的 .raw 不会是真正的 DHCP 报文**（已知缺口，见报告）。\n  ② `method_sections=[\"4.3\"]` 命中 RFC 2131 §4.3.x 的**消息类型**；\n     ⚠ 但 36 份 RFC 里 §4.3 也出现在别的文件（如 rfc3679）⇒ 可能误抽。\n  ③ RFC 2132 的选项是「小节标题 + ASCII 图」形态，**无 ABNF**\n     ⇒ 现有 ABNF 通道抽不到（实测全协议 0 个 ABNF 字段）。\n  ④ `enable_required_headers=false` —— DHCP 是二进制，「必填头」概念不适用。\n★ 2026-11-07：新增 `sections_by_file`（按文件限定章节）——多 RFC 协议章节号大面积重号（36 份 DHCP RFC 每份都有 §1–§8）⇒ 全局 `method_sections=[\"4.3\"]` 会命中 rfc6607 的 §4.3 ⇒ 抽出误抽的 `NVT`。⇒ 限定到 rfc2131.txt（DHCP 主体）后消除。\n★ 全局 `method_sections`/`field_sections` 已置**空**：36 份 RFC 章节号全部重号 ⇒ 全局配置必然误伤（实测 rfc6607 §4.3 ⇒ NVT）。⇒ 章节知识全部下沉到 `sections_by_file`（按文件限定）。",
+  "sections_by_file": {
+    "rfc2131.txt": {
+      "method_sections": [
+        "4.3"
+      ],
+      "field_sections": [
+        "4.1",
+        "4.3"
+      ],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc2132.txt": {
+      "field_sections": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28"
+      ],
+      "method_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc1534.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc1542.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc2563.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc2937.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc2939.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3004.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3011.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3046.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3074.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3118.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3203.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3256.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3361.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3396.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3442.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3456.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3495.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3679.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc3925.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc4361.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc4702.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc4776.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc4833.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc5010.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc6607.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc6704.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc6842.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc8357.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc8910.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc8925.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc9445.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc9463.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc951.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    },
+    "rfc9928.txt": {
+      "method_sections": [],
+      "field_sections": [],
+      "status_sections": [],
+      "transition_sections": []
+    }
+  }
 }
