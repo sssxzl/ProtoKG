@@ -12,11 +12,15 @@
 """
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Optional
 
 from core.models import SeedCorpus, SeedMessage
 from core.fused.vuln_pattern import BoundaryParam, _ACTION_BOUNDARY
+from core.fused.downstream.protocol_flags import cseq_with_method
+
+log = logging.getLogger("protorag.boundary_probe")
 
 
 def derive_boundary_param(req) -> Optional[BoundaryParam]:
@@ -658,20 +662,34 @@ def _constraint_messages(bundle: dict, field: str, protocol: str,
     entry = _constraint_entry_method(bundle, protocol)
     url_base = _url_base(protocol)
     url = f"{url_base}/{stream}" if stream else url_base
-    if not required and not bundle.get("methods"):
-        # 兜底：历史行为（RTSP DESCRIBE）
-        legal_msgs = [_describe_msg(stream, 1, url_base)]
-        illegal_msgs = [_msg(entry, url, {"CSeq": "1", "Accept": "application/sdp",
-                                         field: "A" * 300})]
-        return legal_msgs, illegal_msgs
+    if (not required and not bundle.get("methods")
+            and not (bundle.get("legal_boundary") or {})
+            and not (bundle.get("response_expectation") or {})):
+        # ★ 2026-11-07（A3）：**不再兜底成 RTSP DESCRIBE**。
+        #   旧实现在中枢为空时（首次接入新协议、或 RFC 抽取未覆盖）生成
+        #   「假 RTSP 报文」—— 那正是 `core/raw_writers.py` 早已修掉的同类污染
+        #   （其注释原话：「不再 fallback _rtsp_to_raw, 避免假 RTSP 风格污染
+        #   陌生协议」），但这里漏了。
+        #   ⇒ 改为**返空 + warning**：宁可不产出，也不产出错误协议的报文。
+        #   ★ 与 raw_writers 的四层降级口径一致（最后一层 = 拒绝生成）。
+        #   ★ 判据边界：只有**连约束知识都没有**（无 required_headers / methods /
+        #     legal_boundary / response_expectation）才走这里 ——
+        #     「有 legal_boundary 但没有必填头」是正常情形（约束候选仍要产出），
+        #     不能被误伤。
+        log.warning(
+            "[boundary_probe] %s 中枢无 required_headers/methods ⇒ "
+            "**不产出边界候选**（不兜底成 RTSP 形态，避免污染陌生协议）",
+            protocol,
+        )
+        return [], []
     from core.fused.downstream.edge_cover import build_message
     legal_msg = build_message(
         entry, required_headers=required, headers=hdr_bucket, cseq=1,
-        cseq_with_method=(protocol == "sip"))
+        cseq_with_method=cseq_with_method(protocol))
     legal_msg.url = url
     illegal_msg = build_message(
         entry, required_headers=required, headers=hdr_bucket, cseq=1,
-        cseq_with_method=(protocol == "sip"))
+        cseq_with_method=cseq_with_method(protocol))
     illegal_msg.url = url
     # 非法候选：字段用超长值（违反长度约束的通用方式）
     illegal_msg.headers[field] = "A" * 300

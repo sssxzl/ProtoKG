@@ -276,7 +276,8 @@
       "REGISTER": "{server}",
       "SUBSCRIBE": "{user}@{server}",
       "UPDATE": "{user}@{server}"
-    }
+    },
+    "cseq_with_method": true
   },
   "knowledge_channels": {
     "seedgen.precondition": {

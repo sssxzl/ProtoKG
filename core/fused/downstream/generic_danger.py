@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from collections import deque
 
+from .protocol_flags import cseq_with_method
 from .edge_cover import (
     _detect_init,
     _normalize_transitions,
@@ -85,7 +86,7 @@ def _self_loop_seeds(trans: list, adj: dict, headers, required_headers, init: st
         seeds.append(build_seed_from_edges(
             edges, required_headers=required_headers, headers=headers, init=init,
             message_instances=message_instances, protocol=protocol,
-            cseq_with_method=(protocol == "sip"),
+            cseq_with_method=cseq_with_method(protocol),
             description="generic-danger self-loop repeat %s at %s" % (method, src),
             generated_by=_GENERIC_DANGER_TAG,
         ))
@@ -111,7 +112,7 @@ def _lifecycle_seeds(trans: list, adj: dict, headers, required_headers, init: st
                 seeds.append(build_seed_from_edges(
                     edges, required_headers=required_headers, headers=headers, init=init,
                     message_instances=message_instances, protocol=protocol,
-                    cseq_with_method=(protocol == "sip"),
+                    cseq_with_method=cseq_with_method(protocol),
                     description="generic-danger lifecycle %s -> %s -> %s via %s/%s"
                                 % (a, b, a, m_entry, m_exit),
                     generated_by=_GENERIC_DANGER_TAG,

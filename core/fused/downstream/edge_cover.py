@@ -15,6 +15,7 @@ from collections import deque
 from typing import Iterable, Optional
 
 from core.models import SeedCorpus, SeedMessage
+from core.fused.downstream.protocol_flags import cseq_with_method
 
 _INIT_STATE = "Init"
 
@@ -345,7 +346,7 @@ def edge_cover(transitions, required_headers=None, headers=None,
             path, required_headers=required_headers, headers=headers,
             init=init, message_instances=message_instances,
             protocol=protocol,
-            cseq_with_method=(protocol == "sip"),
+            cseq_with_method=cseq_with_method(protocol),
             description="edge-cover path #%d: %s"
                         % (index, " -> ".join(m for _, m, _ in path)),
             generated_by="rule-based:edge-cover",

@@ -85,7 +85,8 @@
       "STARTTLS": [
         "EHLO"
       ]
-    }
+    },
+    "cseq_with_method": false
   },
   "knowledge_channels": {
     "seedgen.precondition": {

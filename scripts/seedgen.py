@@ -53,6 +53,7 @@ from core.fused.downstream.rag_seedgen import (  # noqa: E402
     load_fact_views, assemble_bundle, write_seeds, load_semantic_rules,
     load_source_manifest,
 )
+from core.fused.downstream.protocol_flags import cseq_with_method  # noqa: E402
 from core.fused.downstream.edge_cover import (  # noqa: E402
     edge_cover, build_message,
 )
@@ -239,7 +240,7 @@ def _build_canonical_seed(bundle: dict, canonical_flow: list,
             m, required_headers=bundle.get("required_headers"),
             headers=bundle.get("headers"), cseq=i,
             instance_fields=insts.get((s, m, d)),
-            cseq_with_method=(protocol == "sip")))
+            cseq_with_method=cseq_with_method(protocol)))
     return SeedCorpus(
         protocol=protocol,
         description="canonical session: " + " -> ".join(canonical_flow),
@@ -638,8 +639,10 @@ def _renumber_cseq(seed: SeedCorpus) -> None:
     for i, msg in enumerate(seed.messages, start=1):
         for k in list(msg.headers):
             if k.lower() == "cseq":
+                # ★ 2026-11-07（A1）：格式判据从协议名改为**配置**
+                #   （`profile.seedgen.cseq_with_method`）⇒ 新协议无需改代码
                 msg.headers[k] = (f"{i} {msg.method}"
-                                  if seed.protocol == "sip" else str(i))
+                                  if cseq_with_method(seed.protocol) else str(i))
 
 
 def _shift_cseq_by_one(seed: SeedCorpus) -> None:
@@ -706,7 +709,7 @@ def _prepend_session_prologue(seeds: list, bundle: dict, profile: dict) -> list:
             m, required_headers=bundle.get("required_headers"),
             headers=bundle.get("headers"), cseq=1,
             instance_fields=inst,
-            cseq_with_method=(seed.protocol == "sip"))
+            cseq_with_method=cseq_with_method(seed.protocol))
         # ★ R-3：⑤（action-seq）种子插 prologue 前，先把**原有**消息的 CSeq
         #   序号整体 +1，给新插入的 ``CSeq: 1 <入口方法>`` **让位**（否则序号冲突）。
         #   ★ 用**平移**而不是 ``_renumber_cseq`` 的重排 ⇒ ``cseq-replay`` 的
