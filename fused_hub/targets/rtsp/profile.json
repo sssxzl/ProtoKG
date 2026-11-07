@@ -112,6 +112,10 @@
       "SET_PARAMETER": [
         "CSeq",
         "Session"
+      ],
+      "RECORD": [
+        "CSeq",
+        "Session"
       ]
     },
     "precondition": {

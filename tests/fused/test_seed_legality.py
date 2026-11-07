@@ -67,8 +67,12 @@ def test_strict_mode_drops_sip_and_smtp_skeleton_only_edges():
     smtp = _bundle("smtp", apply_allowed_methods=True, include_skeleton_methods=False)
     assert len(sip["transitions"]) == 21
     assert len(sip["transitions_dropped_undefined"]) == 30
-    assert len(smtp["transitions"]) == 50
-    assert len(smtp["transitions_dropped_undefined"]) == 14
+    # ★ 2026-11-07：50 → **52**（批次 3 的 STARTTLS 形态 E 抽到了 STARTTLS，
+    #   骨架状态机里 STARTTLS 的边也进了 transitions）。
+    assert len(smtp["transitions"]) == 52
+    # ★ 2026-11-07：14 → **12** —— STARTTLS 现在进了 methods 桶
+    #   （批次 3 的形态 E 抽到了它）⇒ 不再属于「桶外方法」⇒ 少剔 2 条。
+    assert len(smtp["transitions_dropped_undefined"]) == 12
 
 
 def test_strict_gate_does_not_touch_rtsp():
@@ -281,7 +285,9 @@ def test_required_header_gate_keeps_global_key():
 
 def test_required_header_gate_only_in_strict_mode():
     """全源路径（默认）一条键都不许动。"""
-    for proto, expect in (("rtsp", 9), ("sip", 15), ("smtp", 0)):
+    # ★ 2026-11-07：rtsp 从 9 键变 **10 键**（补了 RECORD 的必填头，
+    #   RFC 2326 §10.11 示例：CSeq + Session）⇒ 全源路径同样多一个键。
+    for proto, expect in (("rtsp", 10), ("sip", 15), ("smtp", 0)):
         b = _bundle(proto, apply_allowed_methods=False)
         assert len(b["required_headers"]) == expect, proto
         assert b["required_headers_dropped_undefined"] == [], proto

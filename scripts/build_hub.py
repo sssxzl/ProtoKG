@@ -45,6 +45,7 @@ import shutil
 from datetime import datetime
 import sys
 from pathlib import Path
+from typing import Optional
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -804,6 +805,80 @@ def _aspect_filename(aspect: str) -> str:
     return f"{safe or _ASPECT_FALLBACK}.jsonl"
 
 
+def _check_required_headers_coverage(protocol: str,
+                                     bundle: Optional[dict] = None) -> list[str]:
+    """★ 守卫（2026-11-07）：**transitions 里用到的方法必须有必填头条目**。
+
+    ── 为什么需要 ────────────────────────────────────────────────────────────
+    必填头清单目前是**人工撰写**的（`profile.seedgen.required_headers`）。
+    漏一项的后果是**静默**的：种子照发该方法，但报文**一个头都没有**
+    ⇒ 对目标是非法报文 ⇒ fuzzer 白跑，且**没有任何指标会红**。
+
+    实测（修这个守卫之前）：rtsp 的 `RECORD` 就在 transitions 里（RFC 原生状态机
+    含 RECORD 边），但人工清单只有 8 个方法、**漏了 RECORD** ⇒
+    实测生成出 `RECORD | headers={} | url=rtsp://...` 三条**无头报文**。
+
+    ── 判据（**协议无关**）────────────────────────────────────────────────────
+    ① 该协议的 `transitions` 里出现的每个方法，都要在 `required_headers` 有条目；
+    ② **命令类协议天然豁免**（smtp：命令协议不带头部，`required_headers` 为空
+       是**正确的**）—— 判据不是"有没有头"，而是
+       「**该协议用了头部语法**吗」：看 `profile.raw_format.request_line`
+       里有没有 `{url}` 之类的头部占位符，或 `headers` 桶是否非空。
+    ⇒ 换任何协议都自动生效，不需要改本函数。
+
+    Returns:
+        缺失清单（空 = 通过）。
+    """
+    try:
+        prof = json.loads(paths.target_profile(protocol).read_text(encoding="utf-8")) or {}
+    except (OSError, json.JSONDecodeError):
+        return []
+    sg = prof.get("seedgen") or {}
+    rh = sg.get("required_headers") or {}
+    # ★ 判据②：该协议是否用**头部行语法**（命令协议 ⇒ 不用 ⇒ 整体豁免）。
+    #   ★ **纯语法判据，零协议名**（2026-11-07 两次修正）：
+    #     第一版写的是 `protocol in ("rtsp","sip","http")` ⇒ 新协议会被误豁免；
+    #     第二版用「headers 桶非空」⇒ **误报 smtp**（smtp 的 headers 桶是
+    #     RFC 5322 的**信体头** Date/From/Subject…，不是 SMTP 命令的头）。
+    #   最终判据：**`raw_format.header_line` 非空** ⇒ 该协议有头部行语法。
+    #     实测：rtsp/sip = `'{key}: {value}'`；smtp = `''`（命令协议，无头）。
+    #   ⇒ 命令协议天然豁免，头部协议纳入检查，且不认任何协议名。
+    rf = prof.get("raw_format") or {}
+    if not str(rf.get("header_line") or "").strip():
+        return []
+
+    # 该协议实际会发的方法：transitions 的中间方法 + states 里的方法
+    if bundle is None:
+        try:
+            from core.fused.downstream import rag_seedgen as RS
+            views = RS.load_fact_views(protocol)
+            # ★ 必须用 `apply_allowed_methods=False` —— 守卫要检查的正是
+            #   「**所有** RFC 定义的方法」有没有必填头条目。
+            #   缺省 True 会按 `profile.allowed_methods` 裁剪方法集
+            #   （rtsp 的 allowed_methods 只有 8 个，ANNOUNCE/RECORD/REDIRECT 被裁掉）
+            #   ⇒ 守卫看不见它们 ⇒ 漏项仍然静默（实测踩过）。
+            bundle = RS.assemble_bundle(views, protocol,
+                                        apply_allowed_methods=False)
+        except Exception:                  # pragma: no cover —— 读不到就跳过守卫
+            return []
+    # ★ 判据①只看 **transitions 里用到的方法** —— 也就是**种子真的会合的方法**。
+    #   不用 methods 桶：methods 桶含所有 RFC 定义的方法，但只有 transitions
+    #   里的才进状态机、才会被生成成报文（实测 rtsp 的 ANNOUNCE / REDIRECT
+    #   在 methods 桶里但不在 transitions 里 ⇒ 不会发 ⇒ 不该报）。
+    methods = {str(t[1]).strip().upper() for t in (bundle.get("transitions") or [])}
+    if not methods:
+        return []
+    have = {str(k).strip().upper() for k in rh if str(k) != "*"}
+    missing = sorted(m for m in methods if m not in have)
+    if missing:
+        print(f"[守卫] ⚠ {protocol}：{len(missing)} 个方法**没有必填头条目** "
+              f"⇒ 会生成无头报文（非法）：{missing}")
+        print(f"[守卫]   ⇒ 修法：在 profile.json 的 seedgen.required_headers 补上"
+              f"（键=方法名，值=必填头列表）；或该方法若确实无需头，"
+              f"从 transitions 里剔除。")
+    return missing
+
+
 def _write_aspect_layout(protocol: str) -> dict[str, int]:
     """★ 批次 1.6 步 1：把中枢里的事实按 **aspect** 统一落盘（新布局）。
 
@@ -1227,6 +1302,11 @@ def main(argv=None) -> int:
                              "**不产出**常规 facts/norms；B-9 的三个闸同样生效。"
                              "⚠ 本模式**不改变** D-6 开关位（PROTORAG_SEMANTIC_RULES "
                              "保持默认关闭）")
+    # ★ 2026-11-07：--strict 让「必填头覆盖不完整」**阻断**构建（默认只告警）。
+    #   理由：「某方法确实无需头」是合法情形（命令协议），默认阻断会卡住正常构建；
+    #   严格档留给 CI / 发版前用。
+    parser.add_argument("--strict", action="store_true",
+                        help="严格模式：必填头覆盖不完整时阻断构建（默认只告警）")
     parser.add_argument("--semantic-root", default=None,
                         help="语义四库根目录覆盖（默认 "
                              "derived/per_source/<协议>/rfc/semantic/）。"
@@ -1362,6 +1442,15 @@ def main(argv=None) -> int:
     #   `required_headers` 是**知识** ⇒ 必须住在中枢里 ⇒ 组装端不再直读
     #   profile.json 的这份知识（仍保留兼容期回退）。
     required_headers_count = _materialize_required_headers(protocol)
+
+    # ---- 守卫：必填头覆盖（2026-11-07）-------------------------------------
+    #   把「人工清单漏项」从**静默**变成**显式**：漏了就在构建日志里报出来。
+    #   ★ 默认**只告警不阻断**（构建仍成功）—— 因为"某方法无需头"是合法情形
+    #   （命令协议），误阻断会卡住正常构建；是否阻断由 --strict 决定。
+    _missing_headers = _check_required_headers_coverage(protocol)
+    if _missing_headers and getattr(args, "strict", False):
+        print(f"[守卫] ❌ --strict：必填头覆盖不完整 ⇒ 阻断构建")
+        return 3
 
     # ---- ③''' 按 aspect 统一落盘（★ 批次 1.6 步 1：新中枢布局）--------------
     #   旧布局（按源分目录）**保留**（回退保险）；新布局（按 aspect）是读取端

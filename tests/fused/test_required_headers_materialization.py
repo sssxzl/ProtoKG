@@ -74,14 +74,14 @@ def _rh_view(method: str, headers: list[str]) -> dict:
 def test_materialize_writes_required_headers_facts(hub, profile_dir):
     """★ 物化：每个方法一条事实，authority=profile。"""
     n = build_hub._materialize_required_headers(PROTOCOL)
-    assert n == 8, f"应物化 8 条（rtsp 8 个方法），实际 {n}"
+    assert n == 9, f"应物化 9 条（rtsp 9 个方法，2026-11-07 补了 RECORD），实际 {n}"
 
     dest = paths_mod.per_source_facts_dir(PROTOCOL, "profile") / "profile.jsonl"
     views = [json.loads(ln) for ln in dest.read_text(encoding="utf-8").splitlines()
              if ln.strip()]
     rh = [v for v in views
           if v["fact_key"]["aspect"] == "required_headers"]
-    assert len(rh) == 8
+    assert len(rh) == 9   # ★ 2026-11-07：8 → 9（补了 RECORD）
     got = {v["fact_key"]["subject"]["name"]:
            v["all_claims"][0]["value"]["data"]["headers"] for v in rh}
     prof = json.loads(profile_dir.read_text(encoding="utf-8"))
