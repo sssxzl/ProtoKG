@@ -1,0 +1,397 @@
+{
+  "protocol": "dhcpv4",
+  "transport": "udp",
+  "encoding": "binary",
+  "default_url": "",
+  "raw_format": {
+    "line_ending": "\r\n",
+    "request_line": "{method} {argument}",
+    "version": "",
+    "header_line": "",
+    "trailing_blank_line": false,
+    "command_extra": {},
+    "byte_order": "network",
+    "binary_fields": [
+      {
+        "name": "op",
+        "offset": 0,
+        "length": 1,
+        "type": "uint8"
+      },
+      {
+        "name": "htype",
+        "offset": 1,
+        "length": 1,
+        "type": "uint8"
+      },
+      {
+        "name": "hlen",
+        "offset": 2,
+        "length": 1,
+        "type": "uint8"
+      },
+      {
+        "name": "hops",
+        "offset": 3,
+        "length": 1,
+        "type": "uint8"
+      },
+      {
+        "name": "xid",
+        "offset": 4,
+        "length": 4,
+        "type": "uint32"
+      },
+      {
+        "name": "secs",
+        "offset": 8,
+        "length": 2,
+        "type": "uint16"
+      },
+      {
+        "name": "flags",
+        "offset": 10,
+        "length": 2,
+        "type": "uint16"
+      },
+      {
+        "name": "ciaddr",
+        "offset": 12,
+        "length": 4,
+        "type": "ipv4"
+      },
+      {
+        "name": "yiaddr",
+        "offset": 16,
+        "length": 4,
+        "type": "ipv4"
+      },
+      {
+        "name": "siaddr",
+        "offset": 20,
+        "length": 4,
+        "type": "ipv4"
+      },
+      {
+        "name": "giaddr",
+        "offset": 24,
+        "length": 4,
+        "type": "ipv4"
+      },
+      {
+        "name": "chaddr",
+        "offset": 28,
+        "length": 16,
+        "type": "mac"
+      },
+      {
+        "name": "sname",
+        "offset": 44,
+        "length": 64,
+        "type": "bytes"
+      },
+      {
+        "name": "file",
+        "offset": 108,
+        "length": 128,
+        "type": "bytes"
+      },
+      {
+        "name": "vend",
+        "offset": 236,
+        "length": 64,
+        "type": "bytes"
+      },
+      {
+        "name": "magic_cookie",
+        "offset": 236,
+        "length": 4,
+        "type": "uint32"
+      }
+    ],
+    "binary_options": [
+      {
+        "name": "Resource Location Server",
+        "code": 11,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "Host Name",
+        "code": 12,
+        "type": "string",
+        "length": 1
+      },
+      {
+        "name": "Boot File Size",
+        "code": 13,
+        "type": "bytes",
+        "length": 2
+      },
+      {
+        "name": "IP Forwarding Enable/Disable",
+        "code": 19,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "Non-Local Source Routing Enable/Disable",
+        "code": 20,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "Policy Filter",
+        "code": 21,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "Path MTU Aging Timeout",
+        "code": 24,
+        "type": "bytes",
+        "length": 4
+      },
+      {
+        "name": "Path MTU Plateau Table",
+        "code": 25,
+        "type": "bytes",
+        "length": 2
+      },
+      {
+        "name": "Interface MTU",
+        "code": 26,
+        "type": "bytes",
+        "length": 2
+      },
+      {
+        "name": "All Subnets are Local",
+        "code": 27,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "Broadcast Address",
+        "code": 28,
+        "type": "bytes",
+        "length": 4
+      },
+      {
+        "name": "Perform Mask Discovery",
+        "code": 29,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "Mask Supplier",
+        "code": 30,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "Perform Router Discovery",
+        "code": 31,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "Router Solicitation Address",
+        "code": 32,
+        "type": "bytes",
+        "length": 4
+      },
+      {
+        "name": "Static Route",
+        "code": 33,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "Trailer Encapsulation",
+        "code": 34,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "ARP Cache Timeout",
+        "code": 35,
+        "type": "bytes",
+        "length": 4
+      },
+      {
+        "name": "Ethernet Encapsulation",
+        "code": 36,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "TCP Default TTL",
+        "code": 37,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "TCP Keepalive Interval",
+        "code": 38,
+        "type": "bytes",
+        "length": 4
+      },
+      {
+        "name": "TCP Keepalive Garbage",
+        "code": 39,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "Network Information Service Domain",
+        "code": 40,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "Network Information Servers",
+        "code": 41,
+        "type": "bytes",
+        "length": 4
+      },
+      {
+        "name": "Network Time Protocol Servers",
+        "code": 42,
+        "type": "bytes",
+        "length": 4
+      },
+      {
+        "name": "NetBIOS over TCP/IP Name Server",
+        "code": 44,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "NetBIOS over TCP/IP Datagram Distribution Server",
+        "code": 45,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "NetBIOS over TCP/IP Node Type",
+        "code": 46,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "NetBIOS over TCP/IP Scope",
+        "code": 47,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "X Window System Font Server",
+        "code": 48,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "StreetTalk Directory Assistance (STDA) Server",
+        "code": 50,
+        "type": "bytes",
+        "length": 4
+      },
+      {
+        "name": "X Window System Display Manager",
+        "code": 64,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "Mobile IP Home Agent",
+        "code": 68,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "User Class",
+        "code": 77,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "The Client FQDN",
+        "code": 81,
+        "type": "bytes",
+        "length": 0
+      },
+      {
+        "name": "The Auto-Configure",
+        "code": 116,
+        "type": "bytes",
+        "length": 1
+      },
+      {
+        "name": "SIP Server DHCP",
+        "code": 120,
+        "type": "bytes",
+        "length": 0
+      }
+    ]
+  },
+  "message_schema": {
+    "hint": "DHCPv4 是 UDP 二进制协议：请求/响应都是 BOOTP 格式的 236 字节固定头 + magic cookie(99.130.83.99) + 选项 TLV 序列。「方法」= 消息类型（DHCPDISCOVER / DHCPREQUEST / DHCPOFFER / DHCPACK / DHCPNAK / DHCPDECLINE / DHCPRELEASE / DHCPINFORM），由 BOOTP 的 op 字段区分（1=REQUEST / 2=REPLY）。「字段」= DHCP 选项（Subnet Mask / Router / Requested IP / Lease Time / Server Identifier / Parameter Request List 等），每个选项 = code(1) + len(1) + data。",
+    "fields": [
+      "op",
+      "htype",
+      "hlen",
+      "hops",
+      "xid",
+      "secs",
+      "flags",
+      "ciaddr",
+      "yiaddr",
+      "siaddr",
+      "giaddr",
+      "chaddr",
+      "sname",
+      "file",
+      "magic_cookie",
+      "options"
+    ]
+  },
+  "allowed_methods": [
+    "DHCPDISCOVER",
+    "DHCPREQUEST",
+    "DHCPDECLINE",
+    "DHCPRELEASE",
+    "DHCPINFORM"
+  ],
+  "seedgen": {
+    "canonical_flow": [
+      "DHCPDISCOVER",
+      "DHCPREQUEST"
+    ],
+    "danger": false,
+    "focus_group": {
+      "A": {
+        "dict": "protocol"
+      },
+      "B": {
+        "dict": "protocol"
+      },
+      "C": {
+        "dict": "protocol"
+      }
+    },
+    "required_headers": {},
+    "precondition": {},
+    "session_header": {},
+    "url_template": {}
+  },
+  "knowledge_channels": {},
+  "note": "DHCPv4 Profile（2026-11-07 首轮接入，用于 RFC 源全流程测试）。DHCP 是 **UDP 二进制协议**：报文 = BOOTP 固定头(236B) + magic cookie + 选项 TLV。⚠ 已知缺口：`raw_writers` 无 DHCP 派发 ⇒ .raw 落盘走「其他」分支（文本 key=value）⇒ **不是真正的 DHCP 报文**。 ★ 2026-11-07：补 binary_fields/binary_options ⇒ 落盘改为按 BOOTP 字节布局渲染（240 字节固定头 + TLV 选项区）。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。",
+  "traffic_schema": {
+    "log_files": [],
+    "request_pattern": "",
+    "response_pattern": ""
+  },
+  "vuln": {
+    "field_guidance": {}
+  }
+}

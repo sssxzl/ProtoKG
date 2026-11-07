@@ -1,0 +1,1939 @@
+{
+  "protocol": "dhcpv4",
+  "note": "DHCPv4 协议骨架（2026-11-07 首轮接入手工提炼）。★ 全部内容来自 **RFC 2131 §3.1 的 ASCII 时序图**（kb/dhcpv4/spec/rfc2131.txt）+ RFC 951 的 BOOTP 报文格式。★ **为什么必须手工**：36 份 DHCP RFC 里**一次都没出现 \"state machine\" 字样** ⇒ LLM 状态机通道命中 0 ⇒ transitions=0 ⇒ 无法生成种子（骨架是唯一来源）。★ DHCP 是**二进制**协议：实例字段是 BOOTP 头字段（op/htype/hlen/xid/flags/ciaddr/…/magic_cookie），不是文本头 ⇒ 落盘走 raw_writers 的「其他」分支。",
+  "aspects": [
+    "target_state",
+    "message_instance",
+    "syntax",
+    "value_enum"
+  ],
+  "origin": {
+    "source": [
+      "message_instance",
+      "target_state"
+    ],
+    "traffic": [],
+    "profile": [
+      "syntax",
+      "value_enum"
+    ]
+  },
+  "fact_count": 40,
+  "facts": [
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "INIT",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "SELECTING",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPDISCOVER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_5dea56c84d5b38f8",
+          "fact_id": "f2_410d94796689d994",
+          "value": {
+            "type": "text",
+            "data": "SELECTING"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.transitions_to.INIT.DHCPDISCOVER.SELECTING"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "SELECTING",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "OFFERED",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPOFFER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_e077eaf8a9f0d339",
+          "fact_id": "f2_ffe64716d83b60d1",
+          "value": {
+            "type": "text",
+            "data": "OFFERED"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.transitions_to.SELECTING.DHCPOFFER.OFFERED"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "OFFERED",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "REQUESTING",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPREQUEST",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_1205b63cbc52b2d6",
+          "fact_id": "f2_ab1c630c7b599239",
+          "value": {
+            "type": "text",
+            "data": "REQUESTING"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.transitions_to.OFFERED.DHCPREQUEST.REQUESTING"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "REQUESTING",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "BOUND",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPACK",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_e7769b3f76aa4096",
+          "fact_id": "f2_485c0e0594044731",
+          "value": {
+            "type": "text",
+            "data": "BOUND"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.transitions_to.REQUESTING.DHCPACK.BOUND"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "REQUESTING",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "INIT",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPNAK",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_7ae25c65db5685d8",
+          "fact_id": "f2_632bfc2b3813377f",
+          "value": {
+            "type": "text",
+            "data": "INIT"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.transitions_to.REQUESTING.DHCPNAK.INIT"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "BOUND",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "INIT",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPRELEASE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "target_state",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_7ae25c65db5685d8",
+          "fact_id": "f2_59a70e60eca7f832",
+          "value": {
+            "type": "text",
+            "data": "INIT"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.transitions_to.BOUND.DHCPRELEASE.INIT"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "INIT",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "SELECTING",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPDISCOVER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_792e3f50333ae788",
+          "fact_id": "f2_dfec42292e2d73e3",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "op",
+                  "value": "1"
+                },
+                {
+                  "name": "htype",
+                  "value": "1"
+                },
+                {
+                  "name": "hlen",
+                  "value": "6"
+                },
+                {
+                  "name": "hops",
+                  "value": "0"
+                },
+                {
+                  "name": "xid",
+                  "value": "0x3903F326"
+                },
+                {
+                  "name": "secs",
+                  "value": "0"
+                },
+                {
+                  "name": "flags",
+                  "value": "0x8000"
+                },
+                {
+                  "name": "ciaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "yiaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "siaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "giaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "chaddr",
+                  "value": "00:11:22:33:44:55"
+                },
+                {
+                  "name": "magic_cookie",
+                  "value": "0x63825363"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.message_instance.INIT.DHCPDISCOVER.SELECTING"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "SELECTING",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "OFFERED",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPOFFER",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_57093cc137f49786",
+          "fact_id": "f2_fdb44eccd4612e26",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "op",
+                  "value": "2"
+                },
+                {
+                  "name": "htype",
+                  "value": "1"
+                },
+                {
+                  "name": "hlen",
+                  "value": "6"
+                },
+                {
+                  "name": "hops",
+                  "value": "0"
+                },
+                {
+                  "name": "xid",
+                  "value": "0x3903F326"
+                },
+                {
+                  "name": "secs",
+                  "value": "0"
+                },
+                {
+                  "name": "flags",
+                  "value": "0x8000"
+                },
+                {
+                  "name": "ciaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "yiaddr",
+                  "value": "192.168.1.10"
+                },
+                {
+                  "name": "siaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "giaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "chaddr",
+                  "value": "00:11:22:33:44:55"
+                },
+                {
+                  "name": "magic_cookie",
+                  "value": "0x63825363"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.message_instance.SELECTING.DHCPOFFER.OFFERED"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "OFFERED",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "REQUESTING",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPREQUEST",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_792e3f50333ae788",
+          "fact_id": "f2_a29ebeaefdaa2ad3",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "op",
+                  "value": "1"
+                },
+                {
+                  "name": "htype",
+                  "value": "1"
+                },
+                {
+                  "name": "hlen",
+                  "value": "6"
+                },
+                {
+                  "name": "hops",
+                  "value": "0"
+                },
+                {
+                  "name": "xid",
+                  "value": "0x3903F326"
+                },
+                {
+                  "name": "secs",
+                  "value": "0"
+                },
+                {
+                  "name": "flags",
+                  "value": "0x8000"
+                },
+                {
+                  "name": "ciaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "yiaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "siaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "giaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "chaddr",
+                  "value": "00:11:22:33:44:55"
+                },
+                {
+                  "name": "magic_cookie",
+                  "value": "0x63825363"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.message_instance.OFFERED.DHCPREQUEST.REQUESTING"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "REQUESTING",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "BOUND",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPACK",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_57093cc137f49786",
+          "fact_id": "f2_833126f96cabeb0b",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "op",
+                  "value": "2"
+                },
+                {
+                  "name": "htype",
+                  "value": "1"
+                },
+                {
+                  "name": "hlen",
+                  "value": "6"
+                },
+                {
+                  "name": "hops",
+                  "value": "0"
+                },
+                {
+                  "name": "xid",
+                  "value": "0x3903F326"
+                },
+                {
+                  "name": "secs",
+                  "value": "0"
+                },
+                {
+                  "name": "flags",
+                  "value": "0x8000"
+                },
+                {
+                  "name": "ciaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "yiaddr",
+                  "value": "192.168.1.10"
+                },
+                {
+                  "name": "siaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "giaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "chaddr",
+                  "value": "00:11:22:33:44:55"
+                },
+                {
+                  "name": "magic_cookie",
+                  "value": "0x63825363"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.message_instance.REQUESTING.DHCPACK.BOUND"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "REQUESTING",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "INIT",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPNAK",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_a028dfdf3b01ea1d",
+          "fact_id": "f2_1a7e56b3c1f8b92e",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "op",
+                  "value": "2"
+                },
+                {
+                  "name": "htype",
+                  "value": "1"
+                },
+                {
+                  "name": "hlen",
+                  "value": "6"
+                },
+                {
+                  "name": "hops",
+                  "value": "0"
+                },
+                {
+                  "name": "xid",
+                  "value": "0x3903F326"
+                },
+                {
+                  "name": "secs",
+                  "value": "0"
+                },
+                {
+                  "name": "flags",
+                  "value": "0x8000"
+                },
+                {
+                  "name": "ciaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "yiaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "siaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "giaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "chaddr",
+                  "value": "00:11:22:33:44:55"
+                },
+                {
+                  "name": "magic_cookie",
+                  "value": "0x63825363"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.message_instance.REQUESTING.DHCPNAK.INIT"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "relation",
+          "name": "transitions_to",
+          "qualifiers": {
+            "source": {
+              "type": "state",
+              "name": "BOUND",
+              "qualifiers": {},
+              "path": []
+            },
+            "target": {
+              "type": "state",
+              "name": "INIT",
+              "qualifiers": {},
+              "path": []
+            },
+            "method": {
+              "type": "method",
+              "name": "DHCPRELEASE",
+              "qualifiers": {},
+              "path": []
+            }
+          },
+          "path": []
+        },
+        "aspect": "message_instance",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_1cba056b7f4cb9d6",
+          "fact_id": "f2_e7ec08f56b1b5986",
+          "value": {
+            "type": "struct",
+            "data": {
+              "fields": [
+                {
+                  "name": "op",
+                  "value": "1"
+                },
+                {
+                  "name": "htype",
+                  "value": "1"
+                },
+                {
+                  "name": "hlen",
+                  "value": "6"
+                },
+                {
+                  "name": "hops",
+                  "value": "0"
+                },
+                {
+                  "name": "xid",
+                  "value": "0x3903F326"
+                },
+                {
+                  "name": "secs",
+                  "value": "0"
+                },
+                {
+                  "name": "flags",
+                  "value": "0x0000"
+                },
+                {
+                  "name": "ciaddr",
+                  "value": "192.168.1.10"
+                },
+                {
+                  "name": "yiaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "siaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "giaddr",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "chaddr",
+                  "value": "00:11:22:33:44:55"
+                },
+                {
+                  "name": "magic_cookie",
+                  "value": "0x63825363"
+                }
+              ]
+            }
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.message_instance.BOUND.DHCPRELEASE.INIT"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "op",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_0ed02266e5b14b2f",
+          "fact_id": "f2_1a295f17c201d51a",
+          "value": {
+            "type": "text",
+            "data": "1 octet (1=BOOTREQUEST, 2=BOOTREPLY)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.op"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "op",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_420274e6f116c50a",
+          "fact_id": "f2_3cdf5b9238c27582",
+          "value": {
+            "type": "text",
+            "data": [
+              "1",
+              "2"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.op"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "htype",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c675ee518b6ff503",
+          "fact_id": "f2_ee35a376efd37de8",
+          "value": {
+            "type": "text",
+            "data": "1 octet (hardware address type)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.htype"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "htype",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_e417a73064cba623",
+          "fact_id": "f2_49f7c050fd2e7f6d",
+          "value": {
+            "type": "text",
+            "data": [
+              "1",
+              "6"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.htype"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "hlen",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_ceb4814fcdd2231b",
+          "fact_id": "f2_e43ec8229eda55a6",
+          "value": {
+            "type": "text",
+            "data": "1 octet (hardware address length)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.hlen"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "hlen",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_f32fdcd58d598e11",
+          "fact_id": "f2_199be4ac3d6acbf3",
+          "value": {
+            "type": "text",
+            "data": [
+              "6",
+              "16"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.hlen"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "hops",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_eb81097fe2e45242",
+          "fact_id": "f2_a8b708f8d051f860",
+          "value": {
+            "type": "text",
+            "data": "1 octet (relay agent hops)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.hops"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "hops",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_559b7bd94d9f9cf9",
+          "fact_id": "f2_6b3378163cd81054",
+          "value": {
+            "type": "text",
+            "data": [
+              "0",
+              "1"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.hops"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "xid",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_4bbd10c333a9d5e2",
+          "fact_id": "f2_132e4542e344dfd4",
+          "value": {
+            "type": "text",
+            "data": "4 octets (transaction id)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.xid"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "secs",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_4fe95c6ccf4206f7",
+          "fact_id": "f2_82ae772cb14ae8ca",
+          "value": {
+            "type": "text",
+            "data": "2 octets (seconds since client began address acquisition)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.secs"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "secs",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_eadef54cb7ecee32",
+          "fact_id": "f2_2803314ccacb7572",
+          "value": {
+            "type": "text",
+            "data": [
+              "0",
+              "1",
+              "65535"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.secs"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "flags",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_cf941547201d6bdd",
+          "fact_id": "f2_c8bd3ec6ed50c6a6",
+          "value": {
+            "type": "text",
+            "data": "2 octets (broadcast flag + reserved)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.flags"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "flags",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_7990fddacd6e6389",
+          "fact_id": "f2_bd07bbb11dca4c7f",
+          "value": {
+            "type": "text",
+            "data": [
+              "0x0000",
+              "0x8000"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.flags"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "ciaddr",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_0572a46c0f432092",
+          "fact_id": "f2_81f85ffbb9d58821",
+          "value": {
+            "type": "text",
+            "data": "4 octets (client IP address)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.ciaddr"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "ciaddr",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_61f35baa4b7f2996",
+          "fact_id": "f2_1ccaa7867f086bcd",
+          "value": {
+            "type": "text",
+            "data": [
+              "0.0.0.0",
+              "192.168.1.10"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.ciaddr"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "yiaddr",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_cab70e4920210be8",
+          "fact_id": "f2_3b2ddcc7ab6fc288",
+          "value": {
+            "type": "text",
+            "data": "4 octets (your IP address)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.yiaddr"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "yiaddr",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_dd1f87b067cfe701",
+          "fact_id": "f2_b6519a895298371d",
+          "value": {
+            "type": "text",
+            "data": [
+              "0.0.0.0",
+              "192.168.1.10",
+              "192.168.1.20"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.yiaddr"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "siaddr",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_013deaed030f6229",
+          "fact_id": "f2_17cfa1c77ab4792a",
+          "value": {
+            "type": "text",
+            "data": "4 octets (server IP address)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.siaddr"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "siaddr",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_623d463299907b27",
+          "fact_id": "f2_4afdc316ee3cae0e",
+          "value": {
+            "type": "text",
+            "data": [
+              "0.0.0.0",
+              "192.168.1.1"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.siaddr"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "giaddr",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_fb0de59b44965c44",
+          "fact_id": "f2_d1a1c67082e59484",
+          "value": {
+            "type": "text",
+            "data": "4 octets (relay agent IP address)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.giaddr"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "giaddr",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_3c06d4172dbd021a",
+          "fact_id": "f2_89e42d548e919259",
+          "value": {
+            "type": "text",
+            "data": [
+              "0.0.0.0",
+              "192.168.1.2"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.giaddr"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "chaddr",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_337dcc0192a531bb",
+          "fact_id": "f2_3f9aabcfceaeb056",
+          "value": {
+            "type": "text",
+            "data": "16 octets (client hardware address)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.chaddr"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "chaddr",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_81bda9718a8b100c",
+          "fact_id": "f2_42f26333054e4fa6",
+          "value": {
+            "type": "text",
+            "data": [
+              "00:11:22:33:44:55",
+              "ff:ff:ff:ff:ff:ff"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.chaddr"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "sname",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_2d279976a93df7f9",
+          "fact_id": "f2_dac9515b71cb6438",
+          "value": {
+            "type": "text",
+            "data": "64 octets (server host name)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.sname"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "file",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_c79705d37aa715cb",
+          "fact_id": "f2_f2319dfbb665e9e8",
+          "value": {
+            "type": "text",
+            "data": "128 octets (boot file name)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.file"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "magic_cookie",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_a11de0d5d146672a",
+          "fact_id": "f2_647382d9038f4a98",
+          "value": {
+            "type": "text",
+            "data": "4 octets (99.130.83.99)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.magic_cookie"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "magic_cookie",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "value_enum",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_5a6854d0fa165591",
+          "fact_id": "f2_441471f542fa4baf",
+          "value": {
+            "type": "text",
+            "data": [
+              "0x63825363"
+            ]
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.value_enum.magic_cookie"
+          ],
+          "confidence": null
+        }
+      ]
+    },
+    {
+      "fact_key": {
+        "protocol": "dhcpv4",
+        "version": "1.0",
+        "subject": {
+          "type": "header",
+          "name": "options",
+          "qualifiers": {},
+          "path": []
+        },
+        "aspect": "syntax",
+        "condition": {
+          "type": "always"
+        }
+      },
+      "resolution": null,
+      "all_claims": [
+        {
+          "claim_id": "c2_a3613dd74b1a7769",
+          "fact_id": "f2_9a14d040df420f4d",
+          "value": {
+            "type": "text",
+            "data": "variable (option code + length + data)"
+          },
+          "epistemic_type": "descriptive",
+          "authority": "profile",
+          "evidence_summary": [
+            "profile:profile.header.syntax.options"
+          ],
+          "confidence": null
+        }
+      ]
+    }
+  ]
+}
