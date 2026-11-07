@@ -68,6 +68,23 @@
       "enabled": true,
       "note": "批次 1：字段级 action-sequence 变异（SemFuzz 迁移项 A）。默认关闭 ⇒ 关闭时 scripts/seedgen.py 的产物与批次 1 之前逐字节一致（回滚手段）。开启后统一工厂的第五条生成路径会在**真实抓包种子**（已发表语料 / kb 真实抓包）上做 add/remove/update 字段级变异。",
       "_enabled_20261103": "★ 2026-11-03 开启：取值池已补齐（批次 2.0）、必填头不再空 ⇒ ⑤ 层 value-pool-boundary / cseq-replay 规则**第一次有输入**。底料实测：rtsp/B 39、smtp/B 78、sip/A~D 21~25 条（published-corpus）；rtsp/A,C,D 3 条、smtp/A,C,D 6 条（traffic-capture）。"
+    },
+    "precondition": {
+      "MAIL": [
+        "EHLO"
+      ],
+      "RCPT": [
+        "MAIL"
+      ],
+      "DATA": [
+        "RCPT"
+      ],
+      "BDAT": [
+        "MAIL"
+      ],
+      "STARTTLS": [
+        "EHLO"
+      ]
     }
   },
   "knowledge_channels": {

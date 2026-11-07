@@ -310,3 +310,56 @@ def test_vuln_pattern_bucket_has_channel():
     assert chan, "vuln_pattern 缺通道映射"
     info = load_channels("rtsp").get(chan, {})
     assert info.get("class") and info.get("owner"), info
+
+
+# ===========================================================================
+# ⑦ 会话语义渲染的协议无关性（原实现硬编码 rtsp:// 前缀）
+# ===========================================================================
+
+def test_url_scheme_prefix_from_instances():
+    """★ 前缀从实例 URL 推导，不认协议名。"""
+    b = {"message_instances": {("A", "M", "B"): [("url", "rtsp://h/x")]}}
+    assert RS._url_scheme_prefix(b) == "rtsp://"
+    b = {"message_instances": {("A", "M", "B"): [("url", "sip:bob@h")]}}
+    assert RS._url_scheme_prefix(b) == "sip:"
+    # 命令类协议：实例里没有 url 字段 ⇒ 空前缀
+    b = {"message_instances": {("A", "M", "B"): [("argument", "x")]}}
+    assert RS._url_scheme_prefix(b) == ""
+    # 无实例 ⇒ 空前缀
+    assert RS._url_scheme_prefix({}) == ""
+
+
+def test_rtsp_render_is_byte_identical_to_before():
+    """★ rtsp 的渲染必须与硬编码时期**逐字一致**（authority-based URI 加 <host>:<port>/）。"""
+    b = {"url_template": {"SETUP": "{stream}/track{N}"},
+         "message_instances": {("A", "SETUP", "B"): [("url", "rtsp://s/x")]}}
+    text = RS._render_session_semantics(b)
+    assert "    SETUP → rtsp://<host>:<port>/{stream}/track{N}" in text
+
+
+def test_sip_render_does_not_leak_rtsp():
+    """★ 回归守卫：sip 的 URL 结构段绝不能出现 rtsp（原硬编码时期的真实缺陷）。"""
+    b = {"url_template": {"INVITE": "{user}@{server}"},
+         "message_instances": {("A", "INVITE", "B"): [("url", "sip:bob@h")]}}
+    text = RS._render_session_semantics(b)
+    assert "rtsp" not in text
+    assert "    INVITE → sip:{user}@{server}" in text
+
+
+def test_command_protocol_render_has_no_url_section():
+    """命令类协议（实例无 url）⇒ 不渲染 URL 结构段（宁缺勿错）。"""
+    b = {"url_template": {"MAIL": "{arg}"},
+         "message_instances": {("A", "MAIL", "B"): [("argument", "FROM:<a@b>")]}}
+    text = RS._render_session_semantics(b)
+    assert "URL 结构" not in text
+
+
+def test_render_is_protocol_agnostic():
+    """★ 同一 bundle 换任意协议名，渲染结果不变（判据不依赖协议名）。"""
+    b = {"url_template": {"M": "{p}"},
+         "message_instances": {("A", "M", "B"): [("url", "zzz://h/p")]}}
+    outs = set()
+    for _proto in ("rtsp", "sip", "smtp", "fakeproto", ""):
+        outs.add(RS._render_session_semantics(b))
+    assert len(outs) == 1, outs
+    assert "zzz://<host>:<port>/{p}" in outs.pop()

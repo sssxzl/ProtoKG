@@ -21,6 +21,7 @@ GraphRAG 综述 (ACM TOIS 2025)、Agentic RAG / Self-RAG。
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
@@ -1884,6 +1885,32 @@ def _render_request_templates(templates: Optional[dict]) -> str:
     return "\n".join(lines)
 
 
+def _url_scheme_prefix(bundle: dict) -> str:
+    """从 bundle 实例 URL 里推导 URL **scheme 前缀**（``rtsp://`` / ``sip:`` / ...）。
+
+    ★ 为什么要这个（2026-11-07 修）：`_render_session_semantics()` 原来把
+      ``rtsp://<host>:<port>/`` **写死在渲染模板里** ⇒ 任何其它协议只要有
+      ``url_template`` 就会被渲染成 rtsp 形态。实测：
+
+          sip 补上 url_template 后 →  ``INVITE → rtsp://<host>:<port>/{user}@{server}``
+
+      这是**错误知识直接进 LLM prompt**（sip 的请求行会变成 rtsp://）。
+
+    ★ 判据**协议无关**：不查协议名，只从 ``message_instances`` 里出现过的 url
+      值取 scheme。取不到（如命令类协议没有 url 字段）⇒ 返回空串 ⇒ 调用方
+      **不渲染该段**（宁缺勿错）。
+    """
+    _pat = re.compile(r"^([A-Za-z][A-Za-z0-9+.\-]*:(?://)?)")
+    for _fields in (bundle.get("message_instances") or {}).values():
+        for _n, _v in (_fields or []):
+            if str(_n or "").strip().lower() != "url" or not _v:
+                continue
+            _m = _pat.match(str(_v))
+            if _m:
+                return _m.group(1)
+    return ""
+
+
 def _render_session_semantics(bundle: dict) -> str:
     """渲染会话语义区段（precondition / session_header / url_template，来自知识中枢）。
 
@@ -1906,9 +1933,16 @@ def _render_session_semantics(bundle: dict) -> str:
             for r in rules:
                 lines.append(f"    {m} 第 {r.get('from_occurrence', 1)} 次出现起带 {r.get('header')} 头")
     if ut:
-        lines.append("  URL 结构:")
-        for m, t in sorted(ut.items()):
-            lines.append(f"    {m} → rtsp://<host>:<port>/{t}")
+        # ★ 2026-11-07：前缀不再写死 rtsp，改从实例 URL 推导（协议无关）。
+        #   authority 占位只对 **authority-based URI** 加（scheme 以 `//` 结尾，
+        #   如 `rtsp://` / `http://`）；`sip:` 这种 opaque URI 不加
+        #   ⇒ rtsp 渲染结果与改动前**逐字一致**，sip 不会拼出 `sip:<host>:<port>/`。
+        _pref = _url_scheme_prefix(bundle)
+        if _pref:
+            _authority = "<host>:<port>/" if _pref.endswith("//") else ""
+            lines.append("  URL 结构:")
+            for m, t in sorted(ut.items()):
+                lines.append(f"    {m} → {_pref}{_authority}{t}")
     return "\n".join(lines)
 
 
