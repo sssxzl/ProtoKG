@@ -34,6 +34,24 @@ _SEQUENCE_ACTIONS = {
 }
 
 
+
+def _url_scheme(url: str) -> str:
+    """取 URL 的 scheme（``rtsp://x`` → ``rtsp``；``sip:a@b`` → ``sip``）。
+
+    ★ 协议无关的小工具（A4，2026-11-07）：用于「这个 URL 是不是别家协议的」判断。
+      没有 scheme 时返回空串。
+    """
+    _u = str(url or "").strip()
+    _i = _u.find(":")
+    if _i <= 0:
+        return ""
+    _sc = _u[:_i].strip().lower()
+    if not _sc or not _sc[0].isalpha():
+        return ""
+    if not all(c.isalnum() or c in "+-." for c in _sc):
+        return ""
+    return _sc
+
 def _seed_signature(seed: SeedCorpus) -> tuple:
     """(方法序列, 全部头部取值) 完整签名——只折叠完全相同的种子。"""
     return (
@@ -104,11 +122,13 @@ def select_seeds(bundle: dict, resources: Optional[list] = None,
     #   已映射 action（double_setup/uaf_seq/lifecycle_seq/interleave_seq）产 legal/illegal
     #   边界对；字段型 action（long_value/empty_edge 等）由下方 LLM 导向覆盖。
     #   过滤非白名单方法的候选（漏洞数据 boundary 可能硬编码 RTSP 的 SETUP/TEARDOWN）。
-    #   默认流名从 profile url_placeholders 的 <stream> 读（协议特定），缺省回退 RTSP（默认流名兜底, 换协议应在 profile 显式声明 url_placeholders）。
+    #   默认流名从 profile url_placeholders 的 <stream> 读（协议特定）。
+    #   ★ 2026-11-07（A5）：缺省改为**空串**，不再回退 RTSP 的 `matroskaFileTest`
+    #   —— 协议无流概念时用空串才是对的（新协议不该继承 RTSP 的流名）。
     from core import paths as _paths
     import json as _json
     _prof = _paths.target_profile(protocol)
-    _stream = "matroskaFileTest"
+    _stream = ""
     if _prof.exists():
         try:
             _pd = _json.loads(_prof.read_text(encoding="utf-8")) or {}
@@ -167,12 +187,18 @@ def select_seeds(bundle: dict, resources: Optional[list] = None,
             _rf = {}
     if "{url}" not in _rf.get("request_line", ""):
         merged = [s for s in merged if not any(getattr(m, "url", "") for m in s.messages)]
-    elif protocol != "rtsp" and _default_url:
-        # 非 rtsp 头部协议（如 sip）：source 源 LLM 先验会塞 rtsp:// URL，
-        # 统一替换成 profile 的 default_url（如 sip:127.0.0.1:5060）。
+    elif _default_url:
+        # ★ 2026-11-07（A4）：判据从「协议名 != rtsp」改为「**URL 的 scheme 与本协议
+        #   default_url 的 scheme 不同**」——协议无关。
+        #   原判据是为修「source 源 LLM 先验塞了 rtsp:// URL」这个具体现象，
+        #   写成了协议特判 ⇒ 新协议遇到同类污染（塞了别家 URL）时不会被拦住。
+        #   新判据：scheme 不一致 ⇒ 统一替换成 profile 的 default_url。
+        #   ★ rtsp 自己不受影响（它的 default_url 就是 rtsp:// ⇒ scheme 相同 ⇒ 不替换）。
+        _own_scheme = _url_scheme(_default_url)
         for s in merged:
             for m in s.messages:
-                if getattr(m, "url", "") and str(m.url).startswith("rtsp://"):
+                _u = str(getattr(m, "url", "") or "")
+                if _u and _url_scheme(_u) != _own_scheme:
                     m.url = _default_url
     if max_seeds is not None and len(merged) > max_seeds:
         return merged[:max_seeds]

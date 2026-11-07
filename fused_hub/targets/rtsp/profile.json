@@ -428,6 +428,24 @@
         "legal": "CSeq 递增",
         "illegal": "连续相同 CSeq（触发重放）"
       }
+    },
+    "field_guidance": {
+      "Transport": "SETUP 的 Transport 用多种合法取值：RTP/AVP;unicast;client_port=X-Y、RTP/AVP/TCP;unicast;interleaved=0-1 等",
+      "Transport header": "同 Transport：SETUP 用多种合法 Transport 取值",
+      "Range": "PLAY 的 Range 用多种合法取值：npt=0.000-、npt=0.000-0.001、clock=绝对时间等",
+      "Session": "Session 用合法但多样的值（不同 hex/数字串）",
+      "track": "对多轨流的同一 track 生成连续两次 SETUP 的合法序列",
+      "interleaved": "生成先 RTP/AVP/TCP interleaved SETUP、再普通 SETUP 的合法序列",
+      "client_port": "Transport 的 client_port 用不同端口对，尝试多个端口对",
+      "Authorization": "DESCRIBE/SETUP/PLAY 的 Authorization 用合法完整 Digest（username/realm/nonce/uri/response 齐全），并尝试偏长 nonce / 长 username（≤256 字符）",
+      "授权头": "同 Authorization：用合法完整 Digest",
+      "认证字段": "同 Authorization：用合法完整 Digest",
+      "Digest": "Digest 认证的 username/realm/nonce/uri/response 用合法完整取值组合",
+      "nonce": "Digest 认证的 nonce 用合法 hex 串，尝试偏长取值（≤256 字符）",
+      "response": "Digest 认证的 response 用合法 hex 串，尝试不同长度",
+      "realm": "Digest 认证的 realm 用合法字符串，尝试偏长 realm（≤256 字符）",
+      "uri": "Digest 认证的 uri 字段用合法 URL（与请求行一致），尝试边界路径",
+      "username": "Digest 认证的 username 用合法字符串，尝试偏长 username（≤256 字符）"
     }
   },
   "knowledge_channels": {

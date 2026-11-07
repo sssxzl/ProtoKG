@@ -273,8 +273,12 @@ def _derive_vuln_boundary_candidates(bundle: dict, profile: dict,
       被排除的方法（OPTIONS/SUBSCRIBE/...）的**漏洞知识仍在 bundle["vuln_pattern"] 里**
       （知识保留），只是不产出以它们开头的种子。
     """
-    stream = ((profile.get("url_placeholders") or {}).get("<stream>")
-              or ("" if protocol != "rtsp" else "matroskaFileTest"))
+    # ★ 2026-11-07（A5）：去掉 `matroskaFileTest` 这个**写死的 RTSP 流名**兜底。
+    #   原实现是「配置优先、硬编码兜底」——配置存在时行为不变（三协议实测均如此，
+    #   rtsp 的 `url_placeholders["<stream>"]` = `mp3AudioTest`），
+    #   但硬编码本身让新协议在缺配置时会拿到 RTSP 的流名 ⇒ 去掉。
+    #   协议无流概念时应当是**空串**（`selector.py` 的读法就是这样）。
+    stream = ((profile.get("url_placeholders") or {}).get("<stream>") or "")
     # ★★ 批次 1.5：把「源 A 第四类」（**RFC 语义规则投影出的 legal_boundary**
     #   → 「满足约束 vs 违反约束」的边界候选）**并入 ③ 层**。
     #   ★ 此前它**只被测试调用、生产代码从不调用** ⇒ 即使 legal_boundary 有内容

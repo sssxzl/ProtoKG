@@ -152,5 +152,8 @@
     ],
     "request_pattern": "^C:\\s+(\\w+)",
     "response_pattern": "^S:\\s+(\\d{3})"
+  },
+  "vuln": {
+    "field_guidance": {}
   }
 }

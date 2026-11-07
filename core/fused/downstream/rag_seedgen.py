@@ -1772,37 +1772,61 @@ def _render_security(security: list) -> str:
 
 
 # 漏洞字段 → 「合法覆盖指引」（种子必须合法，但优先覆盖漏洞相关取值/序列/边界）
-_VULN_FIELD_GUIDANCE = {
-    "Transport": "SETUP 的 Transport 用多种合法取值：RTP/AVP;unicast;client_port=X-Y、"
-                 "RTP/AVP/TCP;unicast;interleaved=0-1 等",
-    "Transport header": "同 Transport：SETUP 用多种合法 Transport 取值",
-    "Range": "PLAY 的 Range 用多种合法取值：npt=0.000-、npt=0.000-0.001、clock=绝对时间等",
-    "Session": "Session 用合法但多样的值（不同 hex/数字串）",
-    "track": "对多轨流的同一 track 生成连续两次 SETUP 的合法序列",
-    "interleaved": "生成先 RTP/AVP/TCP interleaved SETUP、再普通 SETUP 的合法序列",
-    "client_port": "Transport 的 client_port 用不同端口对，尝试多个端口对",
+#: 漏洞字段 → 「合法覆盖指引」（种子必须合法，但优先覆盖漏洞相关取值/序列/边界）
+#:
+#: ★ 2026-11-07（A2）：拆成两部分 ——
+#:   ① `_VULN_FIELD_GUIDANCE_GENERIC`：**跨协议通用**的词（Digest 的字段名、
+#:      CSeq、URL、header…）。这些在哪个协议都成立 ⇒ 留在代码里。
+#:   ② `_VULN_FIELD_GUIDANCE_PROTOCOL`：**协议特定**的词（``Transport`` / ``Range`` /
+#:      ``track`` / ``interleaved`` / ``client_port``，以及 **HTTP Digest 认证**那组
+#:      ``Authorization`` / ``Digest`` / ``nonce`` / ``realm`` / ``uri`` / ``username``）——
+#:      它们的取值语法是 RTSP/HTTP 专属的，硬编码会让新协议拿到 RTSP 语义
+#:      （如给 SIP 注入「RTP/AVP;unicast;client_port」这种它根本不认识的取值，
+#:      或给 SMTP 注入「Digest 认证的 nonce」这种它没有的概念）
+#:      ⇒ 下沉到 ``profile.vuln.field_guidance``。
+#:
+#:   ★ 合并规则：protocol 特定项**覆盖**同名通用项；profile 未声明 ⇒ 用通用缺省。
+#:     新协议若不声明 ``field_guidance``，就只拿到通用指引（而不是 RTSP 的）。
+_VULN_FIELD_GUIDANCE_GENERIC = {
     "CSeq": "CSeq 用合法取值：正常递增，或相邻请求用相同值（测试重放）",
-    "Authorization": "DESCRIBE/SETUP/PLAY 的 Authorization 用合法完整 Digest"
-                     "（username/realm/nonce/uri/response 齐全），并尝试偏长 nonce / 长 username（≤256 字符）",
-    "授权头": "同 Authorization：用合法完整 Digest",
-    "认证字段": "同 Authorization：用合法完整 Digest",
-    "Digest": "Digest 认证的 username/realm/nonce/uri/response 用合法完整取值组合",
-    "nonce": "Digest 认证的 nonce 用合法 hex 串，尝试偏长取值（≤256 字符）",
-    "response": "Digest 认证的 response 用合法 hex 串，尝试不同长度",
-    "realm": "Digest 认证的 realm 用合法字符串，尝试偏长 realm（≤256 字符）",
-    "uri": "Digest 认证的 uri 字段用合法 URL（与请求行一致），尝试边界路径",
-    "username": "Digest 认证的 username 用合法字符串，尝试偏长 username（≤256 字符）",
     "Content-Length": "Content-Length 用合法取值：与实际 body 长度一致，或数值边界（0/较大整数）",
-    "URL": "请求 URL 用合法但多样的结构（尾斜杠、track{N}、边界路径）",
+    "URL": "请求 URL 用合法但多样的结构（尾斜杠、边界路径）",
     "header": "各头部字段用合法但多样的取值，覆盖取值池与数值边界",
 }
 
+#: ★ 协议特定的漏洞字段指引 —— **默认空**（不内置任何协议的知识）。
+#:   各协议在自己的 ``profile.json`` 的 ``vuln.field_guidance`` 段声明。
+_VULN_FIELD_GUIDANCE_PROTOCOL: dict = {}
 
-def _render_vuln_guidance(security: list) -> str:
+
+def _vuln_field_guidance(protocol: str = "") -> dict:
+    """该协议的「漏洞字段 → 合法覆盖指引」映射（**通用 + 协议特定**）。
+
+    ★ 协议特定项来自 ``profile.json`` 的 ``vuln.field_guidance``（A2，2026-11-07）；
+      通用项是内置缺省。**协议特定项覆盖同名通用项**。
+    """
+    out = dict(_VULN_FIELD_GUIDANCE_GENERIC)
+    _key = str(protocol or "").strip().lower()
+    proto_specific = _VULN_FIELD_GUIDANCE_PROTOCOL.get(_key)
+    if not proto_specific:
+        try:
+            from core.fused.downstream.protocol_flags import load_profile_section
+            proto_specific = load_profile_section(_key, "vuln", "field_guidance")
+        except Exception:       # pragma: no cover —— 配置缺失/读盘失败都退回通用缺省
+            proto_specific = None
+    if isinstance(proto_specific, dict):
+        out.update({str(k): str(v) for k, v in proto_specific.items() if v})
+    return out
+
+
+def _render_vuln_guidance(security: list, protocol: str = "") -> str:
     """把漏洞信息翻译成「漏洞导向生成要求」。
 
     核心：种子必须合法，但优先覆盖历史漏洞相关的字段/序列/边界，
     让 fuzzer 的变异能在漏洞相关区域展开（而非平铺漏洞描述让 LLM 自由发挥）。
+
+    ★ 2026-11-07（A2）：加 ``protocol`` 参数 —— 指引按协议取，
+      新协议不再继承 RTSP 的字段取值语义。
     """
     if not security:
         return "(无漏洞信息)"
@@ -1814,9 +1838,10 @@ def _render_vuln_guidance(security: list) -> str:
         lines.append(f"  漏洞相关方法（优先覆盖其状态路径）: {', '.join(methods)}")
     if fields:
         lines.append(f"  漏洞相关字段（用多种合法取值覆盖）: {', '.join(fields)}")
+    _guidance = _vuln_field_guidance(protocol)
     for field in fields:
-        if field in _VULN_FIELD_GUIDANCE:
-            lines.append(f"    · {field}: {_VULN_FIELD_GUIDANCE[field]}")
+        if field in _guidance:
+            lines.append(f"    · {field}: {_guidance[field]}")
     lines.append("  要求：除正常会话种子外，生成针对上述字段/序列的「合法边界种子」，"
                  "覆盖漏洞相关取值空间与序列模式；单个字段值 ≤256 字符（禁止超长 AAAA 填充）。")
     return "\n".join(lines)
@@ -1976,7 +2001,7 @@ def render_seed_prompt(bundle: dict, *, protocol: str,
 """
     if bundle.get("security"):
         user += f"""
-{_render_vuln_guidance(bundle['security'])}
+{_render_vuln_guidance(bundle['security'], protocol)}
 """
     if resources:
         user += f"""

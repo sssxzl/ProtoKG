@@ -343,5 +343,8 @@
     ],
     "request_pattern": "^\\d+\\s+\\S+\\s+\\S+\\s+([A-Z]+)\\s+\\1\\s",
     "response_pattern": "^\\d+\\s+\\S+\\s+\\S+\\s+SIP/2\\.0\\s+(\\d{3})"
+  },
+  "vuln": {
+    "field_guidance": {}
   }
 }

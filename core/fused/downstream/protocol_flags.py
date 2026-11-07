@@ -27,7 +27,7 @@ from typing import Any, Optional
 
 from core import paths
 
-__all__ = ["cseq_with_method", "clear_profile_cache"]
+__all__ = ["cseq_with_method", "clear_profile_cache", "load_profile_section"]
 
 
 #: 按协议缓存 profile（同一进程内 seeds 生成会反复问同一个问题）
@@ -75,3 +75,24 @@ def cseq_with_method(protocol: str,
     if not isinstance(sg, dict):
         return False
     return bool(sg.get("cseq_with_method"))
+
+
+def load_profile_section(protocol: str, section: str,
+                         *keys: str) -> Any:
+    """读 ``profile.json`` 的某个**嵌套段**（协议无关的通用读取口）。
+
+    用法::
+
+        load_profile_section("rtsp", "vuln", "field_guidance")
+        # ⇒ profile["vuln"]["field_guidance"]
+
+    ★ 路径不存在 / 类型不对 ⇒ 返回 ``None``（不抛异常）⇒ 调用方自行取缺省。
+    """
+    node: Any = _load_profile_cached(protocol)
+    for k in (section,) + tuple(keys):
+        if not isinstance(node, dict):
+            return None
+        node = node.get(k)
+        if node is None:
+            return None
+    return node

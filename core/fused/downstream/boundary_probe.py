@@ -77,7 +77,7 @@ def _setup_msg(stream: str, track: int, cseq: int, with_session: bool,
 _TRIGGER_SESSION = "000022B8"
 
 
-def generate_candidates(req, stream: str = "matroskaFileTest",
+def generate_candidates(req, stream: str = "",
                         protocol: str = "rtsp") -> list[tuple[str, SeedCorpus]]:
     """生成边界候选种子，返回 [(label, seed), ...]。
 
@@ -162,7 +162,7 @@ def generate_candidates(req, stream: str = "matroskaFileTest",
 # 3. 源 A：协议语义驱动的边界候选（无需漏洞库）
 # ===========================================================================
 
-def derive_semantic_candidates(bundle: dict, stream: str = "matroskaFileTest",
+def derive_semantic_candidates(bundle: dict, stream: str = "",
                                methods: tuple = ("SETUP",)) -> list[tuple[str, SeedCorpus]]:
     """源 A：从协议语义（状态机自环/生命周期）推导边界候选，不依赖漏洞库。
 
@@ -279,7 +279,7 @@ def extract_session_candidates(protocol: str = "rtsp",
     return sorted(sessions)
 
 
-def search_trigger_value(req, oracle, stream: str = "matroskaFileTest") -> Optional[str]:
+def search_trigger_value(req, oracle, stream: str = "") -> Optional[str]:
     """搜索触发值：从真实流量提取 Session 候选，oracle 验证哪个触发崩溃。
 
     思想来源：Delta Debugging（Zeller）——用 test()（即 oracle）+ 候选集定位「失败诱导」值，
@@ -317,7 +317,7 @@ def binary_search_boundary(gen_seed, lo: int, hi: int, oracle):
     return best
 
 
-def derive_field_candidates(bundle: dict, stream: str = "matroskaFileTest") -> list:
+def derive_field_candidates(bundle: dict, stream: str = "") -> list:
     """源 A 第三类：字段取值域边界候选（数值字段的合法值 vs 边界值）。
 
     注意：字段边界值（0/-1/MAX/空）多为「覆盖边界」（覆盖更多取值，不崩溃），
@@ -347,7 +347,7 @@ def derive_field_candidates(bundle: dict, stream: str = "matroskaFileTest") -> l
     return candidates
 
 
-def _build_baseline(stream: str = "matroskaFileTest") -> SeedCorpus:
+def _build_baseline(stream: str = "") -> SeedCorpus:
     """构造合法基线：完整多轨会话（DESCRIBE + SETUP track1 + SETUP track2 + PLAY + TEARDOWN）。
 
     基线是「确定合法」的完整会话，字段空间探测从它出发做变异。
@@ -591,7 +591,7 @@ def generate_dict_minimal(bundle: dict, resources: Optional[list] = None) -> str
         "RTSP/1.0", "Transport", "CSeq", "Accept", "application/sdp",
         "Range", "Range: npt=0.000-", "127.0.0.1",
         # 漏洞流
-        "matroskaFileTest",
+        "",
     }
     # 从真实流量模板补 Session 候选值
     for sess in extract_session_candidates():
@@ -619,7 +619,7 @@ def generate_dict_balanced(bundle: dict, resources: Optional[list] = None) -> st
         "Session", "000022B8", "Session: 000022B8",
         "RTSP/1.0", "Transport", "CSeq", "Accept", "application/sdp",
         "Range", "Range: npt=0.000-", "127.0.0.1",
-        "matroskaFileTest",
+        "",
         # 覆盖性 token（补回覆盖率）：rtsp.dict 的其他流名 + User-Agent
         "wavAudioTest", "ac3AudioTest", "webmFileTest", "User-Agent",
     }
@@ -696,7 +696,7 @@ def _constraint_messages(bundle: dict, field: str, protocol: str,
     return [legal_msg], [illegal_msg]
 
 
-def derive_constraint_candidates(bundle: dict, stream: str = "matroskaFileTest",
+def derive_constraint_candidates(bundle: dict, stream: str = "",
                                  *, protocol: str = "rtsp") -> list:
     """源 A 第四类：从 rfc 源抽取的字段约束（legal_boundary）推导边界候选。
 
@@ -843,7 +843,7 @@ def _llm_field_candidates(pattern: dict, bundle: dict, llm,
 
 
 def derive_vuln_pattern_candidates(bundle: dict,
-                                   stream: str = "matroskaFileTest",
+                                   stream: str = "",
                                    llm=None, protocol: str = "rtsp") -> list:
     """从 bundle 的 vuln_pattern 桶生成边界候选（漏洞模式 → 边界种子，GLMFuzz 式）。
 

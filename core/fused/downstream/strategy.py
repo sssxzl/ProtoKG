@@ -327,7 +327,7 @@ def render_attack_prompt(bundle: dict, reqs: list[VulnSeedReq], *,
 """
     if bundle.get("security"):
         user += f"""
-{_render_vuln_guidance(bundle['security'])}
+{_render_vuln_guidance(bundle['security'], protocol)}
 """
     if request_templates:
         user += f"""

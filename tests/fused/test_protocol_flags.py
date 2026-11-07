@@ -143,3 +143,122 @@ def test_boundary_probe_empty_does_not_raise():
     for proto in ("fakeproto", "zzz-protocol", ""):
         out = derive_constraint_candidates({}, proto)
         assert out == [], proto
+
+
+# ===========================================================================
+# ④ A2：漏洞字段指引按协议取（不继承 RTSP 语义）
+# ===========================================================================
+
+def test_generic_guidance_has_no_protocol_specific_fields():
+    """★ 通用缺省里**不得**含 RTSP 专属词（Transport/Range/track/Digest…）。"""
+    from core.fused.downstream.rag_seedgen import _VULN_FIELD_GUIDANCE_GENERIC
+    forbidden = {"Transport", "Transport header", "Range", "Session", "track",
+                 "interleaved", "client_port", "Authorization", "Digest",
+                 "nonce", "realm", "uri", "username", "授权头", "认证字段"}
+    leaked = forbidden & set(_VULN_FIELD_GUIDANCE_GENERIC)
+    assert not leaked, f"通用缺省里混进了协议特定词：{sorted(leaked)}"
+
+
+def test_rtsp_gets_its_own_guidance():
+    """rtsp 的指引来自 profile（含 Transport/Range/Digest）。"""
+    from core.fused.downstream.rag_seedgen import _vuln_field_guidance
+    g = _vuln_field_guidance("rtsp")
+    for k in ("Transport", "Range", "Session", "track", "client_port",
+              "Authorization", "Digest", "nonce"):
+        assert k in g, k
+    # 通用项也在
+    for k in ("CSeq", "Content-Length", "URL", "header"):
+        assert k in g, k
+
+
+def test_other_protocols_do_not_get_rtsp_guidance():
+    """★ 核心守卫：sip/smtp/未知协议**不得**拿到 RTSP 的字段取值语义。"""
+    from core.fused.downstream.rag_seedgen import _vuln_field_guidance
+    for proto in ("sip", "smtp", "fakeproto", ""):
+        g = _vuln_field_guidance(proto)
+        for k in ("Transport", "Range", "track", "interleaved", "client_port",
+                  "Digest", "nonce", "realm"):
+            assert k not in g, (proto, k)
+        # 通用项仍在
+        assert "header" in g, proto
+
+
+def test_guidance_is_protocol_agnostic_for_unknown():
+    """★ 未知协议拿到的指引集合必须完全一致（不认协议名）。"""
+    from core.fused.downstream.rag_seedgen import _vuln_field_guidance
+    base = _vuln_field_guidance("fakeproto")
+    for proto in ("zzz", "whatever", "another-one"):
+        assert set(_vuln_field_guidance(proto)) == set(base), proto
+
+
+def test_render_vuln_guidance_does_not_leak_rtsp_into_other_protocols():
+    """★ 端到端：sip 的漏洞字段指引里不该出现 RTSP 的取值示例。"""
+    from core.fused.downstream.rag_seedgen import _render_vuln_guidance
+    sec = [("header", "Transport", "x"), ("header", "nonce", "y")]
+    sip_text = _render_vuln_guidance(sec, "sip")
+    assert "RTP/AVP" not in sip_text, sip_text
+    assert "Digest" not in sip_text, sip_text
+    rtsp_text = _render_vuln_guidance(sec, "rtsp")
+    assert "RTP/AVP" in rtsp_text, rtsp_text
+
+
+def test_profile_field_guidance_section_exists():
+    """三协议的 profile 都应声明 ``vuln.field_guidance``（含空 dict）。"""
+    from core.fused.downstream.protocol_flags import load_profile_section
+    for proto in ("rtsp", "sip", "smtp"):
+        v = load_profile_section(proto, "vuln", "field_guidance")
+        assert isinstance(v, dict), (proto, v)
+
+
+# ===========================================================================
+# ⑤ A4：URL scheme 判据
+# ===========================================================================
+
+def test_url_scheme_extraction():
+    from core.fused.downstream.selector import _url_scheme
+    assert _url_scheme("rtsp://h/p") == "rtsp"
+    assert _url_scheme("sip:a@b") == "sip"
+    assert _url_scheme("HTTP://X") == "http"
+    assert _url_scheme("/path") == ""
+    assert _url_scheme("") == ""
+    assert _url_scheme(":noprot") == ""
+
+
+def test_url_scheme_is_protocol_agnostic():
+    """★ 判据只看 URL 本身，不认协议名。"""
+    from core.fused.downstream.selector import _url_scheme
+    for _ in range(1):
+        assert _url_scheme("ftp://x/y") == "ftp"
+        assert _url_scheme("mqtt://x") == "mqtt"
+        assert _url_scheme("telnet://x") == "telnet"
+
+
+def test_default_url_scheme_matching():
+    """★ 本协议 default_url 的 scheme 与种子 URL 相同 ⇒ 不该被改写。"""
+    from core.fused.downstream.selector import _url_scheme
+    own = _url_scheme("sip:127.0.0.1:5060")
+    assert own == "sip"
+    assert _url_scheme("sip:bob@h") == own
+    assert _url_scheme("rtsp://x/y") != own
+
+
+# ===========================================================================
+# ⑥ A5：不再有写死的 RTSP 流名
+# ===========================================================================
+
+def test_no_hardcoded_rtsp_stream_name_in_seedgen():
+    """★ 守卫：写死的 RTSP 流名不得再出现在**代码**里（注释里提及不算）。
+
+    ★ 只查非注释行 —— 本测试自己的注释就提到了这个名字，全文匹配会自伤。
+    ★ `core/fused/vuln_pattern.py` 里的 3 处**不在检查范围**：那是 **RTSP 漏洞库的
+      数据**（matroska 漏洞的触发流名），属协议数据而非代码默认值，保留是对的。
+    """
+    import pathlib
+    root = pathlib.Path(__file__).resolve().parents[2]
+    for rel in ("scripts/seedgen.py", "core/fused/downstream/selector.py",
+                "core/fused/downstream/edge_cover.py",
+                "core/fused/downstream/rag_seedgen.py"):
+        for lineno, line in enumerate(
+                (root / rel).read_text(encoding="utf-8").splitlines(), 1):
+            _code = line.split("#", 1)[0]
+            assert "matroskaFileTest" not in _code, f"{rel}:{lineno} {_code.strip()}"
