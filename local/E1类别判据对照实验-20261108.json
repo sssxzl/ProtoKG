@@ -1,0 +1,356 @@
+{
+  "rtsp": {
+    "norm_count": {
+      "config": 103,
+      "content": 107
+    },
+    "by_kind": {
+      "config": {
+        "field": 45,
+        "method": 11,
+        "outcome": 15,
+        "transition": 14,
+        "field_value": 16,
+        "required_header_global": 1,
+        "required_header_by_method": 1
+      },
+      "content": {
+        "field": 49,
+        "method": 11,
+        "outcome": 15,
+        "transition": 14,
+        "field_value": 16,
+        "required_header_global": 1,
+        "required_header_by_method": 1
+      }
+    },
+    "methods": {
+      "config": [
+        "ANNOUNCE",
+        "DESCRIBE",
+        "GET_PARAMETER",
+        "OPTIONS",
+        "PAUSE",
+        "PLAY",
+        "RECORD",
+        "REDIRECT",
+        "SETUP",
+        "SET_PARAMETER",
+        "TEARDOWN"
+      ],
+      "content": [
+        "ANNOUNCE",
+        "DESCRIBE",
+        "GET_PARAMETER",
+        "OPTIONS",
+        "PAUSE",
+        "PLAY",
+        "RECORD",
+        "REDIRECT",
+        "SETUP",
+        "SET_PARAMETER",
+        "TEARDOWN"
+      ]
+    },
+    "methods_diff": {
+      "lost_in_content": [],
+      "new_in_content": []
+    },
+    "fields_diff": {
+      "lost_in_content": [
+        "RTP-Info",
+        "WWW-Authentica"
+      ],
+      "new_in_content": [
+        "Caching",
+        "Connections",
+        "Entity",
+        "Recording",
+        "Request",
+        "Response"
+      ]
+    },
+    "norm_ids_diff": {
+      "lost_in_content_count": 2,
+      "new_in_content_count": 6
+    },
+    "truth_check": {
+      "config": {
+        "missed": [],
+        "false_positive": []
+      },
+      "content": {
+        "missed": [],
+        "false_positive": []
+      }
+    }
+  },
+  "sip": {
+    "norm_count": {
+      "config": 133,
+      "content": 150
+    },
+    "by_kind": {
+      "config": {
+        "method": 6,
+        "outcome": 50,
+        "field": 45,
+        "field_value": 25,
+        "required_header_global": 6,
+        "required_header_by_method": 1
+      },
+      "content": {
+        "method": 8,
+        "field": 61,
+        "outcome": 50,
+        "field_value": 24,
+        "required_header_global": 6,
+        "required_header_by_method": 1
+      }
+    },
+    "methods": {
+      "config": [
+        "ACK",
+        "BYE",
+        "CANCEL",
+        "INVITE",
+        "OPTIONS",
+        "REGISTER"
+      ],
+      "content": [
+        "ACK",
+        "BYE",
+        "CANCEL",
+        "INVITE",
+        "OK",
+        "OPTIONS",
+        "REGISTER",
+        "TLS"
+      ]
+    },
+    "methods_diff": {
+      "lost_in_content": [],
+      "new_in_content": [
+        "OK",
+        "TLS"
+      ]
+    },
+    "fields_diff": {
+      "lost_in_content": [
+        "MIME-Version",
+        "WWW-Authenticate"
+      ],
+      "new_in_content": [
+        "Bodies",
+        "Clients",
+        "Confidentiality",
+        "Dialogs",
+        "Framework",
+        "Framing",
+        "Integrity",
+        "Limitations",
+        "Progress",
+        "Registration",
+        "Registrations",
+        "Request-URI",
+        "Requests",
+        "Servers",
+        "Transactions",
+        "Transport",
+        "Vias",
+        "Warn-Codes"
+      ]
+    },
+    "norm_ids_diff": {
+      "lost_in_content_count": 3,
+      "new_in_content_count": 20
+    },
+    "truth_check": {
+      "config": {
+        "missed": [],
+        "false_positive": []
+      },
+      "content": {
+        "missed": [],
+        "false_positive": [
+          "OK",
+          "TLS"
+        ]
+      }
+    }
+  },
+  "smtp": {
+    "norm_count": {
+      "config": 63,
+      "content": 51
+    },
+    "by_kind": {
+      "config": {
+        "method": 12,
+        "outcome": 24,
+        "field": 19,
+        "field_value": 8
+      },
+      "content": {
+        "method": 12,
+        "field": 31,
+        "field_value": 8
+      }
+    },
+    "methods": {
+      "config": [
+        "AUTH",
+        "DATA",
+        "EHLO",
+        "EXPN",
+        "HELP",
+        "MAIL",
+        "NOOP",
+        "QUIT",
+        "RCPT",
+        "RSET",
+        "STARTTLS",
+        "VRFY"
+      ],
+      "content": [
+        "AUTH",
+        "DATA",
+        "EHLO",
+        "EXPN",
+        "HELP",
+        "MAIL",
+        "NOOP",
+        "QUIT",
+        "RCPT",
+        "RSET",
+        "STARTTLS",
+        "VRFY"
+      ]
+    },
+    "methods_diff": {
+      "lost_in_content": [],
+      "new_in_content": []
+    },
+    "fields_diff": {
+      "lost_in_content": [],
+      "new_in_content": [
+        "Alias",
+        "Atom",
+        "Body",
+        "Domain",
+        "Host",
+        "Lines",
+        "List",
+        "Local-part",
+        "Path",
+        "Scope",
+        "Timeouts",
+        "Transparency"
+      ]
+    },
+    "norm_ids_diff": {
+      "lost_in_content_count": 24,
+      "new_in_content_count": 12
+    },
+    "truth_check": {
+      "config": {
+        "missed": [],
+        "false_positive": []
+      },
+      "content": {
+        "missed": [],
+        "false_positive": []
+      }
+    }
+  },
+  "dhcpv4": {
+    "norm_count": {
+      "config": 70,
+      "content": 78
+    },
+    "by_kind": {
+      "config": {
+        "method": 5,
+        "field": 13,
+        "binary_layout": 15,
+        "option_layout": 37
+      },
+      "content": {
+        "method": 8,
+        "field": 18,
+        "binary_layout": 15,
+        "option_layout": 37
+      }
+    },
+    "methods": {
+      "config": [
+        "DHCPDECLINE",
+        "DHCPDISCOVER",
+        "DHCPINFORM",
+        "DHCPRELEASE",
+        "DHCPREQUEST"
+      ],
+      "content": [
+        "DHCPACK",
+        "DHCPDECLINE",
+        "DHCPDISCOVER",
+        "DHCPINFORM",
+        "DHCPNAK",
+        "DHCPOFFER",
+        "DHCPRELEASE",
+        "DHCPREQUEST"
+      ]
+    },
+    "methods_diff": {
+      "lost_in_content": [],
+      "new_in_content": [
+        "DHCPACK",
+        "DHCPNAK",
+        "DHCPOFFER"
+      ]
+    },
+    "fields_diff": {
+      "lost_in_content": [
+        "DHCPACK",
+        "DHCPDECLINE",
+        "DHCPINFORM",
+        "DHCPNAK",
+        "DHCPOFFER",
+        "DHCPRELEASE",
+        "DHCPREQUEST"
+      ],
+      "new_in_content": [
+        "Applicability",
+        "Bibliography",
+        "Compatibility",
+        "Context",
+        "DHCPv4",
+        "DHCPv6",
+        "Example",
+        "Failover",
+        "Procedure",
+        "Rationale",
+        "Summary",
+        "URL"
+      ]
+    },
+    "norm_ids_diff": {
+      "lost_in_content_count": 7,
+      "new_in_content_count": 15
+    },
+    "truth_check": {
+      "config": {
+        "missed": [
+          "DHCPACK",
+          "DHCPNAK",
+          "DHCPOFFER"
+        ],
+        "false_positive": []
+      },
+      "content": {
+        "missed": [],
+        "false_positive": []
+      }
+    }
+  }
+}

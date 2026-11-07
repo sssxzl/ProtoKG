@@ -1664,6 +1664,14 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
         text = w.get("text") or ""
         sem = _first_sentence(text)
         line_no = w.get("line", 0)
+        # ★ 2026-11-08 修正（批次 2 暴露的**既有隐患**）：`norm` 原本只在
+        #   method/field/outcome 三个分支里赋值，**没有每轮重置** ⇒
+        #   当某个窗口的 kind 判不出（或判成 required_header/transition）时，
+        #   `norm` 保留**上一轮**的值 ⇒ 下面 `norm["norm_id"]` 会把
+        #   **上一轮的 norm 重复加入**。
+        #   ★ 旧通道下从未暴露（章节号通道总能判出 method/field/status/outcome），
+        #     但新通道（内容判据）会判出 None ⇒ 必须修。
+        norm = None
 
         # ---- 通道 A：缩进命令条目（A1.5，FTP/SMTP 的命令是这种形态）----
         #   RFC 里命令常以「全称（缩写）」独占一行 + 深缩进正文排版：
@@ -1755,6 +1763,8 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
             field_names.setdefault(name.lower(), name)
 
         # 同一文件内去重（同一 norm_id 只保留首个 = 正文首个出现）
+        if norm is None:
+            continue
         if norm["norm_id"] in seen_ids:
             continue
         seen_ids.add(norm["norm_id"])
