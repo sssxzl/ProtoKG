@@ -78,10 +78,21 @@ def probe(protocol: str) -> dict:
         rows[name] = {"count": n, "by_source": by_source.get(name) or {}}
 
     # 方法集差异：RFC 抽到的 vs bundle 里实际留下
+    # ★ 2026-11-07 修复：`load_fact_views()` 返回的是**原始 fact**
+    #   （{"fact_key": {...}, "all_claims": [...]}），不是展平的 view。
+    #   旧代码按展平结构取 `v["subject"] / v["aspect"]` ⇒ 恒为 None
+    #   ⇒ `rfc_methods` **永远为空**（探针一直显示「RFC 方法集(0)」）。
+    #   而且 `"methods"` 是**桶名**不是 aspect 名，这个筛选本身就不可能命中。
+    #   现按 fact_key.subject.type == "method" + claims 里 authority == "rfc" 取。
+    _M = ("existence", "definition")
     rfc_methods = sorted({
-        v.get("subject") for v in views
-        if (v.get("aspect") or "") == "methods"
-        and (v.get("authority") or "") == "rfc" and v.get("subject")})
+        _sn for v in views
+        if (((v.get("fact_key") or {}).get("subject") or {}).get("type") == "method")
+        and (((v.get("fact_key") or {}).get("aspect") or "") in _M)
+        and any(str((c or {}).get("authority") or "").strip().lower() == "rfc"
+                for c in (v.get("all_claims") or []))
+        for _sn in [((v.get("fact_key") or {}).get("subject") or {}).get("name")]
+        if _sn})
     bundle_methods = sorted({str(m) for m in (bundle.get("methods") or {})})
     return {
         "source_set": src_set,
