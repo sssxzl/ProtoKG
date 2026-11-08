@@ -1,4 +1,4 @@
-﻿"""RTSP .raw 解析 + 协议无关的 seedcorpus_to_raw writer 入口.
+"""RTSP .raw 解析 + 协议无关的 seedcorpus_to_raw writer 入口.
 
 历史:
   - 早期版本里 seedcorpus_to_raw 只支持 RTSP, 写死 "METHOD url RTSP/1.0" 格式.
