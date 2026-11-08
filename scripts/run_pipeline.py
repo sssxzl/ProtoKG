@@ -84,7 +84,11 @@ def main(argv=None) -> int:
     from core import paths
     print("\n== ② 中枢重置 ==")
     removed = paths.purge_hub()
-    print(f"   已清空: {', '.join(removed) if removed else '(空)'}")
+    print(f"   中枢已清空: {', '.join(removed) if removed else '(空)'}")
+    # ★ GraphRAG 整理层**一并重置**（图是从中枢投影出来的
+    #   ⇒ 留着旧图就会带着上一个协议的知识去检索）。
+    _g = paths.purge_graph()
+    print(f"   图已清空: {', '.join(_g) if _g else '(空)'}")
 
     sources = [s.strip() for s in (args.sources or "").split(",") if s.strip()]
 

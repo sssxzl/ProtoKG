@@ -4,7 +4,7 @@
 ★ 为什么有这个文件（2026-11-07）：
   M1 的敏感性分析原本只存在于一次**临时口径审计**里（未固化）⇒ 不可复现、
   写进论文会被要求给出可复现的敏感性分析。本文件把该审计固化为脚本
-  （`local/_m1_sensitivity.py`）并锁住它的**关键结论**与**口径判据**。
+  （`tools/qa/_m1_sensitivity.py`）并锁住它的**关键结论**与**口径判据**。
 
 ★ 锁四件事：
   ① **存在类算子不得被排除**（present/absent 语义上无值域 ⇒ 免操作数）
@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "local" / "_m1_sensitivity.py"
+SCRIPT = ROOT / "tools" / "qa" / "_m1_sensitivity.py"
 
 
 def _load_mod():

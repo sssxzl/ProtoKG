@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""local/_fill_rq3_docx.py —— 回填 RQ3 表 18（Live555/RTSP）+ 表注段落。
+"""scripts/_fill_rq3_docx.py —— 回填 RQ3 表 18（Live555/RTSP）+ 表注段落。
 
 ★ 关键约束：`table_id` **跨会话不稳定**（实测同一文件三次打开得到三个不同的
   table_id）→ **严禁硬编码**，必须在运行时做**三重定位**：
@@ -19,8 +19,8 @@
   7. 表注段落（以 `【RQ3 表 18 注】` 开头，存在则替换，不存在则追加）
 
 用法:
-    E:/app/Anaconda3/python.exe local/_fill_rq3_docx.py --dry-run
-    E:/app/Anaconda3/python.exe local/_fill_rq3_docx.py
+    E:/app/Anaconda3/python.exe scripts/_fill_rq3_docx.py --dry-run
+    E:/app/Anaconda3/python.exe scripts/_fill_rq3_docx.py
 """
 from __future__ import annotations
 

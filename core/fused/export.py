@@ -11,7 +11,8 @@ from typing import Any
 from core.fused.models import (
     Fact, Claim, Evidence, Resolution, Support, Generalization,
 )
-from core.fused.compat import convert_v1_fact  # v1 path 回退入口
+# ★ 2026-11-08：v1 兼容层（core/fused/compat.py）已删 ⇒ v1 产物
+#   （derived/fused/）不再存在 ⇒ 下面只接受 v2 shape。
 
 
 # ===========================================================================
@@ -221,7 +222,8 @@ def _fact_from_json(line: str) -> Fact:
     obj = json.loads(line)
     if isinstance(obj, dict) and "subject" in obj and "aspect" in obj:
         return _deserialize(obj)
-    return convert_v1_fact(line)
+    # ★ v1 shape 已下线（v1 产物与兼容层都已移除）⇒ 明确报错而非静默降级
+    raise ValueError("fact 行不是 v2 shape（缺 subject/aspect）")
 
 
 def _deserialize(obj: dict) -> Fact:

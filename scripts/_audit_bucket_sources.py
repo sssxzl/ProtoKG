@@ -10,7 +10,7 @@
      "traffic": ["existence", "method_sequence", "occurrence", "value_enum"]}
   ⇒ 骨架里**含 traffic 源派生的维度** ⇒ 这些也会进 RFC 单源实验。
 
-用法：E:/app/Anaconda3/python.exe local/_audit_bucket_sources.py
+用法：E:/app/Anaconda3/python.exe scripts/_audit_bucket_sources.py
 """
 from __future__ import annotations
 

@@ -112,10 +112,52 @@ def hub_class_dir(category: str) -> Path:
     return hub_root() / str(category)
 
 
+#: ★★ GraphRAG **知识整理层**的根目录（与中枢**并列**，2026-11-08 重设计）
+#:   derived/graph/  —— 结构化知识中枢的**上一层**：
+#:   中枢（derived/hub/）= 知识**按分类**存储；
+#:   图（derived/graph/）= 知识**按关系**整理（实体图 + 社区 + 报告）。
+#:   ★ 两者**并列**（不是中枢的子目录）⇒ 层次清晰：
+#:     derived/hub/      知识本体（分类存储）
+#:     derived/graph/    关系视图（GraphRAG 整理层）
+GRAPH_DIRNAME = "graph"
+
+
+def graph_root(protocol: str = "") -> Path:
+    """GraphRAG 整理层根 ``derived/graph/``（与中枢 ``derived/hub/`` **并列**）。
+
+    ★ **无协议层**（与中枢一致）⇒ 图的记录带 ``protocol`` 字段，
+      读写两端按它过滤 ⇒ 多协议可共存（护栏需要），生产单协议亦成立。
+    """
+    return derived_root() / GRAPH_DIRNAME
+
 def hub_facts_dir() -> Path:
     """中枢的 fact 目录（**过渡期**：按 aspect 落盘）。"""
     return hub_root() / "facts"
 
+
+def purge_graph() -> list[str]:
+    """**清空 GraphRAG 整理层**（``derived/graph/``）。
+
+    ★ 与 ``purge_hub`` 配套：中枢重置时，图也要重置
+    （否则图里留着上一个协议的知识 ⇒ 检索会串）。
+    """
+    import shutil
+    root = graph_root()
+    removed: list[str] = []
+    if not root.is_dir():
+        return removed
+    for child in sorted(root.iterdir()):
+        if child.name.startswith("_tmp"):
+            continue
+        try:
+            if child.is_dir():
+                shutil.rmtree(child, ignore_errors=True)
+            else:
+                child.unlink(missing_ok=True)
+            removed.append(child.name)
+        except OSError:
+            continue
+    return removed
 
 def purge_hub() -> list[str]:
     """**清空中枢**（每次抽取前调用）⇒ 落实「每次抽取清掉上一次」。
@@ -239,6 +281,7 @@ __all__ = [
     "source_blocks_cache",
     "per_source_root",
     "purge_hub",
+    "purge_graph",
     "per_source_facts_dir",
     "per_source_aspect_facts_dir",
     "seeds_dir",

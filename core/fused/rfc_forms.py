@@ -15,7 +15,7 @@
   table（列式表格）· diagram（ASCII 图形）· abnf（文法规则）
   example（示例报文）· normative（规范性条款）· descriptive（其余散文）
 
-★ 形态分布实测（`local/_census_rfc_forms.py`，三协议形状一致）：
+★ 形态分布实测（`scripts/_census_rfc_forms.py`，三协议形状一致）：
   行级 descriptive 81-85% / normative 2.3-6.9% / diagram 1.8-4.0% /
         table 1.8-3.6% / abnf 2.1-2.2% / boilerplate 3.5% / toc 0.2-2.9%
 

@@ -17,7 +17,7 @@
   ② `method` 字段是该协议真实命令的比例（可驱动报文生成）；
   ③ 转移条数。
 
-用法：E:/app/Anaconda3/python.exe local/_pilot_infer_vs_strict.py [协议]
+用法：E:/app/Anaconda3/python.exe scripts/_pilot_infer_vs_strict.py [协议]
 """
 from __future__ import annotations
 

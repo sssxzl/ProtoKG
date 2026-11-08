@@ -76,16 +76,16 @@ def build_one(protocol: str, use_llm: bool = False) -> dict:
     struct_nodes, struct_edges = split_by_graph(node_list, edge_list, "structure")
     sem_nodes, sem_edges = split_by_graph(node_list, edge_list, "semantic")
     # ---- B2：社区检测 + 社区报告（Phase B2.1~B2.5）----
+    # ★★ **顺序修正**（2026-11-08 实测）：社区计算读的是**磁盘上的图**
+    #   ⇒ 必须**先落盘再算社区**（之前在 write_graph 之前调用 ⇒
+    #   读到的是**上一次的**图 ⇒ 社区数不稳/为 0）。
     from core.fused.graph_reports import (generate_community_reports,
                                           write_communities)
-    reports = generate_community_reports(protocol, use_llm=use_llm)
-    comms_path = write_communities(protocol, reports)
 
     paths = write_graph(protocol, node_list, edge_list, extra_meta={
-        "community_count": len(reports),
-        "community_algorithm": (reports[0].get("algorithm") if reports
-                                else "none"),
-        "communities_file": str(comms_path.name),
+        "community_count": 0,
+        "community_algorithm": "none",
+        "communities_file": "communities.json",
         "phase_a_node_count": len(phase_a_nodes),
         "phase_a_edge_count": len(phase_a_edges),
         "projected_node_count": len(proj_nodes),
@@ -94,6 +94,22 @@ def build_one(protocol: str, use_llm: bool = False) -> dict:
         "semantic_graph": {"nodes": len(sem_nodes), "edges": len(sem_edges)},
         "fingerprint": _fingerprint(node_list, edge_list),
     })
+    # ---- B2'：**图已落盘** ⇒ 现在算社区（读的就是本次的图）----------
+    reports = generate_community_reports(protocol, use_llm=use_llm)
+    comms_path = write_communities(protocol, reports)
+    # 回填 meta（社区数/算法/文件）
+    try:
+        _mp = paths["meta"]
+        _meta = json.loads(_mp.read_text(encoding="utf-8"))
+        _meta["community_count"] = len(reports)
+        _meta["community_algorithm"] = (reports[0].get("algorithm")
+                                          if reports else "none")
+        _meta["communities_file"] = str(comms_path.name)
+        _mp.write_text(json.dumps(_meta, ensure_ascii=False,
+                                          indent=2) + "\n", encoding="utf-8")
+    except (OSError, KeyError, json.JSONDecodeError):
+        pass
+
     return {
         "nodes": len(node_list), "edges": len(edge_list),
         "structure": (len(struct_nodes), len(struct_edges)),

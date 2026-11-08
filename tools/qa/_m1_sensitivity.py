@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""local/_m1_sensitivity.py —— M1 可执行率的**同等严格度敏感性分析**（可复现脚本）。
+"""tools/qa/_m1_sensitivity.py —— M1 可执行率的**同等严格度敏感性分析**（可复现脚本）。
 
 ★ 为什么需要这个脚本（2026-11-07）：
   M1 的**主口径**存在**两把尺子不一样**的问题：
@@ -27,7 +27,7 @@
 
 用法::
 
-    E:/app/Anaconda3/python.exe local/_m1_sensitivity.py
+    E:/app/Anaconda3/python.exe tools/qa/_m1_sensitivity.py
     # ⇒ 打印表格 + 写入 derived/exp_semantic_gain/m1_sensitivity.json
 """
 from __future__ import annotations
@@ -39,7 +39,8 @@ import os
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+# ★ 2026-11-08：移到 tools/qa/ ⇒ 层级 +1 ⇒ parents[2] 才是项目根
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 EXP_DIR = ROOT / "derived" / "exp_semantic_gain"

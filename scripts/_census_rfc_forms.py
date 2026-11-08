@@ -19,7 +19,7 @@
 ★ 输出：每个协议的**行级**形态分布 + **块级**候选规模（块 = 连续同类行），
   并列出各类别的**代表性样例**（供人工核对判据是否合理）。
 
-用法：E:/app/Anaconda3/python.exe local/_census_rfc_forms.py [协议...]
+用法：E:/app/Anaconda3/python.exe scripts/_census_rfc_forms.py [协议...]
 """
 from __future__ import annotations
 

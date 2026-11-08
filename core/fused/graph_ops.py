@@ -39,10 +39,14 @@ from core.fused.graph_schema import edge_type_names, node_type_names
 # 落盘路径
 # ===========================================================================
 
-def graph_dir(protocol: str) -> Path:
-    """``derived/per_source/<协议>/graph/``。"""
+def graph_dir(protocol: str = "") -> Path:
+    """``derived/graph/``（**GraphRAG 整理层**，与中枢 ``derived/hub/`` **并列**）。
+
+    ★ 2026-11-08 重设计：图从中枢的**子目录**提到**并列层** ⇒
+      中枢 = 知识本体（按分类），图 = 关系视图（按关系）。
+    """
     from core import paths
-    return paths.hub_root() / "graph"
+    return paths.graph_root(protocol)
 
 
 def nodes_path(protocol: str) -> Path:

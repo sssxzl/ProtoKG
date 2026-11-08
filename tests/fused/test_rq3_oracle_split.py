@@ -20,9 +20,9 @@ sys.path.insert(0, str(ROOT))
 
 
 def _load_oracle():
-    """加载 `local/_oracle.py`（非包模块，用 importlib 载入）。"""
+    """加载 `tools/qa/_oracle.py`（非包模块，用 importlib 载入）。"""
     spec = importlib.util.spec_from_file_location(
-        "rq3_oracle_mod", ROOT / "local" / "_oracle.py")
+        "rq3_oracle_mod", ROOT / "tools" / "qa" / "_oracle.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod

@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 """tools/qa/run_guarded_by_protocol.py —— **单协议链路自检**（2026-11-08 新增）。
 
-★★ **实测结论（重要）**：本脚本**不能替代全量护栏**（方案 B 不可行）。
+★★ **实测结论（重要，3 轮实测 / 约 40 分钟）**：本脚本**不能替代全量护栏**
+  —— 方案 B 在**当前测试集上结构性不可行**。
+  实测：跨协议分组 ⇒ 新增 39 failed + 20 errors；修正分组后 ⇒ 新增 55 + 37；
+  单协议 ⇒ 新增 19 + 20。
+  ⇒ **根因是「两类测试的要求互斥」**：
+    · **协议专属**测试需要「中枢里只有该协议」⇒ 单协议构建即可；
+    · **通用**测试**隐含依赖「中枢里有多个协议」**
+      （如 ``test_edge_cover`` 用**默认协议 rtsp**）⇒ 需要多协议共存；
+    ⇒ 「单协议」与「通用测试」**互斥** ⇒ 无法同时满足。
+  ⇒ **这是测试集的设计假设**，不是实现缺陷。
   实测（2026-11-08，18 分钟）：
   · 跨协议分组（``--all-protocols``）⇒ **新增 39 failed + 20 errors**；
   · 单协议（``--protocol rtsp``）⇒ **新增 19 failed + 20 errors**。
@@ -82,7 +91,15 @@ def test_protocols(text: str) -> list[str]:
 
 
 def group_tests(protocols: list[str]) -> tuple[dict[str, list[str]], list[str]]:
-    """分组：``{协议: [测试文件…]}`` + ``通用测试文件``。"""
+    """分组：**按测试函数**的协议依赖判定（★ 2026-11-08 修正）。
+
+    ★ **修正前的错**：按**整个文件**里的协议字面量分组 ⇒
+      `test_graph_pipeline.py`（里面只有 1 个函数用 sip/smtp）被误归到
+      **所有**协议组 ⇒ 单协议组里其它协议的数据缺失 ⇒ 大面积失败。
+    ★ **修正后**：逐个**测试函数**看它依赖哪个协议 ⇒
+      一个文件里不同函数可归到**不同**协议组 ⇒ 精准。
+    """
+    import ast
     groups: dict[str, list[str]] = {p: [] for p in protocols}
     common: list[str] = []
     for f in sorted(TESTS.rglob("test_*.py")):
@@ -90,13 +107,31 @@ def group_tests(protocols: list[str]) -> tuple[dict[str, list[str]], list[str]]:
             text = f.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
-        ps = test_protocols(text)
         rel = str(f.relative_to(ROOT))
-        if not ps:
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            common.append(rel)      # 语法错 ⇒ 归通用（收集错误会报出来）
+            continue
+        file_ps: set[str] = set()
+        has_fn = False
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            if not node.name.startswith("test_"):
+                continue
+            has_fn = True
+            # ★ 该函数体 + 装饰器里出现的协议字面量
+            seg = ast.get_source_segment(text, node) or ""
+            file_ps |= set(test_protocols(seg))
+        if not has_fn:
             common.append(rel)
-        else:
-            for p in ps:
-                groups.setdefault(p, []).append(rel)
+            continue
+        if not file_ps:
+            common.append(rel)
+            continue
+        for p in file_ps:
+            groups.setdefault(p, []).append(rel)
     return groups, common
 
 
@@ -136,6 +171,8 @@ def main(argv=None) -> int:
     ap.add_argument("--sources", default="rfc",
                     help="构建中枢时用的源（逗号分隔）")
     ap.add_argument("--out-dir", default="qa/byproto")
+    ap.add_argument("--with-common", action="store_true",
+                    help="★ 连通用测试一起跑（它们隐含依赖多个协议并存）")
     ap.add_argument("--skip-build", action="store_true",
                     help="不构建中枢（用现有中枢）")
     args = ap.parse_args(argv)
@@ -160,9 +197,25 @@ def main(argv=None) -> int:
             if not build_hub(p, sources):
                 print(f"!! {p} 构建失败", file=sys.stderr)
                 return 2
-        files = sorted(set(groups.get(p, [])) | set(common))
-        print(f"[测试] {p}: {len(files)} 个文件（含通用 {len(common)}）", flush=True)
+        # ★ 只跑**该协议专属**的测试（通用测试见下）
+        files = sorted(set(groups.get(p, [])))
+        if not files:
+            continue
+        print(f"[测试] {p}: {len(files)} 个专属文件", flush=True)
         f, e = run_group(files, out_dir, p)
+        all_failed |= set(f)
+        all_error |= set(e)
+        print(f"        failed {len(f)} / error {len(e)}", flush=True)
+
+    # ★★ **通用测试最后统一跑一次**（2026-11-08 实测修正）：
+    #   通用测试**隐含依赖「中枢里有多个协议」**（例如
+    #   ``test_edge_cover`` 用**默认协议 rtsp**）⇒ 在「只有单协议」的
+    #   组里跑必然失败 ⇒ 逐组跑会重复失败。
+    #   ⇒ 改为：各协议**专属**测试分组跑（诊断价值），
+    #     **通用**测试在**全部协议构建完**后统一跑一次。
+    if common and args.with_common:
+        print(f"[测试] 通用: {len(common)} 个文件", flush=True)
+        f, e = run_group(sorted(common), out_dir, "common")
         all_failed |= set(f)
         all_error |= set(e)
         print(f"        failed {len(f)} / error {len(e)}", flush=True)
