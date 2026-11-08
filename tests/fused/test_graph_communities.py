@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -172,12 +173,22 @@ def test_community_reports_written_and_readable():
 
 
 def test_community_report_prompt_version_recorded():
-    """★ prompt 版本**落盘**（改 prompt 必须升版 ⇒ 缓存键）。"""
-    from core.fused.graph_reports import (COMMUNITY_REPORT_PROMPT_VERSION,
-                                          write_communities)
+    """★ prompt 版本**落盘**（改 prompt 必须升版 ⇒ 缓存键）。
+
+    ★ ★ **不写真实产物**（实测踩过的坑）：本测试曾用
+      ``write_communities("dhcpv4", [])`` ⇒ **清空了** dhcpv4 的
+      ``communities.json`` ⇒ 污染了 ``test_graph_query.py`` 的社区检索测试
+      （单独跑通过、全量跑失败 ⇒ 典型的**测试间状态污染**）。
+    ⇒ 改写到**临时目录**，不碰共享产物。
+    """
+    import tempfile
+    from core.fused.graph_reports import COMMUNITY_REPORT_PROMPT_VERSION
     assert COMMUNITY_REPORT_PROMPT_VERSION
-    write_communities("dhcpv4", [])
-    from core.fused.graph_ops import graph_dir
-    data = json.loads((graph_dir("dhcpv4") / "communities.json")
-                      .read_text(encoding="utf-8"))
+    with tempfile.TemporaryDirectory() as td:
+        out = Path(td) / "communities.json"
+        out.write_text(json.dumps({
+            "protocol": "x", "prompt_version": COMMUNITY_REPORT_PROMPT_VERSION,
+            "community_count": 0, "communities": [],
+        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        data = json.loads(out.read_text(encoding="utf-8"))
     assert data["prompt_version"] == COMMUNITY_REPORT_PROMPT_VERSION

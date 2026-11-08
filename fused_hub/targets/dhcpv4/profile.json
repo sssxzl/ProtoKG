@@ -357,7 +357,10 @@
   },
   "allowed_methods": [
     "DHCPDISCOVER",
+    "DHCPOFFER",
     "DHCPREQUEST",
+    "DHCPACK",
+    "DHCPNAK",
     "DHCPDECLINE",
     "DHCPRELEASE",
     "DHCPINFORM"
@@ -385,7 +388,7 @@
     "url_template": {}
   },
   "knowledge_channels": {},
-  "note": "DHCPv4 Profile（2026-11-07 首轮接入，用于 RFC 源全流程测试）。DHCP 是 **UDP 二进制协议**：报文 = BOOTP 固定头(236B) + magic cookie + 选项 TLV。⚠ 已知缺口：`raw_writers` 无 DHCP 派发 ⇒ .raw 落盘走「其他」分支（文本 key=value）⇒ **不是真正的 DHCP 报文**。 ★ 2026-11-07：补 binary_fields/binary_options ⇒ 落盘改为按 BOOTP 字节布局渲染（240 字节固定头 + TLV 选项区）。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。",
+  "note": "DHCPv4 Profile（2026-11-07 首轮接入，用于 RFC 源全流程测试）。DHCP 是 **UDP 二进制协议**：报文 = BOOTP 固定头(236B) + magic cookie + 选项 TLV。⚠ 已知缺口：`raw_writers` 无 DHCP 派发 ⇒ .raw 落盘走「其他」分支（文本 key=value）⇒ **不是真正的 DHCP 报文**。 ★ 2026-11-07：补 binary_fields/binary_options ⇒ 落盘改为按 BOOTP 字节布局渲染（240 字节固定头 + TLV 选项区）。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。 ★ 2026-11-07：binary_fields/binary_options 由 `scripts/gen_binary_layout.py` 从**中枢**（RFC 位域图/选项表）自动生成 ⇒ 布局来源可溯源。",
   "traffic_schema": {
     "log_files": [],
     "request_pattern": "",
@@ -393,5 +396,6 @@
   },
   "vuln": {
     "field_guidance": {}
-  }
+  },
+  "_notes": "\n★ 2026-11-08（批次 5）：`allowed_methods` 补上**服务器方向**的 3 个消息（DHCPOFFER/DHCPACK/DHCPNAK）—— 之前只有 5 个客户端消息 ⇒ `_load_allowed_methods` 的白名单把**骨架闸**上的服务器迁移边裁掉⇒ 中枢 transitions 只有 3 条 ⇒ 图上路径断裂 ⇒ 路径式种子 0 条。★ 这 3 个消息**确实是 RFC 2131 定义的**（§3.1 表 2 + Figure 3 时序图），且批次 3 的**消息清单表通道**已把它们抽成 RFC 事实 ⇒ 列入白名单是**补全**不是污染。"
 }

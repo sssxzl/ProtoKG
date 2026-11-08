@@ -94,6 +94,17 @@ ALL_LAYERS: tuple[str, ...] = ("edge_cover", "generic_danger", "vuln_boundary",
 #:   回滚手段必须成立；口径见模块 docstring 的「回滚态逐字节一致」一段）。
 ACTION_SEQ_LAYER_NAME = "action_seq"
 
+#: ★ 2026-11-08（GraphRAG 批次 5）：**路径式种子层**的名字。
+#:
+#: ★ **不进 ALL_LAYERS**（与 action_seq 同理）⇒ **默认关闭** ⇒
+#:   现有种子的数量与口径**完全不变**（回滚手段成立）。
+#: ⇒ 需显式 ``--layers edge_cover,graph_path`` 才启用。
+#:
+#: ★ 与①「结构覆盖」的目标**不同**：
+#:   · edge_cover：覆盖**尽可能多**的转移（边覆盖）；
+#:   · graph_path：覆盖**完整会话**（路径）⇒ 产出「黄金路径」型种子。
+GRAPH_PATH_LAYER_NAME = "graph_path"
+
 #: RQ3 聚焦组配置表（技术方案 §2.2 实现契约）。
 #:
 #: A 守正：①+②+④（不含③漏洞边界层）、自然序、基础字典
@@ -782,7 +793,11 @@ def _resolve_config(args) -> tuple[Optional[dict], Optional[str]]:
     # 原子开关模式：层集合
     if args.layers is not None:
         layers = [x.strip() for x in args.layers.split(",") if x.strip()]
-        bad = [x for x in layers if x not in ALL_LAYERS]
+        # ★ 可选层：不在 ALL_LAYERS 里，但**可以显式启用**
+        #   （graph_path = 路径式种子层，批次 5 新增；默认关闭）
+        _optional = (GRAPH_PATH_LAYER_NAME,)
+        bad = [x for x in layers
+               if x not in ALL_LAYERS and x not in _optional]
         if bad:
             return (None, f"--layers 含未知层: {', '.join(bad)}"
                          f"（可用: {', '.join(ALL_LAYERS)}）")
@@ -995,6 +1010,14 @@ def main() -> int:
             cfg["expect_dict_tokens"] = fg_cfg["dict_tokens"]
 
     layers = list(cfg["layers"])
+    # ★ 2026-11-08（批次 5）：**CLI 显式指定的层**追加进来
+    #   （focus_group 的配置默认覆盖了 CLI 的 ``--layers`` ⇒ 显式层被丢掉；
+    #    实测 ``--layers edge_cover,graph_path`` 里 graph_path 被吞掉）。
+    #   ⇒ 只**追加**，不替换 ⇒ 现有分组口径**完全不变**。
+    if args.layers is not None:
+        for _x in [x.strip() for x in args.layers.split(",") if x.strip()]:
+            if _x not in layers:
+                layers.append(_x)
     order = cfg["order"]
     dict_kind = cfg["dict_kind"]
 
@@ -1163,6 +1186,24 @@ def main() -> int:
         print(f"① 结构覆盖: {len(ec)} 条种子")
     else:
         print("① 结构覆盖: 跳过（层未启用）")
+
+    # ①b **路径式种子**（GraphRAG 批次 5；**默认关闭**）
+    if GRAPH_PATH_LAYER_NAME in layers:
+        try:
+            from core.fused.graph_query import path_seeds
+            gp = path_seeds(
+                protocol, transitions=transitions,
+                message_instances=bundle.get("message_instances"),
+                required_headers=bundle.get("required_headers"),
+                headers=bundle.get("headers"),
+                source_set=(set(source_set) if source_set else None),
+                strict_purity=True)
+            seeds += gp
+            print(f"①b 路径式种子: {len(gp)} 条")
+        except Exception as exc:                   # noqa: BLE001
+            print(f"①b 路径式种子: 失败 {type(exc).__name__}: {exc}")
+    else:
+        print("①b 路径式种子: 跳过（层未启用）")
 
     # ② 通用危险
     # ★ 分组模式强制开启层②（否则 RTSP profile 的 seedgen.danger=false 会让

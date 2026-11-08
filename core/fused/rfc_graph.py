@@ -698,13 +698,22 @@ def extract_prose_transitions(lines: list[str], file_name: str,
             if key in seen:
                 continue
             seen.add(key)
+            # ★ **源状态未知 ⇒ 用占位源**（2026-11-08 实测修正）：
+            #   散文里常只写「reverts to INIT state」而没写源状态。
+            #   ★ 不能直接不产边（实测：会丢掉**目标状态**这条信息 ⇒
+            #     批次 1 的散文迁移能力退化）；也不能留**空端点**
+            #     （实测：路径检索会出现空节点、纯度检查失去意义）。
+            #   ⇒ 用**占位源** ``state:?`` 并标 ``label="<源状态未知>"``。
+            #   ★ 路径检索时**跳过占位源**（见 graph_query.find_paths）。
+            _frm_id = _nid("state", frm) if frm else _nid("state", "?")
             out.append(GraphEdge(
-                edge_id=_eid("transitions_to", _nid("state", frm or "?"),
+                edge_id=_eid("transitions_to", _frm_id,
                              _nid("state", to_state)),
                 type="transitions_to",
-                from_id=_nid("state", frm) if frm else "",
+                from_id=_frm_id,
                 to_id=_nid("state", to_state),
-                graph="structure", label="",
+                graph="structure",
+                label="" if frm else "<源状态未知>",
                 source_owner="rfc", confidence="medium",
                 defined_in=_anchor(file_name, i)))
     return out

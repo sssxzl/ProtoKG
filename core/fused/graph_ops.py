@@ -91,6 +91,11 @@ def project_bundle_to_graph(bundle: dict[str, Any],
     def add_edge(etype: str, a: str, b: str, graph: str, label: str = "",
                  owner: str = "rfc", conf: str = "medium",
                  anchor: Optional[dict] = None) -> None:
+        # ★ **丢弃空端点的边**（2026-11-08 实测）：散文迁移规则里源状态可能
+        #   未知（``state:?``）⇒ 投影出 ``from=""`` 的边 ⇒ 路径检索时
+        #   会产生**空节点**、纯度检查也失去意义。
+        if not a or not b:
+            return
         eid = f"{etype}:{a}->{b}" + (f":{label}" if label else "")
         if eid in edges:
             return
@@ -118,11 +123,27 @@ def project_bundle_to_graph(bundle: dict[str, Any],
         if not (isinstance(t, (list, tuple)) and len(t) >= 3):
             continue
         src, method, dst = str(t[0]), str(t[1]), str(t[2])
+        # ★ **状态节点补齐**（2026-11-08 实测修正）：中枢的 transitions 里
+        #   可能出现**图里没有**的状态（如骨架的 ``Offered``，而 Phase A
+        #   只从 RFC 抽出 RFC 出现过的状态）
+        #   ⇒ 不补节点 ⇒ 迁移边的端点悬空 ⇒ 路径检索断链
+        #   （实测 dhcpv4 的 ``state:offered`` 缺失 ⇒ 路径查询 0 条）。
+        add_node(_nid("state", src), "state", src, "structure",
+                 owner="profile", conf="high")
+        add_node(_nid("state", dst), "state", dst, "structure",
+                 owner="profile", conf="high")
         a, b = _nid("state", src), _nid("state", dst)
         add_edge("transitions_to", a, b, "structure", label="",
                  owner="profile", conf="high")
         if method:
-            add_edge("triggers", _nid("message", method), b, "structure",
+            # ★ **`triggers` 边连「源状态」**（2026-11-08 实测修正）：
+            #   语义应是「方法 M **触发** src → dst 这条迁移」⇒ 指向 **src**。
+            #   ★ 之前连的是**目标状态** ⇒ 只能表达「到达 dst」，
+            #     无法表达「从 src 离开」⇒ 路径枚举时方法与状态**错位**
+            #     （实测得到 ``[DHCPREQUEST, DHCPOFFER, DHCPDISCOVER, DHCPNAK]``
+            #       这种荒谬顺序 ⇒ 修好后是 ``[DHCPDISCOVER, DHCPOFFER,
+            #       DHCPREQUEST, DHCPNAK]``）。
+            add_edge("triggers", _nid("message", method), a, "structure",
                      label="", owner="profile", conf="high")
             add_node(_nid("message", method), "message", method, "structure",
                      owner="rfc", conf="high")
