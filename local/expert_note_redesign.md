@@ -1,6 +1,6 @@
-# kb/expert_note 重新设计 —— expert_note schema v3（专家判断导向）
+# kb/expert_note 重新设计 —— expert_note schema（专家判断导向）
 
-> 日期：2026-10-20。本文件是 expert_note 的**设计真源（v3）**，取代 2026-10-09 的 v2 设计。
+> 本文件是 expert_note 的**设计真源**（取代此前的旧设计）。
 > 触发：用户澄清 expert_note 的原始意图——「人对协议的认识和总结，有自己的视角，主观性偏大」，
 > 而非「客观知识的重复搬运」。
 

@@ -1,4 +1,4 @@
-# local/layer0_delivery_report.md — Layer 0 交付报告（v2 中枢）
+# local/layer0_delivery_report.md — Layer 0 交付报告
 
 **日期**: 2026-10-08
 **依据**: rag-chatafl · v2 中枢 · Step C 系列 + 批次 A + B1

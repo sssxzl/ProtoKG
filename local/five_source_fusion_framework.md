@@ -619,7 +619,7 @@ python -c "import json,collections,pathlib; \
   [print(p.stem, sum(1 for l in p.read_text(encoding='utf-8').splitlines() if l.strip())) \
    for p in sorted(pathlib.Path('derived/fused/facts').glob('*.jsonl'))]"
 
-# kb 只读守卫（aggregate v1 口径）
+# kb 只读守卫（aggregate 口径）
 python local/kb_fingerprint.py kb --aggregate
 # 期望: sha256:bcc1bd3f3f41d0bdfc2b8cd296297aab1edcbf1fc1766aea1d3c5e7b305bf06a (6061)
 

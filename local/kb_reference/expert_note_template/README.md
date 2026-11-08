@@ -1,4 +1,4 @@
-# expert_note_template · 协议 KB 模板（v2.4 stage 1 Step 1c）
+# expert_note_template · 协议 KB 模板
 
 > 用途：**挂新协议 KB 时复制本目录到 `kb/spec/<proto>/expert_note/`** 然后按文件填空。
 > 模板本身**不被 dispatcher 抽取**（不在 kb/ 主路径下），仅作 schema 参考 + 占位。
