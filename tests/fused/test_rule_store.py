@@ -112,6 +112,9 @@ def store(tmp_path, monkeypatch):
     """把四库根指向 tmp_path（不改真实 derived/）。"""
     monkeypatch.setattr(paths, "per_source_root",
                         lambda p: tmp_path / p.lower())
+    # ★ 中枢**共用一套**（2026-11-08 重设计）⇒ 中枢根也隔离
+    monkeypatch.setattr(paths, "hub_root",
+                        lambda *a: tmp_path / "hub")
     return tmp_path
 
 

@@ -76,48 +76,105 @@ def source_blocks_cache(protocol: str) -> Path:
 HUB_DIRNAME = "hub"
 
 
-def hub_root(protocol: str) -> Path:
-    """中枢根 derived/hub/<protocol>/（结构化知识中枢）。"""
-    return derived_root() / HUB_DIRNAME / protocol.lower()
+def hub_root(protocol: str = "") -> Path:
+    """中枢根 ``derived/hub/``（结构化知识中枢，**共用一套**）。
+
+    ★ ★ **物理路径无协议层**（2026-11-08 中枢重设计，用户要求：
+      「不要给每一个协议单独建立文件夹，共用一套机制」）。
+      ★ 参数 ``protocol`` **保留但忽略** ⇒ 既有调用点与测试的
+        monkeypatch（``lambda p: ...``）**继续可用** ⇒ 零改动兼容。
+      ★ 协议隔离靠**记录内的 ``fact_key.protocol``**（读取端按它过滤）。
+    """
+    """中枢根 ``derived/hub/``（结构化知识中枢，**共用一套**）。
+
+    ★ ★ **不按协议分目录**（2026-11-08 中枢重设计，用户要求）：
+      中枢是「**按目标协议的知识分类**存储」的**通用机制** ⇒
+      顶层只有**知识分类**（A~F），**协议是记录内的字段**
+      （``fact_key.protocol`` / ``entity_id`` 的前缀）。
+      ⇒ 换协议**不换机制** ⇒ 共用同一套落位/聚合/纯度/检索代码。
+    ★ 代价：一次只处理**一个**协议 ⇒ 抽取前必须**清空**中枢
+      （见 ``purge_hub``）⇒ 这正是「每次抽取清掉上一次」的实现。
+    """
+    return derived_root() / HUB_DIRNAME
 
 
-def hub_index_dir(protocol: str) -> Path:
-    """中枢的跨分类索引目录 derived/hub/<protocol>/index/。"""
-    return hub_root(protocol) / "index"
+def hub_index_dir() -> Path:
+    """中枢的跨分类索引目录 ``derived/hub/index/``。"""
+    return hub_root() / "index"
 
 
-def hub_class_dir(protocol: str, category: str) -> Path:
-    """中枢的**分类目录** derived/hub/<protocol>/<category>/。
+def hub_class_dir(category: str) -> Path:
+    """中枢的**分类目录** ``derived/hub/<category>/``。
 
     ★ ``category`` 取自 ``knowledge_slots.json`` 的分类 id
       （A_structure / B_interaction / …）。
     """
-    return hub_root(protocol) / str(category)
+    return hub_root() / str(category)
+
+
+def hub_facts_dir() -> Path:
+    """中枢的 fact 目录（**过渡期**：按 aspect 落盘）。"""
+    return hub_root() / "facts"
+
+
+def purge_hub() -> list[str]:
+    """**清空中枢**（每次抽取前调用）⇒ 落实「每次抽取清掉上一次」。
+
+    ★ 中枢是**共用一套**（不按协议分目录）⇒ 一次只处理一个协议
+      ⇒ 抽取前必须清空，否则会残留**上一个协议**的知识
+      ⇒ 读取端会把它当成本次的 ⇒ **跨协议污染**。
+
+    Returns:
+        被清掉的相对路径（可审计）。
+    """
+    import shutil
+    root = hub_root()
+    removed: list[str] = []
+    if not root.is_dir():
+        return removed
+    for child in sorted(root.iterdir()):
+        if child.name.startswith("_tmp"):
+            continue
+        try:
+            if child.is_dir():
+                shutil.rmtree(child, ignore_errors=True)
+            else:
+                child.unlink(missing_ok=True)
+            removed.append(child.name)
+        except OSError:
+            continue
+    return removed
 
 
 def per_source_root(protocol: str) -> Path:
-    """五源 facts 根 derived/per_source/<protocol>/（下面每源一个子目录）。"""
+    """各源**中间产物**根 derived/per_source/<protocol>/（每源一个子目录）。
+
+    ★ 2026-11-08（中枢重设计）：本目录**回归本义** —— 只放**各源自己的**
+      中间产物（``rfc/facts/`` ``traffic/facts/`` ``profile/facts/`` …）。
+      ⇒ 中枢本体（跨源汇聚）已迁到 ``derived/hub/<protocol>/``（见 ``hub_root``）。
+    """
     return derived_root() / "per_source" / protocol.lower()
 
 
 def per_source_facts_dir(protocol: str, source: str) -> Path:
-    """五源 facts 输出 derived/per_source/<protocol>/<source>/facts/。"""
+    """**某源**的中间产物 derived/per_source/<protocol>/<source>/facts/。
+
+    ★ 中枢重设计后**位置不变**（它本来就是「各源」的东西）。
+    """
     return per_source_root(protocol) / source / "facts"
 
 
 def per_source_aspect_facts_dir(protocol: str) -> Path:
-    """★ 批次 1.6 步 1：**新布局** —— 中枢按 aspect 统一存放。
+    """★ **中枢本体**的 fact 目录（按知识分类落盘的**过渡布局**）。
 
-    derived/per_source/<protocol>/facts/<aspect>.jsonl
+    2026-11-08（中枢重设计）：中枢已迁到 ``derived/hub/<protocol>/``；
+    本函数保留为**过渡期**的 aspect 布局读写点（阶段 C 会换成按分类落盘）。
 
-    设计意图（方案 §3.1.10.2）：「统一按中枢结构存放」= **按 aspect 落盘**；
-    「源」退化为**事实内部的一个字段**（``all_claims[].authority``），
-    不再作为目录层级。⇒ 中枢里**不按源分目录**，而按知识维度分文件。
-
-    兼容期：旧的「按源分目录」布局 ``<protocol>/<source>/facts/<source>.jsonl``
-    **仍然保留**（回退保险），读取端优先读本目录、缺失时自动降级读旧布局。
+    ★ 批次 1.6 的布局意图（「统一按中枢结构存放」= 按 aspect 落盘；「源」退化为
+      事实内部的 ``all_claims[].authority``）**仍然成立** ——
+      本次只是把**物理位置**从中枢语义错误的 ``per_source/`` 移到 ``hub/``。
     """
-    return per_source_root(protocol) / "facts"
+    return hub_facts_dir()
 
 
 def seeds_dir(protocol: str) -> Path:
@@ -181,6 +238,7 @@ __all__ = [
     "norms_path",
     "source_blocks_cache",
     "per_source_root",
+    "purge_hub",
     "per_source_facts_dir",
     "per_source_aspect_facts_dir",
     "seeds_dir",

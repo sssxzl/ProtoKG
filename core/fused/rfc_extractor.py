@@ -3489,7 +3489,7 @@ def _apply_transition_gate(rows: list[dict], protocol: str) -> list[dict]:
     _gated, _stat = _transition_quality_gate(
         rows, protocol, _load_rfc_config(protocol), _rfc_full_text(protocol))
     try:
-        _d = paths.per_source_root(protocol)
+        _d = paths.hub_root()
         _d.mkdir(parents=True, exist_ok=True)
         (_d / "transition_quality_gate.json").write_text(
             json.dumps(_stat, ensure_ascii=False, indent=2) + "\n",
@@ -3758,7 +3758,7 @@ def _psm_conflicts(rows: list[dict]) -> list[dict]:
 def dump_per_source_artifact(protocol: str, name: str, payload: dict) -> None:
     """把中间统计落盘到 ``derived/per_source/<协议>/<name>``（审计用，失败不阻断）。"""
     try:
-        _d = paths.per_source_root(protocol)
+        _d = paths.hub_root()
         _d.mkdir(parents=True, exist_ok=True)
         (_d / name).write_text(
             json.dumps(payload, ensure_ascii=False, indent=2) + "\n",

@@ -88,6 +88,9 @@ def test_clean_only_touches_the_requested_source(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "per_source_root", lambda protocol: fake_root)
 
     build_hub._clean_per_source("fakeproto", sources=["rfc"])
+    # ★ 中枢**共用一套** ⇒ 隔离中枢根（不污染仓库 derived/）
+    monkeypatch.setattr(paths, "hub_root",
+                        lambda *a: tmp_path / "hub")
 
     assert not (fake_root / "rfc").exists(), "本次指定的源应被清空"
     assert (fake_root / "source" / "facts" / "source.jsonl").is_file(), \

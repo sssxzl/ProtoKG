@@ -222,7 +222,7 @@ def write_entity_index(protocol: str, entities: list[dict[str, Any]]
                        ) -> Path:
     """把实体主表落盘到 ``<中枢根>/index/entities.jsonl``。"""
     from core.paths import hub_index_dir
-    d = hub_index_dir(protocol)
+    d = hub_index_dir()
     d.mkdir(parents=True, exist_ok=True)
     p = d / "entities.jsonl"
     with p.open("w", encoding="utf-8", newline="") as f:

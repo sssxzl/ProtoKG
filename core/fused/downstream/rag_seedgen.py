@@ -90,15 +90,33 @@ def load_fact_views(protocol: str = "rtsp",
     """
     views: list[dict] = []
     root = Path(facts_root) / protocol.lower() if facts_root else \
-        paths.per_source_root(protocol)
-    if not root.is_dir():
-        return views
-    # ★ 新布局优先
-    aspect_dir = root / "facts"
-    new_files = sorted(aspect_dir.glob("*.jsonl")) if aspect_dir.is_dir() else []
-    if new_files:
-        return _load_aspect_views(aspect_dir, new_files)
-    for jsonl in sorted(root.glob("*/facts/*.jsonl")):
+        paths.hub_root()
+    # ★ 新布局优先（**中枢根不存在时也要能降级** —— 各源目录里仍有事实）
+    if root.is_dir():
+        aspect_dir = root / "facts"
+        new_files = (sorted(aspect_dir.glob("*.jsonl"))
+                     if aspect_dir.is_dir() else [])
+        if new_files:
+            views = _load_aspect_views(aspect_dir, new_files)
+            # ★ ★ **按协议过滤**（2026-11-08 中枢重设计）：中枢**共用一套**
+            #   （不按协议分目录）⇒ 读取端**必须**按 protocol 过滤
+            #   ⇒ 否则会把别的协议的知识当成本次的（跨协议污染）。
+            #   ★ 无 protocol 字段的记录（占位/测试数据）**保留**。
+            _want = str(protocol or '').strip().lower()
+            if _want:
+                _f = [v for v in views
+                      if (not str(((v.get('fact_key') or {}).get('protocol')
+                           or '')).strip().lower())
+                      or str(((v.get('fact_key') or {}).get('protocol')
+                             or '')).strip().lower() == _want]
+                # ★ 该协议**没有**记录 ⇒ 返回空（**不要回落到其它协议**）
+                return _f
+            return views
+    # ★ **降级路径**：读**各源**的中间产物（``<各源根>/*/facts/*.jsonl``）
+    #   ⇒ 中枢共用一套后，各源目录仍在 ``per_source/<协议>/<源>/facts/``
+    #   ⇒ 降级时用 ``per_source_root``（不是 hub_root）。
+    _src_root = paths.per_source_root(protocol)
+    for jsonl in sorted(_src_root.glob("*/facts/*.jsonl")):
         for line in jsonl.read_text(encoding="utf-8").splitlines():
             line = line.strip()
             if not line:
@@ -107,6 +125,15 @@ def load_fact_views(protocol: str = "rtsp",
                 views.append(json.loads(line))
             except json.JSONDecodeError:
                 continue
+    # ★ 降级路径也要**按协议过滤**（各源目录里可能有别的协议的残留）
+    _want2 = str(protocol or "").strip().lower()
+    if _want2:
+        return [v for v in views
+                if (not str(((v.get("fact_key") or {}).get("protocol")
+                     or "")).strip().lower())
+                or str(((v.get("fact_key") or {}).get("protocol")
+                        or "")).strip().lower() == _want2]
+    return views
     return views
 
 
@@ -120,7 +147,7 @@ def load_source_manifest(protocol: str = "rtsp",
       中枢尚未按批次 1.6 的流程重建）。
     """
     root = Path(facts_root) / protocol.lower() if facts_root else \
-        paths.per_source_root(protocol)
+        paths.hub_root()
     path = root / "sources.json"
     if not path.is_file():
         return {}
@@ -128,7 +155,18 @@ def load_source_manifest(protocol: str = "rtsp",
         doc = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return {}
-    return doc if isinstance(doc, dict) else {}
+    if not isinstance(doc, dict):
+        return {}
+    # ★ ★ **多协议兼容**（2026-11-08 中枢重设计）：中枢**共用一套**
+    #   ⇒ ``sources.json`` 顶层有 ``protocols: {<协议>: {...}}``
+    #   ⇒ 取本协议的那一段（缺失则回落到顶层字段）。
+    _want = str(protocol or "").strip().lower()
+    _ps = doc.get("protocols")
+    if isinstance(_ps, dict) and _want:
+        _one = _ps.get(_want)
+        if isinstance(_one, dict):
+            return _one
+    return doc
 
 
 def _load_aspect_views(aspect_dir: Path, files: list[Path]) -> list[dict]:

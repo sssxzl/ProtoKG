@@ -1,4 +1,7 @@
 """tests/fused/test_build_hub_clean.py —— build_hub._clean_per_source 只清五源、保留运行时回写。
+# ★ 中枢**共用一套** ⇒ 隔离中枢根（不污染仓库 derived/）
+monkeypatch.setattr(paths, "hub_root",
+                    lambda *a: tmp_path / "hub")
 
 背景：边界探针（run_boundary_probe.py）会把 oracle 验证的 legal_boundary fact 回写到
 per_source/<protocol>/boundary_probe/facts/。build_hub 重抽取时若 rmtree 整个

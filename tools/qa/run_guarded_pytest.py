@@ -187,22 +187,38 @@ def _detect_narrow_hub_state(root=None) -> dict:
     """
     all_sources = {"rfc", "expert_note", "traffic", "vuln", "source"}
     if root is None:
-        root = Path(__file__).resolve().parents[2] / "derived" / "per_source"
+        _proj = Path(__file__).resolve().parents[2] / "derived"
+        # ★ 中枢重设计（2026-11-08）：中枢根已迁到 ``derived/hub/<协议>/``
+        #   ⇒ 窄化检测**两个位置都要看**（兼容期：新位置优先，旧位置兜底）。
+        _hub = _proj / "hub"
+        _legacy = _proj / "per_source"
+        root = _hub if _hub.is_dir() else _legacy
     else:
         root = Path(root)
     sets: dict = {}
     narrowed = False
-    if root.is_dir():
-        for protocol_dir in sorted(root.iterdir()):
-            manifest = protocol_dir / "sources.json"
-            if not manifest.is_file():
-                continue
-            try:
-                data = json.loads(manifest.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, OSError):
-                continue
-            src = [str(s) for s in (data.get("source_set") or [])]
-            sets[protocol_dir.name] = src
+    # ★ ★ **新布局**（中枢共用一套）：``derived/hub/sources.json``
+    #   是**多协议结构**（``protocols: {<协议>: {...}}``）
+    #   ⇒ 逐协议判定窄化（**不按协议目录遍历** —— 新布局无协议目录）。
+    _hub_manifest = root / "sources.json"
+    if _hub_manifest.is_file():
+        try:
+            _all = json.loads(_hub_manifest.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            _all = {}
+        _ps = _all.get("protocols")
+        if isinstance(_ps, dict):
+            for _p, _one in sorted(_ps.items()):
+                if not isinstance(_one, dict):
+                    continue
+                src = [str(s) for s in (_one.get("source_set") or [])]
+                sets[_p] = src
+                if set(src) != all_sources:
+                    narrowed = True
+        elif _all.get("source_set") is not None:
+            # ★ 兼容单协议格式
+            src = [str(s) for s in (_all.get("source_set") or [])]
+            sets[str(_all.get("protocol") or "?")] = src
             if set(src) != all_sources:
                 narrowed = True
     return {"narrowed": narrowed, "source_sets": sets}

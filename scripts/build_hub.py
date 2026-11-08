@@ -389,7 +389,7 @@ def _write_source_manifest(protocol: str, sources: list[str],
     ★ 它是「本次实验的知识来源清单」的**唯一权威**：
       组装侧与消费端都据它判断「本次参与了哪些源」。
     """
-    root = paths.per_source_root(protocol)
+    root = paths.hub_root()
     root.mkdir(parents=True, exist_ok=True)
     doc = {
         "protocol": protocol,
@@ -907,6 +907,8 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
     Returns:
         ``{aspect: 条数}``。
     """
+    # ★ root 必须是 **per_source_root**（它遍历的是**各源**的 facts 目录来汇聚）
+    #   ⇒ 不能改成 hub_root（那里是分类目录，此刻还是空的）
     root = paths.per_source_root(protocol)
     aspect_dir = paths.per_source_aspect_facts_dir(protocol)
     buckets: dict[str, list[str]] = {}
@@ -934,14 +936,58 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
                     positions.setdefault(aspect, []).append(order)
                     order += 1
 
-    # ★ 先清空目标目录（避免残留上一批次的 aspect 文件）⇒ 目录即「本次中枢」的真相
+    # ★ ★ **按协议替换**（2026-11-08 中枢重设计）：中枢**共用一套**
+    #   ⇒ 不能清空整个目录（会把**别的协议**的知识也清掉）
+    #   ⇒ 只**替换本协议**的记录 ⇒ 其它协议的记录原样保留。
+    #   ★ 这正好落实「每次抽取把**上一次**的抽取信息清理掉」
+    #     （= 本协议的旧记录被替换掉）。
+    _pkey = str(protocol).strip().lower()
+    _keep: dict[str, list[str]] = {}
     if aspect_dir.is_dir():
-        for child in aspect_dir.iterdir():
-            if child.is_dir():
-                shutil.rmtree(child, ignore_errors=True)
-            else:
-                child.unlink(missing_ok=True)
+        for _jf in sorted(aspect_dir.glob("*.jsonl")):
+            if _jf.name.startswith("_"):
+                continue
+            _kept: list[str] = []
+            for _ln in _jf.read_text(encoding="utf-8").splitlines():
+                _ln = _ln.strip()
+                if not _ln:
+                    continue
+                try:
+                    _v = json.loads(_ln)
+                except json.JSONDecodeError:
+                    continue
+                _pk = str(((_v.get("fact_key") or {}).get("protocol")
+                          or "")).strip().lower()
+                if _pk and _pk != _pkey:
+                    _kept.append(_ln)      # ★ 别的协议 ⇒ 保留
+            if _kept:
+                _keep[_jf.name] = _kept
     aspect_dir.mkdir(parents=True, exist_ok=True)
+
+    # ★ **清掉本协议的「空壳文件」**（2026-11-08 中枢重设计）：
+    #   按协议替换 ⇒ 某个 aspect 若本协议已无记录 ⇒ 旧文件会残留
+    #   ⇒ 删掉「只含别的协议」或「不含本协议记录」的空壳。
+    for _jf in sorted(aspect_dir.glob("*.jsonl")):
+        if _jf.name.startswith("_"):
+            continue
+        _has_p = False
+        _others = 0
+        for _ln in _jf.read_text(encoding="utf-8").splitlines():
+            _ln = _ln.strip()
+            if not _ln:
+                continue
+            try:
+                _v = json.loads(_ln)
+            except json.JSONDecodeError:
+                continue
+            _pk = str(((_v.get("fact_key") or {}).get("protocol")
+                      or "")).strip().lower()
+            if _pk == _pkey:
+                _has_p = True
+            elif _pk:
+                _others += 1
+        if not _has_p and not _others:
+            _jf.unlink(missing_ok=True)      # ★ 空壳 ⇒ 删
 
     written: dict[str, int] = {}
     index_rows: list[dict] = []
@@ -949,7 +995,10 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
         lines = buckets[aspect]
         filename = _aspect_filename(aspect)
         dest = aspect_dir / filename
+        _others = _keep.get(filename) or []
         with dest.open("w", encoding="utf-8") as fh:
+            if _others:
+                fh.write("\n".join(_others) + "\n")
             fh.write("\n".join(lines) + "\n")
         index_rows.append({"file": filename, "positions": positions[aspect]})
         written[aspect] = len(lines)
@@ -1418,6 +1467,12 @@ def main(argv=None) -> int:
 
     # ---- ② 全部源闸通过 ⇒ 清空整个中枢（★ 批次 1.6 步 0）------------------
     if not args.no_purge:
+        # ★ ★ 中枢**共用一套**（不按协议分目录，2026-11-08 中枢重设计）
+        #   ⇒ **抽取前清空整个中枢** ⇒ 落实「每次抽取把上一次的信息清理掉」
+        #   ⇒ 否则残留**上一个协议**的知识 ⇒ 读取端当成本次 ⇒ 跨协议污染。
+        _removed = paths.purge_hub()
+        if _removed:
+            print(f"[清理] ★ 中枢已清空：{', '.join(_removed)}")
         _purge_hub_for_batch(protocol, purge_semantic=True)
 
     # ---- ③ 写盘（逐源；原子切换）------------------------------------------
@@ -1554,7 +1609,7 @@ def main(argv=None) -> int:
                 "method": ((_qq.get("method") or {}).get("name") or ""),
                 "to": ((_qq.get("target") or {}).get("name") or ""),
             })
-    _sm_dir = paths.per_source_root(protocol)
+    _sm_dir = paths.hub_root()
     _sm_path = _sm_dir / "state_machines.json"
     if _sm_sources:
         _sm_path.write_text(json.dumps({

@@ -133,7 +133,8 @@ def test_gate_audit_file_written():
         pytest.skip("无 RFC 底料")
     RX._apply_transition_gate(
         [{"from": "Init", "method": "SETUP", "to": "Ready"}], "rtsp")
-    f = paths.per_source_root("rtsp") / "transition_quality_gate.json"
+    # ★ 中枢**共用一套**（2026-11-08 重设计）⇒ 闸统计落 hub/ 根
+    f = paths.hub_root() / "transition_quality_gate.json"
     assert f.is_file(), "闸统计未落盘"
     stat = json.loads(f.read_text(encoding="utf-8"))
     assert {"total", "kept", "dropped_state_not_in_rfc",

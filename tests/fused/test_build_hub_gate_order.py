@@ -124,6 +124,9 @@ def _isolate(tmp_path, monkeypatch, *, gate=None, build_ids=None):
     ps_root = tmp_path / "per_source"
     monkeypatch.setattr(paths, "per_source_root",
                         lambda p: ps_root / str(p).lower())
+    # ★ 中枢**共用一套** ⇒ 隔离中枢根（不污染仓库 derived/）
+    monkeypatch.setattr(paths, "hub_root",
+                        lambda *a: tmp_path / "hub")
     facts_dir = ps_root / PROTO / "rfc" / "facts"
 
     # 3) 抽取链路替身：合成 norms（不读真实 kb/RFC 原文）

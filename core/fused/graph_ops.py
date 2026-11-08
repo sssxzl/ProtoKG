@@ -42,7 +42,7 @@ from core.fused.graph_schema import edge_type_names, node_type_names
 def graph_dir(protocol: str) -> Path:
     """``derived/per_source/<协议>/graph/``。"""
     from core import paths
-    return paths.per_source_root(protocol) / "graph"
+    return paths.hub_root() / "graph"
 
 
 def nodes_path(protocol: str) -> Path:
@@ -86,6 +86,8 @@ def project_bundle_to_graph(bundle: dict[str, Any],
             "node_id": nid, "type": ntype, "name": name, "graph": graph,
             "source_owner": owner, "confidence": conf,
             "defined_in": anchor or {},
+            # ★ 图**共用一套** ⇒ 记录带协议（读取端按它过滤）
+            "protocol": str(protocol).strip().lower(),
         }
 
     def add_edge(etype: str, a: str, b: str, graph: str, label: str = "",
@@ -103,6 +105,8 @@ def project_bundle_to_graph(bundle: dict[str, Any],
             "edge_id": eid, "type": etype, "from": a, "to": b, "graph": graph,
             "label": label, "source_owner": owner, "confidence": conf,
             "defined_in": anchor or {},
+            # ★ 图**共用一套** ⇒ 记录带协议（读取端按它过滤）
+            "protocol": str(protocol).strip().lower(),
         }
 
     # ---- 节点 ----
@@ -509,13 +513,35 @@ def write_graph(protocol: str, nodes: list[dict], edges: list[dict],
     d = graph_dir(protocol)
     d.mkdir(parents=True, exist_ok=True)
 
-    def _dump(path: Path, rows: list[dict]) -> None:
+    def _dump(path: Path, rows: list[dict], pk: str) -> None:
+        # ★ ★ **按协议替换**（2026-11-08 中枢重设计）：图**共用一套**
+        #   ⇒ 保留**其它协议**的节点/边，只替换本协议的。
+        _keep: list[dict] = []
+        if path.is_file():
+            for _ln in path.read_text(encoding="utf-8").splitlines():
+                _ln = _ln.strip()
+                if not _ln:
+                    continue
+                try:
+                    _v = json.loads(_ln)
+                except json.JSONDecodeError:
+                    continue
+                _kp = str(_v.get("protocol") or "").strip().lower()
+                if _kp and _kp != pk:
+                    _keep.append(_v)      # ★ 别的协议 ⇒ 保留
+        _all = _keep + list(rows)
         with path.open("w", encoding="utf-8", newline="") as f:
-            for r in sorted(rows, key=lambda x: x.get("node_id") or x.get("edge_id")):
+            for r in sorted(_all, key=lambda x: x.get("node_id") or x.get("edge_id")):
                 f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
-    _dump(nodes_path(protocol), nodes)
-    _dump(edges_path(protocol), edges)
+    _pk = str(protocol).strip().lower()
+    # ★ **统一补 protocol**（图共用一套 ⇒ 记录必须带协议才能过滤）。
+    #   Phase A（rfc_graph）产出的节点/边也在这里补齐。
+    for _r in list(nodes) + list(edges):
+        if not str(_r.get("protocol") or "").strip():
+            _r["protocol"] = _pk
+    _dump(nodes_path(protocol), nodes, _pk)
+    _dump(edges_path(protocol), edges, _pk)
     meta = {"protocol": protocol, "metrics": graph_metrics(nodes, edges)}
     if extra_meta:
         meta.update(extra_meta)
@@ -535,7 +561,13 @@ def read_graph(protocol: str) -> tuple[list[dict], list[dict]]:
         for ln in p.read_text(encoding="utf-8").splitlines():
             if ln.strip():
                 out.append(json.loads(ln))
-        return out
+        # ★ 图**共用一套** ⇒ 按协议过滤（否则读到别的协议的节点/边）
+        _pk = str(protocol or "").strip().lower()
+        if not _pk:
+            return out
+        return [v for v in out
+                if (not str(v.get("protocol") or "").strip().lower())
+                or str(v.get("protocol") or "").strip().lower() == _pk]
     return _load(nodes_path(protocol)), _load(edges_path(protocol))
 
 

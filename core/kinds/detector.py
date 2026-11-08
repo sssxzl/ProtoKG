@@ -215,9 +215,13 @@ def detect_protocol_kind(protocol: str) -> ProtocolKind:
 
 
 def kind_artifact_path(protocol: str) -> Path:
-    """判定结果的落盘路径：``derived/per_source/<协议>/protocol_kind.json``。"""
+    """判定结果的落盘路径：``derived/hub/<协议>/protocol_kind.json``。
+
+    ★ 中枢重设计（2026-11-08）：协议类型判定是**中枢级**产物 ⇒ 落 hub/。
+    """
     from core import paths
-    return paths.derived_root() / "per_source" / protocol.lower() / "protocol_kind.json"
+    # ★ 中枢重设计（2026-11-08）：协议类型判定是**中枢级**产物 ⇒ 落 hub/
+    return paths.hub_root() / "protocol_kind.json"
 
 
 def save_kind_artifact(kind: ProtocolKind) -> Path:

@@ -31,6 +31,8 @@ def hub(tmp_path, monkeypatch):
     root.mkdir(parents=True, exist_ok=True)
     monkeypatch.setattr(paths_mod, "per_source_root",
                         lambda p: tmp_path / "per_source" / p.lower())
+    monkeypatch.setattr(paths_mod, "hub_root",
+                        lambda *a: tmp_path / "per_source" / PROTOCOL)
     return root
 
 

@@ -271,7 +271,7 @@ def _skeleton_dims(protocol: str) -> dict:
       并记进中枢 ``sources.json`` ⇒ 台账读它 ⇒ 审计可判。
     """
     from core import paths as P
-    f = P.per_source_root(protocol) / "sources.json"
+    f = P.hub_root() / "sources.json"
     if not f.is_file():
         return {}
     try:
