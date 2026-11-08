@@ -1,0 +1,481 @@
+{
+  "version": "1.0",
+  "notes": [
+    "中枢重设计（2026-11-08）的存放位置表：aspect -> (category, slot)。",
+    "与 aspect_registry.json 正交：后者是属性清单，本表是存放位置表。",
+    "迁移用法：用 aspect_map 一次性重排现有 fact，不改造抽取器。",
+    "分类判据（可测试）：A 有什么 / B 怎么连 / C 必须不许怎样 / D 怎么写出来 / E 实际什么样 / F 哪里可能出错。",
+    "不变式 I2：同一槽位可有多源 claim（规范证据与观测证据并存）。"
+  ],
+  "categories": [
+    {
+      "id": "A_structure",
+      "name": "协议结构",
+      "question": "这个协议由什么构成",
+      "file": "A_structure/structure.jsonl",
+      "slots": [
+        {
+          "name": "methods",
+          "aspects": [
+            "definition",
+            "existence"
+          ],
+          "entity_types": [
+            "method"
+          ],
+          "value_type": "text",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one",
+          "note": "方法的定义与存在性"
+        },
+        {
+          "name": "headers",
+          "aspects": [
+            "definition",
+            "syntax",
+            "case_sensitivity"
+          ],
+          "entity_types": [
+            "header"
+          ],
+          "value_type": "text",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one",
+          "note": "待决 1：syntax 归 A（字段长什么样=协议结构）"
+        },
+        {
+          "name": "statuses",
+          "aspects": [
+            "definition",
+            "value_type"
+          ],
+          "entity_types": [
+            "status"
+          ],
+          "value_type": "text",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one"
+        },
+        {
+          "name": "states",
+          "aspects": [
+            "existence"
+          ],
+          "entity_types": [
+            "state"
+          ],
+          "value_type": "text",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one"
+        },
+        {
+          "name": "timers",
+          "aspects": [],
+          "entity_types": [
+            "timer",
+            "param"
+          ],
+          "value_type": "text",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one",
+          "note": "空槽位：契约先立，填充后补"
+        },
+        {
+          "name": "roles",
+          "aspects": [],
+          "entity_types": [
+            "actor",
+            "role"
+          ],
+          "value_type": "text",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one",
+          "note": "空槽位：契约先立，填充后补"
+        }
+      ]
+    },
+    {
+      "id": "B_interaction",
+      "name": "交互行为",
+      "question": "协议怎么用（东西之间怎么连）",
+      "file": "B_interaction/interaction.jsonl",
+      "slots": [
+        {
+          "name": "transitions",
+          "aspects": [
+            "target_state"
+          ],
+          "entity_types": [
+            "relation"
+          ],
+          "value_type": "text",
+          "requires_participants": true,
+          "resolution": "consensus",
+          "cardinality": "one",
+          "note": "participants: source/via/target"
+        },
+        {
+          "name": "sequences",
+          "aspects": [
+            "method_sequence"
+          ],
+          "entity_types": [
+            "relation"
+          ],
+          "value_type": "text",
+          "requires_participants": true,
+          "resolution": "consensus",
+          "cardinality": "one"
+        },
+        {
+          "name": "instances",
+          "aspects": [
+            "message_instance"
+          ],
+          "entity_types": [
+            "relation"
+          ],
+          "value_type": "struct",
+          "requires_participants": true,
+          "resolution": "consensus",
+          "cardinality": "one"
+        },
+        {
+          "name": "relations",
+          "aspects": [
+            "relation_to_other",
+            "state_changing"
+          ],
+          "entity_types": [
+            "method"
+          ],
+          "value_type": "struct",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "many"
+        }
+      ]
+    },
+    {
+      "id": "C_constraints",
+      "name": "约束规则",
+      "question": "协议规定了什么必须 / 不许",
+      "file": "C_constraints/constraints.jsonl",
+      "slots": [
+        {
+          "name": "required_headers",
+          "aspects": [
+            "required_headers",
+            "required_header_global",
+            "required_header_by_method"
+          ],
+          "entity_types": [
+            "method",
+            "header"
+          ],
+          "value_type": "text",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "many"
+        },
+        {
+          "name": "value_constraints",
+          "aspects": [
+            "legal_boundary"
+          ],
+          "entity_types": [
+            "method",
+            "header"
+          ],
+          "value_type": "struct",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "many"
+        },
+        {
+          "name": "preconditions",
+          "aspects": [
+            "precondition"
+          ],
+          "entity_types": [
+            "method"
+          ],
+          "value_type": "ref",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "many"
+        },
+        {
+          "name": "session_semantics",
+          "aspects": [
+            "session_header"
+          ],
+          "entity_types": [
+            "method"
+          ],
+          "value_type": "struct",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "many"
+        },
+        {
+          "name": "url_templates",
+          "aspects": [
+            "url_template"
+          ],
+          "entity_types": [
+            "method"
+          ],
+          "value_type": "pattern",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one"
+        },
+        {
+          "name": "response_expectations",
+          "aspects": [
+            "response_expectation"
+          ],
+          "entity_types": [
+            "method",
+            "header"
+          ],
+          "value_type": "struct",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "many"
+        }
+      ]
+    },
+    {
+      "id": "D_construction",
+      "name": "构造与渲染",
+      "question": "一条合法报文怎么写出来",
+      "file": "D_construction/construction.jsonl",
+      "slots": [
+        {
+          "name": "layout",
+          "aspects": [
+            "binary_layout",
+            "option_layout"
+          ],
+          "entity_types": [
+            "header"
+          ],
+          "value_type": "text",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one",
+          "note": "二进制布局（offset/length/顺序）"
+        },
+        {
+          "name": "case_rules",
+          "aspects": [],
+          "entity_types": [
+            "header"
+          ],
+          "value_type": "scalar",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one",
+          "note": "大小写敏感；与 A.headers 同 aspect，落位按 entity_type 判定"
+        }
+      ]
+    },
+    {
+      "id": "E_observation",
+      "name": "观测与实现",
+      "question": "实际跑出来是什么样",
+      "file": "E_observation/observation.jsonl",
+      "slots": [
+        {
+          "name": "frequency",
+          "aspects": [
+            "occurrence"
+          ],
+          "entity_types": [
+            "header",
+            "method",
+            "status"
+          ],
+          "value_type": "scalar",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one"
+        },
+        {
+          "name": "observed_samples",
+          "aspects": [],
+          "entity_types": [
+            "header",
+            "method",
+            "status",
+            "protocol"
+          ],
+          "value_type": "set",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "one",
+          "note": "待决 2：value_enum 拆分后，实测样本落本槽位"
+        }
+      ]
+    },
+    {
+      "id": "F_security",
+      "name": "安全与漏洞",
+      "question": "哪里可能出错",
+      "file": "F_security/security.jsonl",
+      "slots": [
+        {
+          "name": "security_properties",
+          "aspects": [
+            "security_property"
+          ],
+          "entity_types": [
+            "header",
+            "method"
+          ],
+          "value_type": "text",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "many"
+        },
+        {
+          "name": "vuln_patterns",
+          "aspects": [
+            "vuln_pattern"
+          ],
+          "entity_types": [
+            "method",
+            "header"
+          ],
+          "value_type": "struct",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "many"
+        },
+        {
+          "name": "field_guidance",
+          "aspects": [],
+          "entity_types": [
+            "header"
+          ],
+          "value_type": "struct",
+          "requires_participants": false,
+          "resolution": "consensus",
+          "cardinality": "many",
+          "note": "现只在 profile.json 的 vuln.field_guidance"
+        }
+      ]
+    }
+  ],
+  "aspect_map": {
+    "definition": {
+      "category": "A_structure",
+      "slot": "by_entity_type"
+    },
+    "existence": {
+      "category": "A_structure",
+      "slot": "by_entity_type"
+    },
+    "syntax": {
+      "category": "A_structure",
+      "slot": "headers"
+    },
+    "case_sensitivity": {
+      "category": "A_structure",
+      "slot": "headers"
+    },
+    "value_type": {
+      "category": "A_structure",
+      "slot": "statuses"
+    },
+    "target_state": {
+      "category": "B_interaction",
+      "slot": "transitions"
+    },
+    "method_sequence": {
+      "category": "B_interaction",
+      "slot": "sequences"
+    },
+    "message_instance": {
+      "category": "B_interaction",
+      "slot": "instances"
+    },
+    "relation_to_other": {
+      "category": "B_interaction",
+      "slot": "relations"
+    },
+    "required_headers": {
+      "category": "C_constraints",
+      "slot": "required_headers"
+    },
+    "required_header_global": {
+      "category": "C_constraints",
+      "slot": "required_headers"
+    },
+    "required_header_by_method": {
+      "category": "C_constraints",
+      "slot": "required_headers"
+    },
+    "legal_boundary": {
+      "category": "C_constraints",
+      "slot": "value_constraints"
+    },
+    "precondition": {
+      "category": "C_constraints",
+      "slot": "preconditions"
+    },
+    "session_header": {
+      "category": "C_constraints",
+      "slot": "session_semantics"
+    },
+    "url_template": {
+      "category": "C_constraints",
+      "slot": "url_templates"
+    },
+    "response_expectation": {
+      "category": "C_constraints",
+      "slot": "response_expectations"
+    },
+    "binary_layout": {
+      "category": "D_construction",
+      "slot": "layout"
+    },
+    "option_layout": {
+      "category": "D_construction",
+      "slot": "layout"
+    },
+    "occurrence": {
+      "category": "E_observation",
+      "slot": "frequency"
+    },
+    "value_enum": {
+      "category": "A_structure",
+      "slot": "headers"
+    },
+    "security_property": {
+      "category": "F_security",
+      "slot": "security_properties"
+    },
+    "vuln_pattern": {
+      "category": "F_security",
+      "slot": "vuln_patterns"
+    },
+    "state_changing": {
+      "category": "B_interaction",
+      "slot": "relations"
+    }
+  },
+  "aspect_map_notes": [
+    "definition/existence 标 by_entity_type ⇒ 落位时按 subject.type 再分到 methods/headers/statuses/states（待决 3）。",
+    "value_enum 暂落 A_structure/headers；待决 2 落地后按 epistemic 再分流：normative=>A、observed=>E_observation/observed_samples。",
+    "case_sensitivity 在 A.headers 与 D.case_rules 两处登记 ⇒ 落位按 entity_type 判定；D.case_rules 为空槽位占位。"
+  ]
+}

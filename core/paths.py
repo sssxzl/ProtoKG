@@ -65,6 +65,36 @@ def source_blocks_cache(protocol: str) -> Path:
     return derived_root() / "source_blocks" / f"{protocol.lower()}.json"
 
 
+#: ★★ 中枢根目录（2026-11-08 中枢重设计）
+#:   derived/hub/<protocol>/  —— 结构化知识中枢（**独立角色**）
+#:
+#: ★ 为什么独立出来（诊断 P7）：``derived/per_source/`` 的语义是「**按源**分」
+#:   （每源一个子目录：rfc/ traffic/ profile/ …），
+#:   但批次 1.6 起中枢改成「按 aspect 统一存放」⇒ **跨源汇聚**的产物
+#:   被放进了名为 per_source 的目录 ⇒ **目录名与内容语义相反**。
+#:   ⇒ 中枢独立到 hub/，per_source/ 回归「各源中间产物」的本义。
+HUB_DIRNAME = "hub"
+
+
+def hub_root(protocol: str) -> Path:
+    """中枢根 derived/hub/<protocol>/（结构化知识中枢）。"""
+    return derived_root() / HUB_DIRNAME / protocol.lower()
+
+
+def hub_index_dir(protocol: str) -> Path:
+    """中枢的跨分类索引目录 derived/hub/<protocol>/index/。"""
+    return hub_root(protocol) / "index"
+
+
+def hub_class_dir(protocol: str, category: str) -> Path:
+    """中枢的**分类目录** derived/hub/<protocol>/<category>/。
+
+    ★ ``category`` 取自 ``knowledge_slots.json`` 的分类 id
+      （A_structure / B_interaction / …）。
+    """
+    return hub_root(protocol) / str(category)
+
+
 def per_source_root(protocol: str) -> Path:
     """五源 facts 根 derived/per_source/<protocol>/（下面每源一个子目录）。"""
     return derived_root() / "per_source" / protocol.lower()
