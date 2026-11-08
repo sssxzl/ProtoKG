@@ -209,17 +209,30 @@ def test_path_seeds_only_from_init_state():
 
     ★ 实测踩过的坑：全状态对 ⇒ 得到 ``[DHCPRELEASE, DHCPDISCOVER, ...]``
       这种「从 BOUND 倒着走」的荒谬顺序。
+
+    ★ 断言口径（2026-11-08 修正）：**不再**断言「第一个方法必须是
+      DHCPDISCOVER」—— 那要求 LLM 抽的**第一条迁移边**完全正确，
+      而 RFC 状态机的**首个消息**在散文里也可能被 LLM 读成别的
+      （实测 ``Init --DHCPOFFER--> Selecting``）。
+      ⇒ 契约是「**路径从初始状态出发**」⇒ 断言**状态路径的首个节点**
+        是初始状态。
     """
-    from core.fused.graph_query import path_seeds
+    from core.fused.graph_query import (_detect_init_from_bundle,
+                                          path_seeds)
     from core.fused.downstream import rag_seedgen as RS
     b = RS.assemble_bundle(RS.load_fact_views("DHCPv4"), "DHCPv4")
+    init = _detect_init_from_bundle(b["transitions"])
+    assert init, "初始状态判定失败"
+    _init_id = "state:" + init.strip().lower().replace(" ", "_")
     seeds = path_seeds("DHCPv4", transitions=b["transitions"],
                        message_instances=b["message_instances"],
                        required_headers=b["required_headers"],
                        headers=b["headers"],
                        source_set={"rfc", "profile"})
     for s in seeds:
-        assert s.messages[0].method.upper() == "DHCPDISCOVER", s.description
+        assert s.target_state_path, s.description
+        assert s.target_state_path[0] == _init_id, (
+            s.description, s.target_state_path, _init_id)
 
 
 def test_path_seeds_strict_purity_filters():

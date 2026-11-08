@@ -119,6 +119,22 @@ def project_bundle_to_graph(bundle: dict[str, Any],
 
     # ---- 边 ----
     # transitions：三元组 (src_state, method, dst_state) ⇒ 拆两条边
+    # ★ **owner 取真实来源**（2026-11-08 批次 5 修正）：
+    #   原来**写死** ``owner="profile"`` ⇒ 但消解是 **RFC 优先**
+    #   （`rag_seedgen._select_active_transitions`）
+    #   ⇒ 中枢的 transitions 可能来自 **LLM（rfc）** ⇒ 图的 owner 标错
+    #   ⇒ **图级纯度闸会把 RFC 来源的边当成 profile 拦掉**
+    #   （实测：纯 RFC 口径下路径式种子 0 条）。
+    # ⇒ 改用 ``bundle["transitions_by_source"]``（权威的逐条来源）。
+    _tbs: dict[tuple, str] = {}
+    for _src_name, _rows in (bundle.get("transitions_by_source") or {}).items():
+        for _t in _rows or ():
+            if isinstance(_t, (list, tuple)) and len(_t) >= 3:
+                _tbs[(str(_t[0]), str(_t[1]), str(_t[2]))] = str(_src_name)
+
+    def _owner_of(src: str, method: str, dst: str) -> str:
+        return _tbs.get((src, method, dst), "profile")
+
     for t in (bundle.get("transitions") or []):
         if not (isinstance(t, (list, tuple)) and len(t) >= 3):
             continue
@@ -128,13 +144,14 @@ def project_bundle_to_graph(bundle: dict[str, Any],
         #   只从 RFC 抽出 RFC 出现过的状态）
         #   ⇒ 不补节点 ⇒ 迁移边的端点悬空 ⇒ 路径检索断链
         #   （实测 dhcpv4 的 ``state:offered`` 缺失 ⇒ 路径查询 0 条）。
+        _own = _owner_of(src, method, dst)
         add_node(_nid("state", src), "state", src, "structure",
-                 owner="profile", conf="high")
+                 owner=_own, conf="high")
         add_node(_nid("state", dst), "state", dst, "structure",
-                 owner="profile", conf="high")
+                 owner=_own, conf="high")
         a, b = _nid("state", src), _nid("state", dst)
         add_edge("transitions_to", a, b, "structure", label="",
-                 owner="profile", conf="high")
+                 owner=_own, conf="high")
         if method:
             # ★ **`triggers` 边连「源状态」**（2026-11-08 实测修正）：
             #   语义应是「方法 M **触发** src → dst 这条迁移」⇒ 指向 **src**。
@@ -144,7 +161,7 @@ def project_bundle_to_graph(bundle: dict[str, Any],
             #       这种荒谬顺序 ⇒ 修好后是 ``[DHCPDISCOVER, DHCPOFFER,
             #       DHCPREQUEST, DHCPNAK]``）。
             add_edge("triggers", _nid("message", method), a, "structure",
-                     label="", owner="profile", conf="high")
+                     label="", owner=_own, conf="high")
             add_node(_nid("message", method), "message", method, "structure",
                      owner="rfc", conf="high")
 

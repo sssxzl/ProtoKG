@@ -3512,6 +3512,52 @@ _METHOD_PAREN_RE = re.compile(
 _METHOD_ABNF_RE = re.compile(r"^\s*Method\s*=\s*(.+)$")
 
 
+def _looks_like_message_name(name: str, protocol_stem: str) -> bool:
+    """该名字**像消息名**吗？（协议无关判据）
+
+    ★ 判据：**以协议名（词干）开头**且后面还有内容
+      （``DHCP`` + ``OFFER`` ⇒ ``DHCPOFFER`` ✅；``Expires`` ✗）。
+    ★ 用于「消息清单表」形态的**收/放**判据
+      ⇒ 排掉「长得像方法的头字段」（SIP 的 ``Expires``）。
+    ★ 若协议名词干为空 ⇒ **不收**（无法判别 ⇒ 宁缺勿滥）。
+    """
+    n = str(name or "").strip().upper()
+    st = str(protocol_stem or "").strip().upper()
+    if not st or len(n) <= len(st):
+        return False
+    # ★ 词干归一（实测）：``DHCPv4`` ⇒ 先去尾部数字（``DHCPv``）
+    #   再去尾部 ``V``（``DHCP``）⇒ 才能匹配 ``DHCPOFFER``。
+    #   ★ 否则词干是 ``DHCPV`` ⇒ 匹配失败（实测 DHCPv4 方法集 0 个）。
+    if st.endswith("V") and len(st) > 1:
+        st = st[:-1]
+    return n.startswith(st)
+
+
+def _rfc_known_header_names(protocol: str) -> set[str]:
+    """该协议**真头字段**的名字（小写集合）——排除「长得像方法的头字段」。
+
+    ★ **不能用「中枢 headers 桶」的全集**（实测踩过）：
+      DHCP 的 ``DHCPOFFER``/``DHCPACK``/``DHCPNAK`` **也在 headers 桶里**
+      （它们是消息，出现在字段维度）⇒ 全集排除会把**真方法**也排掉
+      （实测 DHCPv4 方法集 9 → 2）。
+    ⇒ 判据：只取 **aspect = header/definition 或 header/syntax 的 fact**
+      （那是**真正被定义为头字段**的实体）⇒ 不含消息名。
+    ★ 若中枢不可用 ⇒ 返回空集（不排除 ⇒ 退化为旧行为）。
+    """
+    try:
+        from core.fused.downstream import rag_seedgen as RS
+        _views = RS.load_fact_views(protocol)
+        _b = RS.assemble_bundle(_views, protocol)
+        out: set[str] = set()
+        for _h, _info in (_b.get("headers") or {}).items():
+            # ★ 只有「有 header/definition 或 header/syntax 线索」的才是头字段
+            if _info.get("definition") or _info.get("syntax"):
+                out.add(str(_h).strip().lower())
+        return out
+    except Exception:                           # noqa: BLE001
+        return set()
+
+
 def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
     """该协议**RFC 源**里的方法/命令名集合（数据驱动，不硬编码协议名）。
 
@@ -3527,18 +3573,46 @@ def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
       既不在「章节号 + 全大写」形态、也不在括号形态；只认形态 A 时
       会抽出 {UAC, UAS} 两个**目录行噪声** ⇒ 质量闸把 SIP 的转移全过滤掉。
     ★ 数据驱动 ⇒ 换协议只需改 rfc_config，不改代码（G2）。
+
+    ★ ★ **形态 F：消息清单表**（2026-11-08 批次 5 补）：
+      DHCP 的 ``DHCPOFFER``/``DHCPACK``/``DHCPNAK`` **没有独立小节**
+      （只在 §3.1 的消息清单表里）⇒ 形态 A 抓不到
+      ⇒ ``_known`` 不含它们 ⇒ 状态机质量闸把 LLM 抽的 24 条迁移
+      **全拦下**（实测 ``dropped_method_not_a_method: 24``）⇒
+      RFC 通道等于**没跑** ⇒ 状态机只能用骨架（owner=profile）
+      ⇒ 纯度闸把骨架边也拦掉 ⇒ **纯 RFC 单源下路径式种子 = 0 条**。
+      ⇒ 这里**必须**与「通道 A0d（消息清单表）」保持一致
+      ⇒ **判据分裂**（同一形态两处实现）——本项目已踩过多次。
     """
-    secs = cfg.get("method_sections") or []
-    if not secs:
+    # ★ ★ **支持 `sections_by_file`**（2026-11-08 批次 5 补）：
+    #   原实现只看**全局** ``method_sections`` 且为空时**直接 return 空集**
+    #   ⇒ 对**按文件限定**的协议（DHCPv4：全局清单为空，配置在
+    #     ``sections_by_file.rfc2131.txt``）⇒ 「已知方法集」为空
+    #   ⇒ 状态机质量闸把 LLM 抽的迁移**全拦下**
+    #   （实测 ``dropped_method_not_a_method: 24``）。
+    _by_file = cfg.get("sections_by_file") or {}
+    _global_secs = list(cfg.get("method_sections") or [])
+    # ★ **保留「无配置 ⇒ 空集」的契约**（既有测试锁定）：
+    #   但**按文件限定**的配置也算「有配置」⇒ DHCPv4（全局空、文件专属有）
+    #   仍要能工作 ⇒ 判据 = 全局与文件专属**并集非空**。
+    _has_any_secs = bool(_global_secs) or any(
+        isinstance(v, dict) and (v.get("method_sections") or [])
+        for v in _by_file.values())
+    if not _has_any_secs:
         return set()
     _kw = _METHOD_KEYWORD_ATOMS
     out: set[str] = set()
 
-    def _in_sec(num: str) -> bool:
+    def _in_sec(num: str, secs: list[str]) -> bool:
         return any(num == _x or num.startswith(_x + ".") for _x in secs)
 
     for _f in sorted(paths.kb_source_dir(protocol, "rfc").glob("*.txt")):
         _lines = _f.read_text(encoding="utf-8", errors="ignore").splitlines()
+        # ★ 该文件的**方法章节清单**（全局 + 文件专属并集）
+        _fc = _by_file.get(_f.name) or {}
+        _secs = list(_global_secs)
+        if isinstance(_fc, dict):
+            _secs += list(_fc.get("method_sections") or [])
         # E) 散文里的「命令格式声明」句式（RFC 3207 的 STARTTLS 走这条）——
         #    ★ **整篇扫描**：RFC 正文硬换行会把一句声明拆到多行 ⇒ 不能按行判定。
         #    ★ **不看章节号**：句式自带「这是命令」的客观证据（与形态 D 同理）。
@@ -3546,19 +3620,40 @@ def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
                 _lines, protocol, cfg.get("method_excludes") or ()):
             if _m not in _kw:
                 out.add(_m)
+        # ★ F) **消息清单表**形态（批次 5 补；与「通道 A0d」同一判据）
+        #   ★ 必须保留**缩进**（判据要求 ``^\s{2,8}``）⇒ 不能 join 后再传
+        #   ★ **消息名前缀判据**（实测修正）：形态 F 收的条目里既有**消息**
+        #   也有**纯头字段名** ⇒ 用「协议名（词干）+ 消息后缀」判别：
+        #     只收**带协议名前缀**的条目 ⇒ 纯头字段名被排除，消息名被保留。
+        #   ★ 排除「已知头字段」那条路线**不可行**（实测踩过）：消息名在
+        #     headers 桶里**也带 definition/syntax** ⇒ 会被误排除。
+        #   ⇒ 改用**协议名前缀**判据（协议无关）：
+        #     **消息名 = 协议名（词干）+ 消息后缀**（``DHCP``+``OFFER``）
+        #     ⇒ 只收**带协议名前缀**的条目 ⇒ 纯头字段名（如 ``Expires``）
+        #     被排除，而**消息名**（如 ``DHCPOFFER``）被保留。
+        _stem = re.sub(r"[0-9]+$", "", protocol.upper())
+        for _m, _d in _extract_message_list_entries("\n".join(_lines)):
+            if _m not in _kw and _looks_like_message_name(_m, _stem):
+                out.add(_m.upper())
+        for _mline in _lines:
+            _mm = _RE_MESSAGE_LIST_ENTRY.match(_mline.rstrip())
+            if _mm:
+                _m = _mm.group(2).strip().upper()
+                if _m not in _kw and _looks_like_message_name(_m, _stem):
+                    out.add(_m)
         for _i, _ln in enumerate(_lines):
             _s = _ln.strip()
             if not _s or _TOC_DOTS_RE.search(_s):
                 continue
             # A) 章节标题（整行只有方法名）
             _m = _METHOD_HEADING_RE.match(_s)
-            if _m and _in_sec(_s.split()[0].rstrip(".")):
+            if _m and _in_sec(_s.split()[0].rstrip("."), _secs):
                 if _m.group(1) not in _kw:
                     out.add(_m.group(1))
                 continue
             # A′) 括号形态
             _m2 = _METHOD_PAREN_RE.match(_s)
-            if _m2 and _in_sec(_s.split()[0].rstrip(".")):
+            if _m2 and _in_sec(_s.split()[0].rstrip("."), _secs):
                 if _m2.group(1) not in _kw:
                     out.add(_m2.group(1))
                 continue
