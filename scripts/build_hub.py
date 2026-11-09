@@ -989,34 +989,34 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
         if not _has_p and not _others:
             _jf.unlink(missing_ok=True)      # ★ 空壳 ⇒ 删
 
-    written: dict[str, int] = {}
-    index_rows: list[dict] = []
-    for aspect in sorted(buckets):
-        lines = buckets[aspect]
-        filename = _aspect_filename(aspect)
-        dest = aspect_dir / filename
-        _others = _keep.get(filename) or []
-        with dest.open("w", encoding="utf-8") as fh:
-            if _others:
-                fh.write("\n".join(_others) + "\n")
-            fh.write("\n".join(lines) + "\n")
-        index_rows.append({"file": filename, "positions": positions[aspect]})
-        written[aspect] = len(lines)
+    # ★ ★ **阶段 C：按知识分类落盘**（2026-11-09）
+    #   旧：derived/hub/facts/<aspect>.jsonl（按 aspect）
+    #   新：derived/hub/<分类>/<文件>.jsonl（A~F 六个知识分类）
+    #   ★ 落位依据 = knowledge_slots.json 的 aspect_map（**不改抽取器**）
+    #   ★ 顺序契约：index/order.jsonl 记**全局下标** ⇒ 读取端排序后
+    #     遍历序与旧布局逐字节一致 ⇒ 种子编号不漂移。
+    from core.fused.hub_layout import write_classified
+    # ★★★ **必须传「旧布局的全局下标」**（不是按 aspect 分组后的序号）
+    #   ⇒ 否则位置信息丢失 ⇒ 落位后顺序错乱 ⇒ 种子编号漂移！
+    _records: list[tuple[int, str, dict]] = []
+    for _asp in sorted(buckets):
+        for _i, _ln in enumerate(buckets[_asp]):
+            try:
+                _records.append((positions[_asp][_i], _ln, json.loads(_ln)))
+            except json.JSONDecodeError:
+                continue
+    written = write_classified(paths.hub_root(), _records, protocol)
 
-    # ★ 顺序索引（读端据此还原旧全局序 ⇒ 产物逐字节不变）
-    index_path = aspect_dir / ASPECT_ORDER_INDEX
-    index_path.parent.mkdir(parents=True, exist_ok=True)
-    with index_path.open("w", encoding="utf-8") as fh:
-        for row in index_rows:
-            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+    # ★ 顺序索引**已由 write_classified 写入** `derived/hub/index/order.jsonl`
+    #   （分类布局的全局下标）⇒ 读端排序后遍历序与旧布局一致。
 
     total = sum(written.values())
     try:
         shown = _repo_rel(aspect_dir)
     except ValueError:
         shown = aspect_dir
-    print(f"[布局] 已按 aspect 落盘 {total} facts → {len(written)} 个 aspect 文件 "
-          f"（+顺序索引 {len(index_rows)} 条）→ {shown}")
+    print(f"[布局] 已按**知识分类**落盘 {total} facts → {len(written)} 个分类文件 "
+          f"（+顺序索引 → derived/hub/index/order.jsonl）→ {shown}")
     return written
 
 

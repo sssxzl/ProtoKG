@@ -66,6 +66,21 @@ def _load_aspect_order(aspect_dir: Path) -> dict[str, list[int]]:
     return order
 
 
+def _filter_protocol(views: list[dict], protocol: str) -> list[dict]:
+    """按 ``fact_key.protocol`` **过滤**事实（中枢共用一套 ⇒ 必需）。
+
+    ★ 无 protocol 字段的记录（占位/测试数据）**保留**。
+    ★ 该协议**没有**记录 ⇒ 返回空（**不要回落到其它协议**）。
+    """
+    _want = str(protocol or '').strip().lower()
+    if not _want:
+        return views
+    return [v for v in views
+            if (not str(((v.get('fact_key') or {}).get('protocol')
+                 or '')).strip().lower())
+            or str(((v.get('fact_key') or {}).get('protocol')
+                   or '')).strip().lower() == _want]
+
 def load_fact_views(protocol: str = "rtsp",
                     facts_root: Optional[Path] = None) -> list[dict]:
     """读中枢的 fact view。
@@ -91,8 +106,15 @@ def load_fact_views(protocol: str = "rtsp",
     views: list[dict] = []
     root = Path(facts_root) / protocol.lower() if facts_root else \
         paths.hub_root()
-    # ★ 新布局优先（**中枢根不存在时也要能降级** —— 各源目录里仍有事实）
+    # ★★★ **阶段 C：按知识分类的布局优先**（2026-11-09）
+    #   新：derived/hub/<分类>/<文件>.jsonl（A~F 六个知识分类）
+    #   旧：derived/hub/facts/<aspect>.jsonl（批次 1.6 的 aspect 布局）
+    #   更旧：<各源根>/*/facts/*.jsonl（按源分目录）
     if root.is_dir():
+        from core.fused.hub_layout import read_classified
+        _cls = read_classified(root, protocol)
+        if _cls:
+            return _filter_protocol(_cls, protocol)
         aspect_dir = root / "facts"
         new_files = (sorted(aspect_dir.glob("*.jsonl"))
                      if aspect_dir.is_dir() else [])
@@ -102,16 +124,7 @@ def load_fact_views(protocol: str = "rtsp",
             #   （不按协议分目录）⇒ 读取端**必须**按 protocol 过滤
             #   ⇒ 否则会把别的协议的知识当成本次的（跨协议污染）。
             #   ★ 无 protocol 字段的记录（占位/测试数据）**保留**。
-            _want = str(protocol or '').strip().lower()
-            if _want:
-                _f = [v for v in views
-                      if (not str(((v.get('fact_key') or {}).get('protocol')
-                           or '')).strip().lower())
-                      or str(((v.get('fact_key') or {}).get('protocol')
-                             or '')).strip().lower() == _want]
-                # ★ 该协议**没有**记录 ⇒ 返回空（**不要回落到其它协议**）
-                return _f
-            return views
+            return _filter_protocol(views, protocol)
     # ★ **降级路径**：读**各源**的中间产物（``<各源根>/*/facts/*.jsonl``）
     #   ⇒ 中枢共用一套后，各源目录仍在 ``per_source/<协议>/<源>/facts/``
     #   ⇒ 降级时用 ``per_source_root``（不是 hub_root）。

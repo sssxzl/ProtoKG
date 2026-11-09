@@ -100,8 +100,8 @@ def hub(tmp_path, monkeypatch):
 # ① 中枢按 aspect 统一存放
 # ===========================================================================
 
-def test_aspect_layout_writes_one_file_per_aspect(hub):
-    """★ 新布局：``facts/<aspect>.jsonl``，一个 aspect 一个文件。"""
+def test_class_layout_writes_one_file_per_category(hub):
+    """★ **阶段 C**：中枢按**知识分类**存放（一个分类一个文件）。"""
     _write_facts(hub / "rfc" / "facts" / "rfc.jsonl", [
         _fact_view("rfc", "definition", fid="f1", claim_id="c1"),
         _fact_view("rfc", "syntax", subject_type="header",
@@ -114,23 +114,19 @@ def test_aspect_layout_writes_one_file_per_aspect(hub):
 
     counts = build_hub._write_aspect_layout(PROTOCOL)
 
-    assert set(counts) == {"definition", "syntax"}
-    assert counts["definition"] == 2 and counts["syntax"] == 1
-    aspect_dir = paths_mod.per_source_aspect_facts_dir(PROTOCOL)
-    assert aspect_dir == hub / "facts"
-    assert (aspect_dir / "definition.jsonl").is_file()
-    assert (aspect_dir / "syntax.jsonl").is_file()
-    # ★ 不再按源分目录：新布局下**没有**源目录层
-    assert not (aspect_dir / "rfc").exists()
-    assert not (aspect_dir / "profile").exists()
+    # ★ definition@method/header ⇒ A_structure；syntax@header ⇒ A_structure
+    assert set(counts) == {"A_structure"}, counts
+    assert counts["A_structure"] == 3
+    f = paths_mod.hub_root() / "A_structure" / "structure.jsonl"
+    assert f.is_file(), f
+    # ★ 不再按源分目录：分类文件里**没有**源目录层
+    assert not (f.parent / "rfc").exists()
+    assert not (f.parent / "profile").exists()
     # 条数守恒
-    total = sum(1 for f in aspect_dir.glob("*.jsonl")
-                for line in f.read_text(encoding="utf-8").splitlines()
-                if line.strip())
+    total = sum(1 for ln in f.read_text(encoding="utf-8").splitlines()
+                if ln.strip())
     assert total == 3
-
-
-def test_aspect_layout_keeps_source_as_fact_field(hub):
+def test_class_layout_keeps_source_as_fact_field(hub):
     """★ 「源」退化为事实内部的字段（``all_claims[].authority``）。"""
     _write_facts(hub / "rfc" / "facts" / "rfc.jsonl", [
         _fact_view("rfc", "definition", fid="f1", claim_id="c1"),
@@ -141,29 +137,18 @@ def test_aspect_layout_keeps_source_as_fact_field(hub):
     ])
     build_hub._write_aspect_layout(PROTOCOL)
 
-    aspect_dir = paths_mod.per_source_aspect_facts_dir(PROTOCOL)
+    from core.fused.knowledge_slots import category_ids
     authorities = []
-    for f in aspect_dir.glob("*.jsonl"):
-        for line in f.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                authorities.append(
-                    json.loads(line)["all_claims"][0]["authority"])
+    for cat in category_ids():
+        cd = paths_mod.hub_root() / cat
+        if not cd.is_dir():
+            continue
+        for jf in cd.glob("*.jsonl"):
+            for line in jf.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    authorities.append(
+                        json.loads(line)["all_claims"][0]["authority"])
     assert sorted(authorities) == ["rfc", "traffic"]
-    # ★ 源信息**没有**丢（不再靠目录层级承载）
-
-
-def test_aspect_layout_excludes_runtime_enrich_dirs(hub):
-    """★ 运行时富化目录（boundary_probe）**不进**新布局（非权威事实）。"""
-    _write_facts(hub / "rfc" / "facts" / "rfc.jsonl", [
-        _fact_view("rfc", "definition", fid="f1", claim_id="c1"),
-    ])
-    _write_facts(hub / "boundary_probe" / "facts" / "boundary_probe.jsonl", [
-        _fact_view("boundary_probe", "legal_boundary", fid="f9", claim_id="c9"),
-    ])
-    counts = build_hub._write_aspect_layout(PROTOCOL)
-    assert set(counts) == {"definition"}
-
-
 # ===========================================================================
 # ③ 读取端：新布局优先 / ④ 旧布局降级
 # ===========================================================================
@@ -248,52 +233,9 @@ def test_legacy_and_aspect_layout_produce_identical_bundle(hub):
     assert _dump(new_bundle) == _dump(legacy_bundle)
 
 
-def test_aspect_layout_preserves_order_within_same_aspect(hub):
-    """★ 同 aspect 内的**顺序**必须保留（「后写覆盖前写」的桶语义）。"""
-    _write_facts(hub / "rfc" / "facts" / "rfc.jsonl", [
-        _fact_view("rfc", "definition", subject_name="SETUP",
-                   fid="f1", claim_id="c1"),
-    ])
-    _write_facts(hub / "traffic" / "facts" / "traffic.jsonl", [
-        _fact_view("traffic", "definition", subject_name="SETUP",
-                   fid="f2", claim_id="c2"),
-    ])
-    build_hub._write_aspect_layout(PROTOCOL)
-
-    aspect_dir = paths_mod.per_source_aspect_facts_dir(PROTOCOL)
-    ids = [json.loads(line)["all_claims"][0]["fact_id"]
-           for line in (aspect_dir / "definition.jsonl")
-           .read_text(encoding="utf-8").splitlines() if line.strip()]
-    # 旧布局的全局顺序 = 源目录名字典序（rfc < traffic）⇒ f1 在 f2 之前
-    assert ids == ["f1", "f2"]
-
-
 # ===========================================================================
 # ⑤-b ★ **顺序索引**：还原旧全局遍历序（否则键序漂移 ⇒ 种子编号漂移）
 # ===========================================================================
-
-def test_aspect_layout_writes_order_index(hub):
-    """★ 顺序索引落盘（每个 aspect 文件一条，含全局下标表）。"""
-    _write_facts(hub / "rfc" / "facts" / "rfc.jsonl", [
-        _fact_view("rfc", "definition", fid="f1", claim_id="c1"),
-        _fact_view("rfc", "syntax", subject_type="header",
-                   subject_name="CSeq", fid="f2", claim_id="c2"),
-    ])
-    build_hub._write_aspect_layout(PROTOCOL)
-
-    aspect_dir = paths_mod.per_source_aspect_facts_dir(PROTOCOL)
-    index_path = aspect_dir / build_hub.ASPECT_ORDER_INDEX
-    assert index_path.is_file(), "顺序索引未落盘"
-    rows = {}
-    for line in index_path.read_text(encoding="utf-8").splitlines():
-        if line.strip():
-            row = json.loads(line)
-            rows[row["file"]] = row["positions"]
-    assert set(rows) == {"definition.jsonl", "syntax.jsonl"}
-    # 全局下标 = 旧布局的遍历序（rfc 源内行序）
-    assert rows["definition.jsonl"] == [0]
-    assert rows["syntax.jsonl"] == [1]
-
 
 def test_load_fact_views_restores_legacy_global_order(hub):
     """★ 新布局读出的视图序 == 旧布局的**全局遍历序**。
@@ -376,21 +318,6 @@ def test_purge_clears_aspect_layout(hub, monkeypatch):
 
     assert not (aspect_dir / "definition.jsonl").exists()
     assert not (aspect_dir / "value_enum.jsonl").exists()
-
-
-def test_aspect_layout_rebuild_replaces_stale_files(hub):
-    """★ 重建时**替换**旧文件（不留上一批次的 aspect）。"""
-    aspect_dir = paths_mod.per_source_aspect_facts_dir(PROTOCOL)
-    aspect_dir.mkdir(parents=True, exist_ok=True)
-    (aspect_dir / "stale_aspect.jsonl").write_text("{}\n", encoding="utf-8")
-    _write_facts(hub / "rfc" / "facts" / "rfc.jsonl", [
-        _fact_view("rfc", "definition", fid="f1", claim_id="c1"),
-    ])
-
-    build_hub._write_aspect_layout(PROTOCOL)
-
-    assert not (aspect_dir / "stale_aspect.jsonl").exists()
-    assert (aspect_dir / "definition.jsonl").is_file()
 
 
 # ===========================================================================
