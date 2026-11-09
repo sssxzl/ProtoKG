@@ -86,7 +86,7 @@ Hub protocol Fact，**不产生任何 Hub Candidate / Claim / Fact**。
 - G6（已按 D18 移出，见 §2.1）
 - §8 扩展（独立议题）
 - **`core/fused/validation.py` 的 validator invariant**——§3.2 已裁定为「不做」
-- `derived/model/hub/` 下任何写入（含测试；`fused_runtime_io_v1.md` L664 契约）
+- `derived/model/hub/` 下任何写入（含测试；`fused_canonical_spec.md` L664 契约）
 
 ---
 
@@ -154,7 +154,7 @@ Hub protocol Fact，**不产生任何 Hub Candidate / Claim / Fact**。
 #### 3.1.2 读出口 — `core/lane_a/reader.py`
 
 **裁定**：Lane A 自带 reader，**不复用** `core/fused/reader.py`（后者只认
-`derived/model/hub/` 的 layout，且其契约由 `fused_runtime_io_v1.md` 冻结）。
+`derived/model/hub/` 的 layout，且其契约由 `fused_canonical_spec.md` 冻结）。
 
 **依据**：§4.5 P4 规定 boundary conflict 时输出 `NEEDS_REVIEW`——这要求
 消费者能读出「哪些 unit 有未解决冲突」，而 Hub reader 无此能力。
@@ -165,7 +165,7 @@ Hub protocol Fact，**不产生任何 Hub Candidate / Claim / Fact**。
 
 #### 3.1.3 格式校验 — 独立于 Hub validator 的 Lane A schema
 
-**裁定**：新增 `fused_hub/schema/v1/` 之外的 Lane A schema
+**裁定**：新增 `fused_hub/schema/` 之外的 Lane A schema
 （位置随 3.1.1 定为 `derived/model/lane_a/` 同级的 schema 定义），
 校验 `设计/traffic_lane_a_provenance_interface.md` §2 的记录形状。
 

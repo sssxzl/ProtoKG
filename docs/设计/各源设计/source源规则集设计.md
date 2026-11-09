@@ -6,7 +6,7 @@
 > 上游：`docs/设计/各源设计/第五源设计.md`（Final Frozen Candidate）
 > 　　　`docs/设计/各源设计/source源语料能力档位.md`（**ACTIVE**）
 > 参照：`docs/设计/各源设计/traffic源规则集设计.md`（**结构类比，内容不复制**）
-> 契约：`fused_hub/docs/fused_registry_v1.md`、`fused_hub/schema/v1/*.json`
+> 契约：`fused_hub/docs/fused_canonical_spec.md`、`fused_hub/schema/*.json`
 > 裁定：`docs/工具/决策记录/已决事项.md` **D24 – D34**
 
 ---
@@ -69,7 +69,7 @@
 
 ## 2. 源语料形态
 
-> 勘察确认（`local/backup/step_source_recon/corpus_shape.txt`）
+> 勘察确认（`qa/audit/step_source_recon/corpus_shape.txt`）
 
 ```
 kb/协议实现源码/       9 文件 / 271 KB / 6287 行
@@ -224,7 +224,7 @@ liveMedia 的 RTSP session **不是显式状态机**——没有 state 变量、
 
 **为何必须走 provenance 而非 hub_fact**：
 
-Hub 的定位是 **protocol-semantic**（`fused_storage_design_v1.md` 第一部分：
+Hub 的定位是 **protocol-semantic**（`fused_canonical_spec.md` 第一部分：
 「数据类 / Canonical Serialization / Hub Candidate Input Contract」）。
 「某个私有实现声明自己能处理一个非标准方法」**不是协议语义**，
 若进 Hub 会把实现声明冒充为协议事实 —— 正是 §1-1 硬边界禁止的。

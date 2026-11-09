@@ -1,7 +1,7 @@
 # 里程碑 A 实施报告 —— rfc 源知识抽取改造
 
 > 完成时间：2026-10-31
-> 依据：`docs/实施/路线与里程碑/RFC源知识抽取改造方案.md` v3（§0.0 v3 修订说明 + 附录追溯表）
+> 依据：`docs/实施/路线与里程碑/RFC源知识抽取改造方案.md`（§0.0 修订说明 + 附录追溯表）
 > 范围：A0.1 ~ A0.6 + A1.1 ~ A1.7（评审建议的「里程碑 A 编码范围锁定」）
 
 ---
@@ -97,7 +97,7 @@
 
 ## 四、实施中实测暴露并修复的 5 个真实缺陷
 
-这 5 个都是**实测暴露**的，不是设计推演出来的 —— 也是方案 v3 里没有预见到的部分。
+这 5 个都是**实测暴露**的，不是设计推演出来的 —— 也是方案里没有预见到的部分。
 
 ### 4.1 off-by-one：body 归属错位
 **症状**：SSH 字段从 8 归零；§5「Data Type Representations」拿到的是 §4.5 的正文。
@@ -132,7 +132,7 @@
 
 ## 五、质量闸与幂等（A0.4 / A0.5）
 
-### 5.1 质量闸：两类检查分离（改进v2 问题③）
+### 5.1 质量闸：两类检查分离（改进 问题③）
 
 ```
 构建质量闸（阻断构建，不依赖真值集）
@@ -355,7 +355,7 @@ python -m pytest tests/fused/test_single_protocol_single_source.py -q  # 13 pass
 | traffic | 64 | 不同 | +1（URL 观测值） |
 
 ⇒ 真正的根因是 **source 源**引入 LIVE555 源码的**真实状态名**
-（Idle/Invited/Confirmed/Registered/Paused/Terminated），取代了 expert_note v3 时代的
+（Idle/Invited/Confirmed/Registered/Paused/Terminated），取代了 expert_note 早期版本的
 **虚构状态名**（Init/Ready）→ 状态机层与种子序列全变 → 契约漂移。
 这与 B:state-model 6 个失败、B:seed-count-contract 28 个失败**同源**。
 
@@ -367,8 +367,8 @@ python -m pytest tests/fused/test_single_protocol_single_source.py -q  # 13 pass
   （且 `--dict base` 与 `--dict protocol` 条数相同，dict_kind 不是驱动因素），
   差异在**多资源覆盖的消息序列构成**。
 - 「回退 rfc facts 到 10-29 状态」→ **10-29 的快照不存在**；
-  `derived/model/per_source.bak_20261018/rfc/facts/rfc.jsonl` 是 10-18 的 **v1 格式**
-  （597 条含 `all_claims`），与当前 v2 格式不可比。
+  `derived/model/per_source.bak_20261018/rfc/facts/rfc.jsonl` 是 10-18 的**旧格式**
+  （597 条含 `all_claims`），与当前格式不可比。
 
 ### 10.5 遗留（待用户决策，未擅自处理）
 

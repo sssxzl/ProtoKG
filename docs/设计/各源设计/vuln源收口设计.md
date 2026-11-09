@@ -1,7 +1,7 @@
 # docs/设计/各源设计/vuln源收口设计.md — vuln 源收口 + 中枢分层原则 + claim_class 裁定
 
 > Step 4.8g 收口 · 设计真源
-> 契约依据：`fused_hub/docs/fused_pipeline_v1.md` (v0.4.7 Final Frozen)、`fused_hub/docs/fused_policy_v1.md`、`fused_hub/docs/fused_registry_v1.md`、`fused_hub/docs/fused_schema_v1.md`
+> 契约依据：`fused_hub/docs/fused_canonical_spec.md` （已冻结）、`fused_hub/docs/fused_canonical_spec.md`、`fused_hub/docs/fused_canonical_spec.md`、`fused_hub/docs/fused_canonical_spec.md`
 > 上游：`docs/设计/各源设计/vuln源规则集设计.md`、`docs/设计/种子生成/规则集设计.md`
 > 状态：Final Frozen
 > 本文件为 standalone 设计真源，不依赖任何 superseded draft。
@@ -12,7 +12,7 @@
 
 Step 4.8g 完成后停在 claim_class 决策点。经多轮只读核查、用户拍板、审定意见，本步收口：
 
-1. 中枢分层原则（source extraction 层 vs Fused Hub 层）
+1. 中枢分层原则（source extraction 层 vs 中枢 层）
 2. claim_class 裁定：新增全局 semantic rule，descriptive → observational
 3. needs_review 缺口修复（Registry-driven）
 4. `explicit_structural_rule` fail-fast 修复
@@ -36,7 +36,7 @@ Step 4.8g 完成后停在 claim_class 决策点。经多轮只读核查、用户
 - 产物：`ProtocolNorm` / extraction artifacts
 - **不进入 Phase A / Phase B，此处不存在 resolution 概念**
 
-**第二层：单源输入的 Fused Hub build**
+**第二层：单源输入的 中枢 build**
 - 输入：一个 source 或多个 source
 - 处理：Candidate → Claim → Phase A → Phase B → Fact
 - 产物：完整 Fused Dataset
@@ -93,7 +93,7 @@ deterministically resolved
 ### 2.1 现状与问题
 
 14 条 vuln Claim 的 `claim_class` 全部为 `unknown`，走具名 rule `cc.fallback.unknown`（`claim_classification_rules.json` rules 数组 index 7）。后果（契约明文规定，非 bug）：
-- `fused_hub/docs/fused_policy_v1.md` 条款 11：unknown claim 不得进入 Phase A eligible set
+- `fused_hub/docs/fused_canonical_spec.md` 条款 11：unknown claim 不得进入 Phase A eligible set
 - 5 个 Fact 停在 `unresolved(insufficient_evidence)`
 
 ### 2.2 裁定：新增全局 semantic rule，descriptive → observational
@@ -101,7 +101,7 @@ deterministically resolved
 **核心理由**：
 1. vuln 描述的是实现弱点 / 历史观察事实，不是协议规范要求
 2. 在本项目当前 claim_class taxonomy 中，本设计裁定其语义为 observational
-3. classification 不由 source_type 直接决定（`fused_hub/docs/fused_registry_v1.md` 条款 8 L164）
+3. classification 不由 source_type 直接决定（`fused_hub/docs/fused_canonical_spec.md` 条款 8 L164）
 4. observational 在相关 property 的 eligible classes 中合法（18/18 实测）
 
 **不采用 `security` 的理由（收敛表述）**：
@@ -182,15 +182,15 @@ deterministically resolved
 ### 2.6 改动面
 
 **需改**：
-- `fused_hub/schema/v1/claim_classification_rules.json`：追加 1 条 rule
+- `fused_hub/schema/claim_classification_rules.json`：追加 1 条 rule
 - `fusion_version`：见 §7
 
 **不需改**：
 - `property_registry.json`：observational 已在全部 18 个 eligible 里
 - `condition.schema.json`
-- `fused_hub/docs/fused_policy_v1.md`：不承载 class 语义
+- `fused_hub/docs/fused_canonical_spec.md`：不承载 class 语义
 - `core/` 代码（除 §3 的 needs_review 接线）
-- `fused_hub/docs/fused_registry_v1.md`
+- `fused_hub/docs/fused_canonical_spec.md`
 
 ### 2.7 预期效果
 
@@ -212,14 +212,14 @@ deterministically resolved
 
 | 文件 | 行 | 原文 |
 |---|---|---|
-| `fused_hub/docs/fused_pipeline_v1.md` | L482 | needs_review 不新增 Lineage outcome |
-| `fused_hub/docs/fused_policy_v1.md` | L218 | Unknown claim 在 Phase B 中 relation 为 not_comparable，reason 为 unknown_claim_class，flags 加 needs_review |
-| `fused_hub/docs/fused_policy_v1.md` | L228 | （"仍然必须保存"清单末项）- needs_review |
-| `fused_hub/docs/fused_registry_v1.md` | L177 | 无法可靠分类时：claim_class 为 unknown，flags 加 needs_review。不得猜测 |
-| `fused_hub/docs/fused_registry_v1.md` | L293 | unknown 映射到 needs_review，不进入 Phase A |
-| `fused_hub/schema/v1/claim_classification_rules.json` | L4 | Unreliable classification defaults to unknown + needs_review |
-| `fused_hub/schema/v1/claim_classification_rules.json` | L93-94 | `"fallback_flags": ["needs_review"]` / Caller MUST set flags=['needs_review'] |
-| `fused_hub/schema/v1/comparison_policy.json` | L39-40 | resolution_competition: needs_review, action: flag for needs_review; do NOT enter Phase A |
+| `fused_hub/docs/fused_canonical_spec.md` | L482 | needs_review 不新增 Lineage outcome |
+| `fused_hub/docs/fused_canonical_spec.md` | L218 | Unknown claim 在 Phase B 中 relation 为 not_comparable，reason 为 unknown_claim_class，flags 加 needs_review |
+| `fused_hub/docs/fused_canonical_spec.md` | L228 | （"仍然必须保存"清单末项）- needs_review |
+| `fused_hub/docs/fused_canonical_spec.md` | L177 | 无法可靠分类时：claim_class 为 unknown，flags 加 needs_review。不得猜测 |
+| `fused_hub/docs/fused_canonical_spec.md` | L293 | unknown 映射到 needs_review，不进入 Phase A |
+| `fused_hub/schema/claim_classification_rules.json` | L4 | Unreliable classification defaults to unknown + needs_review |
+| `fused_hub/schema/claim_classification_rules.json` | L93-94 | `"fallback_flags": ["needs_review"]` / Caller MUST set flags=['needs_review'] |
+| `fused_hub/schema/comparison_policy.json` | L39-40 | resolution_competition: needs_review, action: flag for needs_review; do NOT enter Phase A |
 
 ### 3.2 现状
 
@@ -236,7 +236,7 @@ deterministically resolved
 
 **真实 Registry structure（Pre 已确认）**：
 
-`fused_hub/schema/v1/claim_classification_rules.json` 中，`cc.fallback.unknown` 是**具名 Registry rule**（rules 数组 index 7 / 共 8 条）。`fallback_flags = ["needs_review"]` 挂在该 rule 上。全文 fallback 相关键只有两处，均挂在 rules[7]：`"fallback": true`（match）与 `"fallback_flags": ["needs_review"]`。Registry 顶层无 fallback 字段。
+`fused_hub/schema/claim_classification_rules.json` 中，`cc.fallback.unknown` 是**具名 Registry rule**（rules 数组 index 7 / 共 8 条）。`fallback_flags = ["needs_review"]` 挂在该 rule 上。全文 fallback 相关键只有两处，均挂在 rules[7]：`"fallback": true`（match）与 `"fallback_flags": ["needs_review"]`。Registry 顶层无 fallback 字段。
 
 **Contract（写死，无 conditional 分支）**：
 
@@ -289,7 +289,7 @@ classify_claim(...)
 - CASE 2：needs_review 来源 → registry L93 + L94 notes，挂在具名 rule `cc.fallback.unknown` 上
 - CASE 3：未来普通 rule 加 flags → 不支持，静默忽略
 
-**约束**：`tests/fused/pipeline/test_audit_lineage.py:334-336` 断言 `needs_review` 不在 `REASON_CODE_OUTCOME` 与 `LINEAGE_OUTCOME_DOMAIN`（`fused_hub/docs/fused_pipeline_v1.md` §7.11 L482）。不得违反。
+**约束**：`tests/fused/pipeline/test_audit_lineage.py:334-336` 断言 `needs_review` 不在 `REASON_CODE_OUTCOME` 与 `LINEAGE_OUTCOME_DOMAIN`（`fused_hub/docs/fused_canonical_spec.md` §7.11 L482）。不得违反。
 
 ### 3.4 验证（修正验证矛盾）
 
@@ -347,7 +347,7 @@ classify_claim(...)
 
 ### 4.4 测试对象
 
-- **核心 invariant**：当前 `fused_hub/schema/v1/claim_classification_rules.json` 不得实际使用 `explicit_structural_rule`
+- **核心 invariant**：当前 `fused_hub/schema/claim_classification_rules.json` 不得实际使用 `explicit_structural_rule`
 - **不给 `comparison_policy.json` 加此测试**——它不承载 match family 语义
 
 ### 4.5 验证
@@ -363,7 +363,7 @@ classify_claim(...)
 
 ### 5.1 定义
 
-`fused_hub/docs/fused_policy_v1.md` 契约 §5.2 第 6 步规定的合法状态。不是 bug，不是数据错误。表达「有多条都说得通、但值不同的 claim」。
+`fused_hub/docs/fused_canonical_spec.md` 契约 §5.2 第 6 步规定的合法状态。不是 bug，不是数据错误。表达「有多条都说得通、但值不同的 claim」。
 
 ### 5.2 处理
 
@@ -443,7 +443,7 @@ Pipeline Contract 中 `fusion_version` 绑定 Claim Classification semantics 与
 
 **§11.3 义务**：Claim Classification semantics 属于 fusion_version 管辖范围。本轮 4.8h + 4.8i 属于同一个未发布 Classification Semantic Release Transaction，中间 workspace state 不构成独立 released semantics。4.8h 不 bump，4.8i 不 bump，Finalization 一次性 `fusion_v1 → fusion_v2`。
 
-**§11.3 的规范性解释**（依据 `fused_hub/docs/fused_pipeline_v1.md` L860–L895）：
+**§11.3 的规范性解释**（依据 `fused_hub/docs/fused_canonical_spec.md` L860–L895）：
 
 > §11.3 的 version-bump obligation 适用于 committed / released semantic state。Step 4.8h 与 Step 4.8i 在 Classification Semantic Release = COMMITTED 之前属于同一 pre-release transaction，因此二者的中间 workspace states 不构成独立 fusion_version。本轮 fusion_version obligation 在 Classification Semantic Release Finalization 中一次性履行。
 
@@ -568,10 +568,10 @@ Step 4.8h、Step 4.8i 与 Classification Semantic Release Finalization 共同属
 
 Step 4.8h 开始前，记录 Classification Semantic Release 的 release-start baseline。
 
-**报告落**：`local/backup/step_4.8h/`
+**报告落**：`qa/audit/step_4.8h/`
 
 **至少记录**：
-- `fused_hub/schema/v1/claim_classification_rules.json` path + fingerprint
+- `fused_hub/schema/claim_classification_rules.json` path + fingerprint
 - `core/fused/pipeline/evidence_claim.py` path + fingerprint
 - `core/fused/registry_loader.py` path + fingerprint
 - 本轮计划修改的相关 tests path + fingerprint
@@ -706,12 +706,12 @@ Finalization 后需验证：
 
 ## 12. 与既有冻结文档的关系
 
-- `fused_hub/docs/fused_policy_v1.md`：不动
-- `fused_hub/docs/fused_registry_v1.md`：不动
-- `fused_hub/docs/fused_schema_v1.md`：不动
-- `fused_hub/docs/fused_pipeline_v1.md`：不动
-- `fused_hub/docs/fused_storage_design_v1.md` / `fused_hub/docs/fused_runtime_io_v1.md`：不动
-- `fused_hub/schema/v1/claim_classification_rules.json`：追加 1 条 rule（`cc.modality.descriptive.observational`）
+- `fused_hub/docs/fused_canonical_spec.md`：不动
+- `fused_hub/docs/fused_canonical_spec.md`：不动
+- `fused_hub/docs/fused_canonical_spec.md`：不动
+- `fused_hub/docs/fused_canonical_spec.md`：不动
+- `fused_hub/docs/fused_canonical_spec.md` / `fused_hub/docs/fused_canonical_spec.md`：不动
+- `fused_hub/schema/claim_classification_rules.json`：追加 1 条 rule（`cc.modality.descriptive.observational`）
 - `core/fused/pipeline/evidence_claim.py`：2 处改动（needs_review materialization + `_eval_match` fail-closed）
 - `core/fused/registry_loader.py`：1 处改动（加载期语义校验）
 - `fusion_version`：Finalization 时 bump `fusion_v1 → fusion_v2`（见 §7）
@@ -818,7 +818,7 @@ Finalization 后需验证：
   = `sha256:50361c1b446cc5999927709abb04ca9d73dbb76b95bf0a145a2a435f0a8e6826`
   （9-rule 状态，Finalization 后实测）
 
-两者在 `local/backup/step_4.8i_finalization/release_record.txt` 中均已保留。
+两者在 `qa/audit/step_4.8i_finalization/release_record.txt` 中均已保留。
 
 **后续所有「Registry fingerprint」引用须显式区分**：
 

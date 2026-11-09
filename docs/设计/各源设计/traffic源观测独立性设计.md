@@ -5,7 +5,7 @@
 > §6.5: BLOCKED（等 M3 外部输入）
 > §6.6-C1.x: PENDING（依赖 Metadata Recon）
 > 上游：docs/工具/交接与工作流/项目交接说明.md、docs/设计/各源设计/vuln源收口设计.md（分层原则）
-> 契约依据：fused_hub/docs/fused_pipeline_v1.md、fused_hub/docs/fused_policy_v1.md、fused_hub/docs/fused_registry_v1.md、fused_hub/docs/fused_schema_v1.md
+> 契约依据：fused_hub/docs/fused_canonical_spec.md、fused_hub/docs/fused_canonical_spec.md、fused_hub/docs/fused_canonical_spec.md、fused_hub/docs/fused_canonical_spec.md
 > 本文件为 traffic D9 阶段设计真源。
 > 本文件为 standalone 设计真源，不依赖任何 superseded draft。
 
@@ -15,13 +15,13 @@
 
 ### 0.1 本设计要解决什么
 
-traffic 源进入 Fused Hub 前，必须先冻结观测独立性口径。否则存在 raw observation 被一对一 materialize 为 voting Claim 的风险，从而：
+traffic 源进入 中枢 前，必须先冻结观测独立性口径。否则存在 raw observation 被一对一 materialize 为 voting Claim 的风险，从而：
 
 - 虚增 Phase A 中的 Claim multiplicity；
 - 扩大 Phase B 产生的 alignment 数量；
 - 使 raw sampling multiplicity 被误解释为 independent semantic support。
 
-说明：Phase B 本身不是 voting algorithm。D9 v1 不修改 Phase B relation taxonomy。上述第三项指「错误 Claim multiplicity 会扩大 Phase B 的输入与 alignment materialization」，不是「Phase B 被投票污染」。
+说明：Phase B 本身不是 voting algorithm。D9 不修改 Phase B relation taxonomy。上述第三项指「错误 Claim multiplicity 会扩大 Phase B 的输入与 alignment materialization」，不是「Phase B 被投票污染」。
 
 **当前侦察快照**：25998 norm / 3000 capture。以上数量仅描述当前输入快照，不属于 D9 semantic invariant。
 
@@ -48,15 +48,15 @@ traffic 源进入 Fused Hub 前，必须先冻结观测独立性口径。否则�
 
 ---
 
-## 1. D9 v1 Hard Boundaries
+## 1. D9 Hard Boundaries
 
 以下 10 条为 D9 后续讨论的护栏。冻结后不得在后续章节被重新打开。
 
 ### 1.1 与 Hub 算法边界
 
-1. **D9 v1 不修改 Phase A Resolution Algorithm。**
-2. **D9 v1 不修改 Phase B relation taxonomy。**
-3. **D9 v1 不引入 Claim weighting。** `raw_support_count` / `independent_support_count` 不作为 Phase A voting weight。（此条比「不修改 Phase A」更具体。因为可能有人声称「算法没改，只是加了 weight 字段，consensus 用了它」——这已改变 Phase A 语义，禁止。）
+1. **D9 不修改 Phase A Resolution Algorithm。**
+2. **D9 不修改 Phase B relation taxonomy。**
+3. **D9 不引入 Claim weighting。** `raw_support_count` / `independent_support_count` 不作为 Phase A voting weight。（此条比「不修改 Phase A」更具体。因为可能有人声称「算法没改，只是加了 weight 字段，consensus 用了它」——这已改变 Phase A 语义，禁止。）
 
 ### 1.2 与 fact_key 边界
 
@@ -238,7 +238,7 @@ independent_support_count = 37
 - 哪个 source snapshot / collection scope？
 - 哪个 Independence Policy version / semantics？
 
-**D9 v1 不允许脱离 scope 把 raw N 当成全局 prevalence / confidence。**
+**D9 不允许脱离 scope 把 raw N 当成全局 prevalence / confidence。**
 
 ### 3.4 与 D9 第一原则的对应
 
@@ -862,7 +862,7 @@ Outcome **可以不是数字**。可能类型：bool / category / position / rel
 - `eligibility = unknown` 不得自动转换为 `not_eligible`
 - `outcome = unknown` 不得自动转换为 `false` / `absent` / `zero`
 
-**对于 rate / proportion，D9 v1 默认**：
+**对于 rate / proportion，D9 默认**：
 
 > 只有 `eligibility = eligible` **且** `outcome = known` 的 units 进入 **point-estimate denominator**。
 >
@@ -910,7 +910,7 @@ measurement_status = insufficient_observation
 >
 > 这**不等于**该 unit 一定能够进入当前 aggregate 的**有效计算集合**。
 >
-> 例如：`eligible + outcome = unknown` 仍然属于 eligible population，但在 D9 v1 的 rate / proportion point estimate 中**不得进入 effective denominator**。
+> 例如：`eligible + outcome = unknown` 仍然属于 eligible population，但在 D9 的 rate / proportion point estimate 中**不得进入 effective denominator**。
 
 #### 6.1.y Measurement Aggregate vs Independence Support Summary
 
@@ -986,7 +986,7 @@ measurement_status = insufficient_observation
 
 计数对象是经过 §5 semantic-object reconstruction / co-reference 后的 **Message semantic object**，**不是 raw Message observation occurrence**。
 
-**当前 v1 适用域**：D9 v1 的 `occurrence_frequency` **只覆盖 Registry 已授权的 Header subject**。若未来扩展到其他 subject / kind，**必须建立新的 concrete measurement contract variant**。
+**当前适用域**：D9 的 `occurrence_frequency` **只覆盖 Registry 已授权的 Header subject**。若未来扩展到其他 subject / kind，**必须建立新的 concrete measurement contract variant**。
 
 #### C1. Semantic Applicability Scope
 
@@ -1078,7 +1078,7 @@ observed_rate = 820 / 950 ≈ 0.8632
 | C1 可判 + 满足 C1 + target 不可靠判定 | `eligible / unknown` |
 | C1 本身不可靠判定 或 无法判断是否属于 C2 aggregate population | `eligibility = unknown` |
 
-**D9 v1 默认**：只有 `eligible + known` 进入 numerator / denominator。
+**D9 默认**：只有 `eligible + known` 进入 numerator / denominator。
 
 **必须同时保留**：`unknown_eligibility_count` / `unknown_outcome_count`。
 
@@ -1106,7 +1106,7 @@ denominator = 0
 
 #### §6.3 Property-specific Invariants（9 条）
 
-1. `occurrence_frequency` v1 表示 **Message-level presence rate**。
+1. `occurrence_frequency` 表示 **Message-level presence rate**。
 2. **Primary measurement unit = Message semantic object**。
 3. 一个 Message 对 denominator **最多贡献 1**。
 4. 一个 Message 对 numerator **最多贡献 1**。
@@ -1144,7 +1144,7 @@ denominator = 0
 
 **Primary measurement unit：Message**（同 §6.3）。
 
-**当前 v1 适用域**：与 §6.3 一致，**只覆盖 Registry 已授权的 Header subjects**。
+**当前适用域**：与 §6.3 一致，**只覆盖 Registry 已授权的 Header subjects**。
 
 #### C1. Semantic Applicability Scope
 
@@ -1197,7 +1197,7 @@ B presence observations conflict → B_presence = unknown
 
 **禁止**：直接因任何 operand conflict 就把整个 co_occurrence outcome 无条件置 unknown。
 
-**v1 不区分 outcome=false 的 00 / 01 / 10 构成**（joint distribution 属 Deferred Candidate）。
+**不区分 outcome=false 的 00 / 01 / 10 构成**（joint distribution 属 Deferred Candidate）。
 
 #### F. Aggregation Semantics
 
@@ -1221,7 +1221,7 @@ denominator = count of eligible Message semantic objects
 
 **target-sensitive 规则**：只有当 observation incompleteness **影响该 operand presence 的可靠判定**时，该 operand 才 = unknown。
 
-**D9 v1 默认**：只有 `joint outcome = known` 进入 numerator / denominator。
+**D9 默认**：只有 `joint outcome = known` 进入 numerator / denominator。
 
 **必须同时保留**：`unknown_eligibility_count` / `unknown_outcome_count`。
 
@@ -1257,11 +1257,11 @@ canonical unordered pair
 
 > Canonical target pair 必须基于 canonical subject IDs 形成 **unordered deterministic pair**。Pair identity **属于 fact semantic identity**，**不得仅存在于 assertion / Evidence / provenance 中**。
 
-**v1 禁止 self-pair**：`A != B`。`co_occurrence(A, A)` → INVALID measurement contract。
+**禁止 self-pair**：`A != B`。`co_occurrence(A, A)` → INVALID measurement contract。
 
 #### §6.4 Property-specific Invariants（14 条）
 
-1. `co_occurrence` v1 表示 **Message-level symmetric joint presence rate**。
+1. `co_occurrence` 表示 **Message-level symmetric joint presence rate**。
 2. **Primary measurement unit = Message semantic object**。
 3. 一个 Message 对 denominator **最多贡献 1**。
 4. 一个 Message 对 numerator **最多贡献 1**。
@@ -1272,7 +1272,7 @@ canonical unordered pair
 9. 每个 concrete contract 必须**显式声明 direction applicability**；`direction = unknown / unspecified` 不得生成最终 Claim。
 10. **`co_occurrence(A, B) ≡ co_occurrence(B, A)`**，canonical pair identity 有序化。
 11. **Denominator 不得使用 outcome-dependent filtering**。
-12. **v1 不区分 outcome=false 的 00 / 01 / 10 构成**；joint distribution 属 Deferred Candidate。
+12. **不区分 outcome=false 的 00 / 01 / 10 构成**；joint distribution 属 Deferred Candidate。
 13. **Canonical target pair 必须基于 canonical subject IDs 形成 unordered deterministic pair。** Pair identity **属于 fact semantic identity**，不得仅存在于 assertion / Evidence / provenance 中。
 14. **A 与 B canonicalize 后必须不同。** 若 `A == B`：该 measurement contract invalid，不得生成 co_occurrence Traffic Claim。
 
@@ -1478,7 +1478,7 @@ deterministic 定义决定（正常化器实现属 Hub 独立议题，
 与 §6.3 一致：eligibility unknown / outcome unknown 分别表达，
 不得自动转 false / absent。
 
-D9 v1 默认：只有 eligible + known 进入 distribution 的有效计数。
+D9 默认：只有 eligible + known 进入 distribution 的有效计数。
 
 必须同时保留：unknown_eligibility_count / unknown_outcome_count。
 
@@ -1511,7 +1511,7 @@ materialize distribution，同时携带 §7 的 Independence Support Summary。
 
 #### §6.6 Property-specific Invariants（10 条）
 
-1. `observed_temporal_relation` v1 表示 Packet pair 的 temporal
+1. `observed_temporal_relation` 表示 Packet pair 的 temporal
    relation distribution。
 2. Primary measurement unit = Packet semantic object pair。
 3. 一个 Packet pair 对 distribution 最多贡献 1。
@@ -1538,7 +1538,7 @@ materialize distribution，同时携带 §7 的 Independence Support Summary。
 
 1. R11–R14 已有 observation_scope 放在 value dict 内的现成先例
    （`property_registry.json` value_schema.properties.observation_scope）
-2. Claim.scope 语义是「与当前 fact 兼容」（`fused_policy_v1.md` eligibility gate），
+2. Claim.scope 语义是「与当前 fact 兼容」（`fused_canonical_spec.md` eligibility gate），
    即协议适用域，与观测总体是不同维度
 3. §6.1-y 明确禁止 Measurement Aggregate 与 Independence Support Summary 混同
 4. population_scope 更接近「测量数据的来源说明」，属 assertion 元信息
@@ -1706,11 +1706,11 @@ Assertion.value = {
 **Machine Binding Status**: PENDING
 **Empirical Validation Status**: NOT_YET_ESTABLISHED
 
-**v1 范围**：§7 Independence Semantics v1 **只服务 §6.3 / §6.4 的 rate
+**适用范围**：§7 Independence Semantics **只服务 §6.3 / §6.4 的 rate
 aggregate**。四量随 rate 承载在 S2 内（§6.y.1），**不单独建 property**。
 
-其他 property 的 independence 不在 v1 范围。未未来如需泛化，
-属 D9 v2 或独立议题。
+其他 property 的 independence 不在适用范围。未未来如需泛化，
+属 D9 后续版本或独立议题。
 
 **说明（历史）**：本节原 NOT YET DRAFTED。其起草前置为
 「§7 与 GAP-R1 合并裁定承载结构」，已于 §6-Pre13/Pre14 完成
@@ -1735,7 +1735,7 @@ dependency cluster 表示「已确定相关」的 observation 集合。
 - cluster **不进 fact_key**（§1.2 rule 4）
 
 **deterministic 判据留 Metadata Recon**（3000 captures 可用字段）。
-§7 v1 只冻结语义，**不冻结 clustering 算法**。
+§7 只冻结语义，**不冻结 clustering 算法**。
 
 ### 7.3 Independence Assessment
 
@@ -1748,7 +1748,7 @@ dependency cluster 表示「已确定相关」的 observation 集合。
 - support unit 的 identity 语义留 Metadata Recon
 
 **Frozen Independence Policy** 的判定规则留 Metadata Recon。
-§7 v1 只冻结「三态分类」这一语义结构。
+§7 只冻结「三态分类」这一语义结构。
 
 ### 7.4 Support Summary
 
@@ -1787,7 +1787,7 @@ dependency cluster 表示「已确定相关」的 observation 集合。
 5. cluster 不进 fact_key。
 6. support unit 由 dependency clustering 产生。
 7. 四量承载在 S2。
-8. §7 v1 只服务 §6.3 / §6.4。
+8. §7 只服务 §6.3 / §6.4。
 9. §7 不修改 §6 语义。
 
 ## 8. Traffic Claim Formation Contract
@@ -1829,7 +1829,7 @@ Traffic Claim 形成的必要条件：
 不满足时：不形成 Claim，或形成 `insufficient_observation`
 状态的占位 Claim（待裁定，见 §8.5）。
 
-**§8 v1 默认：不形成 Claim。**
+**§8 默认：不形成 Claim。**
 `insufficient_observation` 属测量层状态，**不 materialize 为 Claim**。
 
 ### 8.3 Claim 与 fact_key 的关系
@@ -1841,7 +1841,7 @@ fact_key 构成由 **§9 Hub Boundary** 定义。
 
 **每个 fact_key 下的 Claim 数**：
 
-§8 v1 默认：**一个 fact_key 下可有多条 Traffic Claim**
+§8 默认：**一个 fact_key 下可有多条 Traffic Claim**
 （不同 population scope / 不同 measurement unit）。
 多 Claim 在 Phase A 相遇时按既有 resolution 机制处理。
 
@@ -1858,7 +1858,7 @@ Traffic Claim 的 assertion 承载：
 
 ### 8.5 §8 未决
 
-- `insufficient_observation` 是否 materialize 为 Claim（v1 默认否）
+- `insufficient_observation` 是否 materialize 为 Claim（默认否）
 - 一个 fact_key 下多条 Claim 的 resolution 细节
 - 与 §9 Hub Boundary 的接口（待 §9 起草后回填）
 
@@ -1956,7 +1956,7 @@ fact_key.kind.enum:
 ```
 
 `observed_temporal_relation.allowed_kinds` 同步扩展；
-`schema_version` `v1` `→` `v2`；`derived/` 已重跑同步。
+`schema_version` 已 bump 至 `"2.0"`；`derived/` 已重跑同步。
 
 规范依据：`docs/实施/立项提案/D9第三问α扩展草案.md`（Frozen）。
 
@@ -2084,19 +2084,19 @@ Metadata Recon（3000 captures 可用字段）之前**不决定实际 cluster ke
 
 本设计**不改**以下冻结文档：
 
-- fused_storage_design_v1.md
-- fused_runtime_io_v1.md
-- fused_schema_v1.md
-- fused_registry_v1.md
-- fused_policy_v1.md
-- fused_pipeline_v1.md
+- fused_canonical_spec.md
+- fused_canonical_spec.md
+- fused_canonical_spec.md
+- fused_canonical_spec.md
+- fused_canonical_spec.md
+- fused_canonical_spec.md
 
 本设计**新增 / 修改**：
 
 - `property_registry.json` 追加 `observed_presence_rate`（已落盘，§14 E15）
 - `fact.schema.json` 追加 `packet_role_pair` kind（已实施，§14 E27）
 - `property_registry.allowed_kinds` 扩展（已实施，§14 E27）
-- `schema_version` `v1` `->` `v2`（已实施，§14 E27）
+- `schema_version` 已 bump 至 `"2.0"`（已实施，§14 E27）
 
 本设计触发的 Schema Gap Review 项：
 
@@ -2268,7 +2268,7 @@ sha256_full `0c6e5853…` → `5a168877…`
 
 ### E16. §7 Independence Semantics 起草
 
-§7 v1 起草完成，只服务 §6.3 / §6.4 的 rate aggregate。
+§7 起草完成，只服务 §6.3 / §6.4 的 rate aggregate。
 
 三态 / 四量语义已冻结。clustering / policy / support unit identity
 的 deterministic 判据留 Metadata Recon。
@@ -2376,7 +2376,7 @@ Q3 相关部分 PENDING Schema Gap Review。
 
 - kind 名称：`packet_role_pair`
 - `allowed_kinds` 必扩展：`observed_temporal_relation`
-- `schema_version`：`v1` `→` `v2`
+- `schema_version`：逐步演进
 - 3 个待评估 property：待下一轮
 
 实施顺序见规范 §7。
@@ -2418,7 +2418,7 @@ Pre20 已修正状态行；§6-Pre21 已补写 §12 / §13 正文。
 - `fact.schema.json`：`kind` 枚举 `+packet_role_pair`（5 `→` 6 值）
 - `property_registry.json`：`observed_temporal_relation.allowed_kinds`
   `+packet_role_pair`（**仅此 1 条**，其余 18 条逐条未变）
-- `schema_version`：`v1` `→` `v2`（`build_inputs.py:250` + `synthetic.py:99`）
+- `schema_version`：逐步演进（`build_inputs.py:250` + `synthetic.py:99`）
 - `derived/` 已同步（fused + per_source 三源）
 
 fingerprint:
@@ -2433,10 +2433,10 @@ resolution 语义，见 §11.3 绑定清单）。
 ### E28. fact.schema.json kind.description 修正
 
 Q3 加 `packet_role_pair` 时漏改 `kind.description`——
-其原文仍写「one of the 5 fixed kinds (v1)」，
+其原文仍写「one of the 5 fixed kinds」，
 与 enum 的 6 值**矛盾**。
 
-本步修正为「one of the 6 fixed kinds (v2; packet_role_pair added in D9 Q3)」。
+本步修正为「one of the 6 fixed kinds (packet_role_pair added in D9 Q3)」。
 逐行 diff：283 行 `→` 283 行，**差异恰好 1 行**（L31）。
 
 **schema_version 不 bump**——description 修正不改变语义约束，
@@ -2617,7 +2617,7 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 | 23 | Q3 packet_role_pair 扩展 kind 枚举 | DONE（已实施，见 §14 E27） |
 | 24 | Q2 分隔符 | RESOLVED（`::`，见 §9.2.x） |
 | 25 | Q3 α 规范草案审阅 | DONE（已冻结，`docs/实施/立项提案/D9第三问α扩展草案.md`） |
-| D9-DOC-INCONSISTENCY-01 | `fused_registry_v1.md:243` condition 枚举含 `code_branch`，`condition.schema.json` anyOf 无对应 | 契约一致性，非 D9 范围 |
+| D9-DOC-INCONSISTENCY-01 | `fused_canonical_spec.md:243` condition 枚举含 `code_branch`，`condition.schema.json` anyOf 无对应 | 契约一致性，非 D9 范围 |
 | D9-DOC-INCONSISTENCY-02 | `models.py:456-458` 声称 `Locator.type` 由 `fact.schema.json` discriminated schema 定义，实测为 `{"type":"string"}` | 契约一致性，非 D9 范围 |
 
 ### 15.2 Final Freeze Statement
@@ -2660,10 +2660,10 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 **traffic_d9_design.md Final Frozen 完毕。**
 
 **§0–§13 Final Frozen。§6.5 BLOCKED。§6.6-C1.x PENDING。**
-| 26 | Q3 schema_version bump 实施 | DONE（`v1` → `v2`，见 §14 E27） |
+| 26 | Q3 schema_version bump 实施 | DONE（已 bump，见 §14 E27） |
 | 27 | Q3 3 个待评估 property 裁定 | PARTIAL——2 保持原状 / 1 待 §6.5 |
 | 28 | observed_packet_position allowed_kinds 评估 | PENDING（依赖 §6.5） |
-| 29 | Hub Contract Errata（`fused_schema_v1.md` 5-kind 陈旧） | 独立 backlog（`docs/实施/待办与勘误/中枢契约勘误待办.md`，非 D9 范围） |
+| 29 | Hub Contract Errata（`fused_canonical_spec.md` 5-kind 陈旧） | 独立 backlog（`docs/实施/待办与勘误/中枢契约勘误待办.md`，非 D9 范围） |
 | 30 | Hub 层流程：Registry/Schema 变更后必须跑测试 | 独立 backlog（见 `实施/待办与勘误/中枢契约勘误待办.md` §4） |
 
 **关闭清单（三类）**：
@@ -2697,7 +2697,7 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 | Pre15 流程缺陷 | 已登记 §14 E29 + `工具/验收与规范/agent长期工作约束.md` 第八章 |
 ### E37. Traffic Lane A Rule Set Final Frozen
 
-**状态**：Lane A v1 = **PROVENANCE-ONLY**（批次 4，2026-10-04）
+**状态**：Lane A = **PROVENANCE-ONLY**（阶段 4，2026-10-04）
 
 **性质**：Lane A 规则集冻结记录。**不改变 D9 §0–§13 任何语义**；
 本条为 §14 errata 日志的追加条目。
@@ -2723,7 +2723,7 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 - **Lane A 不产生任何 Hub Candidate / Claim / Fact。** observation
   是 Lane A 侧记录，Hub 侧零改动（Invariant 24–28）。
 - **不触发 Schema Version Upgrade。** 判据为
-  `fused_storage_design_v1.md` L1292（是否发生 Storage Schema
+  `fused_canonical_spec.md` L1292（是否发生 Storage Schema
   Contract 语义变化）+ L1280 范围清单。本设计不新增任何 Hub domain
   值、不新增任何第一部分字段（D14 / D16 / D17）。
 - **G6 移出 Lane A 对齐范围**（D18）。`PairContext` 的输入类型是
@@ -2750,7 +2750,7 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 
 **D9 §0–§13 未被本条目修改。**
 
-### E38. Traffic Lane A v1 实现完成
+### E38. Traffic Lane A 实现完成
 
 **状态**：Lane A 实现 = **Implemented**（2026-10-04）
 

@@ -2,7 +2,7 @@
 
 > 生成时间：2026-11-01
 > 适用代码库：`E:\科研\想法idea\rag-chatafl`
-> 上游输入：`docs/实施/路线与里程碑/RFC源知识抽取改造方案.md`（v3，951 行）、`改进v2.md`（8 个问题）、`ProtoKG RFC 源知识抽取改造方案——技术评审报告.md`
+> 上游输入：`docs/实施/路线与里程碑/RFC源知识抽取改造方案.md`（当前版，951 行）、`改进.md`（8 个问题）、`ProtoKG RFC 源知识抽取改造方案——技术评审报告.md`
 > 本文档性质：**只读调研 + 设计规划**。撰写过程中未修改仓库任何文件（唯一写入为本文件）。
 > 运行环境：Python `C:/Users/13594/.workbuddy/binaries/python/versions/3.13.12/python.exe`（无 pytest）；pytest 用 `E:/app/Anaconda3/python.exe`。
 
@@ -10,30 +10,30 @@
 
 ## 0　摘要（先读这一段）
 
-**核心结论：改进v2 的 8 个问题在「文档层」已由 v3 全部处置完毕，但在「代码层」只有 A 阶段（问题①②③）落地；B/C/D 阶段的模型、Oracle、投票在代码里完全不存在（0 命中）。**
+**核心结论：改进.md 的 8 个问题在「文档层」已全部处置完毕，但在「代码层」只有 A 阶段（问题①②③）落地；B/C/D 阶段的模型、Oracle、投票在代码里完全不存在（0 命中）。**
 
 三条最重要的发现：
 
 1. **B 阶段的数据模型确实尚未落地**（确认团队判断）：全仓 `.py` 搜索 `SemanticRule` / `EvidenceAnchor` / `ExecutableConstraint` / `model_confidence` / `.validated` / `explicitness` / `rule_id` **全部 0 命中**。`core/fused/downstream/rule_store.py`、`core/fused/llm_ensemble.py`、`core/fused/downstream/response_oracle.py` 等 B/C/D 规划文件**均不存在**。
 
-2. **但存在一条「影子实现」必须先处理**：改进v2 说的 "旧伪代码" 指的是**文档里的伪代码**。代码里其实已经有一条**自由文本版**的语义约束链路——`rfc_extractor.py:1660 extract_constraint_candidates()` → `:1716 infer_constraints()` → `:1761 extract_constraint_norms()` → `norm.py:220 constraint_norm_to_facts()` → 产出 `legal_boundary` / `response_expectation` 两个 aspect → `rag_seedgen.py:508-510` 进 bundle → `rag_seedgen.py:617 _render_constraints()` 渲染进 LLM prompt → `boundary_probe.py:548 derive_constraint_candidates()` 消费。**这条链路已经在生产运行**，但用的是 `constraint` 自由文本（`"单 label 长度 <= 63"`），不是两层模型。B 阶段不是「从零新建」，而是「**替换这条链路的表达层**」——这改变了任务分解的形状（见 §3.7）。
+2. **但存在一条「影子实现」必须先处理**：改进.md 说的 "旧伪代码" 指的是**文档里的伪代码**。代码里其实已经有一条**自由文本版**的语义约束链路——`rfc_extractor.py:1660 extract_constraint_candidates()` → `:1716 infer_constraints()` → `:1761 extract_constraint_norms()` → `norm.py:220 constraint_norm_to_facts()` → 产出 `legal_boundary` / `response_expectation` 两个 aspect → `rag_seedgen.py:508-510` 进 bundle → `rag_seedgen.py:617 _render_constraints()` 渲染进 LLM prompt → `boundary_probe.py:548 derive_constraint_candidates()` 消费。**这条链路已经在生产运行**，但用的是 `constraint` 自由文本（`"单 label 长度 <= 63"`），不是两层模型。B 阶段不是「从零新建」，而是「**替换这条链路的表达层**」——这改变了任务分解的形状（见 §3.7）。
 
-3. **改进v2 的问题⑤ 在代码里有一个改进v2 没提到的等价物**：代码里没有 `reflow_rules()`，但 `boundary_probe.py:419-437` 存在一条**探测结果回写 facts.jsonl** 的路径（`legal_boundary` fact 回写）。这**正是问题⑤警告的「实验反馈污染权威规则」的同类问题**，只是形态不同。必须在 B 阶段一并处理。
+3. **改进.md 的问题⑤ 在代码里有一个改进.md 没提到的等价物**：代码里没有 `reflow_rules()`，但 `boundary_probe.py:419-437` 存在一条**探测结果回写 facts.jsonl** 的路径（`legal_boundary` fact 回写）。这**正是问题⑤警告的「实验反馈污染权威规则」的同类问题**，只是形态不同。必须在 B 阶段一并处理。
 
 **推荐推进顺序（与团队预判一致，但理由不同）**：B 阶段数据模型统一是必经之路——但**不是因为 C/D 依赖它**，而是因为**现有影子实现正在用自由文本污染生产 bundle**，不统一就无法在同一条链路上做增量改造。本文档给出一个**不依赖 LLM 即可执行**的 B 阶段设计（§3），和一个**规避 rq3/rq4 契约漂移**的实验设计（§4）。
 
 ---
 
-## 1　现状盘点：改进v2 的 8 个问题逐条状态
+## 1　现状盘点：改进.md 的 8 个问题逐条状态
 
 ### 1.1　总表
 
-| # | 改进v2 的问题 | 级别 | 文档层（v3） | **代码层（实测）** | 判定依据 |
+| # | 改进.md 的问题 | 级别 | 文档层 | **代码层（实测）** | 判定依据 |
 |---|---|---|---|---|---|
 | ① | A 阶段文档解析顺序仍写错 | 阻塞 | ✅ 已修 | ✅ **已落地** | `rfc_extractor.py:747-841` 六步流水线物理顺序 = 清洗(747) → TOC 隔离(768) → 标题识别(795) → 章节树(835) → 块解析(838) → 类型判定(841)。TOC 隔离**确在**建树之前（`:768` 注释明写「★ 必须在章节树之前」） |
 | ② | TOC 清除与证据保留矛盾 | 重要 | ✅ 已修 | ✅ **已落地（超出要求）** | TOC 行在 `:768-790` 被 `continue` 掉，**根本不进章节树** → 天然不可能产生 TOC claim。且有**独立判据** `_independent_toc_lines()`（`:1483`）避免质量闸自证循环 |
 | ③ | 质量闸缺可执行前提 | 重要 | ✅ 已修 | ✅ **已落地** | `QualityReport`（`:1309-1359`）分 `blocking_issues`（阻断构建）/ `offline_metrics`（发布准入）；真值集缺失时 `warnings.append` 跳过（`:1438-1440`）而非失败。实测三协议 `passed=True` |
-| ④ | B/C 新数据模型与旧伪代码不匹配 | 阻塞 | ✅ 已修 | ❌ **未落地** | 文档 §3.1/§3.4/§3.6 已统一为 v2 字段（脚本实测：py 代码块内旧字段残留**全 0**）。但代码里 `SemanticRule`/`EvidenceAnchor`/`ExecutableConstraint`/`model_confidence`/`.validated`/`explicitness`/`rule_id` **0 命中**（2026-11-01 09:05 复测，含并行同事改写后的最新版） |
+| ④ | B/C 新数据模型与旧伪代码不匹配 | 阻塞 | ✅ 已修 | ❌ **未落地** | 文档 §3.1/§3.4/§3.6 已统一为当前字段（脚本实测：py 代码块内旧字段残留**全 0**）。但代码里 `SemanticRule`/`EvidenceAnchor`/`ExecutableConstraint`/`model_confidence`/`.validated`/`explicitness`/`rule_id` **0 命中**（2026-11-01 09:05 复测，含并行同事改写后的最新版） |
 | ⑤ | 规则反馈仍在修改权威规则内容 | 阻塞 | ✅ 已修 | ⚠️ **未落地（但存在等价风险）** | 文档 `reflow_rules()`（`:733-744`）已改为纯排序。代码无 `reflow_rules`，但 `boundary_probe.py:419-437` 有**探测结果回写 facts** 的等价污染路径 |
 | ⑥ | D 阶段投票仍引用未定义的 `model_id` | 重要 | ✅ 已修 | ❌ **未落地** | 文档 `Candidate(rule, model_id, run_id)`（`:534-541`）+ `voting_models = {c.model_id for c in g}`（`:577`）。代码 0 命中 |
 | ⑦ | Oracle 判定顺序 + EXITED 不分 + timeout/crash 不该是协议期望 | 重要 | ✅ 已修 | ❌ **未落地** | 文档 `close_loop()`（`:669-726`）顺序已改为 UNKNOWN+TIMEOUT 最先 → crash → reset/close → 语义偏离。代码**无任何 `ProcessHealth`/`TransportOutcome`/`close_loop`**；现存唯一 oracle 是 `scripts/seed_oracle_filter.py`（198 行，**只判响应码**，无进程健康维度） |
@@ -74,9 +74,9 @@ smtp passed= True norms= 10 facts=  10 dup= 0 toc_out= 0 toc_only= 0 kinds= {'me
 
 > 🔄 **并行改动提示（2026-11-01 09:0x）**：本文档撰写期间，有并行同事重写了 `core/fused/rfc_extractor.py`（1713 → 1890 行）。本文档的**所有实测数据已在改写后重新复测并同步更新**（三协议 norms/facts 计数、约束候选 TOC 污染率、无 span 比例、norm_id 冲突复现、B 阶段符号 0 命中——**全部与改写前一致**）。**行号引用已按改写后的版本全面校正**。若后续该文件再被改动，请以「附录 A 的复算命令」为准重新核对行号。
 
-### 1.3　问题④ 的代码级现状 —— 一个改进v2 完全没提到的关键事实
+### 1.3　问题④ 的代码级现状 —— 一个改进.md 完全没提到的关键事实
 
-**改进v2 的判断「新版已定义 `r.evidence`/`r.constraint`/`r.model_confidence`/`r.validated`，但 §3.4 还在用旧字段」——这条只在「文档 vs 文档」的层面成立。**
+**改进.md 的判断「新版已定义 `r.evidence`/`r.constraint`/`r.model_confidence`/`r.validated`，但 §3.4 还在用旧字段」——这条只在「文档 vs 文档」的层面成立。**
 
 代码里存在的是另一套东西：**自由文本约束链路**（下称「影子实现」）。完整调用链（全部实测存在）：
 
@@ -91,7 +91,7 @@ smtp passed= True norms= 10 facts=  10 dup= 0 toc_out= 0 toc_only= 0 kinds= {'me
 | ⑦ 消费生成边界种子 | `boundary_probe.py:548 derive_constraint_candidates()` | 合法/非法种子对 |
 | ⑧ 词表注入 | `rfc_extractor.py:136-143 _RFC_CONFIG_LIST_KEYS` 含 `expected_response_classes` | 已在 `rfc_config.json` 中（实测 rtsp/sip/smtp 均有） |
 
-**这条链路的三个实测缺陷（改进v2 未提及，因为改进v2 只看了文档）：**
+**这条链路的三个实测缺陷（改进.md 未提及，因为改进.md 只看了文档）：**
 
 **缺陷 A —— 候选完全绕过章节树与 TOC 隔离。** `extract_constraint_candidates`（`:1675-1678`）直接 `f.read_text()` 读全文并按句号切分，**不经过 `_is_toc_line` 过滤**。实测 TOC 污染率：
 
@@ -113,7 +113,7 @@ DUP norm_id => {'rtsp.constraint.content-length': 10, 'rtsp.constraint.max-forwa
 
 而 `rfc_quality_report:1400-1402` 会把 `dup_norm_ids` 列入 `blocking_issues`，`build_hub.py:283-290` 随即 `raise SystemExit` 阻断构建。**即：`--constraints` 模式下只要 LLM 对同一字段返回 2 条以上约束，构建就会失败。** 这是一个已存在的、可复现的阻断性 bug（当前未被触发，因为 `--constraints` 默认关闭且 LLM 默认降级跳过）。
 
-> **结论：改进v2 的问题④「数据模型不匹配」在代码层的真实形态不是「新旧字段并存」，而是「自由文本约束链路已经上线，而两层模型完全缺失」。** 二者需要在 B 阶段**合并**处理，不能只做「新增两层模型」。
+> **结论：改进.md 的问题④「数据模型不匹配」在代码层的真实形态不是「新旧字段并存」，而是「自由文本约束链路已经上线，而两层模型完全缺失」。** 二者需要在 B 阶段**合并**处理，不能只做「新增两层模型」。
 
 ### 1.4　问题⑦ 的代码级现状
 
@@ -123,7 +123,7 @@ DUP norm_id => {'rtsp.constraint.content-length': 10, 'rtsp.constraint.max-forwa
 - **无 `ProcessHealth`、无 `TransportOutcome`、无 `ProtocolOutcome`**、无 `violation_of` 归因、无 `expected_class` 比对。
 - 定位是**「种子有效性过滤器」**（丢弃入口即无效的种子），**不是** C 阶段那个「执行结果 → 语义偏离」的 oracle。
 
-> **两者不可混为一谈。** 改进v2 的问题⑦ 指的是**后者**（`close_loop`）。文档 §3.6 落地表 `:758` 写「语义 oracle → 扩展 `scripts/seed_oracle_filter.py`」——**这个落点是错的**：把「种子过滤器」扩成「三轴语义 oracle」会让两个职责混进一个文件，且 `seed_oracle_filter.py` 是**逐种子回放过滤**（发请求、看响应），而 `close_loop` 是**执行后判定**（进程健康 + 传输 + 协议三轴）。C 阶段必须新建 `core/fused/downstream/response_oracle.py`（与 §2.0 任务表 C5 `:267` 一致），**不要扩 `seed_oracle_filter.py`**。
+> **两者不可混为一谈。** 改进.md 的问题⑦ 指的是**后者**（`close_loop`）。文档 §3.6 落地表 `:758` 写「语义 oracle → 扩展 `scripts/seed_oracle_filter.py`」——**这个落点是错的**：把「种子过滤器」扩成「三轴语义 oracle」会让两个职责混进一个文件，且 `seed_oracle_filter.py` 是**逐种子回放过滤**（发请求、看响应），而 `close_loop` 是**执行后判定**（进程健康 + 传输 + 协议三轴）。C 阶段必须新建 `core/fused/downstream/response_oracle.py`（与 §2.0 任务表 C5 `:267` 一致），**不要扩 `seed_oracle_filter.py`**。
 
 ### 1.5　问题⑧ 的代码级现状
 
@@ -132,17 +132,17 @@ DUP norm_id => {'rtsp.constraint.content-length': 10, 'rtsp.constraint.max-forwa
 - `EvidenceAnchor.span_start` / `span_end` 是**待新增的字段**，不是「待校验的已有字段」；
 - `_norm` 产出的 norm 用的是 `f"file:{source}#{section}"` 格式（`:704`），其中 `#@123` 是**行号**（`:862` `f"@{line_no}"`），不是字符区间 → **两种 anchor 语义并存**，B 阶段必须先统一。
 
-### 1.6　改进v2 中**已经不成立**的论断
+### 1.6　改进.md 中**已经不成立**的论断
 
-| 改进v2 原文 | 实测结论 | 证据 |
+| 改进.md 原文 | 实测结论 | 证据 |
 |---|---|---|
-| 「§3.6 的 bundle 示例也继续采用旧字段」 | **不成立**（v3 已重写） | `RFC源知识抽取改造方案.md:768-806` bundle 示例已是两层模型；文档自带校验脚本实测「旧字段残留: 全为 0」 |
-| 「§3.4 仍用 `r.confidence`/`r.constraint_kind`/…」 | **不成立**（v3 已改） | 同上；`r.confidence` 等在 py 代码块内计数为 0 |
-| 「§3.5 的 `reflow_rules()` 依然写着 `replace(r, constraint_text=...)`」 | **不成立**（v3 已改为纯排序） | `:733-744` |
-| 「新版投票写成 `voting_models = {r.model_id for r in g}`」 | **不成立**（v3 已改为 `{c.model_id for c in g}`） | `:577` |
-| 「改进v2 说 `SemanticRule` 未定义 `model_id`」 | 仍然成立且**强化**：`SemanticRule` 在代码里**根本不存在** | 全仓 0 命中 |
+| 「§3.6 的 bundle 示例也继续采用旧字段」 | **不成立**（已重写） | `RFC源知识抽取改造方案.md:768-806` bundle 示例已是两层模型；文档自带校验脚本实测「旧字段残留: 全为 0」 |
+| 「§3.4 仍用 `r.confidence`/`r.constraint_kind`/…」 | **不成立**（已改） | 同上；`r.confidence` 等在 py 代码块内计数为 0 |
+| 「§3.5 的 `reflow_rules()` 依然写着 `replace(r, constraint_text=...)`」 | **不成立**（已改为纯排序） | `:733-744` |
+| 「新版投票写成 `voting_models = {r.model_id for r in g}`」 | **不成立**（已改为 `{c.model_id for c in g}`） | `:577` |
+| 「改进.md 说 `SemanticRule` 未定义 `model_id`」 | 仍然成立且**强化**：`SemanticRule` 在代码里**根本不存在** | 全仓 0 命中 |
 
-**净结论：改进v2 的 8 条对「文档 v2」的批评，已被 `实施/路线与里程碑/RFC源知识抽取改造方案.md` v3 全部吸收。团队简报里「文档已修订」的前提成立。本文档的工作重心因此转向「文档说要做的事，代码里怎么落地」。**
+**净结论：改进.md 的 8 条对「文档早期版」的批评，已被 `实施/路线与里程碑/RFC源知识抽取改造方案.md` 全部吸收。团队简报里「文档已修订」的前提成立。本文档的工作重心因此转向「文档说要做的事，代码里怎么落地」。**
 
 ---
 
@@ -167,7 +167,7 @@ DUP norm_id => {'rtsp.constraint.content-length': 10, 'rtsp.constraint.max-forwa
 
 （全文残留的 2 处 `r.confidence`/`constraint_text=` 等均在**说明性文字**里——§0 追溯表、附录追溯表、R5/R23 风险描述——文档 `:910` 已声明这是预期行为，不算残留。）
 
-**新发现的一处真实结构冲突（改进v2 未发现）：`SemanticRule` 的 `rule_id` 归属层级自相矛盾。**
+**新发现的一处真实结构冲突（改进.md 未发现）：`SemanticRule` 的 `rule_id` 归属层级自相矛盾。**
 
 | 位置 | 写法 |
 |---|---|
@@ -232,10 +232,10 @@ DUP norm_id => {'rtsp.constraint.content-length': 10, 'rtsp.constraint.max-forwa
 评审 T2 的核心批评是「`constraint_text` 是自由文本，确定性引擎无法执行/校验/归因」。一个字段是否该进 `ExecutableConstraint`，唯一标准是：**给定它，一个确定性函数能否算出「这条种子确实违反了该规则」的布尔值**。不能算的（如「语义应当清晰」），进证据层的 `span_text`，不进可执行层。
 
 **判断 2：`rule_id` 必须与内容解耦，但与「结构化身份」绑定。**
-改进v2 §3.1 注释写 `rule_id: str # 全局唯一（不依赖内容哈希）`。但完全不含内容的 id 无法区分「同一字段的两条不同约束」。**正确形态是：id 由「协议 + 章节路径 + 主体 + operator + operand 规范化值」派生**，这些全是**结构化字段**，不含自由文本、不含证据 span、不含 LLM 输出顺序 → 满足「不依赖内容哈希」（文本改写但语义不变时 id 不变），同时唯一。
+改进.md §3.1 注释写 `rule_id: str # 全局唯一（不依赖内容哈希）`。但完全不含内容的 id 无法区分「同一字段的两条不同约束」。**正确形态是：id 由「协议 + 章节路径 + 主体 + operator + operand 规范化值」派生**，这些全是**结构化字段**，不含自由文本、不含证据 span、不含 LLM 输出顺序 → 满足「不依赖内容哈希」（文本改写但语义不变时 id 不变），同时唯一。
 
 **判断 3：不可转换的内容「不进自动生成链路」必须靠代码强制，不能靠约定。**
-改进v2 反复强调「不可转换为可执行规则的内容只作知识候选、不进自动生成链路」（B1 验收标准）。若只写在文档里，实现时极易失守。**强制机制见 §3.3。**
+改进.md 反复强调「不可转换为可执行规则的内容只作知识候选、不进自动生成链路」（B1 验收标准）。若只写在文档里，实现时极易失守。**强制机制见 §3.3。**
 
 ### 3.1　两层模型的具体字段
 
@@ -284,7 +284,7 @@ RULE_STATES: frozenset[str] = frozenset(
 class EvidenceAnchor:
     """证据层：这条规则从哪来。用于溯源、人工复核、投票对齐。
 
-    ★ 与 v3 文档 §3.1 的差异：此处**不含 rule_id**（rule_id 属规则层，见
+    ★ 与当前文档 §3.1 的差异：此处**不含 rule_id**（rule_id 属规则层，见
       SemanticRule.rule_id）。原因见 §2.1 的 I-1：规则身份挂在证据层会导致
       「一条规则多条证据时 id 漂移」，违反 M7「violation_of 必须唯一标识一条规则」。
     """
@@ -373,7 +373,7 @@ def compute_rule_id(protocol: str, spec_version: str,
                     expected_behavior: str) -> str:
     """rule_id = "r" + sha256(canonical_json(结构化身份))[:16]
 
-    ★ 为什么这样派生（改进v2 §3.1 注释「全局唯一（不依赖内容哈希）」）：
+    ★ 为什么这样派生（改进.md §3.1 注释「全局唯一（不依赖内容哈希）」）：
       · **不含 span/span_text** → 同一规范文本被重新抽取（措辞微调、LLM 改写）
         得到的 id **不变** → 规则可跨构建对齐、可做增量更新。
       · **不含 LLM 输出顺序/编号** → LLM 非确定性不影响 id。
@@ -413,7 +413,7 @@ def compute_evidence_id(rule_id: str, source_anchor: str,
 
 ### 3.3　「不可转换者不进自动生成链路」如何在代码里强制（4 层，不靠约定）
 
-这是改进v2 B1 的验收标准，也是本设计最需要「防失守」的一处。四层机制：
+这是改进.md B1 的验收标准，也是本设计最需要「防失守」的一处。四层机制：
 
 **强制机制 1 —— 类型层面：`KnowledgeCandidate` 没有 `constraint` 字段。**
 候选类型**物理上装不下** operator/operand。任何「把候选当规则用」的代码在**属性访问时即失败**，而不是静默地产生错误种子。
@@ -481,7 +481,7 @@ def load_executable_rules(path: Path) -> list[SemanticRule]:
 
 **转换是一个纯函数**：`try_convert(candidate) -> (ExecutableConstraint | None, reject_reason | None)`。
 
-判定顺序（**先证据、后显式性**——直接落实改进v2 问题⑧）：
+判定顺序（**先证据、后显式性**——直接落实改进.md 问题⑧）：
 
 | 步 | 检查 | 不通过 → | 为什么 |
 |---|---|---|---|
@@ -550,7 +550,7 @@ C4/C5 是整个 B 阶段最难的一环（评审 T2 明确指出「缺少真正�
    | MAY / OPTIONAL | 可选 | `normative` | ❌ → `KnowledgeCandidate(reject_reason="optional_modality")` |
    | 无规范动词（描述性） | — | `prose` | ❌ → `reject_reason="non_normative_kind"` |
 
-   > **这是本设计相对文档 §3.1 的一处收紧**：文档只区分 `evidence_kind ∈ {normative, abnf}`，但 **MAY 的条款是「可选」**，把它当强制要求会让变异器构造出「其实合规」的种子。改进v2 问题⑧ 的原话是「不能仅凭 `constraint_text` 中出现 `MUST` 等词，就证明原始规范真的包含该要求」——反过来也成立：**出现 `MAY` 也不证明它必须被满足**。
+   > **这是本设计相对文档 §3.1 的一处收紧**：文档只区分 `evidence_kind ∈ {normative, abnf}`，但 **MAY 的条款是「可选」**，把它当强制要求会让变异器构造出「其实合规」的种子。改进.md 问题⑧ 的原话是「不能仅凭 `constraint_text` 中出现 `MUST` 等词，就证明原始规范真的包含该要求」——反过来也成立：**出现 `MAY` 也不证明它必须被满足**。
 
 4. **模式表的规模估算**：RFC 2119 数值约束的高频句式约 15~25 条即可覆盖「长度/范围/集合/存在性」四大类。建议先落 12 条最小集 + 单元测试，再迭代。
 
@@ -616,7 +616,7 @@ C4/C5 是整个 B 阶段最难的一环（评审 T2 明确指出「缺少真正�
 理由（评审 F1/F5 + R7 的教训）：
 
 1. `facts.jsonl` 的 schema 由 `get_fact_view`（`export.py:83`）+ `validate_fact`（`validation.py:81`，fail-closed）严格约束，`FactKey` 的任何变动都会改 `fact_id` → 破坏跨源去重（R7）。
-2. 语义规则的 aspect（`legal_boundary`/`response_expectation`）**已经注册**（实测 `aspect_registry.json` 有这两个条目，`applicable_subject_types=["method","header"]`），说明 v1 时代就设计好了这条槽位。
+2. 语义规则的 aspect（`legal_boundary`/`response_expectation`）**已经注册**（实测 `aspect_registry.json` 有这两个条目，`applicable_subject_types=["method","header"]`），说明早期就设计好了这条槽位。
 3. 放进 bundle 的独立 `semantic_rules` 键 → 天然满足「空即缺失」契约（文档 `:814`），旧消费者不受影响。
 
 **因此 B 阶段的 `models.py` 侧工作只有一件事：把现有影子实现的 `constraint_norm_to_facts`（`norm.py:220`）所产出的自由文本 fact，**替换/并存**为两层模型的 fact。**
@@ -638,7 +638,7 @@ semantic_rules[i]  ──project──►  legal_boundary[subject_name] += {dim,
 
 投影是**单向、纯函数、可测**的：`legal`/`illegal` 由 operator/operand **反向渲染**回自然语言（供 LLM prompt 读），`trigger` 由 `expected_behavior` 填。**投影产物不带新信息**，因此不会出现「两套事实互相矛盾」——因为源只有一套。
 
-**这也顺手解决了改进v2 的问题⑤**：影子实现里 `constraint_norm_to_facts` 的 `epistemic="must"` 是**硬编码**的（`norm.py:240,247`）——**无论 LLM 抽到的原文是 MUST 还是 MAY，都被标成 `must`**。这正是「把模型推断的规则错误提升为规范性强制要求」（问题⑧ 原文）。两层模型里 `epistemic`/`evidence_kind` 由**原文实际动词**决定，这个 bug 自然消失。
+**这也顺手解决了改进.md 的问题⑤**：影子实现里 `constraint_norm_to_facts` 的 `epistemic="must"` 是**硬编码**的（`norm.py:240,247`）——**无论 LLM 抽到的原文是 MUST 还是 MAY，都被标成 `must`**。这正是「把模型推断的规则错误提升为规范性强制要求」（问题⑧ 原文）。两层模型里 `epistemic`/`evidence_kind` 由**原文实际动词**决定，这个 bug 自然消失。
 
 ### 3.7　落地到哪些文件（新增 / 修改）
 
@@ -923,7 +923,7 @@ graph LR
 
 ### 4.1　实验要验证什么
 
-改进v2 §二 明确要求：「里程碑 B～D 还要统一伪代码和数据模型，并通过**独立实验验证收益**，才能进入各自的开发阶段。」
+改进.md §二 明确要求：「里程碑 B～D 还要统一伪代码和数据模型，并通过**独立实验验证收益**，才能进入各自的开发阶段。」
 
 B 阶段要验证的核心命题必须**窄且可证伪**：
 
@@ -1080,7 +1080,7 @@ KNOWN_DRIFT: dict[tuple[str, str], tuple[int, int]] = {
    sip:  A 15→?  / B 25→20 / C 25→? / D 25→?
    smtp: A 76→?  / B 78→61 / C 78→? / D 78→?
    根因（docs/实施/路线与里程碑/RFC源改造里程碑A实施报告.md §10.4 已实测）：source 源引入
-   LIVE555 真实状态名，取代 expert_note v3 的虚构状态名 → 状态机层与种子序列全变。
+   LIVE555 真实状态名，取代 expert_note 旧版的虚构状态名 → 状态机层与种子序列全变。
    ★ 与 rfc 源**零影响**（剔除 rfc 源后条数与 md5 完全相同）。
    本实验的判定指标中**不含任何种子条数**，故该漂移不影响结论。
    ```
@@ -1093,7 +1093,7 @@ KNOWN_DRIFT: dict[tuple[str, str], tuple[int, int]] = {
    另：`corpus_gate.py` 的 G5 在非 `--strict` 下**只 WARN 不阻断**（`:1057-1059`），且 `--strict` 才升级为 FAIL（`:1169`）。**实验脚本一律不加 `--strict`**，并在报告中把 G5 的 WARN 归入第 2 条的已知漂移清单。
 
 5. **★ 不复用 `derived/model/per_source.bak_20261018/`。**
-   A 阶段报告 §10.4 已实测：该备份是 **v1 格式**（597 条含 `all_claims`），与当前 v2 格式不可比。
+   A 阶段报告 §10.4 已实测：该备份是 **旧格式**（597 条含 `all_claims`），与当前格式不可比。
 
 **额外防污染：实验产物独立目录。**
 
@@ -1125,9 +1125,9 @@ derived/experiments/annotation/<实验ID>/
 
 ## 5　C 阶段与 D 阶段的最小修正
 
-> 原则：**最小修正，不做完整重设计。** C/D 的完整设计属于各自里程碑，本节只给「改进v2 点名的问题」在代码里的落点与改法。
+> 原则：**最小修正，不做完整重设计。** C/D 的完整设计属于各自里程碑，本节只给「改进.md 点名的问题」在代码里的落点与改法。
 
-### 5.1　C 阶段：Oracle 判定顺序（改进v2 问题⑦）
+### 5.1　C 阶段：Oracle 判定顺序（改进.md 问题⑦）
 
 > ★ 编号说明：本节的 C-1~C-7 是 **oracle 三轴判定**；§3.4 的 C1~C7 是 **规则可转换性判定**。两套编号互不相关，引用时请写「oracle-C2」「convert-C1」以免混淆。
 
@@ -1147,7 +1147,7 @@ derived/experiments/annotation/<实验ID>/
 
 **C 阶段的前置依赖**：**C-2/C-3/C-4 需要 B 阶段产出的 `ExecutableConstraint.expected_behavior`**（C-2 的 `proto != expected` 比对要用它）。但 **C-1（枚举定义）、C-5（词表断言）、C-6/C-7（澄清与文档）可立即做，不依赖 B**。
 
-### 5.2　D 阶段：投票（改进v2 问题⑥）
+### 5.2　D 阶段：投票（改进.md 问题⑥）
 
 **当前代码现状**：`core/fused/llm_ensemble.py` 不存在；`Candidate` / `vote_semantic_rules` 全仓 0 命中。D 阶段是**纯新增**，无回归风险。
 
@@ -1255,7 +1255,7 @@ derived/experiments/annotation/<实验ID>/
          人工标注完成
 ```
 
-**D 阶段的定位**：D 是**可选增强**，不是必经之路。改进v2 与评审 T1/F3/R11 都强调投票**默认关闭**、成本高、集体错误无法检出。**在 B-10 实验判定为「收益成立」之前，不应投入 D 阶段**——因为如果 B 的表达层本身就没有可执行率优势，多模型投票只是在给错误的知识做一致性背书。
+**D 阶段的定位**：D 是**可选增强**，不是必经之路。改进.md 与评审 T1/F3/R11 都强调投票**默认关闭**、成本高、集体错误无法检出。**在 B-10 实验判定为「收益成立」之前，不应投入 D 阶段**——因为如果 B 的表达层本身就没有可执行率优势，多模型投票只是在给错误的知识做一致性背书。
 
 ### 6.4　排期汇总（人日）
 
@@ -1344,17 +1344,17 @@ for p in ['rtsp','sip','smtp']:
 E:/app/Anaconda3/python.exe -m pytest tests/ -q
 # → 37 failed, 749 passed, 20 errors（首测）/ 37 failed, 760 passed, 20 errors（并行改写后复测）
 
-# 6) 文档自带的字段一致性校验（v3 已通过）
+# 6) 文档自带的字段一致性校验（已通过）
 #    见 RFC源知识抽取改造方案.md:895-907 → 旧字段残留全 0
 ```
 
-## 附录 B　本文档对改进v2 的逐条回应
+## 附录 B　本文档对改进.md 的逐条回应
 
-| 改进v2 的要求 | 本文档的回应 |
+| 改进.md 的要求 | 本文档的回应 |
 |---|---|
-| 「逐条核实 8 个问题，不要照抄描述」 | §1.1 逐条给出文档层 + **代码层**双状态；§1.6 明确指出 **4 条论断已不成立**（文档 v3 已吸收） |
-| 「确认 B 阶段数据模型尚未落地」 | ✅ **确认**：全仓 0 命中（附录 A 命令 1）。并**补充**了改进v2 未发现的「影子实现」三条缺陷（§1.3） |
-| 「接口一致性清理清单（六处之间）」 | §2 给出 **11 条**具体冲突（含改进v2 未发现的 I-1 `rule_id` 层级、I-5 span 无产出任务、I-11 影子实现无任务覆盖），每条给行号 + 建议统一目标 |
+| 「逐条核实 8 个问题，不要照抄描述」 | §1.1 逐条给出文档层 + **代码层**双状态；§1.6 明确指出 **4 条论断已不成立**（文档已吸收） |
+| 「确认 B 阶段数据模型尚未落地」 | ✅ **确认**：全仓 0 命中（附录 A 命令 1）。并**补充**了改进.md 未发现的「影子实现」三条缺陷（§1.3） |
+| 「接口一致性清理清单（六处之间）」 | §2 给出 **11 条**具体冲突（含改进.md 未发现的 I-1 `rule_id` 层级、I-5 span 无产出任务、I-11 影子实现无任务覆盖），每条给行号 + 建议统一目标 |
 | 「B 阶段实施设计（字段/rule_id/强制机制/转换判定/与 models.py 关系/自然语言到 operator/落地文件/任务分解）」 | §3 全部覆盖：§3.1 字段、§3.2 rule_id、§3.3 **四层代码强制**、§3.4 转换判定 C1~C7、§3.5 自然语言→operator（模式表 + 字段绑定 + precondition 三来源）、§3.6 与 models.py 的并存方案、§3.7 落地文件表、§3.8 **B-1~B-10 任务分解**（含依赖 + 验收标准） |
 | 「独立实验设计（验证什么/对照组/用什么资产/多久算力/判定标准/规避契约漂移）」 | §4 全部覆盖：§4.1 三个可证伪命题、§4.2 C0/E1/E2 三组（**候选句冻结**保证可比）、§4.3 资产清单、§4.4 工时与**明确不需要 VM**、§4.5 预登记判定表（成立/部分/不成立三档 + 必须报告的负面结果）、§4.6 **5 条规避手段** |
 | 「C/D 最小修正（文件/行号/改法/验收）」 | §5.1（C-1~C-7）、§5.2（D-1~D-7），每条含涉及文件、当前代码对应位置、改法、验收方式 |

@@ -25,7 +25,7 @@ Rule Set 开写」等表述，**在写作当时为真**，现已过时：
 
 - `docs/设计/各源设计/traffic源规则集设计.md` 已 **Final Frozen**（2026-10-04）
 - `docs/设计/各源设计/traffic源溯源接口.md` 已 **Final Frozen**（2026-10-04）
-- Lane A v1 冻结为 **PROVENANCE-ONLY**；§4.7 / §4.8 的产物即规则集 §4.5–§4.11
+- Lane A 冻结为 **PROVENANCE-ONLY**；§4.7 / §4.8 的产物即规则集 §4.5–§4.11
 
 保留 §4.0 / §7 原文不改写，是为了让「当时为何认为不可开写」这一推理过程
 保持可审计。当前状态以 rule_set 为准；本文件的分析结论本身不因此失效。
@@ -160,10 +160,10 @@ Lane B = **no materialization**，不伪造 complete Claim。
   936/60/2/2 的 3-variant 切分。原数字来源不明，不臆造。
 
 推翻依据：见
-`local/backup/step_traffic_pre_design_closure/stage_a_overturn_sweep/`
+`qa/audit/step_traffic_pre_design_closure/stage_a_overturn_sweep/`
 （`report.txt` / `hit_list.txt` / `classification.txt` / `detail.txt`），
 以及上一轮实证
-`local/backup/step_traffic_pre_candidateization/stage_a_rtsp_variants/`
+`qa/audit/step_traffic_pre_candidateization/stage_a_rtsp_variants/`
 与 `.../stage_b_frame_number/`。
 
 **本轮未授权、未改写的陈旧点**（已登记，待你裁定）：

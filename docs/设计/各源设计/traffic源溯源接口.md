@@ -1,10 +1,10 @@
 # Traffic Lane A Provenance Interface
 
-> 状态：**Final Frozen**（批次 4，2026-10-04；依 D14–D19 填实）
+> 状态：**Final Frozen**（阶段 4，2026-10-04；依 D14–D19 填实）
 > 上游：`docs/设计/各源设计/traffic源规则集设计.md` §4.8
 > 　　　`docs/设计/各源设计/traffic源观测独立性设计.md`（Final Frozen）
-> 　　　`fused_hub/docs/fused_storage_design_v1.md`
-> 　　　`fused_hub/docs/fused_schema_v1.md`
+> 　　　`fused_hub/docs/fused_canonical_spec.md`
+> 　　　`fused_hub/docs/fused_canonical_spec.md`
 > 本文件为 Lane A → Hub provenance 接口设计真源。
 > 本文件为 standalone 设计真源。
 
@@ -20,7 +20,7 @@
 
 - 不定义 Lane A 结构抽取（见 `rule_set_design.md`）
 - 不定义 D9 semantic contract
-- 不引入 Hub Candidate / Claim / Fact（Lane A v1 不 emit）
+- 不引入 Hub Candidate / Claim / Fact（Lane A 不 emit）
 - 不修改 Hub Storage Model 现有定义
 
 ### 0.3 前置已冻结
@@ -29,7 +29,7 @@
 |---|---|
 | Lane A provenance-only invariant | `rule_set_design.md` §4.8 |
 | Lane A 输出形态：StructuralObservation + Provenance | 同上 §4.8.2 |
-| Evidence 非独立顶层对象 | `fused_storage_design_v1.md` |
+| Evidence 非独立顶层对象 | `fused_canonical_spec.md` |
 | Phase A Resolution 不可污染 | `rule_set_design.md` §4.8 |
 
 ---
@@ -273,7 +273,7 @@ P6 默认「乙：扩展 Evidence 允许非 Claim 宿主」。实测否证：
   writer 的存储契约。
 - Canonical Serialization 与逻辑存储布局属 L1280 第一部分范围
   → 触发 Schema Version Upgrade（Q3 = YES，D14）。
-- 批次 2.2 阶段 C0 T5 曾判乙为「类层面零字段改动」——该判断在
+- 阶段 2.2 阶段 C0 T5 曾判乙为「类层面零字段改动」——该判断在
   **类层面正确、在存储层面不完整**。Evidence 类确实没有宿主指针，
   但 writer 从不把它写在 claim 之外。此处更正。
 

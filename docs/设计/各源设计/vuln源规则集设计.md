@@ -1,7 +1,7 @@
 # docs/设计/各源设计/vuln源规则集设计.md — vuln 源 Candidateization 规则集设计
 
 > Step 4.8g · vuln 源收尾 · 设计真源
-> 契约: `fused_hub/docs/fused_pipeline_v1.md` 第二章 §2.1–§2.3（Rule Contract 8 字段）
+> 契约: `fused_hub/docs/fused_canonical_spec.md` 第二章 §2.1–§2.3（Rule Contract 8 字段）
 > 参照实现: `core/fused/pipeline/rules/candidateization.py`（4.8b 的 CR-1..CR-5）
 > 上游: `docs/设计/种子生成/规则集设计.md` §3（4.8b 四类规则集设计）
 
@@ -110,7 +110,7 @@ trigger_field= | trigger_condition=多个 SETUP 和 PLAY 命令 | desc=Live555 �
 全部 3 条规则的 `applicable_protocol_norm_type` 均为 `vuln_seed`。
 `scope_projection` 全部为 `unrestricted`（vuln 数据无任何 scope 约束信息）。
 
-### 3.1 VR-1 `cand.vuln.method_security_condition.v1`
+### 3.1 VR-1 `cand.vuln.method_security_condition`
 
 | 字段 | 值 |
 |---|---|
@@ -135,7 +135,7 @@ trigger_field= | trigger_condition=多个 SETUP 和 PLAY 命令 | desc=Live555 �
 被 `trigger_condition` 非空这一条挡掉的：`RTSP-003`（`SETUP+DESCRIBE+PLAY+TEARDOWN`，
 condition 为空）。这是 C1「判不出就 emit 0」的直接后果，不是缺陷。
 
-### 3.2 VR-2 `cand.vuln.header_security_condition.v1`
+### 3.2 VR-2 `cand.vuln.header_security_condition`
 
 | 字段 | 值 |
 |---|---|
@@ -184,7 +184,7 @@ condition 为空）。这是 C1「判不出就 emit 0」的直接后果，不是
 `RTSP-002`（`header.transport`）+ `RTSP-035`（`header.authorization`）→ **2 Candidates**。
 `RTSP-003`（Authorization）被 `trigger_condition` 空挡掉。
 
-### 3.3 VR-3 `cand.vuln.security_consequence.v1`
+### 3.3 VR-3 `cand.vuln.security_consequence`
 
 | 字段 | 值 |
 |---|---|
@@ -236,9 +236,9 @@ comparator              = "range_relation_v1"
 
 | rule_id | property | 维度 | 触发字段 | 实测 Candidate 数 |
 |---|---|---|---|---|
-| `cand.vuln.method_security_condition.v1` | `security_condition` | method | `trigger_methods` ∩ `trigger_condition` | 5 |
-| `cand.vuln.header_security_condition.v1` | `security_condition` | header | `trigger_field` ∩ `trigger_condition` | 2 |
-| `cand.vuln.security_consequence.v1` | `security_consequence` | method 优先，header 兜底 | 锚点 subject | 7（6 method + 1 header） |
+| `cand.vuln.method_security_condition` | `security_condition` | method | `trigger_methods` ∩ `trigger_condition` | 5 |
+| `cand.vuln.header_security_condition` | `security_condition` | header | `trigger_field` ∩ `trigger_condition` | 2 |
+| `cand.vuln.security_consequence` | `security_consequence` | method 优先，header 兜底 | 锚点 subject | 7（6 method + 1 header） |
 | **合计** | 2 个 property | 2 个维度 | | **14** |
 
 **property 分布**：`security_condition` 7（method 5 + header 2）、`security_consequence` 7
@@ -359,7 +359,7 @@ C6 的直接落地：触发条件就是 pre-condition，不掺 `desc`、不掺 C
 | └ `security_consequence` | 7（6 method + 1 header） | **7** ✅ | VR-3 |
 | **Facts（按 fact_key 折叠后）** | — | **5** | §7.1 |
 | emit 0 的 vuln_seed | 23 | **23** ✅ | 37 − 14 |
-| 落盘 `derived/model/per_source/vuln/` | 13 文件（对齐 rfc / expert_note） | 待 §四 实测 | `fused_runtime_io_v1.md` §3.2 冻结文件集 |
+| 落盘 `derived/model/per_source/vuln/` | 13 文件（对齐 rfc / expert_note） | 待 §四 实测 | `fused_canonical_spec.md` §3.2 冻结文件集 |
 
 **实现后实测（Step 4.8g，已核对一致）**：
 
@@ -396,13 +396,13 @@ document=kb/vuln/RTSP-001.json  source_type=['vuln']
    HIT cc.fallback.unknown   family=fallback  -> unknown
 ```
 
-`fused_hub/schema/v1/claim_classification_rules.json` 的 8 条 rule 里
+`fused_hub/schema/claim_classification_rules.json` 的 8 条 rule 里
 **没有任何一条覆盖 `vuln` 源**（`cc.security_notes.security_hint` 的 hint 是
 `kb/expert_note/security_notes.json`；`cc.expert_note.default_interpretive` 的 hint 是
 `kb/expert_note/`；`cc.rfc.*` 按 `source_type == "rfc"`；`cc.traffic.observational` 按
 `source_type ∈ {traffic_pcap, traffic_raw}`；`cc.implementation.*` 按 `source_type == "source"`）。
 
-于是全部 14 个 Claim 都是 `claim_class=unknown`。而 `fused_hub/docs/fused_policy_v1.md`
+于是全部 14 个 Claim 都是 `claim_class=unknown`。而 `fused_hub/docs/fused_canonical_spec.md`
 **条款 11**：
 
 > `claim_class` 为 `unknown` 的 claim **不得进入 Phase A eligible set**。
@@ -435,7 +435,7 @@ lineage / audit 完整，meta 正常写。丢的只是 **resolved assertion**：
 `unresolved(insufficient_evidence)`，即「知道有这个 subject 的这条安全陈述，但无法判定其
 resolution」。这与「知识没进中枢」有本质区别。
 
-**要修需要改 `fused_hub/schema/v1/claim_classification_rules.json`（冻结 JSON），
+**要修需要改 `fused_hub/schema/claim_classification_rules.json`（冻结 JSON），
 且 `claim_class` 取值有两种都合理的答案**：
 
 | 候选 | `security_condition` 优先级 | 后果 | 风险 |

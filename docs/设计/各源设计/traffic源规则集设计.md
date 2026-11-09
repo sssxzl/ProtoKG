@@ -1,6 +1,6 @@
 # docs/设计/各源设计/traffic源规则集设计.md — Traffic Lane A Rule Set 设计
 
-> 状态：**Final Frozen**（批次 4，2026-10-04；带 1 条 PARTIAL 判据，见 §10.1 判据 4）
+> 状态：**Final Frozen**（阶段 4，2026-10-04；带 1 条 PARTIAL 判据，见 §10.1 判据 4）
 > 上游：`docs/设计/各源设计/traffic源观测独立性设计.md`（Final Frozen）
 >       `docs/设计/各源设计/traffic源语料能力档位.md`（ACTIVE）
 >       `docs/设计/各源设计/traffic源候选项化预设计.md`（ACTIVE）
@@ -92,7 +92,7 @@
 
 ### 3.1 分组
 
-**Lane A v1 = Provenance-Only Structural Observation Lane**
+**Lane A = Provenance-Only Structural Observation Lane**
 
 所有组共同遵循 §4.8 Provenance-Only Invariant。
 
@@ -229,7 +229,7 @@ C01 / C02 / C03 全部 **PRIMITIVE**，**不直接 emit Hub Fact**。
 ### 3.5 状态口径
 
 ```
-Lane A v1 整体状态：PROVENANCE-ONLY
+Lane A 整体状态：PROVENANCE-ONLY
 ─────────────────────────────────────────
 G1 Message Reconstruction / Classification：FROZEN CANDIDATE（PRIMITIVE）
 G3 Method / Status / URI：FROZEN CANDIDATE（PRIMITIVE）
@@ -531,11 +531,11 @@ G1 = PRIMITIVE ONLY，G3 = PRIMITIVE ONLY。两者都是 instance-level。
 
 **Lane A 的 HUB_EMITTING 从哪一组开始？** 见阶段 B 的 Emission Boundary 分析。
 
-> **已答（2026-10-03）**：不问。见 §4.8 —— Lane A v1 整体 PROVENANCE-ONLY，**没有任何组 emit Hub Candidate / Claim / Fact**。本小节保留为该问题的提出记录。
+> **已答（2026-10-03）**：不问。见 §4.8 —— Lane A 整体 PROVENANCE-ONLY，**没有任何组 emit Hub Candidate / Claim / Fact**。本小节保留为该问题的提出记录。
 
 ### 4.8 Provenance-Only Invariant（核心）
 
-**Traffic Lane A v1 is a provenance-only structural observation lane.**
+**Traffic Lane A is a provenance-only structural observation lane.**
 
 **No Lane A structural item may directly emit a Hub Candidate, Claim, or Fact.**
 
@@ -589,7 +589,7 @@ Phase A 再精确也救不回来——输入 identity 已经错。
 
 #### 4.8.2 Lane A 输出形态
 
-Lane A v1 输出：
+Lane A 输出：
 
 ```
 StructuralObservation + Provenance
@@ -604,7 +604,7 @@ StructuralObservation + Provenance
 
 第 3 / 4 条尤其重要——否则只是把「traffic Candidate 污染 Phase A」改成「traffic Evidence 间接污染 Phase A」。
 
-**Lane A v1 不得 emit Evidence DTO**——Hub Storage Model 中 Evidence 不是独立顶层对象；它属于 Claim，Claim 属于 Fact。没有 Fact/Claim 宿主时 Evidence 无处挂载。
+**Lane A 不得 emit Evidence DTO**——Hub Storage Model 中 Evidence 不是独立顶层对象；它属于 Claim，Claim 属于 Fact。没有 Fact/Claim 宿主时 Evidence 无处挂载。
 
 挂载机制由 `docs/设计/各源设计/traffic源溯源接口.md` 定义。
 
@@ -810,7 +810,7 @@ Lane A 侧独立记录；Hub 侧零改动（D17）。
 
 ### 4.12 G5 / G7 无 target 的处理
 
-> **状态：Frozen Candidate**（依 D18 及批次 1 阶段 D 的缺口定位）
+> **状态：Frozen Candidate**（依 D18 及阶段 1 阶段 D 的缺口定位）
 
 **G5 / G7 的 emission class = `NO_TARGET_PENDING_EXTRACTION`。**
 
@@ -995,7 +995,7 @@ Lane A 是 instance-level structural fact；§8 是 population-level Claim。语
 | **M5** | Whether a structural fact derived from a PARTIAL observation may be emitted at all, given §4.8 says partial never relaxes identity. **→ 允许观察、标注 partial、不放宽 identity（§4.8.2）** | 同上 |
 | **M6** | Naming of the carrier. §9 Hub Boundary is where fact_key is defined; M1 cannot be closed before that, so §8 extension and §9 must be sequenced. **→ §9 对 Lane A 不适用（无 fact_key）；§8 扩展仍独立待做** | 同上 |
 
-**M1–M6 全文见**：`local/backup/step_traffic_lane_a_pre/section8_interface.txt`
+**M1–M6 全文见**：`qa/audit/step_traffic_lane_a_pre/section8_interface.txt`
 
 ---
 
@@ -1036,7 +1036,7 @@ Lane A 是 instance-level structural fact；§8 是 population-level Claim。语
 21. Message boundary 冲突（production ≠ validation）→ `NEEDS_REVIEW`；不预设 pcap wins 或 client.log wins。
 22. G3 三候选（C04/C05/C06）为 PRIMITIVE——单条消息的 attribute 属 observation instance 层。
 23. 不得因 corpus 值集恒定就把 instance attribute 判为「不值得进 Hub」——值集恒定是 corpus 覆盖陈述，不是语义结论。
-24. Traffic Lane A v1 is provenance-only。任何 Lane A structural item 不得直接 emit Hub Candidate / Claim / Fact。
+24. Traffic Lane A is provenance-only。任何 Lane A structural item 不得直接 emit Hub Candidate / Claim / Fact。
 25. Lane A observation 不得参与 Phase A Resolution，不得改变 canonical assertion。
 26. Lane A 不得 emit Evidence DTO——Evidence 在 Hub Storage Model 中不是独立顶层对象。
 27. 未来 traffic-derived Hub-emitting 语义必须另立独立 lane，不得作为 Lane A 内部例外。
@@ -1051,7 +1051,7 @@ Lane A 是 instance-level structural fact；§8 是 population-level Claim。语
 | 1 | CSeq 覆盖路径甲/乙 | 独立议题 |
 | 2 | §8 扩展设计 | 独立议题 |
 | 3 | role class 待定 3 项 | Metadata Recon（**G7 因此无法升级**） |
-| 4 | 22 候选逐条 kind 映射 | **OBSOLETE** — Lane A v1 不产生 fact_key（§4.8） |
+| 4 | 22 候选逐条 kind 映射 | **OBSOLETE** — Lane A 不产生 fact_key（§4.8） |
 | 5 | G1 reconstruction-only vs Hub-emitting 边界 | **RESOLVED** — G1 = PRIMITIVE ONLY（§4.8） |
 | 6 | E token 与现有 contract 对齐 | 实现 binding 时 |
 | 7 | G1 Message boundary production rule | RESOLVED（§4.5） |
@@ -1065,7 +1065,7 @@ Lane A 是 instance-level structural fact；§8 是 population-level Claim。语
 | 15 | corroborates / contradicts / insufficient 的判定标准 | **RESOLVED** — 见 provenance_interface §4.2 |
 | 16 | Alignment Target 的枚举范围 | **RESOLVED** — 见 provenance_interface §3.2 |
 | 17 | packet_role_pair code/registry 分歧 | 见 hub_contract_errata_backlog §6 |
-| 18 | **CSeq 覆盖路径甲/乙的具体实现选择** | 独立议题；**未阻塞** Lane A v1 冻结（§4.11 C 注明） |
+| 18 | **CSeq 覆盖路径甲/乙的具体实现选择** | 独立议题；**未阻塞** Lane A 冻结（§4.11 C 注明） |
 | 19 | **G6 移出 Lane A 对齐范围** | **已裁定**（D18）。理由：`PairContext` 输入类型是 canonical `fact_key`，无 message / observation / capture 字段；把 Message 送进该机制即 §4.8 所禁。改 `PairContext` 属 Hub Contract 范围，已登记 hub_contract_errata_backlog §8 |
 | 20 | **G5 / G7 = `NO_TARGET_PENDING_EXTRACTION`** | 上游 extraction coverage 缺口，Hub Contract 侧，非 Lane A 可解（§4.12） |
 | 21 | **subject canonical ID 未解前 G4 的 target 无法唯一选定** | 承 §5.2（P1-1）；`authorization` / `Authorization` 两条并存 |
@@ -1094,7 +1094,7 @@ Lane A 是 instance-level structural fact；§8 是 population-level Claim。语
 16. 所有 PRIMITIVE Contract 的裁定理由必须明确为「instance-level attribute」或「instance-internal relation」，**不得**表述为「值恒定」或「覆盖不足」
 
 
-### 10.1 冻结判据核对（批次 4，Step 4.1）
+### 10.1 冻结判据核对（阶段 4，Step 4.1）
 
 逐条核对结果。**未通过的两条如实标出，不粉饰。**
 

@@ -5,8 +5,8 @@
 > 本地化适配方案（改造目标 / 抽取范围 / 数据模型 / 种子生成 / 本地化改造点 / 流程依赖）。
 >
 > 落盘日期：2026-10-20
-> 上游：`docs/设计/各源设计/vuln源规则集设计.md`（v1 pipeline 时代，已脱节）、
->        `docs/设计/各源设计/vuln源收口设计.md`（v1 claim_class 裁定，已脱节）
+> 上游：`docs/设计/各源设计/vuln源规则集设计.md`（早期 pipeline 时代，已脱节）、
+>        `docs/设计/各源设计/vuln源收口设计.md`（claim_class 裁定，已脱节）
 > 对标本：rfc→SemFuzz（`docs/设计/抽取与形态/RFC源改造设计.md`）、source→AutoSeeder、
 >        traffic→LLM-Boofuzz、expert_note→v3 主观定位
 
@@ -25,7 +25,7 @@
 ### 1.2 缺什么（GLMFuzz 能补的）
 
 对照其他四源都「借鉴一篇对口文献 + 专门设计」：rfc→SemFuzz、source→AutoSeeder、
-traffic→LLM-Boofuzz、expert_note→v3。vuln 缺三点：
+traffic→LLM-Boofuzz、expert_note→最终版。vuln 缺三点：
 
 1. **漏洞序列自动补全**：CVE 原文常缺完整 request 序列（实测 `trigger_requests`
    与 `mutation_hints` 大多 `missing`），GLMFuzz 用 LLM 从描述 + 触发条件里补全；

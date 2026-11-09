@@ -1,7 +1,7 @@
 # docs/设计/各源设计/source源语料能力档位.md — Source 语料能力档案
 
 > 状态：**ACTIVE**（2026-10-05 新建）
-> 来源：`local/backup/step_source_recon/`（只读勘察）、`step_source_a/`、`step_source_a2/`
+> 来源：`qa/audit/step_source_recon/`（只读勘察）、`step_source_a/`、`step_source_a2/`
 > 范围：**current source corpus empirical capability**
 > **非** Hub Contract capability（Hub 侧能力见 `fused_hub/docs/`）
 > 参照：`docs/设计/各源设计/traffic源语料能力档位.md`（结构类比，内容不复制）
@@ -17,7 +17,7 @@
 |---|---|
 | 本档案 | **仅记录语料事实**，不是设计真源 |
 | 设计真源 | `docs/设计/各源设计/第五源设计.md`、`docs/设计/各源设计/source源规则集设计.md` |
-| 契约真源 | `fused_hub/docs/fused_registry_v1.md`、`fused_hub/schema/v1/*.json` |
+| 契约真源 | `fused_hub/docs/fused_canonical_spec.md`、`fused_hub/schema/*.json` |
 | Hub 能力 | **不在本档案范围**（Hub 侧能力是 Hub Contract 的事） |
 
 ⚠ 本档案**不得**被引用为「协议要求」的依据。
