@@ -951,7 +951,7 @@ def _load_rfc_config(protocol: str) -> dict:
         #   （**默认关闭** ⇒ 产物逐字节不变）。
         #   ★ 能力依据：确定性路线实测不可行（RFC 用指代句式表达必填性 ⇒ 正则抓不到），
         #     LLM 路线可行（实测 sip 覆盖 6/8=75%、误报 0；
-        #     详见 local/必填头抽取可行性报告.md）。
+        #     详见 local/必填头抽取可行性报告.md（已移除））。
         #   ★ 产出 aspect=required_header_global ⇒ **不进任何 bundle 桶**
         #     ⇒ 只作为可审计的 RFC 源证据留在中枢，供「替代骨架那份」的决策使用。
         "enable_required_headers": False,
@@ -5086,7 +5086,7 @@ def extract_constraint_candidates(protocol: str, max_per_rfc: int = 80) -> list[
 # B-9　语义规则质量闸（强制机制 4）+ `rules_only` 产出
 # ===========================================================================
 #
-# ★ 本节的三个闸（对齐 `docs/实施/RFC源里程碑BCD路线图.md` §强制机制 4）：
+# ★ 本节的三个闸（对齐 `docs/实施/路线与里程碑/RFC源里程碑路线图.md` §强制机制 4）：
 #   ① 报告新增度量：**语义规则总数** / **可执行率** / **候选拒绝原因直方图**
 #      / **`constraint is None` 计数**；
 #   ② `constraint is None` 计数 > 0 ⇒ **阻断构建**；

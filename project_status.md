@@ -73,7 +73,7 @@
 | 中枢契约（分类/槽位/属性/图/判据） | `fused_hub/schema/*.json` |
 | 协议档案 | `fused_hub/targets/<协议>/profile.json` |
 | 项目结构逐文件说明 | `docs/工具/项目结构说明.md` |
-| 中枢重设计实施总纲 + 进度 | `docs/设计/中枢重设计改造方案.md` |
-| agent 长期约束 | `docs/工具/agent_rules.md` |
+| 中枢重设计实施总纲 + 进度 | `docs/设计/顶层设计/顶层设计/中枢重设计改造方案.md` |
+| agent 长期约束 | `docs/工具/验收与规范/agent长期工作约束.md` |
 | 交接入口 | `docs/工具/交接文档.md` |
-| 验收口径 | `docs/工具/CI与验收说明.md` |
+| 验收口径 | `docs/工具/验收与规范/CI与验收说明.md` |

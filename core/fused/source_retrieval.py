@@ -57,7 +57,7 @@ _CHUNK_SIZE = 1500
 _CHUNK_OVERLAP = 200
 
 #: 缓存目录（绝对路径，走统一 paths 解析）
-CACHE_DIR = paths.derived_root() / "source_blocks"
+CACHE_DIR = paths.model_root() / "source_blocks"
 
 
 # ===========================================================================

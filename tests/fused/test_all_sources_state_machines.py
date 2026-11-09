@@ -97,7 +97,7 @@ def test_active_transitions_prefers_rfc_native(bundle):
       协议骨架那套的 6 个状态名（Idle/Registered/…）在 RFC 2326 原文中
       **0/6 命中**（是 `source_autoseeder` 提示词里硬塞的 SIP 式范例）
       ⇒ 旧规则下种子的状态路径精确率 **0%**；改用 RFC 原生那套后 **100%**
-      （依据：`local/状态机消费口径对照实验报告.md`）。
+      （依据：`local/状态机消费口径对照实验报告.md（已移除）`（已移除））。
     """
     by_src = bundle.get("transitions_by_source") or {}
     rfc_rows = by_src.get("rfc") or []

@@ -190,7 +190,7 @@ def _dedupe_sorted(values: list) -> list:
 def _select_active_transitions(by_source: dict[str, list]) -> list:
     """从「各源的状态机」里选出**当前采用**的一套。
 
-    ★★ 2026-11-05 修正（依据：``local/状态机消费口径对照实验报告.md``）：
+    ★★ 2026-11-05 修正（依据：``local/状态机消费口径对照实验报告.md（已移除）`（已移除）`）：
       旧实现是「**骨架优先**」⇒ RTSP 采用协议骨架那 38 条边，而它的 6 个状态名
       （Idle/Registered/Confirmed/Invited/Paused/Terminated）在 RFC 2326 原文中
       **0/6 命中** —— 那是 ``source_autoseeder`` 提示词里硬塞的 **SIP 式范例**
@@ -814,7 +814,7 @@ def build_view(views: list[dict], protocol: str = "rtsp",
     #     协议骨架兜底**（2026-11-05 修正）。旧规则是「骨架优先」⇒ RTSP 采用了
     #     骨架那 38 条 SIP 式状态名的边（RFC 原文命中 0/6）⇒ 种子状态路径
     #     精确率 **0%**；改用 RFC 原生那 14 条 ⇒ 精确率 **100%**
-    #     （依据：``local/状态机消费口径对照实验报告.md``）。
+    #     （依据：``local/状态机消费口径对照实验报告.md（已移除）`（已移除）`）。
     #   ★ 后期 LLM 判别时**只需替换 `_select_active_transitions()`** 这一个函数。
     transitions_by_source: dict[str, list] = {}
     for _t, _a in zip(transitions, _transitions_auth):

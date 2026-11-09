@@ -190,7 +190,7 @@ def test_real_multi_rfc_hub_has_file_anchors():
     import glob
     import json as _json
     from core import paths as _paths
-    root = _paths.derived_root() / "per_source" / "smtp" / "facts"
+    root = _paths.model_root() / "per_source" / "smtp" / "facts"
     if not root.is_dir():
         pytest.skip("无 smtp 中枢产物")
     files = set()

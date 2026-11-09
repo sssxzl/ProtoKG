@@ -102,7 +102,7 @@ def assemble_bundle(views: list[dict], protocol: str = "rtsp",
 # 1. 加载五源 facts（view dict）
 # ===========================================================================
 
-DEFAULT_FACTS_ROOT = paths.derived_root() / "per_source"
+DEFAULT_FACTS_ROOT = paths.model_root() / "per_source"
 
 
 #: ★ 批次 1.6 步 1：中枢 aspect 布局的**顺序索引**（相对 aspect 目录）。
@@ -328,7 +328,7 @@ def _output_format_example(protocol: str) -> str:
 # ===========================================================================
 # 2.5 bundle 契约扩展 + 语义规则投影（B-8）
 #
-# 设计依据：docs/实施/RFC源里程碑BCD路线图.md
+# 设计依据：docs/实施/路线与里程碑/RFC源里程碑路线图.md
 #   · §3.6（选项 c：「影子实现升级为两层模型，`legal_boundary` 桶保留但由两层
 #     模型投影填充」）—— 语义规则走 bundle 的**独立键** `semantic_rules`，
 #     不进 `facts.jsonl`（`models.py` 的 fact_id 派生链零影响）；

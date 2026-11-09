@@ -1186,7 +1186,7 @@ def parse_raw_seed(text: str, profile: dict, *, protocol: str = "",
 #: ★ **语义命名**的目录（``rq4_B`` / ``pfb_exp_B`` /
 #:   ``live555_20261024_110155`` / ``dict_rtsp`` / ``focused20_*`` …）是
 #:   **人工/工具整理的正式语料**（有的**天然没有** manifest，例如真实抓包语料
-#:   ``live555_20261024_110155`` —— ``docs/工具/CI与验收说明.md:122`` 记载
+#:   ``live555_20261024_110155`` —— ``docs/工具/验收与规范/CI与验收说明.md:122`` 记载
 #:   「CI 无法重建」）⇒ **一律保留**，不因缺 manifest 而排除。
 TIMESTAMP_DIR_PATTERN = re.compile(r"^\d{8}_\d{6}$")
 
@@ -1237,7 +1237,7 @@ def _published_group_dirs(protocol: str, group: Optional[str],
           ``live555_20261024_110155`` / ``dict_rtsp`` / ``focused20_*`` …）
           = **人工/工具整理的正式语料** ⇒ **一律保留**。
           ★ 其中 ``live555_20261024_110155`` 是**真实抓包语料**（**天然没有**
-            manifest —— ``docs/工具/CI与验收说明.md:122`` 记载「CI 无法重建」）
+            manifest —— ``docs/工具/验收与规范/CI与验收说明.md:122`` 记载「CI 无法重建」）
             ⇒ **绝不能**因为缺 manifest 而被排除。
       ⇒ 护栏只针对**时间戳形态**：既挡掉废弃污染目录，也挡住将来任何
         「新生成但未正式发布」的时间戳批次（同类问题不再复发），
@@ -1265,7 +1265,7 @@ def _published_group_dirs(protocol: str, group: Optional[str],
         #   ★ **语义命名**的目录（rq4_B / pfb_exp_B / live555_* / dict_rtsp
         #     / focused20_* …）是**人工/工具整理的正式语料**，**一律保留** ——
         #     真实抓包语料 live555_20261024_110155 就**没有** manifest
-        #     （docs/工具/CI与验收说明.md:122：CI 无法重建）⇒ 不能误伤。
+        #     （docs/工具/验收与规范/CI与验收说明.md:122：CI 无法重建）⇒ 不能误伤。
         if _is_timestamp_batch_dir(child.name) \
                 and not (child / "manifest.json").is_file():
             continue

@@ -26,7 +26,7 @@
 | `packet_role_pair` | `<P>` | (任意) | ❌ v2 未注册 `packet_role` 类型——记入错误清单 | — | — |
 | **未识别** | (任意) | (任意) | ❌ 未识别——记入错误清单返回 | — | — |
 
-> 备注: `kind="packet_role_pair"` 是 v1 hub 曾加入的扩展 kind（不在 v1 基础 5 类枚举内），但现有 131 Facts **不涉及**（实测 kind 分布：constraint 43 / method 52 / header 11 / state 4 / transition 21，packet_role_pair 计数 0；详见 `local/five_source_audit.md`）。
+> 备注: `kind="packet_role_pair"` 是 v1 hub 曾加入的扩展 kind（不在 v1 基础 5 类枚举内），但现有 131 Facts **不涉及**（实测 kind 分布：constraint 43 / method 52 / header 11 / state 4 / transition 21，packet_role_pair 计数 0；详见 `local/five_source_audit.md（已移除）（已移除）`（已移除））。
 
 > 备注: `property="security_consequence"` 在 v1 实测存在 2 条（`method.SETUP` 与 `header.authorization`），v2 **已映射** —— `core/fused/compat.py` 的 `_PROPERTY_TO_ASPECT` 将其归入 `"security_property"` 桶（与 `security_condition` 同桶），不记入错误清单。v1 实测 property 分布共 8 个值：`value_type` 43 / `existence` 25 / `relation_to_other_field` 22 / `target_state` 21 / `security_condition` 9 / `occurrence` 6 / `case_sensitivity` 3 / `security_consequence` 2。
 
@@ -66,11 +66,11 @@ packet_role_pair     packet_role   ⚠ v2 注册表未注册 packet_role
 - 批量入口 `convert_v1_fact_jsonl(path) -> (list[Fact], list[dict])`：错误登记进返回的
   errors 列表，条目形如 `{line, reason}`（解析/单条失败）或
   `{canonical_key, reason, group_size}`（同 canonical key 合并失败）
-- 调用方负责处理错误清单；compat 模块本身只读 `derived/fused/facts/`，不写任何文件
+- 调用方负责处理错误清单；compat 模块本身只读 `derived/model/hub/facts/`，不写任何文件
 
 ## 不动 v1
 
 本文仅定义**映射规则**与**实现入口**。
-旧 fact 的物理格式（derived/fused/facts/*.jsonl）**完全不动**；
+旧 fact 的物理格式（derived/model/hub/facts/*.jsonl）**完全不动**；
 新结构（v2 core/）与 v1 共存；v1 的裁决链 / validation chain 所在的 `core/fused/runtime/`、`reader.py`、`writer.py` 已于 2026-10-09 随 架构退役移除，不存在「不修改 v1 代码链」这一约束。
 切换发生在用户**明确迁移**时（早期 → 当前 的语义化切换由后续决策触发）。

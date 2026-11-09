@@ -6,7 +6,7 @@ core/fused/source_fsm.py —— 从协议实现源码推断状态机（LLM，Pro
 pattern（消息处理函数名 + 状态变量名），提取信号后 LLM 推断状态机。
 设计（历史）: 引擎调用 get_pattern(protocol) 读取 protocol_patterns 配置…
 
-设计依据: docs/设计/源码知识抽取设计.md（ProtocolGPT / STCFuzz 思路）。
+设计依据: docs/设计/各源设计/源码知识抽取设计.md（ProtocolGPT / STCFuzz 思路）。
 """
 from __future__ import annotations
 

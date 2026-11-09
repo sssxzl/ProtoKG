@@ -9,7 +9,7 @@
 - **依据**: `fused_hub/docs/fused_knowledge_hub_design.md` §3 / §6
 - **范围**: Layer 1（rtsp Profile），甲方案（最小可用）
 - **状态**: 已落地（草案内容已进 `fused_hub/schema/` 三个注册表 JSON，`core_version: 1.0`；后续修订以本文档为准）
-- **数据来源**: `derived/fused/facts/*.jsonl` 经 `core/fused/compat.py` 映射为 Fact
+- **数据来源**: `derived/model/hub/facts/*.jsonl` 经 `core/fused/compat.py` 映射为 Fact
   （Step C1 探针：131 → 118 facts，0 errors；v2 映射结果未落盘，产物在 `derived/model/per_source/<协议>/<源>/facts/`）
 
 ---
@@ -46,9 +46,9 @@
 
 - **语义**: 协议消息的头字段。
 - **实测 name 全集（68，v2 产物 `derived/model/per_source/rtsp/rfc/facts/rfc.jsonl` 实测）**: `Accept`, `Accept-Encoding`, `Accept-Language`, `Allow`, `Authorization`, `Bandwidth`, `Blocksize`, `CSeq`, `Cache-Control`, `Conference`, `Connection`, `Content-Base`, `Content-Encoding`, `Content-Language`, `Content-Length`, `Content-Location`, `Content-Type`, `Date`, `Expires`, `From`, `Host`, `If-Match`, `If-Modified-Since`, `Last-Modified`, `Location`, `Proxy-Authenticate`, `Proxy-Require`, `Public`, `RTP-Info`, `RTSP option name`, `RTSP option registration`, `Range`, `Referer`, `Require`, `Retry-After`, `Scale`, `Server`, `Servers`, `Session`, `Session identifier`, `Speed`, `Timestamp`, `Transport`, `URL`, `URL host`, `Unsupported`, `User-Agent`, `Vary`, `Via`, `WWW-Authentica`, `basic features`, `character encoding`, `client`, `conference identifier`, `header field value`, `header fields (Section 12)`, `line terminator`, `message body`, `message body length`, `method`, `npt-range`, `octet sequence`, `presentation description`, `protocol`, `sink`, `smpte-range`, `user interface`, `utc-range`
-- **⚠ 既有遗留（不属本 Profile 处置）**: 在 **v1 遗留数据**（`derived/fused/facts/header.jsonl`
+- **⚠ 既有遗留（不属本 Profile 处置）**: 在 **v1 遗留数据**（`derived/model/hub/facts/header.jsonl`
   实测）里 `Authorization` 与 `authorization` 是两条 distinct name（大小写变体）；v2 rfc
-  产物中只出现 `Authorization` 一条。沿用 `docs/实施/hub_contract_errata_backlog.md` §10.1 的既有现象。
+  产物中只出现 `Authorization` 一条。沿用 `docs/实施/待办与勘误/中枢契约勘误待办.md` §10.1 的既有现象。
   ⚠ 但该 backlog §16 已裁定「`Authorization` 与 `authorization` 是同一 header」
   （backlog L755 / L775），与本节「如实登记不合并」的处置存在张力，合并裁定仍挂
   backlog §10.1 待办。
@@ -56,12 +56,12 @@
 ### 1.3 `state` —— 协议状态机状态
 
 - **语义**: 协议状态机的状态。
-- **实测 name 全集（4，Step C1 v1 快照 `derived/fused/facts/state.jsonl`）**: `Init`, `Playing`, `Ready`, `Recording`
+- **实测 name 全集（4，Step C1 v1 快照 `derived/model/hub/facts/state.jsonl`）**: `Init`, `Playing`, `Ready`, `Recording`
 
 ### 1.4 `status` —— 响应状态码
 
 - **语义**: 协议响应状态码。name 为数字串（v1 `status.NNN` 去 `status.` 前缀后的数字）。
-- **实测 name 全集（43，Step C1 v1 快照 `derived/fused/facts/constraint.jsonl`）**: `100`, `200`, `201`, `250`, `300`, `301`, `302`, `303`,
+- **实测 name 全集（43，Step C1 v1 快照 `derived/model/hub/facts/constraint.jsonl`）**: `100`, `200`, `201`, `250`, `300`, `301`, `302`, `303`,
   `304`, `305`, `400`, `401`, `403`, `404`, `405`, `406`, `407`, `408`, `410`, `411`,
   `412`, `413`, `414`, `415`, `451`, `452`, `453`, `454`, `455`, `456`, `457`, `458`,
   `459`, `460`, `461`, `462`, `500`, `501`, `502`, `503`, `504`, `505`, `551`

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """core/fused/semantic_rules.py —— operator/operand 模式表 + 字段绑定（里程碑 B-5）。
 
-设计依据：docs/实施/RFC源里程碑BCD路线图.md
+设计依据：docs/实施/路线与里程碑/RFC源里程碑路线图.md
   · §3.5（行 496-581）：「规则优先 + LLM 兜底 + 结构校验」三层方案的第一层
     ——**有序**的确定性模式表；operand 的四种来源（数值常量 / 枚举集合 /
     字段引用 / 存在性）；单位归一必须显式；`target_field` 的两级绑定
