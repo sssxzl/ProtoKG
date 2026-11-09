@@ -60,7 +60,7 @@ def main() -> int:
             protocol = sys.argv[i + 1]
             break
 
-    out_dir = ROOT / "derived" / "seeds" / protocol / (
+    out_dir = ROOT / "derived" / "model" / "seeds" / protocol / (
         "rq1_" + datetime.now().strftime("%Y%m%d_%H%M%S"))
 
     stages = {}

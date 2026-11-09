@@ -3,7 +3,7 @@ graph TB
         subgraph PRE["① 前置阶段 (只读核对 → 清理 → 同步 → 校验)"]
             SRC["VM 源码 /home/zxy/profuzzbench<br/>git HEAD 8573ec8"]
             CLEAN["docker rm -f 18 exited 容器<br/>docker image prune -a (回收 ~6.7GB)<br/>停 5 个 rq1sip_* 运行中容器"]
-            SYNC["本机 E:\...\derived\seeds\&lt;proto&gt;\pfb_exp_B<br/>50 / 56 / 78 .raw"]
+            SYNC["本机 E:\...\derived\model\seeds\&lt;proto&gt;\pfb_exp_B<br/>50 / 56 / 78 .raw"]
             VERIFY["rq4_verify_seeds.py<br/>CRLF + 条数 + AFLNet 分区数<br/>RTSP会话可播性 / SIP方法可识别性"]
         end
 

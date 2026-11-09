@@ -9,7 +9,7 @@
   · **κ 计算** —— 完全一致 ⇒ κ=1.0；50% 一致 ⇒ κ 显著 < 0.6；**类别分布退化**须显式报告
   · **指南防泄漏** —— 标注指南不得逐字/近似包含任何**待标注**候选
 
-★ **本文件用 ``tmp_path`` 构造合成数据**，不依赖 ``derived/exp_semantic/`` 下的
+★ **本文件用 ``tmp_path`` 构造合成数据**，不依赖 ``derived/experiments/annotation/`` 下的
   实验产物（那些内容会随实验重生成而变，会让本文件变成"测实验产物"而不是
   "测工具逻辑"）。唯一例外是「指南防泄漏」那一条：它必须对着**真实冻结集**跑，
   因为泄漏风险恰恰发生在"指南 vs 真实候选"之间 —— 故该用例在冻结集不存在时
@@ -495,7 +495,7 @@ class TestGuideLeak:
 
     def test_real_guide_does_not_leak_real_frozen_set(self):
         """★ 对**真实冻结集**跑：标注指南必须零泄漏。"""
-        frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        frozen_path = ROOT / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
         guide_path = ROOT / "docs" / "工具" / "人工标注指南.md"
         if not frozen_path.is_file() or not guide_path.is_file():
             pytest.skip("冻结集或指南尚未生成（该用例需真实数据）")
@@ -702,7 +702,7 @@ class TestCRLFRobustness:
 
     def test_guide_leak_check_same_under_crlf(self, repo_crlf_probe):
         """★ CRLF 化后泄漏闸结论一致（不能因换行符而漏报或误报）。"""
-        frozen = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        frozen = ROOT / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
         if not frozen.is_file():
             pytest.skip("冻结集尚未生成")
         guide_crlf = repo_crlf_probe / "人工标注指南.md"
@@ -718,9 +718,9 @@ class TestCRLFRobustness:
 
     def test_validator_same_under_crlf(self, repo_crlf_probe):
         """★ CRLF 化后校验器结论一致。"""
-        frozen = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
-        truth = ROOT / "derived" / "exp_semantic" / "truth" / "rtsp.annotated.json"
-        hold = ROOT / "derived" / "exp_semantic" / "truth" / "rtsp.holdout.json"
+        frozen = ROOT / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
+        truth = ROOT / "derived" / "experiments" / "annotation" / "truth" / "rtsp.annotated.json"
+        hold = ROOT / "derived" / "experiments" / "annotation" / "truth" / "rtsp.holdout.json"
         if not (frozen.is_file() and truth.is_file() and hold.is_file()):
             pytest.skip("标注集尚未生成")
         r = subprocess.run(
@@ -750,7 +750,7 @@ class TestCRLFRobustness:
 
     def test_frozen_jsonl_is_lf_on_disk(self):
         """★ 冻结产物按 **LF** 落盘（显式 newline="\\n"）⇒ 不随平台漂移。"""
-        p = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        p = ROOT / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
         if not p.is_file():
             pytest.skip("冻结集尚未生成")
         b = p.read_bytes()
@@ -857,7 +857,7 @@ class TestGranularityImpact:
     def test_impact_on_real_frozen_set(self):
         """★ 对真实冻结集：绝大多数候选都是半句 ⇒ 粒度修正会改变它们。"""
         from scripts.annotate_candidates import granularity_impact, summarize_impact
-        frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        frozen_path = ROOT / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
         if not frozen_path.is_file():
             pytest.skip("冻结集尚未生成")
         frozen = [json.loads(line) for line in
@@ -876,7 +876,7 @@ class TestGranularityImpact:
     def test_impact_detects_verdict_flips(self):
         """★ 合并后**新出现规范动词** ⇒ 原「否/无」结论必须翻转。"""
         from scripts.annotate_candidates import granularity_impact
-        frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        frozen_path = ROOT / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
         if not frozen_path.is_file():
             pytest.skip("冻结集尚未生成")
         frozen = [json.loads(line) for line in
@@ -902,7 +902,7 @@ class TestGranularityImpact:
         """
         from scripts.annotate_candidates import granularity_impact
         import hashlib as _h
-        frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+        frozen_path = ROOT / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
         if not frozen_path.is_file():
             pytest.skip("冻结集尚未生成")
         try:
@@ -938,8 +938,8 @@ class TestGranularityImpact:
     def test_impact_is_read_only(self, tmp_path):
         """★ 本工具**只读** —— 不得改标注文件、不得写任何东西。"""
         from scripts.annotate_candidates import granularity_impact
-        frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
-        truth_path = ROOT / "derived" / "exp_semantic" / "truth" / "rtsp.annotated.json"
+        frozen_path = ROOT / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
+        truth_path = ROOT / "derived" / "experiments" / "annotation" / "truth" / "rtsp.annotated.json"
         if not (frozen_path.is_file() and truth_path.is_file()):
             pytest.skip("标注集尚未生成")
         frozen = [json.loads(line) for line in

@@ -27,17 +27,17 @@
 ``E2``     同一批候选句（**只跑规则表**，无 LLM 兜底）    两层模型
 =========  =========================================  ==================================
 
-★ **三组共用同一批候选句**：候选句来自 ``derived/exp_semantic/candidates_frozen.jsonl``
+★ **三组共用同一批候选句**：候选句来自 ``derived/experiments/annotation/candidates_frozen.jsonl``
 （B-13 后的 120 条逻辑句，指纹见 ``docs/实验/语义增益实验预登记.md`` 的预登记节）。
 
 ★ **不触碰 rq3/rq4 语料**（§4.6 第 1 条）：本脚本**不调用**
 ``scripts/seedgen.py`` / ``scripts/rq3_build_corpus.py`` / ``scripts/corpus_gate.py``，
-产物只落在 ``derived/exp_semantic_gain/`` 与 ``docs/实验/语义增益实验结果.md``。
+产物只落在 ``derived/experiments/semantic_gain/`` 与 ``docs/实验/语义增益实验结果.md``。
 
 子命令
 ------
 * ``--prereg``：只写预登记文件 ``docs/实验/语义增益实验预登记.md``（**实验前定稿，事后不得改**）。
-* ``--run``：跑实验，产出 ``derived/exp_semantic_gain/`` + ``docs/实验/语义增益实验结果.md``。
+* ``--run``：跑实验，产出 ``derived/experiments/semantic_gain/`` + ``docs/实验/语义增益实验结果.md``。
 * ``--all``：先 ``--prereg`` 后 ``--run``。
 
 ★ ``--run`` **不会**写 ``docs/实验/语义增益实验预登记.md``（预登记文件与结果文件分离，
@@ -107,17 +107,17 @@ EXPECTED_VOCAB: tuple[str, ...] = (
     "silence",
 )
 
-DEFAULT_OUT_DIR = "derived/exp_semantic_gain"
+DEFAULT_OUT_DIR = "derived/experiments/semantic_gain"
 DEFAULT_REPORT = "docs/实验/语义增益实验预登记.md"
 DEFAULT_RESULTS_DOC = "docs/实验/语义增益实验结果.md"
-DEFAULT_FROZEN_SRC = "derived/exp_semantic/candidates_frozen.jsonl"
+DEFAULT_FROZEN_SRC = "derived/experiments/annotation/candidates_frozen.jsonl"
 
 #: 冻结候选集源文件（B-13 后重冻结，120 条）。
-#: ★ **只读**：本脚本从不写 ``derived/exp_semantic/``（只写 ``derived/exp_semantic_gain/``）。
+#: ★ **只读**：本脚本从不写 ``derived/experiments/annotation/``（只写 ``derived/experiments/semantic_gain/``）。
 FROZEN_SOURCE_CANDIDATES = DEFAULT_FROZEN_SRC
 
 #: 人工标注集目录（**只读**）—— 用于判定 M2 是否可计算。
-TRUTH_DIR = "derived/exp_semantic/truth"
+TRUTH_DIR = "derived/experiments/annotation/truth"
 
 
 # ===========================================================================
@@ -295,7 +295,7 @@ def load_frozen_candidates(
     为什么复用既有冻结集
     ------------------
     路线图 §4.2 要求「C0/E1/E2 必须用同一批候选句」。既有
-    ``derived/exp_semantic/candidates_frozen.jsonl`` 满足全部三项要求：
+    ``derived/experiments/annotation/candidates_frozen.jsonl`` 满足全部三项要求：
 
     1. **三组共用**：单一文件，C0/E1/E2 全部从它读；
     2. **含 span**：每条带 ``span_start``/``span_end``；
@@ -1289,7 +1289,7 @@ def render_prereg(frozen_stats: dict) -> str:
 > ★ **本文件是实验前定稿的预登记，事后不得修改。**
 > 依据：`docs/实施/RFC源里程碑BCD路线图.md` §4.1~§4.6。
 > 实验结果**不写在本文件**，另见 `docs/实验/语义增益实验结果.md` 与
-> `derived/exp_semantic_gain/results.json`（git 历史可证明「预登记先于结果」）。
+> `derived/experiments/semantic_gain/results.json`（git 历史可证明「预登记先于结果」）。
 
 ## 1　预登记（§4.5 阈值表，逐字照抄）
 
@@ -1340,7 +1340,7 @@ def render_prereg(frozen_stats: dict) -> str:
   （未命中 {len(frozen_stats['section_no_path_unmatched'])} 条）。
   ⚠ **不得**用 `section_no.split(".")` 代替 —— 实测仅 29/120 与真值一致。
 - 实验内副本落在 `{frozen_rel}`
-  （md5 `{frozen_stats['frozen_md5']}`）；**`derived/exp_semantic/` 全程只读**。
+  （md5 `{frozen_stats['frozen_md5']}`）；**`derived/experiments/annotation/` 全程只读**。
 
 ### 4.4　LLM 调用
 
@@ -1348,7 +1348,7 @@ def render_prereg(frozen_stats: dict) -> str:
   `core.fused.rfc_extractor._PROMPT_CONSTRAINT`，temperature 0.2，max_tokens 3000）。
 - **缓存键** = `sha256(candidate_text + prompt_version + model)`，
   `prompt_version = {PROMPT_VERSION}`；缓存文件
-  `derived/exp_semantic_gain/llm_cache.jsonl`（**不含任何凭据**）。
+  `derived/experiments/semantic_gain/llm_cache.jsonl`（**不含任何凭据**）。
 - C0 与 E1 的 LLM 兜底**共用**该缓存 ⇒ 同候选只调一次。
 - LLM 失败（网络/额度）时**如实记录失败条数与原因**，并继续跑完不依赖 LLM 的部分
   （E2 消融组、M3/M4/M5/M6/M7），在结果中标注哪些指标受限。
@@ -1356,7 +1356,7 @@ def render_prereg(frozen_stats: dict) -> str:
 ### 4.5　不触碰 rq3/rq4 语料（§4.6 第 1 条）
 
 - **不调用** `scripts/seedgen.py`、`scripts/rq3_build_corpus.py`、`scripts/corpus_gate.py`。
-- 产物只落在 `derived/exp_semantic_gain/` 与 `docs/实验/语义增益实验结果.md`。
+- 产物只落在 `derived/experiments/semantic_gain/` 与 `docs/实验/语义增益实验结果.md`。
 
 ### 4.6　判定口径（指标定义 M1~M7）
 
@@ -1376,7 +1376,7 @@ def render_prereg(frozen_stats: dict) -> str:
 ### 4.7　本轮**已知不可计算**的项（预登记）
 
 - **M2（本轮不可计算）**：人工标注集当前不可用作最终评测集
-  —— `derived/exp_semantic/truth/` 120 条中**仅 3 条已标注、117 条待标**（`pending` 占位），
+  —— `derived/experiments/annotation/truth/` 120 条中**仅 3 条已标注、117 条待标**（`pending` 占位），
   且已标注记录**只含标注者 A**，**缺真人标注者 B ⇒ Cohen's κ 无法计算**。
   ⇒ **绝不**用这 3 条、也**绝不**用规则自身推导出的「伪标注」冒充人工标注集算 F1。
 - **C0 组在同一标注集上的 F1**：同一原因 ⇒ **不可计算**（§4.5 要求必报，标为不可计算并说明原因）。
@@ -1955,7 +1955,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     ap.add_argument("--prereg", action="store_true",
                     help="只写预登记文件（docs/实验/语义增益实验预登记.md）")
     ap.add_argument("--run", action="store_true",
-                    help="跑实验，产出 derived/exp_semantic_gain/ + 结果文档")
+                    help="跑实验，产出 derived/experiments/semantic_gain/ + 结果文档")
     ap.add_argument("--all", action="store_true",
                     help="先 --prereg 后 --run")
     ap.add_argument("--out-dir", default=DEFAULT_OUT_DIR,
@@ -1974,7 +1974,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     ap.add_argument("--publish-authoritative", action="store_true",
                     help="★ 批次 1.5：把实验产出的规则**分流发布**进权威库"
-                         "（derived/per_source/<协议>/rfc/semantic/）⇒ "
+                         "（derived/model/per_source/<协议>/rfc/semantic/）⇒ "
                          "知识中枢能读到 ⇒ 投影出 legal_boundary ⇒ "
                          "「源 A 第四类」约束边界候选不再恒为 0。"
                          "★ **默认不发布**（保持实验不污染生产）。")

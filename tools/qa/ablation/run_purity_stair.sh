@@ -46,8 +46,8 @@ restore_semantic () {
     for src in "$BACKUP_ROOT/$PROTO"/*; do
       [ -d "$src" ] || continue
       sname=$(basename "$src")
-      mkdir -p "derived/per_source/$PROTO/$sname/semantic"
-      cp -p "$src"/*.jsonl "derived/per_source/$PROTO/$sname/semantic/" 2>/dev/null && \
+      mkdir -p "derived/model/per_source/$PROTO/$sname/semantic"
+      cp -p "$src"/*.jsonl "derived/model/per_source/$PROTO/$sname/semantic/" 2>/dev/null && \
         n=$((n + $(ls "$src"/*.jsonl 2>/dev/null | wc -l)))
     done
   fi

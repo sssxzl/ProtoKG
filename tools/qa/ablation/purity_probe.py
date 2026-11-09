@@ -4,7 +4,7 @@
 ★ 目的：把「这批种子到底有多少知识不是 RFC 给的」变成**可复算的数字**。
 ★ 判定依据（全部来自仓库内的既有事实，不臆测）：
   ① ⑤ 层种子（layer_name=action_seq）⇒ 底料来源决定其知识来源：
-     · 底料目录 ``derived/seeds/<proto>/<组>`` 的 manifest 里若含
+     · 底料目录 ``derived/model/seeds/<proto>/<组>`` 的 manifest 里若含
        ``vuln_boundary`` 层 ⇒ 该目录**含 vuln 源知识**。
      · 底料来源标签 ``traffic-capture`` ⇒ **traffic 源**（真实抓包）。
   ② canonical 层 ⇒ 资源清单来自 ``fused_hub/targets/<proto>_streams.json``

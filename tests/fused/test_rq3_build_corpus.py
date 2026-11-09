@@ -8,8 +8,8 @@
   · 定向字典是基础字典的**严格超集**（D→C 单变量的前提）
   · 组内 MD5 唯一（不复制种子）
 
-★ **pytest 隔离（重要）**：本模块**绝不允许**写真实的 ``derived/rq3/``。
-  ``derived/rq3/`` 是**已发表语料**（论文引用）：pytest 若直接写它
+★ **pytest 隔离（重要）**：本模块**绝不允许**写真实的 ``derived/experiments/rq3/``。
+  ``derived/experiments/rq3/`` 是**已发表语料**（论文引用）：pytest 若直接写它
   ⇒ 一跑就重建真实语料（内容 + mtime 全变）⇒ 既污染数据，又让
   「语料已被重建」护栏信号永远为真（无法区分本次构建与历史产物）。
   ⇒ 构建器的 ``--root`` 指向 pytest 的 ``tmp_path``（见 :func:`_build`）。
@@ -30,7 +30,7 @@ sys.path.insert(0, str(ROOT / "local"))
 import rq3_common as C  # noqa: E402
 
 #: 历史参考语料（RQ1.2 protorag）
-REFERENCE = ROOT / "derived" / "seeds" / "rtsp" / "live555_20261024_110155"
+REFERENCE = ROOT / "derived" / "model" / "seeds" / "rtsp" / "live555_20261024_110155"
 
 
 def _md5s(directory: Path) -> set:
@@ -49,7 +49,7 @@ def _build(root: Path) -> subprocess.CompletedProcess:
     """运行语料构建器，**``--root`` 指向 ``root``**。
 
     ★ ``--root`` = 构建根重定向 ⇒ 全部产物落在 ``root`` 下，
-      **不碰真实的 ``derived/rq3/``**（pytest 隔离）。
+      **不碰真实的 ``derived/experiments/rq3/``**（pytest 隔离）。
     """
     return subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "rq3_build_corpus.py"),
@@ -60,7 +60,7 @@ def _build(root: Path) -> subprocess.CompletedProcess:
 
 @pytest.fixture(scope="module")
 def rq3_root(tmp_path_factory):
-    """构建根目录（**pytest 隔离** ⇒ 绝不触碰 ``derived/rq3/``）。"""
+    """构建根目录（**pytest 隔离** ⇒ 绝不触碰 ``derived/experiments/rq3/``）。"""
     return tmp_path_factory.mktemp("rq3")
 
 

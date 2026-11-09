@@ -196,7 +196,7 @@ def generate_community_reports(protocol: str,
 
 
 def write_communities(protocol: str, reports: list[dict[str, Any]]) -> Path:
-    """把社区报告落盘到 ``derived/per_source/<协议>/graph/communities.json``。"""
+    """把社区报告落盘到 ``derived/model/per_source/<协议>/graph/communities.json``。"""
     from core.fused.graph_ops import graph_dir
     d = graph_dir(protocol)
     d.mkdir(parents=True, exist_ok=True)

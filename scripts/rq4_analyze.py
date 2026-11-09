@@ -28,7 +28,7 @@
 
 用法:
     python scripts/rq4_analyze.py --summary /home/zxy/rq4/rq4_summary.csv
-    python scripts/rq4_analyze.py --summary rq4_summary.csv --out-dir derived/rq4
+    python scripts/rq4_analyze.py --summary rq4_summary.csv --out-dir derived/experiments/rq4
     python scripts/rq4_analyze.py --summary rq4_summary.csv --plot
 """
 from __future__ import annotations
@@ -601,7 +601,7 @@ def main() -> int:
     ap.add_argument("--summary", required=True, help="rq4_summary.csv 路径")
     ap.add_argument("--out-root", default="/home/zxy/rq4/out",
                     help="结果根目录（用于读 stats_*.txt 快照）")
-    ap.add_argument("--out-dir", default="derived/rq4",
+    ap.add_argument("--out-dir", default="derived/experiments/rq4",
                     help="本地产出目录（Markdown / PNG）")
     ap.add_argument("--plot", action="store_true", help="出覆盖率时序曲线 PNG")
     args = ap.parse_args()

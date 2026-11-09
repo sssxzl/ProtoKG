@@ -2,16 +2,16 @@
 """scripts/rq3_metrics.py —— RQ3 指标计算（M1–M9 + MHR 三口径 + 审计）。
 
 输入（技术方案 §5.6）：
-  · `derived/rq3/<g>/manifest.json`（归因的唯一依据）
-  · `derived/rq3/collect/<ts>/rq3_queue_index.csv(.gz)`（全时序 + 各快照）
-  · `derived/rq3/collect/<ts>/rq3_crashes_index.csv`
-  · `derived/rq3/collect/<ts>/rq3_timeseries.csv(.gz)`
-  · `derived/rq3/collect/<ts>/rq3_p1.csv` / `rq3_p2.csv`
-  · `derived/rq3/<g>/dryrun.tsv`
+  · `derived/experiments/rq3/<g>/manifest.json`（归因的唯一依据）
+  · `derived/experiments/rq3/collect/<ts>/rq3_queue_index.csv(.gz)`（全时序 + 各快照）
+  · `derived/experiments/rq3/collect/<ts>/rq3_crashes_index.csv`
+  · `derived/experiments/rq3/collect/<ts>/rq3_timeseries.csv(.gz)`
+  · `derived/experiments/rq3/collect/<ts>/rq3_p1.csv` / `rq3_p2.csv`
+  · `derived/experiments/rq3/<g>/dryrun.tsv`
 
 输出：
-  · `derived/rq3/metrics_<g>.json`
-  · `derived/rq3/table18_draft.md`
+  · `derived/experiments/rq3/metrics_<g>.json`
+  · `derived/experiments/rq3/table18_draft.md`
 
 失败策略：
   · manifest 与语料 MD5 不一致 → **报错中止**（不允许静默按文件名匹配）
@@ -334,7 +334,7 @@ def _table18_draft(all_metrics: dict, cfg: dict) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description="RQ3 指标计算")
     ap.add_argument("--collect", default=None,
-                    help="采集产物目录（默认取最新的 derived/rq3/collect/*）")
+                    help="采集产物目录（默认取最新的 derived/experiments/rq3/collect/*）")
     ap.add_argument("--fuzzer", default="chatafl", help="fuzzer 名")
     ap.add_argument("--groups", default="A,B,C,D", help="参与的组（逗号分隔）")
     args = ap.parse_args()
@@ -345,7 +345,7 @@ def main() -> int:
     else:
         cands = sorted((C.RQ3_ROOT / "collect").glob("*"))
         if not cands:
-            print("!! 没有采集产物目录（derived/rq3/collect/*）", file=sys.stderr)
+            print("!! 没有采集产物目录（derived/experiments/rq3/collect/*）", file=sys.stderr)
             return 1
         collect_dir = cands[-1]
     if not collect_dir.exists():

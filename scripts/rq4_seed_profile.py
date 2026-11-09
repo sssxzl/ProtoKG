@@ -26,7 +26,7 @@ AFLNet 的分区器（``aflnet.c``）决定一条输入被切成几个"消息"�
 用法
 ----
     # 输出 key=value 便于 shell 解析
-    python scripts/rq4_seed_profile.py --seed-dir derived/seeds/rtsp/rq4_B \\
+    python scripts/rq4_seed_profile.py --seed-dir derived/model/seeds/rtsp/rq4_B \\
         --protocol rtsp --dict-file /path/rtsp.dict
 
     # 输出 JSON

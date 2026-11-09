@@ -27,13 +27,13 @@ B 阶段要回答的问题只有一个：**「规则条目级」的表达层升�
   ``docs/实施/RFC源里程碑BCD路线图.md`` §4.6 第 4 条：RTSP 的 ``allowed_methods``
   只有 8 个而实抽 11 个，差集 ``ANNOUNCE``/``RECORD``/``REDIRECT`` 是**真实 RTSP 方法** ——
   若拿它当「方法全集」参照，标注者会把真实方法误判为「不存在的方法」。
-· **只写 derived/exp_semantic/**：不碰 kb/、fused_hub/、derived/per_source/。
+· **只写 derived/experiments/annotation/**：不碰 kb/、fused_hub/、derived/model/per_source/。
 
 产物
 ----
-    derived/exp_semantic/candidates_frozen.jsonl   # 120 条全集（C0/E1/E2 共用同一批候选）
-    derived/exp_semantic/candidates_train.jsonl     # 100 条训练集（模式表迭代只看这个）
-    derived/exp_semantic/candidates_holdout.jsonl   # 20 条 holdout（单独落盘，最终评测用一次）
+    derived/experiments/annotation/candidates_frozen.jsonl   # 120 条全集（C0/E1/E2 共用同一批候选）
+    derived/experiments/annotation/candidates_train.jsonl     # 100 条训练集（模式表迭代只看这个）
+    derived/experiments/annotation/candidates_holdout.jsonl   # 20 条 holdout（单独落盘，最终评测用一次）
 
 ★ ``candidates_frozen.jsonl`` 是**全集**，C0/E1/E2 三组必须喂**同一批候选句**
   （roadmap §4.2 关键设计：否则差异可能来自候选集不同而非表达层不同）。
@@ -42,7 +42,7 @@ B 阶段要回答的问题只有一个：**「规则条目级」的表达层升�
 
 用法
 ----
-    python scripts/freeze_annotation_candidates.py --out derived/exp_semantic/candidates_frozen.jsonl
+    python scripts/freeze_annotation_candidates.py --out derived/experiments/annotation/candidates_frozen.jsonl
     python scripts/freeze_annotation_candidates.py --out /tmp/cand2.jsonl   # 复现性自检
 
 退出码

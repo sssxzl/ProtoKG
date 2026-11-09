@@ -46,7 +46,7 @@ D9（traffic 观测口径）**已定案**：traffic D9 设计 §0–§13 Final F
 
 | 核实项 | 结果 |
 |---|---|
-| 语义规则的**源产物**是否入库 | ✅ `derived/exp_semantic_gain/group_E{1,2}/rules.jsonl` **被 git 跟踪** ⇒ 离线可取 |
+| 语义规则的**源产物**是否入库 | ✅ `derived/experiments/semantic_gain/group_E{1,2}/rules.jsonl` **被 git 跟踪** ⇒ 离线可取 |
 | 重发布是否调 LLM | ❌ **不调**（`_republish_rules` 只是「质量闸 + 分流」的纯 CPU 操作，秒级） |
 | 删除 semantic/ 后重发布能否还原 | ✅ **逐字节一致**（实测 3/3 协议 × 2 文件：rules.jsonl / candidates.jsonl 的 MD5 全等） |
 | 候选库会否无限增长 | ❌ 不会（按 `candidate_id` **去重**） |
@@ -153,10 +153,10 @@ allowed_methods ×1、profile.seedgen 四段 ×1、协议资产 ×1、语义规�
     口径（`sha256:bcc1bd3f…`，6061 files）取代。
 
 五源进度（逐源单源处理，融合留到五源全完之后；**2026-10-04 复核**）：
-  rfc          ✅ 11 norm  → 11 Facts   derived/per_source/rfc/
-  expert_note  ✅ 89 norm  → 49 Facts   derived/per_source/expert_note/
+  rfc          ✅ 11 norm  → 11 Facts   derived/model/per_source/rfc/
+  expert_note  ✅ 89 norm  → 49 Facts   derived/model/per_source/expert_note/
                           （规则集消费 50/89；39 条按设计文档 §8「刻意不实现」）
-  vuln         ✅ 37 norm  → 14 Claims → 5 Facts   derived/per_source/vuln/
+  vuln         ✅ 37 norm  → 14 Claims → 5 Facts   derived/model/per_source/vuln/
                           （37 个 RTSP-xxx.json 中 7 个产出 claim，
                             claim 合并为 5 个 fact；其余 30 个计数为 0。
                             ⚠ 原写「规则集未覆盖，需先设计规则」已过时——vuln 已入 Hub）
@@ -166,7 +166,7 @@ allowed_methods ×1、profile.seedgen 四段 ×1、协议资产 ×1、语义规�
                           （Rule Set / Provenance Interface / Implementation Proposal）；
                           **阶段 I / II / III 已完成**，Lane A 代码实现落地：
                           core/lane_a/ 10 个模块 + tests/lane_a/ 68 项测试，
-                          derived/lane_a/ 500 unit × 25000 observation
+                          derived/model/lane_a/ 500 unit × 25000 observation
                           （insufficient 11000 / no_target 14000），
                           全量 pytest 2752 passed / 8 skipped / 0 failed。
                           （⚠ 原写「★ 等 D9 口径（3000 个 capture 是否互相独立）」

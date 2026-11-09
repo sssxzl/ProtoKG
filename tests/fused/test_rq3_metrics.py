@@ -29,7 +29,7 @@ from scripts.rq3_stats import (  # noqa: E402
 )
 
 #: 参考语料（RQ1.2 protorag）
-REFERENCE = ROOT / "derived" / "seeds" / "rtsp" / "live555_20261024_110155"
+REFERENCE = ROOT / "derived" / "model" / "seeds" / "rtsp" / "live555_20261024_110155"
 
 
 # ===========================================================================
@@ -185,7 +185,7 @@ def test_significance_claim_discipline():
 
 def test_metrics_aborts_on_md5_mismatch(tmp_path, monkeypatch):
     """★ manifest 与语料 MD5 不一致 → 报错中止（不静默按文件名匹配）。"""
-    # ★ 产物根重定向到 tmp ⇒ 本用例**绝不写**真实的 derived/rq3/C/manifest.json
+    # ★ 产物根重定向到 tmp ⇒ 本用例**绝不写**真实的 derived/experiments/rq3/C/manifest.json
     #   （旧写法会「写进去再写回来」⇒ 内容虽复原，**mtime 却变** ⇒
     #     pytest 一跑就把「语料已被重建」护栏信号点亮，且污染已发表语料的 mtime）。
     monkeypatch.setattr(C, "RQ3_ROOT", tmp_path)

@@ -20,7 +20,7 @@ PY="E:/app/Anaconda3/python.exe"
 #   —— 否则在**副本**里跑这个脚本时，实际 cd 到了主仓库
 #      ⇒ 「副本里跑通」是假的（产物落在主仓库、副本的 out/ 里什么都没有）。
 #   ★ 已踩过一次：本轮副本自测时 build/seedgen 全在主仓库执行，
-#     而副本的 derived/per_source 根本没被碰过。
+#     而副本的 derived/model/per_source 根本没被碰过。
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$REPO_ROOT" || exit 1
 
@@ -48,8 +48,8 @@ restore_semantic () {
     for src in "$BACKUP_ROOT/$PROTO"/*; do
       [ -d "$src" ] || continue
       sname=$(basename "$src")
-      mkdir -p "derived/per_source/$PROTO/$sname/semantic"
-      cp -p "$src"/*.jsonl "derived/per_source/$PROTO/$sname/semantic/" 2>/dev/null && \
+      mkdir -p "derived/model/per_source/$PROTO/$sname/semantic"
+      cp -p "$src"/*.jsonl "derived/model/per_source/$PROTO/$sname/semantic/" 2>/dev/null && \
         n=$((n + $(ls "$src"/*.jsonl 2>/dev/null | wc -l)))
     done
   fi

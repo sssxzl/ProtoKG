@@ -158,7 +158,7 @@ D44 已经踩过这个坑：`writer.is_client_invocation` 分支因缺少遍历�
 | **Q5-A** | `state` / `transition` fact 的 subject 用**裸名**（`Init`）还是**点号**（`state.Init`）？ | **2026-10-06 回原文查证**：`initial_subjects.state` = `['state.Init', ...]`（点号）；`lexical_normalization.state` = 「Title-Case, e.g. Init, Ready」（裸名 token）；`canonical_format` = `"<category>.<canonical_name>"`。⟹ **与 header 完全同型**（点号 vs 裸名的两套约定并存）。依指令「与 D49 同型的问题合并裁定，不单独选」⟹ **本批只登记，不选** |
 | **Q5-B** | `transition` 的 `canonicalize_subject` 缺口是否要先补契约？ | 契约是冻结文件，改它需授权 |
 | **Q5-C** | 一个 transition 拆成几条 fact？`{from, method, code, to}` 是 1 条 `transition` fact（property=`action`）还是 3 条（`trigger_event` / `target_state` / `guard_condition`）？ | 决定 facts 数量与 graph 形态 |
-| **Q5-D** | 与 `derived/spec/rtsp/state_machine/state_machine.json` 的**权威边界** | spec 侧已有状态机产物。若 Hub 也产 state/transition fact，两者的真源关系必须明确，否则会出现第二处「同一事实两个真源」（第一处是 §10.1 的 Authorization 分裂） |
+| **Q5-D** | 与 `derived/model/spec/rtsp/state_machine/state_machine.json` 的**权威边界** | spec 侧已有状态机产物。若 Hub 也产 state/transition fact，两者的真源关系必须明确，否则会出现第二处「同一事实两个真源」（第一处是 §10.1 的 Authorization 分裂） |
 | **Q5-E** | `state_machine.json` 的 `code: 200` 是否要产 fact？ | 200 已是 CR-4 产出的 `status.200` fact；若 transition 再产一条，属冗余 |
 | ~~**Q5-F**~~ | ~~emit cardinality 框架何时修？~~ | **✅ 已完成（D61）** —— `_apply_rule` 支持 0..N，8 条规则签名同步 |
 | **Q5-G** | **L5 state 通道何时接通？** | **P1** —— state fact 已就位（4+21），但 `inventory.states` 仍只进 manifest ⟹ **数据在管道里，没有出口**（与丙/戊同型） |

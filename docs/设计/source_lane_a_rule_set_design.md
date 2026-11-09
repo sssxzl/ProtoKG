@@ -91,7 +91,7 @@ kb/协议实现源码/       9 文件 / 271 KB / 6287 行
 
 ### 2.2 Hub 侧现状
 
-- `derived/per_source/source/`：**空目录**（已接入目录，未产出）
+- `derived/model/per_source/source/`：**空目录**（已接入目录，未产出）
 - `derived/fused/facts` 中 `source_type=source`：**0 条**
 - `build_hub.py` 的 `KNOWN_SOURCES` **已含** `"source"`
 - `extractor_dispatcher.py:400` **已含** `"source"` 在允许集合
@@ -670,7 +670,7 @@ source 按「X 是否在 RFC 域内 + 行为是否与规范一致」。
 Rule Set 已 **Final Frozen**。后续：
 
 1. ~~实现 `core/source_a/`（provenance 轨）~~ → **2026-10-06 已实现并首次落盘**
-   （22 个函数单元 / 4 组 / 43 条 observation，`derived/source_a/`，
+   （22 个函数单元 / 4 组 / 43 条 observation，`derived/model/source/`，
    幂等与只读区零变化均已验证，D43）
 2. 实现时须固化 §8 的 I-6：禁止通用 `split("_")`（D28 教训）→ **已固化**
    （`tests/source_a/test_i6_no_generic_underscore_split.py` AST 级强制）

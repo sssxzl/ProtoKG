@@ -2,10 +2,10 @@
 """scripts/rq3_stats.py —— RQ3 组间统计检验（KW / M-W 精确 / Holm / Cliff's δ / bootstrap）。
 
 用法:
-    E:/app/Anaconda3/python.exe scripts/rq3_stats.py [--metrics-dir derived/rq3]
+    E:/app/Anaconda3/python.exe scripts/rq3_stats.py [--metrics-dir derived/experiments/rq3]
 
 输出:
-    `derived/rq3/stats_report.md`
+    `derived/experiments/rq3/stats_report.md`
 
 ★ 报告纪律（技术方案 §10 / 论文表述红线）：
   · 未达显著时，文字必须是「方向一致但未达统计显著（n=5，M-W 精确检验最小可达
@@ -332,7 +332,7 @@ def _fmt(v, spec="{:.3f}") -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description="RQ3 组间统计检验")
     ap.add_argument("--metrics-dir", default=None,
-                    help="metrics_<g>.json 所在目录（默认 derived/rq3）")
+                    help="metrics_<g>.json 所在目录（默认 derived/experiments/rq3）")
     args = ap.parse_args()
 
     cfg = C.load_config()

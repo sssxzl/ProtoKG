@@ -506,22 +506,22 @@ traffic 语料实测覆盖：**5 消息会话 / status 全 200 / 5 个方法**
 ---
 
 *§12 追加于 2026-10-05。§0–§11 未改写。*
-## 13. pytest fixture 污染：tests/fixtures/derived/spec/fakeproto* 的 added_at 刷新
+## 13. pytest fixture 污染：tests/fixtures/derived/model/spec/fakeproto* 的 added_at 刷新
 
 **发现时间**：2026-10-05 01:2x（步骤 D 终检时由基线比对捕获）
 **性质**：**pytest 副作用**，非代码缺陷，但会让「基线逐字节比对」误报。
 
 ### 现象
 
-`tests/fixtures/derived/spec/` 下 6 个文件在 pytest 运行后 hash 变化：
+`tests/fixtures/derived/model/spec/` 下 6 个文件在 pytest 运行后 hash 变化：
 
 ```
-tests/fixtures/derived/spec/fakeproto/graph/meta.json
-tests/fixtures/derived/spec/fakeproto/norms/norms.jsonl
-tests/fixtures/derived/spec/fakeproto/profile/protocol_profile.json
-tests/fixtures/derived/spec/fakeproto2/graph/meta.json
-tests/fixtures/derived/spec/fakeproto2/norms/norms.jsonl
-tests/fixtures/derived/spec/fakeproto2/profile/protocol_profile.json
+tests/fixtures/derived/model/spec/fakeproto/graph/meta.json
+tests/fixtures/derived/model/spec/fakeproto/norms/norms.jsonl
+tests/fixtures/derived/model/spec/fakeproto/profile/protocol_profile.json
+tests/fixtures/derived/model/spec/fakeproto2/graph/meta.json
+tests/fixtures/derived/model/spec/fakeproto2/norms/norms.jsonl
+tests/fixtures/derived/model/spec/fakeproto2/profile/protocol_profile.json
 ```
 
 **文件大小完全不变**（113/4639/1848/115/3785/2757 B），
@@ -562,7 +562,7 @@ tests/fixtures/derived/spec/fakeproto2/profile/protocol_profile.json
 该测试把 `tests/fixtures/kb` 作为 `--data-root` 传给 subprocess，
 而 `core/stores.py::_derived_dir` 用
 `Path(data_root).parent / "derived"` 推导派生产物路径
-⟹ 重写真实的 `tests/fixtures/derived/spec/`。
+⟹ 重写真实的 `tests/fixtures/derived/model/spec/`。
 
 修复：把 fixture KB **复制到 `tmp_path`** 再传 `--data-root`
 （`shutil.copytree`）。测试断言只依赖 subprocess 返回值与 `--out-dir`，
@@ -664,7 +664,7 @@ def build_candidateization_rules() -> tuple:
 
 - **主登记**：`docs/设计/source_lane_a_rule_set_design.md` §9 **问题 14**
 - **性质**：Rule Set 实现缺口，**非** Hub 冻结文档 / schema 不一致
-- **实测**：`derived/source_a/` 首次落盘中 `S-EX.client_invocation` 产出 **0**；
+- **实测**：`derived/model/source/` 首次落盘中 `S-EX.client_invocation` 产出 **0**；
   `writer.is_client_invocation` 分支的**前置条件永不成立**
   （`RTSPRegisterSender.cpp` 产出 0 个函数单元）
 - **阻塞点**：§3.6 判定规则 3 只给了**语义**（`public RTSPClient` + `sendRequest`），
@@ -801,7 +801,7 @@ Hub 的 7 条 header fact：
 
 **不手改 `derived/fused/`**。理由见 `工具/decisions_resolved.md` D49
 （产物会被重建覆盖 / 修复点在禁止区 / 改 subject 必然改 fact_id 并打爆
-traffic 的 11000 条 attachment，而 `derived/lane_a/` 未授权）。
+traffic 的 11000 条 attachment，而 `derived/model/lane_a/` 未授权）。
 
 转为 Q2，待授权 `core/fused/pipeline/` 后重排。
 
@@ -892,7 +892,7 @@ method / header / constraint / state / transition / packet_role_pair。
 它基于 `state_machine.json` 是 build 输入 + 无规则产出，
 与重叠测量无关。**受影响的只是当时引用的那条佐证。**
 
-⚠ 与 `derived/spec/rtsp/state_machine/state_machine.json` 的职责边界
+⚠ 与 `derived/model/spec/rtsp/state_machine/state_machine.json` 的职责边界
 **须一并裁定**：spec 侧已有状态机产物，若 Hub 侧也产 state/transition fact，
 两者的权威归属需明确，否则会出现第二处「同一事实两个真源」
 （第一处见 §10.1 的 Authorization 分裂）。
@@ -1096,7 +1096,7 @@ Hub 的 43 条 `constraint` / `status.NNN` 是**响应码**（响应侧语义）
 **暴露条件**：当 rfc 源被 `scripts/extract_norms.py --sources rfc` 全量
 抽取时（之前未做过该全量重建，故未暴露）。
 
-**实测分布**：`derived/spec/rtsp/graph/entities.jsonl` 含 16 条
+**实测分布**：`derived/model/spec/rtsp/graph/entities.jsonl` 含 16 条
 transition entity（2026-10-08 实测），`graph_registry.json` 的
 `entity_types` 18 值不含 transition。
 

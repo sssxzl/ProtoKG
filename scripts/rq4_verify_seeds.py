@@ -15,7 +15,7 @@
   5. **条数与 MD5 清单**：与 ``MANIFEST.md5`` 逐条比对（scp 传输完整性）。
 
 用法:
-    python scripts/rq4_verify_seeds.py --seed-dir derived/seeds/rtsp/rq4_B
+    python scripts/rq4_verify_seeds.py --seed-dir derived/model/seeds/rtsp/rq4_B
     python scripts/rq4_verify_seeds.py --all      # 校验 RQ4 三协议全部种子目录
 """
 from __future__ import annotations
@@ -258,7 +258,7 @@ def main() -> int:
                     help="协议名（rtsp/sip/smtp），不指定则从目录名推断")
     ap.add_argument("--all", action="store_true",
                     help="校验 RQ4 三协议全部种子目录")
-    ap.add_argument("--root", default="derived/seeds",
+    ap.add_argument("--root", default="derived/model/seeds",
                     help="--all 时的种子根目录")
     args = ap.parse_args()
 

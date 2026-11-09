@@ -28,7 +28,7 @@
 用法::
 
     E:/app/Anaconda3/python.exe tools/qa/_m1_sensitivity.py
-    # ⇒ 打印表格 + 写入 derived/exp_semantic_gain/m1_sensitivity.json
+    # ⇒ 打印表格 + 写入 derived/experiments/semantic_gain/m1_sensitivity.json
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-EXP_DIR = ROOT / "derived" / "exp_semantic_gain"
+EXP_DIR = ROOT / "derived" / "experiments" / "semantic_gain"
 PROTOCOLS = ("rtsp", "sip", "smtp")
 
 #: 预登记阈值（`docs/实验/语义增益实验预登记.md` §4.6 / `docs/实施/RFC源里程碑BCD路线图.md` §4.5）

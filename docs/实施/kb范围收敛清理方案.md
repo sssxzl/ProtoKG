@@ -19,7 +19,7 @@
 > | **曾发生破坏性 git 操作** | `git reflog` 显示 13:31 有 `reset: moving to HEAD~1` → 重新 commit → 大提交 → `merge origin/main`（`software-engineer-12` 报告其文档改动被清空并已重放恢复） |
 > | **我的交付物安全** | `docs/实施/kb范围收敛清理方案.md` 已入 `c9295b4`，`git status` 干净 |
 > | **6 个清理测试文件安全** | 全部已入 `c9295b4`，`git status` 无 `M` 标记 → 收敛成果**未被破坏** |
-> | **`derived/per_source/` 裁剪安全** | kb/derived/targets 三处现状仍为 3 协议目标（见下表） |
+> | **`derived/model/per_source/` 裁剪安全** | kb/derived/targets 三处现状仍为 3 协议目标（见下表） |
 > | **但 `protocol_patterns.py` 的 P0 被回滚** | 当前文件**又变回 8 个条目**（dns/dtls/ssh/tls/ftp 全回来了），且工程师补的文件头「协议范围」说明也一并丢失。`git log --all` 显示**没有任何提交含 3 条目版本** → P0 **未被提交**，故被 `reset` 抹掉且**无法从 git 恢复** |
 >
 > **§7 的修正**：由于 `fused_hub/`、`tests/`、`docs/`、`core/` 现已全部 git 跟踪，
@@ -31,7 +31,7 @@
 > ```
 > pytest tests/ -q  →  37 failed / 1129 passed / 20 errors
 > kb/                →  rtsp  sip  smtp                        ✅
-> derived/per_source/→  rtsp  sip  smtp                        ✅
+> derived/model/per_source/→  rtsp  sip  smtp                        ✅
 > fused_hub/targets/ →  ftp  rtsp  sip  smtp（+ rtsp 顶层 json）✅
 > ```
 >
@@ -45,7 +45,7 @@
 > 我实测过 `rtsp_base.dict` 的 MD5（`464351f88db6c3f0bdac0de01859316b`）与
 > `ftp_base.dict` 的 MD5（`87d1b84c82d94678ed2303ca7179a211`）**当前均完好**，
 > 但若将来对这两个文件执行 `git checkout --`，**必须重测 MD5** ——
-> 它们被 `derived/rq3/dict/DICT_FROZEN.json` + `derived/rq3/groups.json` 按字节锁定。
+> 它们被 `derived/experiments/rq3/dict/DICT_FROZEN.json` + `derived/experiments/rq3/groups.json` 按字节锁定。
 
 ---
 
@@ -55,7 +55,7 @@
 |---|---|---|
 | **Q1** `fused_hub/targets/{dns,dtls,ssh,tls}/` 整个删还是只删 rfc_config.json？ | **整个目录删**。这 4 个目录是上一轮 A0.1/A0.2 新建的，kb 已无对应协议，profile.json 里的 `message_schema.hint` 引用的是已删除的 RFC 章节号（保留即是说谎） | §2.1；实测已删（18:16） |
 | **Q2** `fused_hub/targets/ftp/` 怎么处理？`ftp_base.dict` 删还是留？ | **保留 `profile.json` + `ftp_base.dict`，只删 `rfc_config.json`**（已执行）。实测：`ftp_base.dict` **未被任何 MD5 锁文件引用**（`rtsp_base.dict` 被 DICT_FROZEN + groups.json 双重锁定，ftp 没有）、两者 MD5 **互不相同**（是独立内容非副本）、`ftp/profile.json` **不含任何指向已删 kb 的悬空指针**（与 dns/dtls/ssh/tls 的 profile.json 性质不同）、**无自动发现机制**（所有读取方都是 `target_profile(<显式协议名>)` + `if not exists: return 空`）。**实测把整个 `targets/ftp/` 全删，失败集合也逐条不变** → 保留是纯语义偏好，零风险 | §2.2 |
-| **Q3** `derived/per_source/{dns,dtls,ftp,ssh,tls}/` 删还是留？ | **删**（已执行）。`derived/` 在 `.gitignore` 里是再生数据目录，`ftp` 那批是**孤儿产物**（源 kb/ftp 已删，facts 无源可溯） | §2.3；实测已删 |
+| **Q3** `derived/model/per_source/{dns,dtls,ftp,ssh,tls}/` 删还是留？ | **删**（已执行）。`derived/` 在 `.gitignore` 里是再生数据目录，`ftp` 那批是**孤儿产物**（源 kb/ftp 已删，facts 无源可溯） | §2.3；实测已删 |
 | **Q4** `core/fused/protocol_patterns.py` 里 dns/dtls/ssh/tls/ftp 的条目删不删？ | **曾由工程师实施 P0（收敛到 3 协议），但因未提交被 11-01 的破坏性 git 操作整体回滚 —— 当前文件又变回 8 条目，需重做或明确不做。** 技术上删除【不会】破坏 `source_fsm.py` 的 import（删的是字典条目不是函数）、【不会】破坏任何测试（tests/ 0 命中）。**我倾向重做 P0 并立即提交**（git 已提供可逆性，「不可逆成本」不再是反对理由；而 5 条僵尸条目会误导读者以为这些协议仍受支持） | §2.4 |
 | **Q5** `test_real_protocol_method_counts[ftp-15]` 的 ftp 换成什么？ | **不换 —— 直接删掉这一行参数化，只保留 `rtsp`(11) 与 `smtp`(8)**。理由见 §3.3：SIP 只有 1 个 method（`OK`），拿 SIP 顶替会得到 `("sip", 1)` 这种无信息量的断言；换成 rtsp/smtp 则与已有行重复 | §3.3 + §5 风险 R1 |
 
@@ -101,9 +101,9 @@
 `test_rq3_dict` ×3、`test_rq3_focus_group` ×19、`test_rq3_manifest` ×6、
 `test_strategy` ×1。
 
-### 1.2 `derived/per_source/` 与 `kb/` 的对应关系（孤儿产物确认）
+### 1.2 `derived/model/per_source/` 与 `kb/` 的对应关系（孤儿产物确认）
 
-kb 裁剪后 `derived/per_source/` 里 5 个非目标协议的目录状态：
+kb 裁剪后 `derived/model/per_source/` 里 5 个非目标协议的目录状态：
 
 | 协议 | 裁剪前源目录 | 产物 | 性质 |
 |---|---|---|---|
@@ -152,7 +152,7 @@ TLS 的 ContentType）全部指向**已不存在的 kb 源**。保留一个自�
 > **2026-10-31 19:10 复核补充**（回答主理人「ftp_base.dict 彻底没有读取方了，这个取舍请你定」）：
 > **保留两者。** 实测依据：
 > ① `ftp_base.dict` **未被任何 MD5 锁文件引用**（`grep -rn "ftp_base" --include=*.json --include=*.md5` → 空；
->    对比 `rtsp_base.dict` 被 `derived/rq3/dict/DICT_FROZEN.json` + `derived/rq3/groups.json` 双重锁定）
+>    对比 `rtsp_base.dict` 被 `derived/experiments/rq3/dict/DICT_FROZEN.json` + `derived/experiments/rq3/groups.json` 双重锁定）
 >    → 删它**不会**破坏任何冻结/校验契约；
 > ② 两者 MD5 **互不相同**（`87d1b84c…` vs `464351f8…`），是**两份独立的字典内容**，
 >    不是 rtsp 字典的副本 → 删掉即永久丢失 FTP 命令集 token；
@@ -191,20 +191,20 @@ TLS 的 ContentType）全部指向**已不存在的 kb 源**。保留一个自�
 失败集合依然**逐条不变**（§6.3）—— 即「删 rfc_config.json」与「整个删」对测试
 **无任何区别**。保留 profile.json + ftp_base.dict 是**语义更完整**的选择。
 
-### 2.3 `derived/per_source/{dns,dtls,ftp,ssh,tls}/` —— **整个删**（已执行，18:12）
+### 2.3 `derived/model/per_source/{dns,dtls,ftp,ssh,tls}/` —— **整个删**（已执行，18:12）
 
 | 目录 | 处置 | 理由 |
 |---|---|---|
-| `derived/per_source/dns/` | **删** | 源 `kb/dns` 已删 → facts 无源可溯；`derived/` 在 `.gitignore` 里是再生数据目录 |
-| `derived/per_source/dtls/` | **删** | 同上 |
-| `derived/per_source/ssh/` | **删** | 同上 |
-| `derived/per_source/tls/` | **删** | 同上 |
-| `derived/per_source/ftp/` | **删** | **孤儿产物**：197 KB 五源 facts，其源 `kb/ftp/{expert_note,spec,协议实现源码,历史漏洞,数据流量}` 全部已删。留着会让 `load_fact_views("ftp")` 返回 285 条**无法溯源**的 facts |
-| `derived/per_source/{rtsp,sip,smtp}/` | **保留** | 三个目标协议的五源产物 |
+| `derived/model/per_source/dns/` | **删** | 源 `kb/dns` 已删 → facts 无源可溯；`derived/` 在 `.gitignore` 里是再生数据目录 |
+| `derived/model/per_source/dtls/` | **删** | 同上 |
+| `derived/model/per_source/ssh/` | **删** | 同上 |
+| `derived/model/per_source/tls/` | **删** | 同上 |
+| `derived/model/per_source/ftp/` | **删** | **孤儿产物**：197 KB 五源 facts，其源 `kb/ftp/{expert_note,spec,协议实现源码,历史漏洞,数据流量}` 全部已删。留着会让 `load_fact_views("ftp")` 返回 285 条**无法溯源**的 facts |
+| `derived/model/per_source/{rtsp,sip,smtp}/` | **保留** | 三个目标协议的五源产物 |
 
 **实测影响**：`load_fact_views("ftp")` 返回 285 → 0。**关键验证**：
 `test_boundary_probe.py::test_generate_protocol_dict_protocol_specific_and_clean`
-原本依赖 ftp 的 facts 产出 `RETR/STOR/SITE CPFR` token —— 我实测**在 derived/per_source/ftp
+原本依赖 ftp 的 facts 产出 `RETR/STOR/SITE CPFR` token —— 我实测**在 derived/model/per_source/ftp
 消失后该用例仍然通过**，因为该文件在 18:08 已被同步改掉了 ftp 断言块
 （现为 `for proto in ("rtsp", "sip", "smtp")`）。**若两者不同步，必然回归**（见 §5 风险 R2）。
 
@@ -319,12 +319,12 @@ TLS 的 ContentType）全部指向**已不存在的 kb 源**。保留一个自�
 
 | 路径 | 处置 | 理由 |
 |---|---|---|
-| `derived/seeds/ftp/`（138 个 .raw，2 个时间戳目录） | 建议删 | ftp 已非目标协议；`derived/` 是再生数据目录 |
-| `derived/source_blocks/ftp.state.json` | 建议删 | AutoSeeder 检索缓存，ftp 的源已删，缓存无法重建 |
-| `derived/analysis/ftp_aflnet_对照/` | **建议保留** | 这是**实验结果记录**（baseline vs protorag 对照分析报告），是论文素材不是再生数据 |
-| `derived/spec/{modbus,fakeproto,fakeproto2}/` | 建议删 | `modbus`/`fakeproto*` 从来不是目标协议，是历史遗留测试残留 |
+| `derived/model/seeds/ftp/`（138 个 .raw，2 个时间戳目录） | 建议删 | ftp 已非目标协议；`derived/` 是再生数据目录 |
+| `derived/model/source_blocks/ftp.state.json` | 建议删 | AutoSeeder 检索缓存，ftp 的源已删，缓存无法重建 |
+| `derived/experiments/chatafl_analysis/ftp_aflnet_对照/` | **建议保留** | 这是**实验结果记录**（baseline vs protorag 对照分析报告），是论文素材不是再生数据 |
+| `derived/model/spec/{modbus,fakeproto,fakeproto2}/` | 建议删 | `modbus`/`fakeproto*` 从来不是目标协议，是历史遗留测试残留 |
 | `fused_hub/README.md:108-110`、`README.md:28` | 建议改 | 写着「kb/ 8 协议」「4 协议（ftp/rtsp/sip/smtp）」，与现状不符 |
-| `derived/per_source.bak_20261018/` | 保留（可选删） | 历史备份，非目标范围污染源 |
+| `derived/model/per_source.bak_20261018/` | 保留（可选删） | 历史备份，非目标范围污染源 |
 
 ---
 
@@ -418,7 +418,7 @@ implicit_constraints 挂 header subject。
 | 159 | `for proto in ("rtsp", "sip", "smtp", "ftp")` | `for proto in ("rtsp", "sip", "smtp")` |
 
 **关键依赖链**（务必与 §2.3 同步）：
-`derived/per_source/ftp/` 删掉后，`load_fact_views("ftp")` 返回空 →
+`derived/model/per_source/ftp/` 删掉后，`load_fact_views("ftp")` 返回空 →
 `generate_protocol_dict` 对 ftp 只产出 13 个 token（实测：
 `['-1','0','1','2147483647','4294967295','65535','CDUP','CWD','PASS','PASV','PORT','TYPE','USER']`），
 **缺 `RETR` / `STOR` / `SITE CPFR`** → 上述 ftp 断言**必然失败**。
@@ -465,7 +465,7 @@ implicit_constraints 挂 header subject。
 必须在 37 failed 里** —— 它是基线 37 的一部分，删掉会让失败数掉到 36，
 **直接违反「37 failed 逐条一致」的验收标准**。
 
-⚠️ **但要知道它的失败原因会变**：现在 `derived/per_source/ftp/` 已删 →
+⚠️ **但要知道它的失败原因会变**：现在 `derived/model/per_source/ftp/` 已删 →
 `seedgen.main()` 在 `if not views: return 1` 处退出 → 失败信息从
 `种子数不符: 期望 29，实际 55` 变成 **`!! 无 facts（协议 ftp）`**。
 **失败用例集合不变（仍是 37，集合逐条一致），但断言点变了。**
@@ -487,7 +487,7 @@ implicit_constraints 挂 header subject。
     └─ 1B 改测试：test_boundary_probe.py(2)                 【§3.4】
        ↓
 阶段 2（依赖 1B，**必须同批**）：
-    删 derived/per_source/{dns,dtls,ftp,ssh,tls}/
+    删 derived/model/per_source/{dns,dtls,ftp,ssh,tls}/
     ⚠️ 与 1B 顺序无所谓，但**必须同时完成**，否则中间态是 38 failed
        ↓
 阶段 3（依赖阶段 2 跑绿）：删 fused_hub/targets/{dns,dtls,ssh,tls}/
@@ -496,14 +496,14 @@ implicit_constraints 挂 header subject。
 阶段 4（**本轮不做**）：`core/fused/protocol_patterns.py` —— 保留不动（见 §2.4）。
     └─ 若将来做「配置层收敛」，应连同 `source_fsm.py` 整文件退役，而非逐条削字典
        ↓
-阶段 5（可选）：清 derived/seeds/ftp、derived/source_blocks/ftp.state.json、
-    derived/spec/{modbus,fakeproto,fakeproto2}；更新 README.md:28、
+阶段 5（可选）：清 derived/model/seeds/ftp、derived/model/source_blocks/ftp.state.json、
+    derived/model/spec/{modbus,fakeproto,fakeproto2}；更新 README.md:28、
     fused_hub/README.md:108-110 的协议清单
 ```
 
 **并行度说明**：阶段 1A 与 1B 可并行（改不同文件）；
 阶段 2 与阶段 1 的**代码改动**无依赖，但**必须在阶段 1 完成后跑一次全量**才能确认；
-阶段 3 必须等阶段 2 完成（否则 `derived/per_source/ftp` 已删但 `targets/ftp/profile.json`
+阶段 3 必须等阶段 2 完成（否则 `derived/model/per_source/ftp` 已删但 `targets/ftp/profile.json`
 还在，`seedgen --protocol ftp` 的失败点会变）。
 
 ---
@@ -513,17 +513,17 @@ implicit_constraints 挂 header subject。
 | # | 风险 | 触发条件 | 影响 | 缓解 |
 |---|---|---|---|---|
 | **R1** | **SIP 方法抽取只有 1 个（`OK`）** | SIP 的方法名在缩进条目而非章节标题里 | `test_real_protocol_method_counts` 若加 `("sip", N)`，N 只能=1 → 断言恒真、变成空壳 | **不要用 sip 顶替 ftp**（§3.3）。SIP 抽取不足单独立 issue 修（推荐改 `_extract_rfc_file` 复用 A1.5 通道 A） |
-| **R2** | **derived/per_source/ftp 删除后 `test_boundary_probe` 必然失败** | 删 derived 不同步改测试 | 从 37 failed → **38 failed**，直接违反验收 | **§3.4 与 §2.3 必须同批**。实测 ftp facts 消失后字典只剩 13 token，缺 `RETR`/`STOR`/`SITE CPFR` |
+| **R2** | **derived/model/per_source/ftp 删除后 `test_boundary_probe` 必然失败** | 删 derived 不同步改测试 | 从 37 failed → **38 failed**，直接违反验收 | **§3.4 与 §2.3 必须同批**。实测 ftp facts 消失后字典只剩 13 token，缺 `RETR`/`STOR`/`SITE CPFR` |
 | **R3** | **删 `protocol_patterns.py` 条目** | 有人以为 `source_fsm.py` 会因 KeyError 挂掉 | 实际**不会**：`get_pattern()` 用 `.get(key, DEFAULT_PATTERN)` 兜底；删的是字典条目，**不是**函数/模块，`source_fsm.py:19` 的 import 不受影响；tests/ 0 引用 | **本轮决策：保留不动**（§2.4）。若将来做，删条目会让 `get_pattern("dns")` 静默回落 `DEFAULT_PATTERN`（泛化结果），而正确做法是**整文件连同 `source_fsm.py` 退役** |
-| **R4** | **`test_focus_group_protocol_calibration[ftp]` 失败原因变了** | `derived/per_source/ftp/` 删除后 seedgen 提前 `return 1` | 失败**集合不变**（37 逐条一致），但断言点从「种子数 29≠55」变成「无 facts」 | **接受**（用例仍 fail、仍在集合内，符合验收）。但若主理人要求「失败原因也逐条一致」，则**必须保留 `derived/per_source/ftp/`** —— 见 §6.4 的两难 |
+| **R4** | **`test_focus_group_protocol_calibration[ftp]` 失败原因变了** | `derived/model/per_source/ftp/` 删除后 seedgen 提前 `return 1` | 失败**集合不变**（37 逐条一致），但断言点从「种子数 29≠55」变成「无 facts」 | **接受**（用例仍 fail、仍在集合内，符合验收）。但若主理人要求「失败原因也逐条一致」，则**必须保留 `derived/model/per_source/ftp/`** —— 见 §6.4 的两难 |
 | **R5** | **`paths.target_profile` 报错** | 删 `targets/<p>/profile.json` 后调 `_load_profile()` | **不会抛异常**：`_load_profile` 用 `if not p.exists(): return {}`（scripts/seedgen.py:98-100）；`rfc_extractor._load_rfc_config` 走 `if not prof.exists(): 打印警告; return cfg` | 安全。但 `_load_profile` 返回 `{}` 后 `seedgen` 会在更早处（无 facts）退出。已实测：删 `targets/ftp` 整目录后失败集合逐条不变 |
 | **R6** | **`fused_hub/targets/ftp/ftp_base.dict` 被误删** | 有人按「ftp 出范围」把整个 ftp 目录清掉 | `load_base_dict_tokens("ftp")` 返回空集；`seedgen --dict base --protocol ftp` 会 `FileNotFoundError` —— 但**永远走不到**（无 facts 提前退出）。**且该文件未被任何 MD5 锁引用、MD5 与 rtsp 字典互不相同 → 删了就是永久丢失一份独立的 FTP 命令集** | 实测**删整个 `targets/ftp/` 目录后失败集合也逐条不变**（§6.4 场景 B）→ 保留零风险。**本轮决策：保留**（§2.2） |
 | **R7** | **`scripts/rq3_build_corpus.py:132` 硬编码 `targets_root()/protocol/f"{protocol}_base.dict`** | 该脚本只跑 rtsp（`cfg["protocol"]`） | 不受影响 | 保持 rtsp 即可；无需改 |
-| **R8** | **`derived/` 被 `.gitignore` 忽略 = 无版本回退** | 项目**不是 git 仓库**（`git status` → fatal: not a git repository） | **删除不可逆** | **不可逆操作清单**（§7）：① `derived/per_source/{dns,dtls,ftp,ssh,tls}` ② `fused_hub/targets/{dns,dtls,ssh,tls}` ③ `fused_hub/targets/ftp/rfc_config.json` ④ `core/fused/protocol_patterns.py` 的 5 个条目 ⑤（可选）`derived/seeds/ftp` 等。**建议先 `cp -r` 到 `$TEMP` 备份**再删 |
+| **R8** | **`derived/` 被 `.gitignore` 忽略 = 无版本回退** | 项目**不是 git 仓库**（`git status` → fatal: not a git repository） | **删除不可逆** | **不可逆操作清单**（§7）：① `derived/model/per_source/{dns,dtls,ftp,ssh,tls}` ② `fused_hub/targets/{dns,dtls,ssh,tls}` ③ `fused_hub/targets/ftp/rfc_config.json` ④ `core/fused/protocol_patterns.py` 的 5 个条目 ⑤（可选）`derived/model/seeds/ftp` 等。**建议先 `cp -r` 到 `$TEMP` 备份**再删 |
 | **R9** | **并发编辑事故** | 本次调研期间（18:07–18:22）`software-engineer` **正在同时改同一批测试文件** | 若本方案基于旧快照执行，会覆盖对方的改动 | **本方案基于 18:22 的实测现状编写**；执行前必须重跑 §6.1 确认当前失败集合 |
-| **R10** | **`derived/per_source/rtsp/rfc/` 被 `build_hub.py` 重建覆盖** | 跑 `build_hub.py --sources rfc --protocol rtsp` 会 `_clean_per_source` 清空并重建 | 若重建产物与原产物不同，rq3 相关失败数可能变化 | 实测跑完三次 build_hub 后 pytest **仍是 37 failed**，**重建是幂等的**（build_id `rb_172d0daf0029e9c0` 稳定） |
+| **R10** | **`derived/model/per_source/rtsp/rfc/` 被 `build_hub.py` 重建覆盖** | 跑 `build_hub.py --sources rfc --protocol rtsp` 会 `_clean_per_source` 清空并重建 | 若重建产物与原产物不同，rq3 相关失败数可能变化 | 实测跑完三次 build_hub 后 pytest **仍是 37 failed**，**重建是幂等的**（build_id `rb_172d0daf0029e9c0` 稳定） |
 | **R11** | **失败数偶发变 38 —— 已定位为并发编辑，非本方案引入** | **并发 teammate 在改 `core/fused/downstream/target_env.py` + `scripts/seedgen.py`** | 偶发多出 1 个失败。两次捕获到的分别是：① `test_rq4_target_url_normalization.py::test_pipeline_uses_only_profile_and_allow_list`（该测试文件 18:45:33 新建，被测模块 18:55:10 仍在改）② `test_rq3_manifest.py::test_cli_no_manifest_without_flag`（`scripts/seedgen.py` 18:59:06 被改，**第 303 行残留字面量 `/n` 导致 SyntaxError**，19:00:23 teammate 修好后即恢复 37） | **与 kb 裁剪完全无关**。稳定后连跑 6 次均 37 failed、集合逐条一致。**验收必须避开并发编辑窗口**；建议加一道前置闸：`python -c "import ast; ast.parse(open('scripts/seedgen.py',encoding='utf-8').read())"` 通过后再跑 pytest |
-| **R12** | **`derived/per_source/*/rfc/facts/snapshots/<build_id>/` 目录残留** | 跑 `build_hub.py` 会写快照目录（`scripts/build_hub.py:290`） | `load_fact_views()` 用 `root.glob("*/facts/*.jsonl")` —— **`snapshots/<id>/*.jsonl` 不会被匹配**（多一层目录），**无污染**。但目录会累积 | 实测：跑完 build_hub 后 `load_fact_views("rtsp")` 仍为 359 条（与裁剪前一致）。可择机清理 |
+| **R12** | **`derived/model/per_source/*/rfc/facts/snapshots/<build_id>/` 目录残留** | 跑 `build_hub.py` 会写快照目录（`scripts/build_hub.py:290`） | `load_fact_views()` 用 `root.glob("*/facts/*.jsonl")` —— **`snapshots/<id>/*.jsonl` 不会被匹配**（多一层目录），**无污染**。但目录会累积 | 实测：跑完 build_hub 后 `load_fact_views("rtsp")` 仍为 359 条（与裁剪前一致）。可择机清理 |
 
 ---
 
@@ -698,7 +698,7 @@ diff "$TEMP/tests_before.txt" "$TEMP/tests_after.txt" \
 >
 > **两个并发 pytest 进程共用同一个 `_crlf_probe_tmp/`** → A 的 teardown 把 B 正在用的
 > 文件删了 → B 的子进程调用失败 → B 报失败。
-> **同理** `derived/exp_semantic/candidates_frozen.jsonl`（**不在 `.gitignore` 里**）
+> **同理** `derived/experiments/annotation/candidates_frozen.jsonl`（**不在 `.gitignore` 里**）
 > 被两进程同时读写 → `test_frozen_jsonl_is_lf_on_disk` 偶发报 CRLF。
 >
 > **⇒ 修正后的闸（在 mtime 快照之外再加两条）**：
@@ -732,8 +732,8 @@ rtsp=76 / smtp=101 / sip=45 / ftp=0，且该用例 **1 passed**。
 
 | # | 发现 | 影响 | 建议 |
 |---|---|---|---|
-| **①** | **`scripts/rq3_build_corpus.py` 首组失败即 `return 4` 中止** | B/C/D 组**永远不会被重新生成** —— 实测 `derived/rq3/A/seeds` mtime=11-01 15:05（被 pytest 触发重写），而 B/C/D 仍是 10-31 03:24 的旧产物 | 即使修好 host 归一化，**磁盘上的 B/C/D 旧语料仍带 50 个摄像机 host + 52 个不可播会话名**。建议改成「继续构建其余组 + 汇总失败」 |
-| **②** | **rq3 是协议级语料（无 `--target-env`）⇒ `allowed_resources` 为空 ⇒ `normalize_seed_resource` 不生效** | 当前污染实测：A 组 bad_sess=226（**100%**）、B/C/D bad_host=139 / bad_sess=100；`derived/seeds/rtsp/rq4_B` 干净（150/150） | 要清会话轴，**协议级语料也必须绑定目标环境**（`--target-env rq2-live555`），否则会话轴永远清不掉 |
+| **①** | **`scripts/rq3_build_corpus.py` 首组失败即 `return 4` 中止** | B/C/D 组**永远不会被重新生成** —— 实测 `derived/experiments/rq3/A/seeds` mtime=11-01 15:05（被 pytest 触发重写），而 B/C/D 仍是 10-31 03:24 的旧产物 | 即使修好 host 归一化，**磁盘上的 B/C/D 旧语料仍带 50 个摄像机 host + 52 个不可播会话名**。建议改成「继续构建其余组 + 汇总失败」 |
+| **②** | **rq3 是协议级语料（无 `--target-env`）⇒ `allowed_resources` 为空 ⇒ `normalize_seed_resource` 不生效** | 当前污染实测：A 组 bad_sess=226（**100%**）、B/C/D bad_host=139 / bad_sess=100；`derived/model/seeds/rtsp/rq4_B` 干净（150/150） | 要清会话轴，**协议级语料也必须绑定目标环境**（`--target-env rq2-live555`），否则会话轴永远清不掉 |
 
 > 这两条属于**语料质量**议题，与「kb 收敛清理」正交，但会影响「rq3 语料是否可用」的判断。
 > QA 已同步给 team-lead 决策。
@@ -756,20 +756,20 @@ rtsp=76 / smtp=101 / sip=45 / ftp=0，且该用例 **1 passed**。
 >
 > ```bash
 > # 只有 derived/ 下的删除需要备份（其余已 git 保护）
-> cp -r derived/per_source/ftp          "$TEMP/backup_derived_per_source_ftp"   # 若尚未删
-> cp -r derived/seeds/ftp                "$TEMP/backup_derived_seeds_ftp"
-> cp    derived/source_blocks/ftp.state.json "$TEMP/backup_ftp_state.json"
+> cp -r derived/model/per_source/ftp          "$TEMP/backup_derived_per_source_ftp"   # 若尚未删
+> cp -r derived/model/seeds/ftp                "$TEMP/backup_derived_seeds_ftp"
+> cp    derived/model/source_blocks/ftp.state.json "$TEMP/backup_ftp_state.json"
 > ```
 >
 > | # | 操作 | 状态 | 可逆性（修正后） | 备注 |
 > |---|---|---|---|---|
-> | 1 | 删 `derived/per_source/{dns,dtls,ftp,ssh,tls}/` | **已执行 10-31 18:12** | ❌ **不可逆**（`derived/` 被 ignore） | 且 ftp 那 197 KB facts 的**源 `kb/ftp/` 已永久删除 → 即使备份也无法重建**。这是全案**唯一真正不可逆**的操作 |
+> | 1 | 删 `derived/model/per_source/{dns,dtls,ftp,ssh,tls}/` | **已执行 10-31 18:12** | ❌ **不可逆**（`derived/` 被 ignore） | 且 ftp 那 197 KB facts 的**源 `kb/ftp/` 已永久删除 → 即使备份也无法重建**。这是全案**唯一真正不可逆**的操作 |
 > | 2 | 删 `fused_hub/targets/{dns,dtls,ssh,tls}/` | **已执行 10-31 18:16** | ✅ **已可逆**（已入 `c9295b4`，`git checkout` 可恢复） | 内容是 A0.1/A0.2 新建，本可重建 |
 > | 3 | 删 `fused_hub/targets/ftp/rfc_config.json` | **已执行 10-31 18:16** | ✅ **已可逆**（同上） | 同上 |
 > | 4 | `fused_hub/targets/ftp/{profile.json,ftp_base.dict}` | **决策：保留** | 保留即无风险 | 已入 git，删除也可逆 —— 但**语义上仍建议保留**（§2.2） |
-> | 5 | 删 `derived/seeds/ftp/`（138 .raw） | 待定 | ❌ **不可逆** —— 这是**实验语料**不是再生数据，**必须先备份** | |
-> | 6 | 删 `derived/source_blocks/ftp.state.json` | 待定 | ❌ **不可逆** —— ftp 源已删 → 缓存**无法重建** | 建议备份 |
-> | 7 | 删 `derived/spec/{modbus,fakeproto,fakeproto2}/` | 待定 | ❌ 不可逆（`derived/`） | 历史测试残留，优先级低 |
+> | 5 | 删 `derived/model/seeds/ftp/`（138 .raw） | 待定 | ❌ **不可逆** —— 这是**实验语料**不是再生数据，**必须先备份** | |
+> | 6 | 删 `derived/model/source_blocks/ftp.state.json` | 待定 | ❌ **不可逆** —— ftp 源已删 → 缓存**无法重建** | 建议备份 |
+> | 7 | 删 `derived/model/spec/{modbus,fakeproto,fakeproto2}/` | 待定 | ❌ 不可逆（`derived/`） | 历史测试残留，优先级低 |
 > | 8 | 改 `core/fused/protocol_patterns.py` | **P0 曾执行，已被破坏性 git 操作回滚** | ✅ 可逆（已跟踪） | 见 §2.4 —— **需重做或明确不做** |
 
 ### 7.3 新增风险：破坏性 git 操作会静默吞掉未提交的工作

@@ -121,7 +121,7 @@ seedgen / RAG / LLM 只消费该单源在 Hub 中形成的知识视图
 **明确禁止**把「单源驱动」理解成：
 
 ```
-RFC raw / derived/spec 直接绕过 Hub 喂给 seedgen
+RFC raw / derived/model/spec 直接绕过 Hub 喂给 seedgen
 ```
 
 当前：
@@ -192,8 +192,8 @@ Immediate Next Step: source 源语料勘察（只读）
 |---|---|
 | `core/lane_a/` 模块 | 11 |
 | `tests/lane_a/` 测试 | 85 项 |
-| `derived/lane_a/` observation | **25000**（insufficient 11000 / no_target 14000） |
-| `derived/lane_a/provenance/` attachment | **11000**，覆盖 3 条 distinct Hub fact |
+| `derived/model/lane_a/` observation | **25000**（insufficient 11000 / no_target 14000） |
+| `derived/model/lane_a/provenance/` attachment | **11000**，覆盖 3 条 distinct Hub fact |
 
 **Lane A v1 口径**（已冻结）：PROVENANCE-ONLY。抽取 instance-level
 structural 事实，以非投票 provenance 附着到既有 Hub protocol Fact，
@@ -203,7 +203,7 @@ structural 事实，以非投票 provenance 附着到既有 Hub protocol Fact，
 
 | 项 | 裁定 | 依据 |
 |---|---|---|
-| §3.1.1 observation 落点 | `derived/lane_a/<unit_id>/` | `layout.py:124` 的 `verify_layout` 只校验 `derived/fused/` 子树，不对 `derived/` 顶层做白名单；先例 `derived/vuln/`。**排除 `per_source/traffic/`**——traffic 未入 Hub，空树会误导 |
+| §3.1.1 observation 落点 | `derived/model/lane_a/<unit_id>/` | `layout.py:124` 的 `verify_layout` 只校验 `derived/fused/` 子树，不对 `derived/` 顶层做白名单；先例 `derived/model/vuln/`。**排除 `per_source/traffic/`**——traffic 未入 Hub，空树会误导 |
 | §3.1.2 读出口 | `core/lane_a/reader.py`，不复用 Hub reader | Hub reader 只认 `derived/fused/` layout，且契约被 `fused_runtime_io_v1.md` 冻结 |
 | §3.1.3 格式校验 | 独立于 Hub validator 的 Lane A schema | `StructuralObservation` 不属 Fact/Meta/Graph/Audit 任一种，`validate_build` 覆盖不到 |
 | §3.2 validator invariant | **不做** | 见 §11.4 |
@@ -326,7 +326,7 @@ Seedgen Axis: DEFERRED
 | `targets.py` | **纯 json 读** `derived/fused/facts/*.jsonl` 建 target index | 丙-a 裁定 / 接口文档 §3.5 |
 | `attachment.py` | Provenance attachment：单向引用 Hub fact + 失效检测 | 接口文档 §5.4 |
 | `observation.py` | StructuralObservation 记录形状 + §4.1 relation 词表 | 接口文档 §2 / §4 |
-| `writer.py` | 写 `derived/lane_a/<unit_id>/`（原子写） | proposal §3.1.1 |
+| `writer.py` | 写 `derived/model/lane_a/<unit_id>/`（原子写） | proposal §3.1.1 |
 | `reader.py` | 读出口。**纯读**，不复用 Hub reader。排除 `provenance/` 目录 | proposal §3.1.2 / 接口文档 §6.3 |
 | `schema.py` | 独立于 Hub validator 的格式校验 | proposal §3.1.3 / §3.2 |
 
@@ -338,9 +338,9 @@ Seedgen Axis: DEFERRED
 ### 5.7 Lane A 产出现状
 
 ```
-derived/lane_a/                    500 unit   25000 observation
+derived/model/lane_a/                    500 unit   25000 observation
                                               (insufficient 11000 / no_target 14000)
-derived/lane_a/provenance/         11000 attachment，覆盖 3 条 distinct Hub fact
+derived/model/lane_a/provenance/         11000 attachment，覆盖 3 条 distinct Hub fact
 ```
 
 **「Traffic Single-source Hub Build」的定义已澄清（D23）**：Hub facts 仍来自
@@ -414,12 +414,12 @@ Snapshot 格式：`value / source / verified_at`。
 | `build_fingerprint` | `sha256:5017304a833d3f6c7d111c53c2288c5b83f2de2c9d2993b5149cb69270550b7b` | `derived/fused/meta.json` | 2026-10-04 |
 | `aggregate_input_fingerprint` | `sha256:04110e4542bb32cc69647861b0c9ee5999ca08b1c25aa7f7ec6319f1498453ff` | `derived/fused/meta.json` | 2026-10-04 |
 | `kb/` fingerprint | aggregate v1: `sha256:bcc1bd3f3f41d0bdfc2b8cd296297aab1edcbf1fc1766aea1d3c5e7b305bf06a`（**6061 files**） | `python local/kb_fingerprint.py kb --aggregate`<br>基线见 `local/kb_fingerprint_baseline.txt`<br>历史值 A86C71E0…DEDE24 无已知可复现方法，**不适用于 aggregate 对比** | 2026-10-04 |
-| `derived/spec/rtsp/` | 6 文件，稳定 | 磁盘 | 2026-10-04 |
+| `derived/model/spec/rtsp/` | 6 文件，稳定 | 磁盘 | 2026-10-04 |
 | `derived/fused/` | 13 文件 | 磁盘 | 2024-10-04 |
 | `derived/fused/` **源构成** | **三源：rfc 11 Facts + expert_note 49 Facts + vuln 5 Facts = 65 Facts / 75 Claims**<br>fact kind：constraint 43 / method 15 / header 7<br>resolution：resolved 62 / unresolved 3（`peer_conflict`）<br>最后构建 **2026-10-01 19:38:59**；此后所有工作均为设计文档，无代码执行 | `derived/fused/facts/*.jsonl` + `derived/fused/profile.json` `source_coverage` | 2026-10-04 |
-| `derived/per_source/rfc/` | 13 文件 | 磁盘 | 2026-10-04 |
-| `derived/per_source/expert_note/` | 13 文件 | 磁盘 | 2026-10-04 |
-| `derived/per_source/vuln/` | 13 文件 | 磁盘 | 2026-10-04 |
+| `derived/model/per_source/rfc/` | 13 文件 | 磁盘 | 2026-10-04 |
+| `derived/model/per_source/expert_note/` | 13 文件 | 磁盘 | 2026-10-04 |
+| `derived/model/per_source/vuln/` | 13 文件 | 磁盘 | 2026-10-04 |
 | Traffic corpus | 1000 capture units / single scenario configuration / cross-capture independence NOT ESTABLISHED | Traffic Metadata Recon + Q1 | 2026-10-02 |
 
 > **源归属量具提示**：事实的源信息**不在** `fact_key` 内（`fact_key` 只有
@@ -622,7 +622,7 @@ DEFERRED:
 
 | 项 | 状态 |
 |---|---|
-| proposal §3.1.1 observation 落点与命名 | **✅ 已落定**：`derived/lane_a/<unit_id>/`。依据 `layout.py:124` 的 verify_layout 只校验 `derived/fused/` 子树；先例 `derived/vuln/`。**排除 `per_source/traffic/`**——traffic 未入 Hub，空树会误导接手者 |
+| proposal §3.1.1 observation 落点与命名 | **✅ 已落定**：`derived/model/lane_a/<unit_id>/`。依据 `layout.py:124` 的 verify_layout 只校验 `derived/fused/` 子树；先例 `derived/model/vuln/`。**排除 `per_source/traffic/`**——traffic 未入 Hub，空树会误导接手者 |
 | proposal §3.1.2 读出口 | **✅ 已落定**：`core/lane_a/reader.py`。不复用 `core/fused/reader.py`——后者只认 `derived/fused/` layout，且契约被 `fused_runtime_io_v1.md` 冻结。reader 必须纯读、不得反向写 Hub |
 | proposal §3.1.3 格式校验 | **✅ 已落定**：独立于 Hub validator 的 Lane A schema。`StructuralObservation` 不属 Fact/Meta/Graph/Audit 任一种，`validate_build` 覆盖不到 |
 | proposal §3.2 validator invariant | **✅ 已裁定为「不做」**，依据与代价见下 |
@@ -788,7 +788,7 @@ validator 只遍历 `claims`，写在 claim 外的 observation 它根本看不�
   乙（请求序列）/ 丙（状态上下文）**已实现** ⟹ **无「待实现」候选**。
   **STOP 2 触发**。未新建 `l5_seedcorpus_extension_proposal.md`（D2 前提不成立）。
   **D72 ★ Q5-G 是接线缺口不是模型缺口**：`generate_seeds_from_hub` 的 paths 来自
-  `derived/spec/.../state_machine.json`，而 `inventory.states`
+  `derived/model/spec/.../state_machine.json`，而 `inventory.states`
   （Hub 4 条 state fact）**读入后从未使用** ⟹
   Q5-G = 把路径规划数据源换成 Hub transition fact，
   **不改模型、不改 `.raw` 格式、不改 Hub 产物**。
@@ -827,7 +827,7 @@ validator 只遍历 `claims`，写在 claim 外的 observation 它根本看不�
   （`Ready->Ready` 6 条仅靠 method 区分）⟹ 三种建模待裁定，
   会改 `fact_id` 与 audit，**契约级**。
   量具缺陷备案：本批基线只覆盖 `derived/` 的 4 个子目录，导致
-  `derived/spec/`、`derived/vuln/` 17 个文件**误报为新增**；
+  `derived/model/spec/`、`derived/model/vuln/` 17 个文件**误报为新增**；
   改用覆盖全 derived 的上一批基线复核后确认真实新增仅 2 ⟹
   **基线范围不足会让「新增」虚高，跨批复核须确认口径一致**。
   战略更新：在当前 Hub 与输出格式下，**可被 L5 消费的独立维度只有 3 条** ⟹
@@ -868,7 +868,7 @@ validator 只遍历 `claims`，写在 claim 外的 observation 它根本看不�
   `inventory.methods` 是唯一过滤点，其余全部只写进 manifest）⟹ 覆盖度 **1/7**。
   ⟹ **零增量从「实验观察」升级为「结构事实」**：
   双源实验恰好只在**非通道维度**上产生差异，故 26/26 必然相同。
-  顺带查明种子的方法路径来自 `derived/spec/.../state_machine`、
+  顺带查明种子的方法路径来自 `derived/model/spec/.../state_machine`、
   头部字段来自 **`kb_root`**，均不来自 Hub。
   **★ Q5 阻塞重定位**：挂载点已获授权，但实测 `fact_key_projection`
   返回单个对象、`_apply_rule` **无条件 return 一条** ⟹
@@ -904,10 +904,10 @@ validator 只遍历 `claims`，写在 claim 外的 observation 它根本看不�
 
 - **source provenance 轨首次持久化落盘 COMMITTED（D43，2026-10-06）**：
   新建入口 `core/source_a/build.py`（`python -m core.source_a.build`），
-  **`derived/source_a/` 首次创建** —— **43 条** observation / 9 unit
+  **`derived/model/source/` 首次创建** —— **43 条** observation / 9 unit
   （S-M 17 / S-E 14 / S-PH 10 / S-EX 2）。
   落点与 Hub 产物**物理隔离**（§1-2），`derived/fused/` **13 文件逐字节不变**，
-  `derived/lane_a/` 1002、`derived/per_source/` 40、`kb/` 6061 文件**全部零变化**
+  `derived/model/lane_a/` 1002、`derived/model/per_source/` 40、`kb/` 6061 文件**全部零变化**
   （baseline 清单 **1025/1025 零偏差**独立复核）。
   **幂等已验证**：连续两次执行 **19/19 文件逐字节一致**。
   C-3 帧字段 **0**；S-EX 两条均 `unspecified` + `target=None`（C-1 / D40）。

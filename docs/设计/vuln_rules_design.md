@@ -359,7 +359,7 @@ C6 的直接落地：触发条件就是 pre-condition，不掺 `desc`、不掺 C
 | └ `security_consequence` | 7（6 method + 1 header） | **7** ✅ | VR-3 |
 | **Facts（按 fact_key 折叠后）** | — | **5** | §7.1 |
 | emit 0 的 vuln_seed | 23 | **23** ✅ | 37 − 14 |
-| 落盘 `derived/per_source/vuln/` | 13 文件（对齐 rfc / expert_note） | 待 §四 实测 | `fused_runtime_io_v1.md` §3.2 冻结文件集 |
+| 落盘 `derived/model/per_source/vuln/` | 13 文件（对齐 rfc / expert_note） | 待 §四 实测 | `fused_runtime_io_v1.md` §3.2 冻结文件集 |
 
 **实现后实测（Step 4.8g，已核对一致）**：
 
@@ -463,7 +463,7 @@ resolution」。这与「知识没进中枢」有本质区别。
    而不是物理文件 bytes 的 sha256。这是 `build_inputs.py` 文档字符串里写明的正确兜底。
 3. 即便按 §7.1 加了 hint，也必须匹配 `vuln/`。
 
-**本步不修**，三个理由：(a) 修 `norm.source` 要写 `derived/spec/rtsp/norms/norms.jsonl`
+**本步不修**，三个理由：(a) 修 `norm.source` 要写 `derived/model/spec/rtsp/norms/norms.jsonl`
 （derived 产物，且属 vuln extractor 的输出）；(b) 扩 `resolve_source_file` 的探测路径会
 **同时影响 rfc 与 expert_note 的 document 与 content_fingerprint** → 违反源隔离第十一章的
 跨源禁令；(c) §1.10 Input Closure 的 content fingerprint 本就允许确定性兜底。

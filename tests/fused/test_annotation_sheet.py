@@ -6,7 +6,7 @@
   （行错位、text 被 Excel 改写、词表拼错、holdout 混进 train）。
   这组测试把「表与冻结集必须逐字一致」「回收必须过标注器校验」固化成断言。
 
-★ 只写临时目录，不碰 `derived/exp_semantic/truth/`。
+★ 只写临时目录，不碰 `derived/experiments/annotation/truth/`。
 """
 from __future__ import annotations
 
@@ -22,8 +22,8 @@ from openpyxl import load_workbook  # noqa: E402
 from scripts import annotation_sheet as AS  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
-TRUTH = REPO / "derived" / "exp_semantic" / "truth"
-FROZEN = REPO / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+TRUTH = REPO / "derived" / "experiments" / "annotation" / "truth"
+FROZEN = REPO / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
 
 
 def _skip_if_no_data() -> None:

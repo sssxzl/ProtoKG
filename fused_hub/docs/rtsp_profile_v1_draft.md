@@ -10,7 +10,7 @@
 - **范围**: Layer 1（rtsp Profile），甲方案（最小可用）
 - **状态**: 已落地（草案内容已进 `fused_hub/schema/` 三个注册表 JSON，`core_version: 1.0`；后续修订以本文档为准）
 - **数据来源**: `derived/fused/facts/*.jsonl` 经 `core/fused/compat.py` 映射为 v2 Fact
-  （Step C1 探针：131 → 118 facts，0 errors；v2 映射结果未落盘，产物在 `derived/per_source/<协议>/<源>/facts/`）
+  （Step C1 探针：131 → 118 facts，0 errors；v2 映射结果未落盘，产物在 `derived/model/per_source/<协议>/<源>/facts/`）
 
 ---
 
@@ -38,14 +38,14 @@
 ### 1.1 `method` —— 协议操作方法
 
 - **语义**: 协议的操作方法。name 为**纯方法名**（如 `SETUP`）。
-- **实测 name 全集（11，v2 产物 `derived/per_source/rtsp/rfc/facts/rfc.jsonl` 实测）**: `ANNOUNCE`, `DESCRIBE`, `GET_PARAMETER`, `OPTIONS`, `PAUSE`, `PLAY`, `RECORD`, `REDIRECT`, `SETUP`, `SET_PARAMETER`, `TEARDOWN`
+- **实测 name 全集（11，v2 产物 `derived/model/per_source/rtsp/rfc/facts/rfc.jsonl` 实测）**: `ANNOUNCE`, `DESCRIBE`, `GET_PARAMETER`, `OPTIONS`, `PAUSE`, `PLAY`, `RECORD`, `REDIRECT`, `SETUP`, `SET_PARAMETER`, `TEARDOWN`
   - v2 产物中 method name 为**纯方法名**；v1 映射期的 `METHOD.Header` 复合形式
     （如 `SETUP.CSeq`）是 v1 事实的历史形态，v2 侧由 header 型 Subject 独立承载。
 
 ### 1.2 `header` —— 协议头字段
 
 - **语义**: 协议消息的头字段。
-- **实测 name 全集（68，v2 产物 `derived/per_source/rtsp/rfc/facts/rfc.jsonl` 实测）**: `Accept`, `Accept-Encoding`, `Accept-Language`, `Allow`, `Authorization`, `Bandwidth`, `Blocksize`, `CSeq`, `Cache-Control`, `Conference`, `Connection`, `Content-Base`, `Content-Encoding`, `Content-Language`, `Content-Length`, `Content-Location`, `Content-Type`, `Date`, `Expires`, `From`, `Host`, `If-Match`, `If-Modified-Since`, `Last-Modified`, `Location`, `Proxy-Authenticate`, `Proxy-Require`, `Public`, `RTP-Info`, `RTSP option name`, `RTSP option registration`, `Range`, `Referer`, `Require`, `Retry-After`, `Scale`, `Server`, `Servers`, `Session`, `Session identifier`, `Speed`, `Timestamp`, `Transport`, `URL`, `URL host`, `Unsupported`, `User-Agent`, `Vary`, `Via`, `WWW-Authentica`, `basic features`, `character encoding`, `client`, `conference identifier`, `header field value`, `header fields (Section 12)`, `line terminator`, `message body`, `message body length`, `method`, `npt-range`, `octet sequence`, `presentation description`, `protocol`, `sink`, `smpte-range`, `user interface`, `utc-range`
+- **实测 name 全集（68，v2 产物 `derived/model/per_source/rtsp/rfc/facts/rfc.jsonl` 实测）**: `Accept`, `Accept-Encoding`, `Accept-Language`, `Allow`, `Authorization`, `Bandwidth`, `Blocksize`, `CSeq`, `Cache-Control`, `Conference`, `Connection`, `Content-Base`, `Content-Encoding`, `Content-Language`, `Content-Length`, `Content-Location`, `Content-Type`, `Date`, `Expires`, `From`, `Host`, `If-Match`, `If-Modified-Since`, `Last-Modified`, `Location`, `Proxy-Authenticate`, `Proxy-Require`, `Public`, `RTP-Info`, `RTSP option name`, `RTSP option registration`, `Range`, `Referer`, `Require`, `Retry-After`, `Scale`, `Server`, `Servers`, `Session`, `Session identifier`, `Speed`, `Timestamp`, `Transport`, `URL`, `URL host`, `Unsupported`, `User-Agent`, `Vary`, `Via`, `WWW-Authentica`, `basic features`, `character encoding`, `client`, `conference identifier`, `header field value`, `header fields (Section 12)`, `line terminator`, `message body`, `message body length`, `method`, `npt-range`, `octet sequence`, `presentation description`, `protocol`, `sink`, `smpte-range`, `user interface`, `utc-range`
 - **⚠ 既有遗留（不属本 Profile 处置）**: 在 **v1 遗留数据**（`derived/fused/facts/header.jsonl`
   实测）里 `Authorization` 与 `authorization` 是两条 distinct name（大小写变体）；v2 rfc
   产物中只出现 `Authorization` 一条。沿用 `docs/实施/hub_contract_errata_backlog.md` §10.1 的既有现象。
@@ -107,7 +107,7 @@
   - 其余 = `one`：实测全 1 claim，且语义单值。
 
 - **`resolution_semantics` 统一 `consensus`**: v2 侧当前无跨源 resolution（`core/fused/compat.py`
-  不映射 v1 旧 resolution，仅在 `derived/per_source/` 的 v2 事实中由
+  不映射 v1 旧 resolution，仅在 `derived/model/per_source/` 的 v2 事实中由
   `core/fused/downstream/resolver.py` 现场消解），无冲突需裁决。未来出现跨源冲突时再按需细分
   （precedence 等），属 Layer 1 演进，不阻塞本草案。
 

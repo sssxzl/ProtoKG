@@ -3,11 +3,11 @@
 
 职责（技术方案 §1.2 步骤契约 S2）：
   1. 调用 `scripts/seedgen.py --focus-group X` 生成 A/B/C/D 四组种子
-     （每组独立落盘到 `derived/rq3/<g>/seeds/`，含 manifest.json）；
-  2. 生成/拷贝冻结字典到 `derived/rq3/dict/`（base24 / targeted123 / compact32）；
+     （每组独立落盘到 `derived/experiments/rq3/<g>/seeds/`，含 manifest.json）；
+  2. 生成/拷贝冻结字典到 `derived/experiments/rq3/dict/`（base24 / targeted123 / compact32）；
   3. **执行 §2.5.3 的 A1–A10 全部断言**（任一失败 → 非零退出，不发布语料）；
-  4. 写 `derived/rq3/groups.json`（编排脚本的唯一输入）；
-  5. 写 `derived/rq3/dict/DICT_FROZEN.json`（字典冻结记录，论文附录引用）。
+  4. 写 `derived/experiments/rq3/groups.json`（编排脚本的唯一输入）；
+  5. 写 `derived/experiments/rq3/dict/DICT_FROZEN.json`（字典冻结记录，论文附录引用）。
 
 用法:
     E:/app/Anaconda3/python.exe scripts/rq3_build_corpus.py
@@ -16,8 +16,8 @@
     E:/app/Anaconda3/python.exe scripts/rq3_build_corpus.py --root <目录>
 
 ★ ``--root <目录>``：把**构建根目录**整体重定向到别处（默认仍是
-  ``derived/rq3`` ⇒ **默认行为逐字节不变**）。
-  用途：**pytest 隔离** —— ``derived/rq3/`` 是**已发表语料**（论文引用），
+  ``derived/experiments/rq3`` ⇒ **默认行为逐字节不变**）。
+  用途：**pytest 隔离** —— ``derived/experiments/rq3/`` 是**已发表语料**（论文引用），
   测试若直接写它 ⇒ pytest 一跑就重建真实语料（内容 + mtime 全变）⇒
   既污染数据、又让「语料已被重建」护栏信号永远为真（无法区分本次构建/历史产物）。
   ⇒ 测试用 ``tmp_path`` + ``--root`` 把根指过去 ⇒ **不碰真实语料**。
@@ -47,7 +47,7 @@ from core import paths  # noqa: E402
 import rq3_common as C  # noqa: E402
 
 #: 历史上用于 RQ1.2 的 ProtoRAG 语料（C 组与其 MD5 集合必须相等 → A7）
-REFERENCE_CORPUS = ROOT / "derived" / "seeds" / "rtsp" / "live555_20261024_110155"
+REFERENCE_CORPUS = ROOT / "derived" / "model" / "seeds" / "rtsp" / "live555_20261024_110155"
 
 #: 四个聚焦组
 GROUPS = ("A", "B", "C", "D")
@@ -96,7 +96,7 @@ def _rel_to_root(path: Path) -> str:
 
     ★ ``--root`` 可把构建根指到仓库外（如 pytest 的 ``tmp_path``）⇒
       ``Path.relative_to(ROOT)`` 会抛 ``ValueError`` ⇒ 这里做兜底。
-      默认（构建根 = ``derived/rq3``）时**输出逐字节不变**。
+      默认（构建根 = ``derived/experiments/rq3``）时**输出逐字节不变**。
     """
     p = Path(path)
     try:
@@ -130,7 +130,7 @@ def _run_seedgen(group: str, out_dir: Path, manifest: bool = True) -> int:
 
 
 def _snapshot_seed_dirs(groups_dir: dict) -> dict:
-    """快照各组语料目录 `derived/rq3/<g>/seeds` 的 mtime（构建前/后各取一次）。
+    """快照各组语料目录 `derived/experiments/rq3/<g>/seeds` 的 mtime（构建前/后各取一次）。
 
     快照含两层，缺一不可：
       · **目录 mtime** —— 增删文件即变（QA 复扫用的就是这一层）；
@@ -196,7 +196,7 @@ def _report_rebuild_signal(before: dict, after: dict) -> list[str]:
 
 
 def _generate_dicts(cfg: dict) -> dict:
-    """生成全部冻结字典到 `derived/rq3/dict/`。
+    """生成全部冻结字典到 `derived/experiments/rq3/dict/`。
 
     产出：
       · rtsp_base.dict      —— 基础字典（24 token，MD5 与镜像内一致）
@@ -438,11 +438,11 @@ def build(check_only: bool = False, continue_on_error: bool = False) -> int:
                 # 否则本组失败会让后续组永远得不到重建（磁盘上留着旧污染产物）。
                 failed_groups.append(g)
                 continue
-            # seedgen 会把字典写在语料目录里；统一挪到 derived/rq3/dict/
+            # seedgen 会把字典写在语料目录里；统一挪到 derived/experiments/rq3/dict/
             stray = groups_dir[g] / f"{cfg['protocol']}.dict"
             if stray.exists():
                 stray.unlink()
-            # manifest 提升到组目录（derived/rq3/<g>/manifest.json），
+            # manifest 提升到组目录（derived/experiments/rq3/<g>/manifest.json），
             # 语料目录只保留 .raw —— 布局对齐技术方案 §11.1。
             m_src = groups_dir[g] / "manifest.json"
             m_dst = C.group_manifest_path(g)
@@ -512,7 +512,7 @@ def build(check_only: bool = False, continue_on_error: bool = False) -> int:
             "seed_md5_set": sorted({e["md5"] for e in m["seeds"]}),
             "seed_files": [e["filename"] for e in m["seeds"]],
             # ★ manifest 路径跟随**实际构建根**（``--root`` 重定向时不是
-            #   ``derived/rq3/...``）⇒ 默认（构建根 = derived/rq3）时
+            #   ``derived/experiments/rq3/...``）⇒ 默认（构建根 = derived/experiments/rq3）时
             #   **输出逐字节不变**。
             "manifest": _rel_to_root(C.group_manifest_path(g)),
             "in_paper_table18": gcfg["in_paper_table18"],
@@ -542,11 +542,11 @@ def main() -> int:
                          "全部组跑完后若有失败组则返回非 0 并列出失败组"
                          "（默认：首组失败即中止，返回 4）")
     ap.add_argument("--root", default=None, metavar="目录",
-                    help="构建根目录（默认 derived/rq3）—— 把整个构建产物"
+                    help="构建根目录（默认 derived/experiments/rq3）—— 把整个构建产物"
                          "重定向到别处（pytest 隔离用：避免重建**已发表**的"
-                         "derived/rq3/）")
+                         "derived/experiments/rq3/）")
     args = ap.parse_args()
-    # ★ --root：重定向构建根（默认 = derived/rq3 ⇒ 默认行为不变）。
+    # ★ --root：重定向构建根（默认 = derived/experiments/rq3 ⇒ 默认行为不变）。
     #   必须在任何路径计算**之前**生效 ⇒ 全局覆盖 rq3_common 的 RQ3_ROOT
     #   （该模块的所有路径函数都从它派生 ⇒ 一次覆盖，全部跟随）。
     if args.root:

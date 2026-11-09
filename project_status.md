@@ -122,7 +122,7 @@ canonical path 为 `fused_hub/schema/`（**无 `v1/` 子目录**），共 **3** 
 
 `derived/fused/`：**存在**，为 v1 时代遗留的融合产物（131 facts / 81 entities / 34135 claims，
 `fusion_version: fusion_v3+rules.sha256:43f7c7fe6`），fact_key 仍是 v1 扁平 `kind`/`property` 格式。
-v2 产物在 `derived/per_source/<协议>/<源>/facts/<源>.jsonl`，覆盖 ftp / rtsp / sip / smtp 四协议 × 五源。
+v2 产物在 `derived/model/per_source/<协议>/<源>/facts/<源>.jsonl`，覆盖 ftp / rtsp / sip / smtp 四协议 × 五源。
 
 `derived/` 顶层现有目录：`analysis`、`fused`、`lane_a`、`per_source`、`rq3`、`rq4`、`seeds`、`source_a`、
 `source_blocks`、`spec`、`vuln`、`vuln_pattern_vectors`（另有 `fused_status.txt` 与 `per_source.bak_20261018`）。
@@ -135,7 +135,7 @@ v2 产物在 `derived/per_source/<协议>/<源>/facts/<源>.jsonl`，覆盖 ftp 
 - `kb/` 全程只读，改动前后做逐文件 diff 确认 UNCHANGED
 - pytest 在沙箱内需加 `-p no:cacheprovider --basetemp=<项目外目录>`
 - 失败即停，不自行绕过失败，改为汇报失败明细
-- 本项目不是 git 仓库，回滚依赖 `derived/per_source.bak_20261018/` 与 `local/` 内的实验记录
+- 本项目不是 git 仓库，回滚依赖 `derived/model/per_source.bak_20261018/` 与 `local/` 内的实验记录
 
 ## 第八章 已完成关键能力
 
@@ -148,7 +148,7 @@ v2 产物在 `derived/per_source/<协议>/<源>/facts/<源>.jsonl`，覆盖 ftp 
 - **traffic 真实字段管道**：`traffic_extractor.extract_packet_fields` 从 `packets.ndjson` 抽应用层真实字段
   （过滤 Wireshark 分解字段），真实值经 `assemble_bundle` 覆盖 LLM 模板值
 - **source 确定性**：`_ngram_embed` 用 `zlib.crc32`（跨进程确定）+ LLM 结果按 code_blocks hash 缓存到
-  `derived/source_blocks/<协议>.state.json`
+  `derived/model/source_blocks/<协议>.state.json`
 - **source 语义锚点**：初始化注入 `canonical_flow` + `allowed_methods`，状态机从「响应码状态机」变为
   「语义化会话状态机」（Idle / Registered / Invited / Confirmed / InCall / Subscribed / Terminated …）
 - **漏洞导向去门控**：vuln_boundary 层对所有协议可用（不再 `protocol != "rtsp"` 一刀切）
@@ -213,4 +213,4 @@ v2 结构化知识中枢的实验化与下游深化：
 全量回归用 `pytest tests/ -q`（沙箱内需加 `-p no:cacheprovider --basetemp=<项目外目录>`），基线为
 **560 passed / 0 skipped / 0 failed**。
 
-需要追溯历史测试输出时，查 `local/` 内的实验记录与 `derived/analysis/` 的分析产物；需要实时结论时直接重跑命令取当前值，不依赖历史输出。
+需要追溯历史测试输出时，查 `local/` 内的实验记录与 `derived/experiments/chatafl_analysis/` 的分析产物；需要实时结论时直接重跑命令取当前值，不依赖历史输出。

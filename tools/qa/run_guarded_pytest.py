@@ -177,7 +177,7 @@ def _find_pytest() -> str:
 def _detect_narrow_hub_state(root=None) -> dict:
     """检测中枢是否处于「**窄化数据态**」（批次 1.6 护栏6）。
 
-    ★ 判据：中枢根 ``derived/per_source/<协议>/sources.json`` 的
+    ★ 判据：中枢根 ``derived/model/per_source/<协议>/sources.json`` 的
       ``source_set`` **不是**全部五源 ⇒ 该协议处于窄化态。
     ★ 任一协议窄化 ⇒ 整体判为窄化（护栏跑的是**跨协议**的全量测试，
       窄化清单里的 id 多为跨协议断言 ⇒ 粒度上无法再细）。
@@ -188,7 +188,7 @@ def _detect_narrow_hub_state(root=None) -> dict:
     all_sources = {"rfc", "expert_note", "traffic", "vuln", "source"}
     if root is None:
         _proj = Path(__file__).resolve().parents[2] / "derived"
-        # ★ 中枢重设计（2026-11-08）：中枢根已迁到 ``derived/hub/<协议>/``
+        # ★ 中枢重设计（2026-11-08）：中枢根已迁到 ``derived/model/hub/<协议>/``
         #   ⇒ 窄化检测**两个位置都要看**（兼容期：新位置优先，旧位置兜底）。
         _hub = _proj / "hub"
         _legacy = _proj / "per_source"
@@ -197,7 +197,7 @@ def _detect_narrow_hub_state(root=None) -> dict:
         root = Path(root)
     sets: dict = {}
     narrowed = False
-    # ★ ★ **新布局**（中枢共用一套）：``derived/hub/sources.json``
+    # ★ ★ **新布局**（中枢共用一套）：``derived/model/hub/sources.json``
     #   是**多协议结构**（``protocols: {<协议>: {...}}``）
     #   ⇒ 逐协议判定窄化（**不按协议目录遍历** —— 新布局无协议目录）。
     _hub_manifest = root / "sources.json"

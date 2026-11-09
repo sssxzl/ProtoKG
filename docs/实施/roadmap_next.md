@@ -103,7 +103,7 @@
 
 **已裁定（2026-10-08）**：
 - R1 = **甲**（最小可用）✅ —— 只注册 131 facts 实测用到的 type/aspect/epistemic，定位「验证通用 Profile 机制」，不固化 RTSP
-- R2 = **落盘 per_source/v2**（2026-10-08 修订，原裁丙）✅ —— 单源产物落 `derived/per_source/<source>/v2/`，与 v1 并行
+- R2 = **落盘 per_source/v2**（2026-10-08 修订，原裁丙）✅ —— 单源产物落 `derived/model/per_source/<source>/v2/`，与 v1 并行
 - R3 = **去重+统计 + 新增 protocol/actor**（2026-10-09 裁定，做 traffic 源时触发）✅ —— traffic 40998 行按 norm_id 去重为 15 distinct norm，每 norm 产 observed fact、quote 记「observed in N captures」；subject_type_registry 新增 protocol/actor 两 type。详见 `local/backup/step_v2_layer2_remaining_sources/audit.txt`
 - R4 仍待裁定（可延后）
 
@@ -158,7 +158,7 @@
 **第一版（transition）已完成（2026-10-08，Step C3a）**：
 - 新增 `core/fused/norm_v2.py` + `scripts/build_hub_v2.py`（--list-sources + --sources）
 - rfc 366 norm → 43 transition facts（≥ v1 的 11），fail-closed 0 失败
-- 落盘 `derived/per_source/rfc/v2/facts/rfc.jsonl`；修复 export_v2 嵌套 Subject 序列化
+- 落盘 `derived/model/per_source/rfc/v2/facts/rfc.jsonl`；修复 export_v2 嵌套 Subject 序列化
 - 详见 `local/backup/step_v2_C3a/audit.txt`
 
 ### [x] Step C3b — rfc field 映射（232 条）

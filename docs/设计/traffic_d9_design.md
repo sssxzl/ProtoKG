@@ -2306,9 +2306,9 @@ property 不改变任何一条绑定项 ⟹ 不触发 bump。
 （对照 §14 E4：`_completeness` 修复改的是 Phase A 判定逻辑本身，故已 bump）
 
 **per_source 同步: 已完成（§6-Pre17 阶段 A）。**
-derived/per_source/{rfc, expert_note, vuln}/meta.json **均含 `registries`**
+derived/model/per_source/{rfc, expert_note, vuln}/meta.json **均含 `registries`**
 字段，其 registry fingerprint 此前同样陈旧。
-重跑范围：`derived/fused/` + `derived/per_source/{rfc, expert_note, vuln}`。
+重跑范围：`derived/fused/` + `derived/model/per_source/{rfc, expert_note, vuln}`。
 
 **同步结果**：三源 registry fingerprint 全部对齐 `sha256:5a168877…` ✔
 
@@ -2764,15 +2764,15 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 | `core/lane_a/` 模块 | 11（pcap / g1 / g2 / g4 / targets / observation / writer / reader / schema / attachment / `__init__`） |
 | `tests/lane_a/` 测试 | 85 项，全部构造数据 + `tmp_path` |
 | `scripts/attach_lane_a_provenance.py` | 独立入口（**未改** `build_hub.py`） |
-| `derived/lane_a/` | 500 unit，25000 observation |
-| `derived/lane_a/provenance/` | 11000 attachment，覆盖 3 条 distinct Hub fact |
+| `derived/model/lane_a/` | 500 unit，25000 observation |
+| `derived/model/lane_a/provenance/` | 11000 attachment，覆盖 3 条 distinct Hub fact |
 
 **四个阶段**
 
 | 阶段 | 内容 | 结果 |
 |---|---|---|
 | I | 只读探针，G1 重建器 | 500/500 与 udp 侧 `client.log` 一致 |
-| II | `derived/lane_a/` 落盘 + reader + schema | 5000 条 G1 observation |
+| II | `derived/model/lane_a/` 落盘 + reader + schema | 5000 条 G1 observation |
 | III | G2 / G3 / G4 / G8 + target 对齐 | 25000 条；11000 条带 target |
 | — | Provenance Attachment（§5.4） | 11000 条；`derived/fused/` 零变化 |
 
@@ -2781,7 +2781,7 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 - `derived/fused/` 13 文件**逐字节不变**
 - `core/` 既有 105 个 `.py` 源码**零改动**（只新增 `core/lane_a/`）
 - `kb/` aggregate `sha256:bcc1bd3f…`（6061 files）不变
-- `derived/spec/rtsp/` NO DIFF
+- `derived/model/spec/rtsp/` NO DIFF
 - 全量 pytest **0 failed / 0 errors**
 
 **对本批次前序判定的修正（3 处显式记录）**

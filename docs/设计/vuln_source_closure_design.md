@@ -630,7 +630,7 @@ Step 4.8h-Pre（已完成）
 | U14 | LLM 裁决通道 | 新立项 | pipeline 全通后 |
 | U15 | `cc.traffic.observational` 与条款 8 抵触 | 契约一致性 | 未来治理 |
 | U16 | Markdown artifact 清理 | 文档卫生 | 本文档正式冻结时处理 |
-| U17 | `tests/fixtures/derived/graph/entities.jsonl` 非确定性 | ❌ **撤销** | entities.jsonl 从未改变；该判断源于 Pre 阶段错误外推 |
+| U17 | `tests/fixtures/derived/model/graph/entities.jsonl` 非确定性 | ❌ **撤销** | entities.jsonl 从未改变；该判断源于 Pre 阶段错误外推 |
 | U18 | 候选 rule 隔离依赖 expert_note document 前缀 | 脆弱性 | Step 4.8h 加回归断言（§9.3） |
 | U19 | fallback_flags 为 fallback-path only | ✅ **已裁定** | Step 4.8h 实现并测试（§3.3） |
 | U20 | legacy writer append 模式确定性依赖 overwrite=True | 潜在风险 | 当前四条 seedgen 路径均 True，未触发；若未来出现 overwrite=False 路径会追加重复 entity |
@@ -639,7 +639,7 @@ Step 4.8h-Pre（已完成）
 
 **CORRECTION**
 
-此前关于 `tests/fixtures/derived/graph/entities.jsonl` 存在非确定性变化的表述不成立。
+此前关于 `tests/fixtures/derived/model/graph/entities.jsonl` 存在非确定性变化的表述不成立。
 
 U17 Probe 已验证：
 - 三份 entities.jsonl snapshot SHA-256 完全一致
@@ -669,7 +669,7 @@ Finalization 后需验证：
 
 **检查点 1：Repository Semantic Cleanliness Gate**
 
-`kb/`、`derived/spec/`、`fused_hub/`、`core/`、正式 tests source files、Registry、Schema 不存在非预期 diff。
+`kb/`、`derived/model/spec/`、`fused_hub/`、`core/`、正式 tests source files、Registry、Schema 不存在非预期 diff。
 
 **检查点 2：Generated Fixture Output Gate**
 
@@ -692,8 +692,8 @@ Finalization 后需验证：
 
 1. 全量 `pytest -n auto`：基线 2589 passed / 8 skipped / 0 failed，0 回归
 2. `kb/`：6061 files，SHA256 `A86C71E0…DEDE24` UNCHANGED
-3. `derived/spec/rtsp/`：6 文件 size+mtime_ticks+sha256 NO DIFF
-4. `derived/per_source/rfc/` 与 `derived/per_source/expert_note/`：各 13 文件 size+sha256 全等（跨源隔离）
+3. `derived/model/spec/rtsp/`：6 文件 size+mtime_ticks+sha256 NO DIFF
+4. `derived/model/per_source/rfc/` 与 `derived/model/per_source/expert_note/`：各 13 文件 size+sha256 全等（跨源隔离）
 5. `derived/fused/`：13 文件重跑后与预期一致
 6. `verify_layout(.)` = 0 violation
 7. `ruff core/fused/ + tests/fused/` 全清

@@ -28,20 +28,20 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 #: RQ3 产物根目录（**默认**值）。
 #:
 #: ★ 可被 :func:`set_rq3_root` 覆盖（pytest 隔离用）：
-#:   ``derived/rq3/`` 是**已发表语料**（论文引用），测试若直接写它
+#:   ``derived/experiments/rq3/`` 是**已发表语料**（论文引用），测试若直接写它
 #:   ⇒ pytest 一跑就重建真实语料（内容 + mtime 全变）⇒ 既污染数据，
 #:   又让「语料已被重建」护栏信号永远为真 ⇒ 无法区分「本次构建」与「历史产物」。
 #:   ⇒ 测试用 ``tmp_path`` + :func:`set_rq3_root` 把根重定向过去。
 #:
-#: ★ **默认值不变**（= ``<project>/derived/rq3``）：生产路径的行为**逐字节不变**。
-RQ3_ROOT = PROJECT_ROOT / "derived" / "rq3"
+#: ★ **默认值不变**（= ``<project>/derived/experiments/rq3``）：生产路径的行为**逐字节不变**。
+RQ3_ROOT = PROJECT_ROOT / "derived" / "experiments" / "rq3"
 
 
 def set_rq3_root(root) -> Path:
     """把 RQ3 产物根目录**重定向**到 ``root``（返回新根）。
 
     ★ 用途：**pytest 隔离** —— 让构建写入 ``tmp_path`` 而不是真实的
-      ``derived/rq3/``（已发表语料，论文引用）。
+      ``derived/experiments/rq3/``（已发表语料，论文引用）。
     ★ 语义：模块级**可覆盖变量**（约定 C2「命名函数单一来源」：
       路径仍只在本模块定义，调用方只负责**指定根**）。
     ★ 只影响本进程内的后续调用；**默认值不变**（不调用本函数 = 原行为）。
@@ -167,7 +167,7 @@ def rq3_dir(*parts: str) -> Path:
 
 
 def group_seed_dir(group: str, create: bool = False) -> Path:
-    """某组的语料目录 `derived/rq3/<group>/seeds/`。"""
+    """某组的语料目录 `derived/experiments/rq3/<group>/seeds/`。"""
     p = RQ3_ROOT / group / "seeds"
     if create:
         p.mkdir(parents=True, exist_ok=True)
@@ -175,17 +175,17 @@ def group_seed_dir(group: str, create: bool = False) -> Path:
 
 
 def group_manifest_path(group: str) -> Path:
-    """某组的 manifest 路径 `derived/rq3/<group>/manifest.json`。"""
+    """某组的 manifest 路径 `derived/experiments/rq3/<group>/manifest.json`。"""
     return RQ3_ROOT / group / "manifest.json"
 
 
 def dict_dir() -> Path:
-    """冻结字典目录 `derived/rq3/dict/`。"""
+    """冻结字典目录 `derived/experiments/rq3/dict/`。"""
     return RQ3_ROOT / "dict"
 
 
 def collect_dir(timestamp: str) -> Path:
-    """采集产物目录 `derived/rq3/collect/<ts>/`。"""
+    """采集产物目录 `derived/experiments/rq3/collect/<ts>/`。"""
     return RQ3_ROOT / "collect" / timestamp
 
 

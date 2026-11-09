@@ -83,14 +83,14 @@ REGISTER 经 5 条独立证据查证（含 **IANA RFC 7826 方法注册表**）�
 
 后果：source 源当前**无任何 Hub fact 可产**，
 `build_hub.py --sources source --skip-fused` 在输入校验阶段即拒绝空输入
-（`input_entries 至少 1 条`），`derived/per_source/source/` 保持空目录。
+（`input_entries 至少 1 条`），`derived/model/per_source/source/` 保持空目录。
 
 ⚠ 但 **D34 已落盘的 `method.REGISTER` subject 登记保留** ——
 「liveMedia 声明自己支持 REGISTER」是实现事实，与「REGISTER 是否标准」
 是两个不同问题。
 
 **下一步**：source 侧的 Hub 接口只有 **provenance attachment**。
-真正的落盘路径是 `core/source_a/` 写 `derived/source_a/`。
+真正的落盘路径是 `core/source_a/` 写 `derived/model/source/`。
 
 ---
 
@@ -253,7 +253,7 @@ Contract → §10 Freeze Criteria）。**但裁定内容不能照抄**。
 | 设计真源 | `docs/设计/source_lane_a_rule_set_design.md`（Final Frozen，§10 八判据全 PASS） |
 | 语料能力 | `docs/设计/source_corpus_capability_profile.md` |
 | 实现 | `core/source_a/`（provenance 轨）+ `core/source_hub/`（hub_fact 轨，D40 后无使用者） |
-| 产物 | `derived/source_a/` —— **43 条** observation / 9 unit |
+| 产物 | `derived/model/source/` —— **43 条** observation / 9 unit |
 | Hub facts | **65 条不变** —— source 侧**无新增**（D40） |
 | 落盘入口 | `python -m core.source_a.build`（幂等已验证） |
 

@@ -118,8 +118,8 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 `scripts/corpus_gate.py` 此前**零调用方** —— 它是本项目最重要的质量红线之一
 （G1 客户端 host 污染 / G2 不可播会话 / G5 契约一致性），却没有自动化在跑它。
 
-真实语料在 `derived/seeds/`（gitignored），且
-`derived/seeds/rtsp/live555_20261024_110155` 是**真实抓包语料**、无法在 CI 重建，
+真实语料在 `derived/model/seeds/`（gitignored），且
+`derived/model/seeds/rtsp/live555_20261024_110155` 是**真实抓包语料**、无法在 CI 重建，
 所以 workflow **现场生成一份最小 RTSP 语料**（39 个 `.raw`，端点 `127.0.0.1:8554`、
 会话 `mp3AudioTest`、聚焦组 B —— 恰好命中 rtsp profile 的 G1/G2/G5 三条判据），
 然后断言两件事：
@@ -169,7 +169,7 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 （`.gitignore` 明写「derived/* … 可由 kb/ 重建」），**不是代码缺陷**。
 典型例子：`test_compat.py::test_at_least_120_succeed` 读 `derived/fused/facts/`（v1 遗留 131 facts），
 `test_rq3_focus_group.py::test_focus_group_c_matches_rq12_corpus` 读
-`derived/seeds/rtsp/live555_20261024_110155`（**真实抓包语料**，无法重建）。
+`derived/model/seeds/rtsp/live555_20261024_110155`（**真实抓包语料**，无法重建）。
 
 **ERROR 集合在两种环境下完全相同（20 条，漂移 0）** —— ERROR 侧与环境无关。
 
@@ -219,7 +219,7 @@ test_rq3_dict.py:129   assert 136 == 123
 test_rq3_focus_group.py:235  assert 114 == 102
 ```
 
-即 `derived/rq3/dict/DICT_FROZEN.json` 冻结的 token 数与当前字典内容对不上。
+即 `derived/experiments/rq3/dict/DICT_FROZEN.json` 冻结的 token 数与当前字典内容对不上。
 **冻结记录是论文附录引用的凭证**，改它需要同步论文；改字典会改变
 所有已生成语料的字节内容（进而让 A1–A10 断言的 md5 基准失效）。
 
@@ -330,7 +330,7 @@ done
 
 # corpus_gate 冒烟
 python scripts/corpus_gate.py --help
-python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/seeds/rtsp/rq4_B
+python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/model/seeds/rtsp/rq4_B
 ```
 
 ---

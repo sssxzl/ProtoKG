@@ -38,7 +38,7 @@ from scripts.seedgen import (  # noqa: E402
 from core.models import SeedCorpus  # noqa: E402
 
 #: 历史上用于 RQ1.2 的 ProtoRAG 语料（C 组与其 MD5 集合必须相等）
-REFERENCE = ROOT / "derived" / "seeds" / "rtsp" / "live555_20261024_110155"
+REFERENCE = ROOT / "derived" / "model" / "seeds" / "rtsp" / "live555_20261024_110155"
 
 #: 镜像内基础字典的仓库内副本
 BASE_DICT = ROOT / "fused_hub" / "targets" / "rtsp" / "rtsp_base.dict"

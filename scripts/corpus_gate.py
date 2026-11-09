@@ -42,10 +42,10 @@
 
 用法
 ----
-    python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/seeds/rtsp/rq4_B
-    python scripts/corpus_gate.py --protocol sip  --seed-dir derived/seeds/sip/rq4_B
-    python scripts/corpus_gate.py --protocol smtp --seed-dir derived/seeds/smtp/rq4_B
-    python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/seeds/rtsp/rq4_B --json
+    python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/model/seeds/rtsp/rq4_B
+    python scripts/corpus_gate.py --protocol sip  --seed-dir derived/model/seeds/sip/rq4_B
+    python scripts/corpus_gate.py --protocol smtp --seed-dir derived/model/seeds/smtp/rq4_B
+    python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/model/seeds/rtsp/rq4_B --json
     python scripts/corpus_gate.py --protocol rtsp --seed-dir <dir> --strict
     python scripts/corpus_gate.py --protocol rtsp --seed-dir <dir> --json-out report.json
 

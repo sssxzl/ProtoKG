@@ -3,8 +3,8 @@
 
 ★ 为什么需要这个脚本（批次 1.5）：
   RFC 源抽出的语义规则此前只落在**实验目录**
-  （``derived/exp_semantic_gain/group_E*/rules.jsonl``）⇒ 权威库
-  ``derived/per_source/<协议>/rfc/semantic/rules.jsonl`` **从未落盘**
+  （``derived/experiments/semantic_gain/group_E*/rules.jsonl``）⇒ 权威库
+  ``derived/model/per_source/<协议>/rfc/semantic/rules.jsonl`` **从未落盘**
   ⇒ 知识中枢拿不到规则 ⇒ 投影两桶 ``legal_boundary`` /
   ``response_expectation`` **恒空** ⇒ 「源 A 第四类」约束边界候选**恒为 0**
   ⇒ **RFC 语义对种子生成零贡献**。
@@ -21,7 +21,7 @@
 用法::
 
     python scripts/publish_semantic_rules.py --protocol rtsp \
-        --from derived/exp_semantic_gain/group_E1/rules.jsonl
+        --from derived/experiments/semantic_gain/group_E1/rules.jsonl
     python scripts/publish_semantic_rules.py --protocol rtsp --dry-run
 """
 from __future__ import annotations

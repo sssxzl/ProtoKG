@@ -87,7 +87,7 @@ GLMFuzz 针对状态协议 fuzzing 的两个瓶颈——初始种子质量低 + 
 │    value = {action, trigger_sequence, trigger_field,          │
 │              boundary{legal,illegal,dim}, cwe, streams,       │
 │              mutation_hint}                                   │
-│  存储：derived/per_source/<协议>/vuln/facts/vuln.jsonl        │
+│  存储：derived/model/per_source/<协议>/vuln/facts/vuln.jsonl        │
 │  索引：漏洞模式向量库（复用 source_retrieval 的 embedder）     │
 │        —— 支持「新漏洞/新协议 → 相似漏洞模式」检索             │
 └──────────────────────────┬──────────────────────────────────┘
@@ -181,7 +181,7 @@ Value(type=struct, data = vuln_pattern)   # 见 §4.2
 
 ### 5.2 存储
 
-沿用现有五源 facts 落盘：`derived/per_source/<协议>/vuln/facts/vuln.jsonl`，
+沿用现有五源 facts 落盘：`derived/model/per_source/<协议>/vuln/facts/vuln.jsonl`，
 每行一个 fact view（与 rfc/source/traffic/expert_note 同构，`load_fact_views` 直接可读）。
 
 ### 5.3 索引：漏洞模式向量库（核心新增）
@@ -192,7 +192,7 @@ Value(type=struct, data = vuln_pattern)   # 见 §4.2
 - **建库**：每条 `vuln_pattern` 拼接语义文本 `f"{action} {boundary.illegal} {mutation_hint} {cwe}"`
   → embedding → 存向量（带 protocol + case_id + fact_id）。
 - **检索**：给定「新漏洞描述 / 新协议名」→ embedding → top-k 相似漏洞模式（cosine）。
-- **缓存**：`derived/vuln_pattern_vectors/<协议>.json`（对齐 source_blocks_cache 先例）。
+- **缓存**：`derived/model/vuln_pattern_vectors/<协议>.json`（对齐 source_blocks_cache 先例）。
 
 **两个检索场景**（这是 GLMFuzz 向量库的本地化落点）：
 
@@ -258,7 +258,7 @@ Value(type=struct, data = vuln_pattern)   # 见 §4.2
 [阶段二 中枢 + 向量库]  (依赖：阶段一输出)
   输入:  vuln_pattern × M
   流程:  映射 vuln_pattern fact → 落盘 vuln.jsonl → embedding 建向量库 → 缓存
-  输出:  derived/per_source/<协议>/vuln/facts/vuln.jsonl + vuln_pattern_vectors/<协议>.json
+  输出:  derived/model/per_source/<协议>/vuln/facts/vuln.jsonl + vuln_pattern_vectors/<协议>.json
   依赖:  core.fused.vuln（扩展）、core.fused.source_retrieval（embedder 复用）、aspect_registry（新增 vuln_pattern）
 
 [阶段三 种子生成]       (依赖：阶段二 + bundle)

@@ -112,7 +112,7 @@ para(doc, "Profile 是「封闭声明」：任何未注册的 type / aspect / ep
          "而非静默忽略。加新协议只需新增一份 Profile JSON，不改核心代码。")
 
 h(doc, "1.3 Layer 2：五源映射", 2)
-para(doc, "五类源各自映射到 Profile，产出知识原子并落盘 derived/per_source/<source>/facts/<source>.jsonl。"
+para(doc, "五类源各自映射到 Profile，产出知识原子并落盘 derived/model/per_source/<source>/facts/<source>.jsonl。"
          "映射方式因源的形态而异：结构化源走「甲方案」（直接读 JSON），半结构化源走 norms 原生映射。详见第三节。")
 
 h(doc, "二、五源映射方法", 1)

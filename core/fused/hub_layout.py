@@ -2,8 +2,8 @@
 """core/fused/hub_layout.py —— 中枢的**知识分类落位**（阶段 C，2026-11-09 新增）。
 
 ★ 阶段 C 的目标：**中枢按「知识分类」存储**，而不是按 aspect 存储。
-  旧布局（批次 1.6）：``derived/hub/facts/<aspect>.jsonl``（16 个 aspect 文件）
-  新布局（阶段 C）  ：``derived/hub/<分类>/<文件>.jsonl``（6 个分类）
+  旧布局（批次 1.6）：``derived/model/hub/facts/<aspect>.jsonl``（16 个 aspect 文件）
+  新布局（阶段 C）  ：``derived/model/hub/<分类>/<文件>.jsonl``（6 个分类）
 
       A_structure/structure.jsonl      有什么
       B_interaction/interaction.jsonl  怎么连
@@ -32,12 +32,12 @@ from typing import Any, Iterable, Optional
 
 from core.fused.knowledge_slots import category_file, category_ids, locate
 
-#: 顺序索引文件名（放在 ``derived/hub/index/order.jsonl``）
+#: 顺序索引文件名（放在 ``derived/model/hub/index/order.jsonl``）
 ORDER_INDEX_NAME = "order.jsonl"
 
 
 def index_path(hub_root: Path) -> Path:
-    """顺序索引路径 ``derived/hub/index/order.jsonl``。"""
+    """顺序索引路径 ``derived/model/hub/index/order.jsonl``。"""
     return hub_root / "index" / ORDER_INDEX_NAME
 
 
@@ -275,7 +275,7 @@ def write_classified(hub_root: Path,
     """把事实按**知识分类**落盘（阶段 C 的落位器）。
 
     Args:
-        hub_root: 中枢根（``derived/hub/``）。
+        hub_root: 中枢根（``derived/model/hub/``）。
         records: ``(全局下标, 原始行字符串, record)`` 序列。
             ★ **全局下标必须是「旧布局的遍历序」** ⇒ 落位后按它排序
             就能还原原序 ⇒ 种子编号不漂移。

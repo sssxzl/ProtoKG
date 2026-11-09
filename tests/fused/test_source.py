@@ -54,7 +54,7 @@ def test_source_empty_content_returns_empty():
 
 
 def test_all_real_source_norms_pass_fail_closed():
-    norms_path = Path("derived") / "spec" / "rtsp" / "norms" / "norms.jsonl"
+    norms_path = Path("derived") / "model" / "spec" / "rtsp" / "norms" / "norms.jsonl"
     norms = [json.loads(l) for l in norms_path.read_text(encoding="utf-8").splitlines()
              if l.strip()]
     src_norms = [n for n in norms if n.get("kb_source_type") == "source"]

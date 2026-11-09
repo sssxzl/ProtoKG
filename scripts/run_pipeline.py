@@ -53,7 +53,7 @@ def main(argv=None) -> int:
                     help="★ 规则无法唯一判定时**用 LLM 判定**")
     ap.add_argument("--skip-graph", action="store_true", help="跳过建图")
     ap.add_argument("--skip-seeds", action="store_true", help="跳过出种子")
-    ap.add_argument("--seed-out", default="", help="种子输出目录（默认 derived/seeds/<协议>/）")
+    ap.add_argument("--seed-out", default="", help="种子输出目录（默认 derived/model/seeds/<协议>/）")
     ap.add_argument("--dry-run", action="store_true", help="只识别，不执行")
     args = ap.parse_args(argv)
 
@@ -125,7 +125,7 @@ def main(argv=None) -> int:
     for rel in ("facts", "graph", "sources.json"):
         p = hub / rel
         if p.exists():
-            print(f"   产物: derived/hub/{rel}")
+            print(f"   产物: derived/model/hub/{rel}")
     print("\n★ 中枢里**只有**本次协议的信息（每次抽取已重置）。")
     return 0
 

@@ -40,10 +40,10 @@ def mod():
 
 @pytest.fixture(scope="module")
 def report():
-    """跑一次脚本，拿到 JSON 结果（脚本会写 derived/exp_semantic_gain/m1_sensitivity.json）。"""
+    """跑一次脚本，拿到 JSON 结果（脚本会写 derived/experiments/semantic_gain/m1_sensitivity.json）。"""
     m = _load_mod()
     assert m.main() == 0
-    p = ROOT / "derived" / "exp_semantic_gain" / "m1_sensitivity.json"
+    p = ROOT / "derived" / "experiments" / "semantic_gain" / "m1_sensitivity.json"
     return json.loads(p.read_text(encoding="utf-8"))
 
 
@@ -195,7 +195,7 @@ def test_script_is_deterministic(report):
     """同输入两次跑 ⇒ 结果 JSON 相同（可复现）。"""
     m = _load_mod()
     assert m.main() == 0
-    p = ROOT / "derived" / "exp_semantic_gain" / "m1_sensitivity.json"
+    p = ROOT / "derived" / "experiments" / "semantic_gain" / "m1_sensitivity.json"
     again = json.loads(p.read_text(encoding="utf-8"))
     for key in ("main_total", "equal_strictness_total",
                 "value_domain_only_total", "e1_rule_composition"):

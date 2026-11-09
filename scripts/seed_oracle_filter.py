@@ -21,9 +21,9 @@ AFLNet 报 No server states、覆盖率极低。P0 已把片段种子强制前�
 
 用法:
     python scripts/seed_oracle_filter.py \
-        --seed-dir derived/seeds/sip/<时间戳> \
+        --seed-dir derived/model/seeds/sip/<时间戳> \
         --server 127.0.0.1:5060 --listen 5061 --protocol sip \
-        --out derived/seeds/sip/<时间戳>_oracle_filtered
+        --out derived/model/seeds/sip/<时间戳>_oracle_filtered
 
     # 不落盘、只看报告（干跑）：
     python scripts/seed_oracle_filter.py --seed-dir <dir> --dry-run

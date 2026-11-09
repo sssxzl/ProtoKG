@@ -156,7 +156,7 @@ v3 已完成**全文件接口一致性清理**，逐条处置如下：
 | SIP fact_id 冲突 | 241 facts → 唯一 173（**68 冲突**）| ★ 根因已查明：**68/68 是同一 fact_key 被抽两次**（TOC 版 `Trying ......183` + 正文版 `Trying`）→ **改 ID 派生无效** |
 | TOC 污染 | SIP 100 条 outcome 中 **50 条** 是 TOC | |
 | 确定性 | ✅ 8/8 协议两次抽取逐字节一致 | ⚠️ 评审 M6：此指标**不适合做投票验收**，仅作回归护栏 |
-| 落盘 | `derived/per_source/<协议>/rfc/facts/rfc.jsonl`，过 `validate_fact` fail-closed | 视图含 `fact_key`/`resolution`/`all_claims`，**不含 fact_id**（ID 是计算出来的）|
+| 落盘 | `derived/model/per_source/<协议>/rfc/facts/rfc.jsonl`，过 `validate_fact` fail-closed | 视图含 `fact_key`/`resolution`/`all_claims`，**不含 fact_id**（ID 是计算出来的）|
 
 ### 2.0.0 兼容性清单（评审 F1：改造范围远不止 bundle 一个键）
 
@@ -170,7 +170,7 @@ v3 已完成**全文件接口一致性清理**，逐条处置如下：
 | 字段变异引擎 | 解析 / 修改 / 重编码 / 校验 | 很高 | 里程碑 C（**仅一个有成熟可逆 parser 的协议**）|
 | Oracle 与反馈 | 状态管理 / 复现 / 归因 | 高 | 里程碑 C |
 
-**数据回退设计（评审 F5）**：新旧抽取器**并行输出到独立命名空间**（`derived/per_source/<协议>/rfc/facts/rfc.jsonl` vs `.../rfc_v2/facts/rfc.jsonl`），消费端按版本化 bundle 选取；发生异常时回退到旧版**数据快照**，而不只是关掉 LLM 开关。**幂等键** = `build_id + 输入哈希 + 配置版本 + 模型版本`。
+**数据回退设计（评审 F5）**：新旧抽取器**并行输出到独立命名空间**（`derived/model/per_source/<协议>/rfc/facts/rfc.jsonl` vs `.../rfc_v2/facts/rfc.jsonl`），消费端按版本化 bundle 选取；发生异常时回退到旧版**数据快照**，而不只是关掉 LLM 开关。**幂等键** = `build_id + 输入哈希 + 配置版本 + 模型版本`。
 
 ### 2.0.5 协议能力等级（评审 F4：不用"支持/不支持"二分法）
 

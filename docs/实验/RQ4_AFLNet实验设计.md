@@ -8,7 +8,7 @@
 > **⑤ 主口径确定为 bitmap_cvg，cov_over_time.csv 作为文献对齐的次口径**（§7）。
 >
 > **v3 相对 v2 的变更（实验已执行，本文档回填实测事实）**：
-> **① 修正 §3.2 语料路径**：实验实际使用的是 `derived/seeds/<proto>/rq4_B/`（**39/25/78 条**，非 v2 写的 `pfb_exp_B/` 50/56/78）；
+> **① 修正 §3.2 语料路径**：实验实际使用的是 `derived/model/seeds/<proto>/rq4_B/`（**39/25/78 条**，非 v2 写的 `pfb_exp_B/` 50/56/78）；
 > **② 新增 §12「语料可复现性回归」（P0）**：当前事实库重新生成三协议均**无法复现**实验语料（54/20/61 ≠ 契约 39/25/78），`seedgen.py` 退出码 3；
 > **③ 新增 §13 实验实测结果与结论边界**（含三口径对照）；
 > **④ 修正 §5 数量对齐组的基线数字**（官方语料 29/4/14 region 不变，ProtoRAG 侧改为 39/25/78 口径）；
@@ -244,13 +244,13 @@ docker run --cpus=1 --memory=2g -d -it \
 
 ### 3.2 种子同步（本机 → VM）
 
-> ⚠️ **v3 更正**：实验实际使用的语料是 **`derived/seeds/<proto>/rq4_B/`**（**39/25/78 条**），**不是** v2 写的 `pfb_exp_B/`（50/56/78 条）。
+> ⚠️ **v3 更正**：实验实际使用的语料是 **`derived/model/seeds/<proto>/rq4_B/`**（**39/25/78 条**），**不是** v2 写的 `pfb_exp_B/`（50/56/78 条）。
 > `pfb_exp_B/` 是**修复前**的语料（含 R4/R5 缺陷：RTSP 47.9% 请求打空会话、SIP 39.4% 方法不被 AFLNet 识别为消息边界）；
 > `rq4_B/` 是 tasks #3/#4 修复后的语料，**与 VM 上跑的、论文所用的完全一致**。
 > 工程脚本 `scripts/rq4_verify_seeds.py`、`scripts/rq4_seed_profile.py` 已正确指向 `rq4_B/`（实测确认）。
 > **VM 上跑的是 `rq4_B`**：`/home/zxy/rq4/seeds/{rtsp,sip,smtp}` = 39/25/78，本机与 VM 逐字节 md5 一致（实测三协议全部 MATCH）。
 
-本机：`E:\科研\想法idea\rag-chatafl\derived\seeds\<proto>\rq4_B\`
+本机：`E:\科研\想法idea\rag-chatafl\derived\model\seeds\<proto>\rq4_B\`
 → VM：`/home/zxy/rq4/seeds/<proto>/`
 
 要求：**必须保持字节一致**（scp 保字节；**禁止 git / zip / 文本编辑器转换行尾**）。落地后校验：
@@ -660,8 +660,8 @@ E:/app/Anaconda3/python.exe scripts/seedgen.py --protocol smtp --focus-group B -
 | 10-29 23:35 | `rq4_B` 生成（RTSP 39 / SIP 25 / SMTP 78），manifest `generated_at = 2026-10-29T23:35:4x` |
 | 10-30 12:45~17:42 | **RQ4 实验执行**（VM `rq4_summary.csv`，fuzz_sec ≈ 10796） |
 | 10-31 02:34 | `fused_hub/targets/*/profile.json` 被改写（含 `environments.*.focus_group` 契约） |
-| **10-31 04:53~04:54** | **`derived/per_source/*/{expert_note,source,vuln}/facts/*.jsonl` 被重建** ← **真正的驱动源** |
-| 10-31 17:03~17:11 | `derived/per_source/*/rfc/facts/rfc.jsonl` 被重写（**更晚，但不影响产出**） |
+| **10-31 04:53~04:54** | **`derived/model/per_source/*/{expert_note,source,vuln}/facts/*.jsonl` 被重建** ← **真正的驱动源** |
+| 10-31 17:03~17:11 | `derived/model/per_source/*/rfc/facts/rfc.jsonl` 被重写（**更晚，但不影响产出**） |
 | 10-31 18:01 | QA-3 建立清理前基线 |
 
 #### 12.2.2 消融实验（我独立复现 QA-3，结论一致）
@@ -698,7 +698,7 @@ QA-3 基线中 `B:seed-count-contract` 28 条记录的是 **rq3 语料**（期�
 | **已发表结果有效性** | **无影响**。实验用的 `rq4_B` 语料**完好**：本机 `md5sum -c MANIFEST.md5` = 39/39 OK、0 FAILED；本机↔VM 逐字节 md5 三协议**全部 MATCH**（`7660bba3e731` / `3c7c2db75071` / `996aa100bc29`） | ✅ **论文数据可信**，结论仍成立 |
 | **可复现性** | **受损**。第三方无法从仓库重建实验语料 → 审稿人若索要"如何复现你的 ProtoRAG 语料"，当前答不上 | ⚠️ **需处理** |
 | **CI / 构建** | `scripts/rq3_build_corpus.py` 与 `seedgen.py` 均因退出码 3 失败 | ⚠️ 已在 QA-3 基线的 20 errors 中体现 |
-| **与 kb 裁剪的关系** | **正交**。`seedgen` 按协议隔离读取 `derived/per_source/<protocol>/`，删除 dns/dtls/ftp/ssh/tls 的 `per_source` **不影响** rtsp/sip/smtp | ✅ 裁剪本身安全 |
+| **与 kb 裁剪的关系** | **正交**。`seedgen` 按协议隔离读取 `derived/model/per_source/<protocol>/`，删除 dns/dtls/ftp/ssh/tls 的 `per_source` **不影响** rtsp/sip/smtp | ✅ 裁剪本身安全 |
 
 ### 12.4 ★ 更严重的衍生缺陷：RTSP 语料的「IP 摄像机 URL 污染」
 
@@ -708,9 +708,9 @@ QA-3 基线中 `B:seed-count-contract` 28 条记录的是 **rq3 语料**（期�
 
 | 语料 | 会话引用数 | 去重会话 | 不可播占比 |
 |---|---|---|---|
-| `derived/seeds/rtsp/rq4_B`（10-29，**实验实际用的**） | 150 | **7** | **0.0%** ✅ |
-| `derived/seeds/rtsp/live555_20261024_110155` | 205 | 18 | 49.8%（与 profile 记载 47.9% 吻合 ✅） |
-| `derived/seeds/rtsp/20261031_171135`（10-31 新生成） | — | 8（含 `isapi`） | — ⚠️ |
+| `derived/model/seeds/rtsp/rq4_B`（10-29，**实验实际用的**） | 150 | **7** | **0.0%** ✅ |
+| `derived/model/seeds/rtsp/live555_20261024_110155` | 205 | 18 | 49.8%（与 profile 记载 47.9% 吻合 ✅） |
+| `derived/model/seeds/rtsp/20261031_171135`（10-31 新生成） | — | 8（含 `isapi`） | — ⚠️ |
 | **当前事实重新生成 group B（同口径）** | 211 | **8** | **46.5%** ⚠️ |
 
 污染量化（`20261031_171135`，37 条种子）：
@@ -738,7 +738,7 @@ traffic.jsonl → headers['url'].source_values['traffic_packet']
 
 **我追到的代码层（兜底条件）**：
 
-事实层：`derived/per_source/rtsp/traffic/facts/` 中 **5/69 条** traffic 事实来自**两台不同设备**，其中一台是**非目标设备**：
+事实层：`derived/model/per_source/rtsp/traffic/facts/` 中 **5/69 条** traffic 事实来自**两台不同设备**，其中一台是**非目标设备**：
 ```
 subject = {type: header, name: Authorization}
 value   = ['Digest username="<user>", realm="IP Camera(C1052)",
@@ -767,7 +767,7 @@ traffic facts(含摄像机 uri) → SeedMessage.url (core/models.py:35, from_dic
 | **10-30 的 VM 实验结果** | ✅ **不受影响** —— 用的是 `rq4_B`（我实测：0 污染） |
 | **「重新生成语料再跑」的复现路径** | ❌ **已断** —— 任何现在重生成的 RTSP 语料，约 **59.5% 种子指向错误主机**、**46.5% 会话引用指向不存在的 live555 会话** |
 | **现有健康度指标** | ⚠️ **一条都不会红**（dup_fact_ids / toc_sourced_outcomes / 章节号命中全不受影响）→ **静默退化已实测坐实** |
-| **磁盘遗留** | ⚠️ `derived/seeds/rtsp/20261031_171135` 这份**已被污染**，不应作为任何实验语料使用 |
+| **磁盘遗留** | ⚠️ `derived/model/seeds/rtsp/20261031_171135` 这份**已被污染**，不应作为任何实验语料使用 |
 
 #### 12.4.3.1 ★ 两条尚未闭环的**潜伏路径**（QA 挖出，我已核实）
 
@@ -908,7 +908,7 @@ team-lead 用**逐一剔除法**（每次剔掉一个源）独立复现，结论
 2. **裁决**：S1′（修污染 + 重跑）vs S2′（回退非 rfc 源 + 不重跑）→ **决定论文最终数字**。
    - 论文已定稿/已投稿 → 优先 S2′（保住 39/25/78 与现有数据）。
    - 论文仍在写 → 优先 S1′（语料可复现 + 无污染，数字可更新）。
-3. **无论选哪个**：`derived/seeds/rtsp/20261031_171135` **标记为废弃**（59.5% 污染），不得用于任何实验。
+3. **无论选哪个**：`derived/model/seeds/rtsp/20261031_171135` **标记为废弃**（59.5% 污染），不得用于任何实验。
 
 
 ## 12.6 ★ 污染修复已通过；且「幂等 ⇒ 历史语料逐字节不变」**不成立**（v4 新增）
@@ -1006,7 +1006,7 @@ QA-4 独立验证污染修复时挖出 **P0-1**：`normalize_target_endpoint` **
 | 口径 | RTSP | SIP | SMTP | 含义 |
 |---|---|---|---|---|
 | **挂钟终值**（3h 后 bitmap_cvg） | protorag **+0.22pp** ✅ | protorag **−0.05pp** ≈ | protorag **−1.66pp** ❌ | 固定时间预算下的终局 |
-| **等执行次数**（同等 exec 预算） | 见 `derived/rq4/qa/qa_crossover.md` | 同左 | 同左 | 剥离执行速率差异 |
+| **等执行次数**（同等 exec 预算） | 见 `derived/experiments/rq4/qa/qa_crossover.md` | 同左 | 同左 | 剥离执行速率差异 |
 | **行覆盖 l_per** | protorag **+0.5pp** ✅ | protorag **+0.2pp** ✅ | protorag **−8.2pp** ❌ | 源码级覆盖 |
 
 **★ 关键观察：三协议结论方向不一致，且 SMTP 上 protorag 显著落后。**
@@ -1038,7 +1038,7 @@ QA-4 独立验证污染修复时挖出 **P0-1**：`normalize_target_endpoint` **
 1. **立即（零风险）**：**S3**（VM 补 `MANIFEST.md5`/`manifest.json`）+ **S4**（把 G1 目标主机正确率 / G2 不可播会话占比 / G3 契约一致性接入 CI 作发布准入闸）→ 保证已发表数据可校验，且**下次不会再静默退化**。
 2. **裁决**：**S1′**（先修 traffic 污染 → 冻结事实 → 重生成 → 重跑 6 容器）还是 **S2′**（回退非 rfc 源 → 保住 39/25/78 与现有数据）→ **这决定论文最终数字**。
    ⚠️ v2 的 S2（回退 rfc）**已作废**：消融实验证明 rfc 源对产出贡献 = 0（§12.2.2）。
-3. **废弃标记**：`derived/seeds/rtsp/20261031_171135`（59.5% 摄像机 URL 污染）不得用于任何实验。
+3. **废弃标记**：`derived/model/seeds/rtsp/20261031_171135`（59.5% 摄像机 URL 污染）不得用于任何实验。
 4. **数量对齐组**（§5.2 方案③）：无论 S1′/S2′，**下一轮必做**（3 协议 × K=3 子集）。它是把 §13.3 的 ✅2 升级为「单条质量归因」的唯一途径。
 5. **SMTP 专项**：按 §13.4 H1~H3 定位落后的机制 → 这是**有价值的科研发现**（「更多样的语料 ≠ 更高覆盖」），建议作为论文的独立小节，而非隐藏。
 6. **给 §5 数量对齐组加一条前置**：任何对齐子集在入组前必须过 **G1/G2 闸**（否则会拿「坏种子」做对齐，结论无效）。
@@ -1050,10 +1050,10 @@ QA-4 独立验证污染修复时挖出 **P0-1**：`normalize_target_endpoint` **
 
 | 陈述 | 准确性 |
 |---|---|
-| ❌ 「派生产物已从仓库彻底移除」 | **错误**。已发表语料**仍在仓库里**：`derived/seeds/<proto>/rq4_B/`（39/25/78），`MANIFEST.md5` 逐条 md5 全 OK；VM 侧 `/home/zxy/rq4/seeds/<proto>/`（39/25/78）+ `<proto>.manifest.md5` 校验亦 39/25/78 全 OK |
+| ❌ 「派生产物已从仓库彻底移除」 | **错误**。已发表语料**仍在仓库里**：`derived/model/seeds/<proto>/rq4_B/`（39/25/78），`MANIFEST.md5` 逐条 md5 全 OK；VM 侧 `/home/zxy/rq4/seeds/<proto>/`（39/25/78）+ `<proto>.manifest.md5` 校验亦 39/25/78 全 OK |
 | ❌ 「无法重建」 | **不精确**。不可重建的是「**从当前代码重新生成出同样的语料**」，不是「语料没了」 |
 | ✅ **准确表述** | 「**语料快照 + MANIFEST 可校验，但不可由当前代码逐字节重建**」 |
 
 **建议论文 / 报告的 reproducibility 陈述（可直接用）**：
 
-> "The ProtoRAG seed corpora used in this study are archived in the repository (`derived/seeds/<protocol>/rq4_B/`) together with a per-seed MD5 manifest, and are byte-identical to the copies used on the fuzzing host (verified by `md5sum -c`, 39/25/78 seeds all OK for RTSP/SIP/SMTP respectively). The corpora are therefore **verifiable but not byte-reproducible from the current code**: the seed generator's output has since evolved for reasons orthogonal to the RFC-extraction refactor — specifically (i) state-name migration in the `source` knowledge source, (ii) the R4 fix that adds `track` sub-paths to SETUP request lines, and (iii) a change of the RTSP transport mode from `RTP/AVP/TCP;unicast;interleaved` to `RTP/AVP;unicast;client_port`. An ablation over the five knowledge sources shows the `rfc` source contributes **zero** to seed generation (it yields 0 state/outcome facts, which the state-machine layer requires), so the RFC-extraction refactor is **not** a cause of the divergence. Additionally, the URL-endpoint normalization introduced to fix a captured-traffic contamination defect is itself idempotent and surgical: it changes neither seed count (54 → 54) nor message-sequence composition."
+> "The ProtoRAG seed corpora used in this study are archived in the repository (`derived/model/seeds/<protocol>/rq4_B/`) together with a per-seed MD5 manifest, and are byte-identical to the copies used on the fuzzing host (verified by `md5sum -c`, 39/25/78 seeds all OK for RTSP/SIP/SMTP respectively). The corpora are therefore **verifiable but not byte-reproducible from the current code**: the seed generator's output has since evolved for reasons orthogonal to the RFC-extraction refactor — specifically (i) state-name migration in the `source` knowledge source, (ii) the R4 fix that adds `track` sub-paths to SETUP request lines, and (iii) a change of the RTSP transport mode from `RTP/AVP/TCP;unicast;interleaved` to `RTP/AVP;unicast;client_port`. An ablation over the five knowledge sources shows the `rfc` source contributes **zero** to seed generation (it yields 0 state/outcome facts, which the state-machine layer requires), so the RFC-extraction refactor is **not** a cause of the divergence. Additionally, the URL-endpoint normalization introduced to fix a captured-traffic contamination defect is itself idempotent and surgical: it changes neither seed count (54 → 54) nor message-sequence composition."

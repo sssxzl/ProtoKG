@@ -293,7 +293,7 @@ def main() -> int:
                     help="只计算目标文本并打印，不写文件")
     ap.add_argument("--docx", default=None, help="目标 docx 路径")
     ap.add_argument("--metrics-dir", default=None,
-                    help="metrics_<g>.json 所在目录（默认 derived/rq3）")
+                    help="metrics_<g>.json 所在目录（默认 derived/experiments/rq3）")
     args = ap.parse_args()
 
     cfg = C.load_config()

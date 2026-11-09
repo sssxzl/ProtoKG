@@ -441,8 +441,8 @@ def __post_init__(self) -> None:
 **强制机制 3 —— 落盘隔离：候选写独立文件，自动生成链路读不到。**
 
 ```
-derived/per_source/<协议>/rfc/semantic/rules.jsonl       ← 只有 SemanticRule
-derived/per_source/<协议>/rfc/semantic/candidates.jsonl  ← 只有 KnowledgeCandidate
+derived/model/per_source/<协议>/rfc/semantic/rules.jsonl       ← 只有 SemanticRule
+derived/model/per_source/<协议>/rfc/semantic/candidates.jsonl  ← 只有 KnowledgeCandidate
 ```
 
 自动生成链路（§3.6 的 `generate_semantic_violation_seeds`）**只读 `rules.jsonl`**，且入口处显式过滤：
@@ -588,7 +588,7 @@ C4/C5 是整个 B 阶段最难的一环（评审 T2 明确指出「缺少真正�
 
 **结论：不修改 `models.py` 的数据结构；新增独立模块 `core/fused/semantic.py`，两者通过「转换器」相连。**
 
-理由：`models.py` 是 v2 中枢的**核心数据模型**（文件头 docstring 自称「Layer 0 中枢核心数据结构的唯一实现」），`Fact`/`Claim`/`Evidence` 有 `canonical.py` 的 `compute_fact_id`/`compute_claim_id`/`compute_evidence_id` 三套哈希依赖，任何改动都会波及**已落盘的 `derived/per_source/*/facts/*.jsonl`**（实测 rtsp 116 / sip 148 / smtp 10 行）与跨源去重。**B 阶段不应该动它。**
+理由：`models.py` 是 v2 中枢的**核心数据模型**（文件头 docstring 自称「Layer 0 中枢核心数据结构的唯一实现」），`Fact`/`Claim`/`Evidence` 有 `canonical.py` 的 `compute_fact_id`/`compute_claim_id`/`compute_evidence_id` 三套哈希依赖，任何改动都会波及**已落盘的 `derived/model/per_source/*/facts/*.jsonl`**（实测 rtsp 116 / sip 148 / smtp 10 行）与跨源去重。**B 阶段不应该动它。**
 
 并存方式：
 
@@ -608,7 +608,7 @@ C4/C5 是整个 B 阶段最难的一环（评审 T2 明确指出「缺少真正�
                     └──────────┬──────────────────┘
                                │ map_norm_to_facts()
                                ▼
-                    derived/per_source/<p>/rfc/facts/rfc.jsonl   ← 不改格式
+                    derived/model/per_source/<p>/rfc/facts/rfc.jsonl   ← 不改格式
 ```
 
 **关键决策：语义规则走 bundle 的独立键，不进 `facts.jsonl`。**
@@ -966,14 +966,14 @@ B 阶段要验证的核心命题必须**窄且可证伪**：
 | 资产 | 位置 | 用途 | 状态 |
 |---|---|---|---|
 | RFC 原文 | `kb/rtsp/spec/rfc2326.txt`、`kb/sip/spec/rfc3261.txt`、`kb/smtp/spec/{rfc3207,rfc4954,rfc5321,rfc5322}.txt` | 抽取输入 | ✅ 就绪（ftp **无 spec 文件**，dns 已删） |
-| 三协议事实库 | `derived/per_source/{rtsp,sip,smtp}/rfc/facts/rfc.jsonl` | C0 组基线 | ✅ rtsp 116 / sip 148 / smtp 10 行 |
+| 三协议事实库 | `derived/model/per_source/{rtsp,sip,smtp}/rfc/facts/rfc.jsonl` | C0 组基线 | ✅ rtsp 116 / sip 148 / smtp 10 行 |
 | 约束候选生成器 | `core/fused/rfc_extractor.py:1660` | 候选来源（B-3 后会带 span） | ⚠️ 需先过 B-3 |
 | LLM 客户端 | `core/llm.py` `DeepSeekClient.chat_json` | E1/E2 的 LLM 兜底 | ✅ 有 API key（`.env`） |
 | 期望响应词表 | `fused_hub/targets/<p>/rfc_config.json` 的 `expected_response_classes` | C7 校验 | ✅ 三协议齐备 |
 | 质量闸 | `core/fused/rfc_extractor.py:1362 rfc_quality_report` | 构建阻断 + 指标来源 | ✅ 可扩展 |
 | 构建入口 | `scripts/build_hub.py --sources rfc --protocol X [--semantic]` | 产物生成 | ✅ |
 | 语料闸 | `scripts/corpus_gate.py` G1/G2/G5 | 种子层校验（仅在需要时） | ⚠️ G5 有已知漂移（见 §4.6） |
-| rq3/rq4 语料与结果 | `derived/rq3/{A,B,C,D}`、`derived/rq4/*`、`derived/seeds/<p>/rq4_B/`（39/25/78） | **仅作参考，不作实验输入** | ⚠️ 见 §4.6 |
+| rq3/rq4 语料与结果 | `derived/experiments/rq3/{A,B,C,D}`、`derived/experiments/rq4/*`、`derived/model/seeds/<p>/rq4_B/`（39/25/78） | **仅作参考，不作实验输入** | ⚠️ 见 §4.6 |
 
 ### 4.4　需要多久 / 需要多少算力
 
@@ -1040,11 +1040,11 @@ B 阶段要验证的核心命题必须**窄且可证伪**：
 | `profile.json` 的 `seedgen.focus_group.<组>.seeds` 契约 | A 组 | 38 | 15 | 76 |
 | | B 组 | 50 | 25 | 78 |
 | | C/D 组 | 50 | 25 | 78 |
-| `derived/rq3/<组>/manifest.json` 的 `seed_count` | A | 52 | — | — |
+| `derived/experiments/rq3/<组>/manifest.json` 的 `seed_count` | A | 52 | — | — |
 | | B/C/D | 65 | — | — |
-| `derived/rq3/groups.json` 的 `seed_count`（**陈旧**） | A/B/C/D | 38/50/50/50 | — | — |
+| `derived/experiments/rq3/groups.json` 的 `seed_count`（**陈旧**） | A/B/C/D | 38/50/50/50 | — | — |
 | 磁盘实际 `.raw` | A/B/C/D | 52/65/65/65 | — | — |
-| `derived/seeds/<p>/rq4_B/`（**已发表语料**，带 MANIFEST.md5） | | 39 | 25 | 78 |
+| `derived/model/seeds/<p>/rq4_B/`（**已发表语料**，带 MANIFEST.md5） | | 39 | 25 | 78 |
 
 **四层漂移同时存在**：`profile` 契约 ≠ `manifest` ≠ `groups.json` ≠ 磁盘。且 `groups.json`（生成于 2026-10-31 02:27）比 `manifest.json`（03:24）**早一小时**，其 `seed_count` 是 38/50/50/50——**说明 groups.json 记录的是契约值而非实测值**。
 
@@ -1058,7 +1058,7 @@ KNOWN_DRIFT: dict[tuple[str, str], tuple[int, int]] = {
 }
 ```
 
-实测 `corpus_gate.py --protocol rtsp --seed-dir derived/rq3/A/seeds --group A` 的 G5 判定：
+实测 `corpus_gate.py --protocol rtsp --seed-dir derived/experiments/rq3/A/seeds --group A` 的 G5 判定：
 
 ```
 [WARN] 新引入的契约漂移：聚焦组 A 契约 38 vs 实际 52（默认仅告警，不阻断）
@@ -1069,7 +1069,7 @@ KNOWN_DRIFT: dict[tuple[str, str], tuple[int, int]] = {
 **规避手段（5 条，全部可执行）**：
 
 1. **★ 实验不产生、不消费任何 focus_group 语料。**
-   B 阶段的实验单元是**规则条目**，不是种子。C0/E1/E2 三组的产物是 `rules.jsonl` / `candidates.jsonl`，**与 `derived/rq3/*`、`derived/seeds/*` 完全无关**。**不调用 `scripts/seedgen.py`、不调用 `scripts/rq3_build_corpus.py`、不跑 `scripts/corpus_gate.py`。** 这从根上切断了漂移的传播路径。
+   B 阶段的实验单元是**规则条目**，不是种子。C0/E1/E2 三组的产物是 `rules.jsonl` / `candidates.jsonl`，**与 `derived/experiments/rq3/*`、`derived/model/seeds/*` 完全无关**。**不调用 `scripts/seedgen.py`、不调用 `scripts/rq3_build_corpus.py`、不跑 `scripts/corpus_gate.py`。** 这从根上切断了漂移的传播路径。
 
 2. **★ 显式声明「实验不依赖契约条数」，并在报告里写明已知漂移清单。**
    报告开头固定一节：
@@ -1086,19 +1086,19 @@ KNOWN_DRIFT: dict[tuple[str, str], tuple[int, int]] = {
    ```
 
 3. **★ 语料层结论用「已发表语料」而非「重生成语料」。**
-   若报告需要引用 fuzzing 相关数字，只能引用 `derived/seeds/<p>/rq4_B/`（39/25/78，带 `MANIFEST.md5`，`md5sum -c` 全 OK，**已发表的论文语料**），**不得**重生成语料后与已发表数字对比。A 阶段报告 §10.5 已实测：从仓库重建的语料有 RTSP URL 污染（46.5% 不可播、目标主机正确率仅 40.5%），而已发表的 rq4_B 是干净的（0% 污染、100% 正确）。
+   若报告需要引用 fuzzing 相关数字，只能引用 `derived/model/seeds/<p>/rq4_B/`（39/25/78，带 `MANIFEST.md5`，`md5sum -c` 全 OK，**已发表的论文语料**），**不得**重生成语料后与已发表数字对比。A 阶段报告 §10.5 已实测：从仓库重建的语料有 RTSP URL 污染（46.5% 不可播、目标主机正确率仅 40.5%），而已发表的 rq4_B 是干净的（0% 污染、100% 正确）。
 
 4. **★ 若必须跑种子层（可选的扩展实验），用 `--max-seeds` 对齐而非改契约。**
    `scripts/seedgen.py` 支持 `--max-seeds`（`:585`、`:820`）。对照组与实验组**各自截断到同一 N**（N 取 min(可用条数)），并在报告中记录「因契约漂移，两组均截断至 N=40」。**绝不修改 `profile.json` 的 `focus_group.seeds`**——那会同时污染 rq3 的 28 个失败测试和 rq4 的已发表结果。
    另：`corpus_gate.py` 的 G5 在非 `--strict` 下**只 WARN 不阻断**（`:1057-1059`），且 `--strict` 才升级为 FAIL（`:1169`）。**实验脚本一律不加 `--strict`**，并在报告中把 G5 的 WARN 归入第 2 条的已知漂移清单。
 
-5. **★ 不复用 `derived/per_source.bak_20261018/`。**
+5. **★ 不复用 `derived/model/per_source.bak_20261018/`。**
    A 阶段报告 §10.4 已实测：该备份是 **v1 格式**（597 条含 `all_claims`），与当前 v2 格式不可比。
 
 **额外防污染：实验产物独立目录。**
 
 ```
-derived/exp_semantic/<实验ID>/
+derived/experiments/annotation/<实验ID>/
     candidates_frozen.jsonl      # 冻结的候选句（C0/E1/E2 共用）
     llm_cache.jsonl              # LLM 响应缓存
     group_C0/{rules.jsonl,candidates.jsonl,report.json}
@@ -1109,7 +1109,7 @@ derived/exp_semantic/<实验ID>/
     REPORT.md
 ```
 
-`derived/exp_semantic/` **不被任何现有脚本扫描**（`scripts/rq3_build_corpus.py` 只认 `derived/rq3/`；`build_hub.py` 只写 `derived/per_source/`），无被误消费的风险。
+`derived/experiments/annotation/` **不被任何现有脚本扫描**（`scripts/rq3_build_corpus.py` 只认 `derived/experiments/rq3/`；`build_hub.py` 只写 `derived/model/per_source/`），无被误消费的风险。
 
 ### 4.7　实验的风险与终止条件
 
@@ -1289,9 +1289,9 @@ derived/exp_semantic/<实验ID>/
      ```
    - 每个任务（T01~T05）**独立一个快照**，出问题时按任务回滚。
    - **强烈建议同时执行 `git init`**：B 阶段要新增 5+ 文件、改 7+ 文件，没有版本控制风险太高。`git init && git add -A && git commit -m "baseline before milestone B"` 一步就能消除这个风险（`.gitignore` 已就位，会自动排除 `derived/`、`.env`、`__pycache__`）。
-   - **注意**：`.gitignore` 里 `derived/` 被排除——这意味着**落盘产物不会进版本控制**。B 阶段新增的 `derived/per_source/<p>/rfc/semantic/*.jsonl` 属于再生数据，符合该策略；但**规则模式表在 `core/fused/semantic_rules.py`（源码）→ 会进版本控制** ✅。
+   - **注意**：`.gitignore` 里 `derived/` 被排除——这意味着**落盘产物不会进版本控制**。B 阶段新增的 `derived/model/per_source/<p>/rfc/semantic/*.jsonl` 属于再生数据，符合该策略；但**规则模式表在 `core/fused/semantic_rules.py`（源码）→ 会进版本控制** ✅。
 
-2. **改 `core/fused/models.py` 前先三思**。它是 v2 中枢的核心数据模型，`canonical.py` 的三套哈希（`compute_fact_id`/`compute_claim_id`/`compute_evidence_id`）依赖它的字段结构。任何字段变动 → `fact_id` 全变 → **已落盘的 `derived/per_source/*/facts/*.jsonl`（rtsp 116 / sip 148 / smtp 10 行）与跨源去重全部失效**。本设计**不改 `models.py`**（见 §3.6）。
+2. **改 `core/fused/models.py` 前先三思**。它是 v2 中枢的核心数据模型，`canonical.py` 的三套哈希（`compute_fact_id`/`compute_claim_id`/`compute_evidence_id`）依赖它的字段结构。任何字段变动 → `fact_id` 全变 → **已落盘的 `derived/model/per_source/*/facts/*.jsonl`（rtsp 116 / sip 148 / smtp 10 行）与跨源去重全部失效**。本设计**不改 `models.py`**（见 §3.6）。
 
 3. **每次改动后立刻跑基线测试**：
    ```bash

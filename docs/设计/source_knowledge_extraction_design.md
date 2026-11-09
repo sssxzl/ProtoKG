@@ -59,7 +59,7 @@ kb/协议实现源码/RTSPServer.cpp（+ RTSPCommon.cpp）
         │ ④ 结构化落盘（六元组 fact）：
         │    method/state/transition/header fact
         ▼
-知识中枢 derived/per_source/source/facts/（补充 transition + header aspect）
+知识中枢 derived/model/per_source/source/facts/（补充 transition + header aspect）
 ```
 
 ### 针对 live555 的三个提取点

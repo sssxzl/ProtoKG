@@ -19,7 +19,7 @@ sequenceDiagram
 
     Note over PM,SG: 阶段一 · 语料与字典生成（Windows 本机）
 
-    PM->>SG: python scripts/seedgen.py --protocol rtsp --focus-group C --out derived/rq3/C/seeds --manifest
+    PM->>SG: python scripts/seedgen.py --protocol rtsp --focus-group C --out derived/experiments/rq3/C/seeds --manifest
     SG->>SG: 校验 --focus-group 与原子开关互斥（冲突则 exit 2）
     SG->>SL: edge_cover() / generic_danger(minimal=False)
     SL-->>SG: ①5 条 + ②15 条
@@ -54,7 +54,7 @@ sequenceDiagram
     BC->>SG: 对 A/B/C/D 各跑一次
     SG-->>BC: 4 组 seeds + manifest + 字典
     BC->>BC: 断言 A1–A10（A⊂B 前缀 / B≡C≡D 集合 / C≡RQ1.2 / 前60唯一 / MD5 唯一）
-    BC-->>PM: derived/rq3/groups.json + DICT_FROZEN.json（token 数 + MD5）
+    BC-->>PM: derived/experiments/rq3/groups.json + DICT_FROZEN.json（token 数 + MD5）
     PM->>OR: bash local/rq3_oracle_batch.sh（VM 串行，端口 8571+）
     OR->>VM: 启动 ASAN testOnDemandRTSPServer（宿主，与容器 8560 隔离）
     loop 每条种子（串行，重试 3 次，LEGAL 早退）
@@ -100,7 +100,7 @@ sequenceDiagram
 
     Note over PM,DX: 阶段六 · 指标与统计（Windows）
 
-    PM->>MT: python scripts/rq3_metrics.py --collect derived/rq3/collect/<ts>
+    PM->>MT: python scripts/rq3_metrics.py --collect derived/experiments/rq3/collect/<ts>
     MT->>MT: 格式自适应切分（纯文本 vs 4 字节长度前缀帧）
     MT->>MT: 按命名形式分类（orig:=初始 / src:=派生）
     MT->>MT: P1–P4 宽松判定（去噪 + 容忍字段名被变异）→ MHR_A（主口径）

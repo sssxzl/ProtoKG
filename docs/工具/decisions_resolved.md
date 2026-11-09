@@ -54,7 +54,7 @@ D3
 提出时间：2026-09-29 19:40
 拍板时间：2026-09-29 19:17
 提出 agent 与 Step：Step 4 总指挥 / 阶段 4.1（连带阻塞阶段 4.6）
-问题描述：契约 §1.12 定义 UpstreamGraphRecord.source_record_id 为 provenance linkage metadata，§8.7.2 的 upstream_entity_index 明确要求 raw_ref 必须被解释为 target upstream entity record 的 source_record_id，§8.14.4 用它构造 UpstreamEntityIndex。但 Step 3.2a 已实测 derived/spec/rtsp/graph/*.jsonl 无该字段 —— entities.jsonl 只有 entity_id / entity_type / name / protocol / content / facets / source，relations.jsonl 只有 src_id / rel_type / dst_id / weight / evidence。
+问题描述：契约 §1.12 定义 UpstreamGraphRecord.source_record_id 为 provenance linkage metadata，§8.7.2 的 upstream_entity_index 明确要求 raw_ref 必须被解释为 target upstream entity record 的 source_record_id，§8.14.4 用它构造 UpstreamEntityIndex。但 Step 3.2a 已实测 derived/model/spec/rtsp/graph/*.jsonl 无该字段 —— entities.jsonl 只有 entity_id / entity_type / name / protocol / content / facets / source，relations.jsonl 只有 src_id / rel_type / dst_id / weight / evidence。
 
 最终决策：在 Pipeline 侧构造 UpstreamSpecGraphSnapshot 时填充 source_record_id，不改契约、不改上游数据。
   entity record：source_record_id = entity_id 字段值。
@@ -212,7 +212,7 @@ D13
 问题描述：CR-5 的 R2 范围声明「只对 trigger_method[0] emit」使 multi_setup_assertion（['SETUP','PLAY']）与 auth_bypass（['SETUP','DESCRIBE','PLAY']）落进同一 fact_key（method/client/SETUP/security_condition/condition=unknown），Phase A 无法裁决 → peer_conflict → unresolved + 1 条 Conflict Audit。
 最终决策：方案丙 —— 接受 peer_conflict。
 决策理由：两条 note 对「SETUP 是否有安全风险」给出不同陈述，**这正是 peer_conflict 要表达的情形**（policy 条款 10 的三种 unresolved 之一）。该行为不违反契约；为规避一个合法冲突而编造 condition 编码（方案甲的 composite/field 组合）反而是把建模问题伪装成数据问题。改成按每个 trigger_method 全量 emit 也不解决 —— SETUP 与 PLAY 仍双双相撞。
-决策影响：SETUP 保留 1 个 unresolved Fact + 1 条 Conflict Audit + 1 条 Match Audit（refinement 对比 Transport field 条件那条）。已在 derived/per_source/expert_note/ 与 derived/fused/ 如实落盘，不掩盖。
+决策影响：SETUP 保留 1 个 unresolved Fact + 1 条 Conflict Audit + 1 条 Match Audit（refinement 对比 Transport field 条件那条）。已在 derived/model/per_source/expert_note/ 与 derived/fused/ 如实落盘，不掩盖。
 
 ★ 另修（agent 自查发现，非决策点）：core/fused/downstream/seedgen_bridge.py 的 load_hub_inventory 原把整个 constraint.jsonl 当 security_flagged_methods，导致 CR-4 的 43 个 status.NNN（property=value_type）被误报为「安全相关 method」。改为按 SECURITY_CONDITION_PROPERTY 判定并按 kind 分流 method / header 两维度。修复后 security_flagged_methods = ['SETUP']（原误报 43 项），新增 security_flagged_headers 字段。
 
@@ -348,12 +348,12 @@ Mechanism）与 §6（与 Phase A / Phase B 的关系）从 Frozen Candidate
 - 不进 Phase A Resolution —— core/lane_a/* 零 core.fused.pipeline.*
   import（AST 测试，	est_does_not_import_hub_modules 等）
 - 不进 Phase B 对齐 —— 同上 + derived/fused/ 13 文件零变化
-- 不改 canonical assertion —— attachment 只写 derived/lane_a/provenance/；
+- 不改 canonical assertion —— attachment 只写 derived/model/lane_a/provenance/；
   Hub fact 内容逐字节未变
 
 §5 的依据（attachment mechanism 已被实现验证）：
 - 25000 observation → 11000 attachment
-- 落点 derived/lane_a/provenance/，非 derived/fused/（§5.4「Lane A 侧独立记录」）
+- 落点 derived/model/lane_a/provenance/，非 derived/fused/（§5.4「Lane A 侧独立记录」）
 - 跑 attachment 后 derived/fused/ 13 文件逐字节不变（§5.4「Hub 侧零改动」）
 
 **反证检查**：是否存在「转正过早」的可能？—— 不存在。转正要求的
@@ -939,7 +939,7 @@ invalid, or has timed out」）。liveMedia 的 reason 文本与语义完全对�
 3. 读该测试 ⟹ `--data-root` 传 `tests/fixtures/kb`，
    而 `core/stores.py::_derived_dir` 用
    `Path(data_root).parent / "derived"` 推导派生产物路径
-   ⟹ 落在 `tests/fixtures/derived/spec/`（**真实目录，非 tmp_path**）
+   ⟹ 落在 `tests/fixtures/derived/model/spec/`（**真实目录，非 tmp_path**）
 
 ### 根因
 
@@ -1679,7 +1679,7 @@ build 在输入校验阶段即拒绝空输入（v0.13 §9 的正确保护）。
 
 ## D43 — provenance 轨首次持久化落盘 **COMMITTED** + `nominal_unit` 映射裁定
 
-**日期**：2026-10-06　**落点**：`derived/source_a/`（**本项目首次创建**）
+**日期**：2026-10-06　**落点**：`derived/model/source/`（**本项目首次创建**）
 
 ### 落盘入口的选择
 
@@ -1718,8 +1718,8 @@ distinct id : 43 / 43（全局唯一）
 | 项 | 结果 |
 |---|---|
 | `derived/fused/` | **13 文件逐字节不变** |
-| `derived/lane_a/` | **1002 文件逐字节不变** |
-| `derived/per_source/` | **40 文件逐字节不变** |
+| `derived/model/lane_a/` | **1002 文件逐字节不变** |
+| `derived/model/per_source/` | **40 文件逐字节不变** |
 | `kb/` | **6061 文件逐字节不变** |
 | baseline 清单复核 | **1025 / 1025 零偏差**（独立脚本，不经 `build.py`） |
 | C-3 帧字段 | **0** |
@@ -1883,11 +1883,11 @@ rfc 单源（11 facts）与 rfc + expert_note 双源（60 facts）的 seedgen �
 ### 现象
 
 五源融合前置勘察的首版脚本用 `subprocess.run(["grep", ...])` 扫描
-「谁消费 `derived/fused` / `derived/spec`」，返回 0 命中。
+「谁消费 `derived/fused` / `derived/model/spec`」，返回 0 命中。
 
 ### 错误结论（已被推翻）
 
-> 「`core/` 与 `scripts/` **零命中** `derived/fused` 与 `derived/spec`」
+> 「`core/` 与 `scripts/` **零命中** `derived/fused` 与 `derived/model/spec`」
 
 若据此下判断，会得出「Hub 产物**无任何下游消费者**」的结论。
 
@@ -2017,7 +2017,7 @@ D49 实测证明它**不是**。故本条降级为「描述层面的方向提示
    （`core/fused/ids.py:153`），且该函数**明写不负责规范化**（`ids.py:157`）。
    改名 ⟹ `CSeq` / `Session` 两条 fact 的 id 变化 ⟹
    traffic 的 11000 条 attachment 中指向这 2 个 fact 的部分**全部失效**，
-   而 `derived/lane_a/` **不在本批授权内** ⟹ 修复将制造**悬挂引用**。
+   而 `derived/model/lane_a/` **不在本批授权内** ⟹ 修复将制造**悬挂引用**。
 4. **前提已被推翻**（见上）。指令「registry 是 lexical_normalization 权威」
    这一前提不成立：registry 那句话是自然语言，不是可执行规则。
 
@@ -2303,7 +2303,7 @@ unknown = [m for m in methods if m not in inventory.methods]
 
 | 种子成分 | 真实来源 | 来自 Hub? |
 |---|---|---|
-| 方法路径 | `derived/spec/<proto>/state_machine/` | ❌ |
+| 方法路径 | `derived/model/spec/<proto>/state_machine/` | ❌ |
 | 头部字段 | **`kb_root`**（`kb/expert_note/required_headers.json` + `value_pool.json`） | ❌ |
 
 ⟹ 即使打通 header 通道，仍须先解决「Hub header 与 kb required_headers 谁权威」。
@@ -2961,7 +2961,7 @@ PLAY  rtsp://localhost/seed RTSP/1.0\r\nCSeq: 2\r\nSession: 000022B8\r\n\r\n
 `generate_seeds_from_hub` 的路径规划来自：
 
 ```python
-state_machine = _load_state_machine(state_machine_path)   # derived/spec/.../state_machine.json
+state_machine = _load_state_machine(state_machine_path)   # derived/model/spec/.../state_machine.json
 paths = _plan_paths(state_machine, max_depth)
 ```
 

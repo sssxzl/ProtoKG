@@ -3,7 +3,7 @@
 
 为什么需要它
 ------------
-`derived/exp_semantic/truth/*.json` 是**机器格式**（每条一个 JSON 对象），
+`derived/experiments/annotation/truth/*.json` 是**机器格式**（每条一个 JSON 对象），
 人要在里面填 117 条不现实。本脚本提供一条**可审计的双向通道**：
 
     export  truth/*.json  ──►  xlsx（人填）
@@ -17,9 +17,9 @@
 用法
 ----
     PY="E:/app/Anaconda3/python.exe"
-    $PY scripts/annotation_sheet.py export --xlsx derived/exp_semantic/标注表_117条待标.xlsx
+    $PY scripts/annotation_sheet.py export --xlsx derived/experiments/annotation/标注表_117条待标.xlsx
     $PY scripts/annotation_sheet.py import --xlsx <填好的.xlsx> \
-        --out-dir derived/exp_semantic/truth_b --annotator B
+        --out-dir derived/experiments/annotation/truth_b --annotator B
 
 填写约定（也在表内「填写须知」写明）
 ------------------------------------
@@ -47,8 +47,8 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side  # noqa: 
 from openpyxl.utils import get_column_letter               # noqa: E402
 from openpyxl.worksheet.datavalidation import DataValidation  # noqa: E402
 
-TRUTH_DIR = REPO / "derived" / "exp_semantic" / "truth"
-FROZEN = REPO / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+TRUTH_DIR = REPO / "derived" / "experiments" / "annotation" / "truth"
+FROZEN = REPO / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
 
 #: 词表 —— 与 `scripts/annotate_candidates.py` 的 MODALITIES / OPERATORS /
 #: RESPONSE_CLASSES 逐项相等（有测试守）。
@@ -310,7 +310,7 @@ def _add_guide_sheet(wb: Workbook) -> None:
         ]),
         ("标注纪律（直接决定标注集有没有用）", [
             ("只用 text", "不要翻 RFC 上下文补全句子 —— holdout 与训练集同口径", ""),
-            ("不看实现产物", "不查 profile.json / allowed_methods / derived/per_source/ / "
+            ("不看实现产物", "不查 profile.json / allowed_methods / derived/model/per_source/ / "
                             "core/fused/ 的规则表", "否则 F1 变成「自己抄自己」"),
             ("不猜", "标不准就 uncertain=是，会进第三人仲裁清单", "这不是失败"),
             ("不调标准", "不要为了让下游好看而放宽或收紧", "κ 低是要报告的事实"),

@@ -120,7 +120,7 @@ def _isolate(tmp_path, monkeypatch, *, gate=None, build_ids=None):
     monkeypatch.setattr(paths, "norms_path",
                         lambda p: tmp_path / "norms_absent.jsonl")
 
-    # 2) 产物根：derived/per_source/<protocol>/
+    # 2) 产物根：derived/model/per_source/<protocol>/
     ps_root = tmp_path / "per_source"
     monkeypatch.setattr(paths, "per_source_root",
                         lambda p: ps_root / str(p).lower())

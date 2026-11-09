@@ -17,7 +17,7 @@
 | 0.2 | **A 组种子数 = 38 条、B 组 = C 组 = 50 条**（精确实测，非估算；本机复算与主理人独立实测**完全一致**） | 【实测】本机复跑 `edge_cover`/`generic_danger`/`derive_vuln_pattern_candidates` 全链路 + 【主理人核实】 |
 | 0.3 | ⚠ **A→B 不是单变量对照**：它同时包含「新增③层」与「种子数 38→50」两个变化。A 的 38 条是 B 的**逐字节前缀**（MD5 序列相等），故 A 的种子内容**未被改写**，但条数差异是真实混淆 | 【实测】MD5 序列比对 + 【主理人核实】 |
 | 0.4 | ✅ **B→C 是纯净单变量对照**：种子集合完全相同（50 条逐字节一致），**仅顺序 + 字典**不同 → **RQ3 的主结论锚定在 B→C** | 【实测】MD5 集合比对 + 【主理人核实】 |
-| 0.5 | **C 组的 50 条种子集合与 RQ1.2 正在跑的 `protorag` 语料完全相同（MD5 集合相等，50/50）**，故 C 组 vs RQ1.2 protorag 的差异**恰好只有字典一项** | 【实测】`derived/seeds/rtsp/live555_20261024_110155` |
+| 0.5 | **C 组的 50 条种子集合与 RQ1.2 正在跑的 `protorag` 语料完全相同（MD5 集合相等，50/50）**，故 C 组 vs RQ1.2 protorag 的差异**恰好只有字典一项** | 【实测】`derived/model/seeds/rtsp/live555_20261024_110155` |
 | 0.6 | **推荐追加 D 组（B + 仅排序 + 基础字典）**，用 3 格 2×2 解耦 B→C 的双变量；D 组进论文**附录/补充列**，不占表 18 的 A/B/C 三行 | 【产品判断】见 §2.5 |
 | 0.7 | **变异命中率主口径选定「定向命中口径」**（变异衍生条目中命中漏洞触发模式的比例），另配「③层归因口径」与「崩溃归因口径」作机制佐证；三口径全部可执行、可验证，崩溃为 0 时明确记 N/A 而非 0 | 见 §4.7 |
 | 0.8 | **rep 数必须取 5**：n=3 vs 3 的 Mann-Whitney 最小可达双侧 p = 0.10，**在数学上不可能宣称显著**；n=5 vs 5 最小可达 p = 0.0079 | 【统计】精确检验下界 |
@@ -175,7 +175,7 @@ AFL 主循环优先变异队列前部条目 → 高价值种子先获得变异�
 | 变异字典 | **定向字典**（`generate_protocol_dict` + 关键触发 token 补齐，见 §2.4） | 【设计】H3 变量 |
 | 种子条数 | **50 条**（实测，与 B 同） | 【实测】 |
 | 与 B 的关系 | **种子集合逐字节相同**，仅顺序 + 字典不同 | 【实测】 |
-| 跨实验连续性 | **= RQ1.2 正在运行的 `protorag` 语料**（`derived/seeds/rtsp/live555_20261024_110155`，50 条 MD5 集合相等） | 【实测】→ C vs RQ1.2 protorag 的差异恰好只有字典 |
+| 跨实验连续性 | **= RQ1.2 正在运行的 `protorag` 语料**（`derived/model/seeds/rtsp/live555_20261024_110155`，50 条 MD5 集合相等） | 【实测】→ C vs RQ1.2 protorag 的差异恰好只有字典 |
 | 截断/复制 | **无** | 【用户铁律】 |
 
 ### 2.3 A → B → C 逐层增量对照表
@@ -218,7 +218,7 @@ AFL 主循环优先变异队列前部条目 → 高价值种子先获得变异�
 2. 字典文件**定稿后冻结**：落盘 `rq3/dict/c_targeted.dict`，记录 token 数与 **MD5**，随论文作为实验材料归档，避免「字典是变量但内容在漂移」。
 3. ⚠ **token 稀释风险必须评估**：项目内已有实证——「63 token 增强字典稀释了关键 token 的被选概率，导致崩溃发现反而不如 24 token 的 `rtsp.dict`」（`generate_dict_minimal` docstring）；「34 token 折中字典崩溃 +29%、发现效率 3.2 倍，但覆盖率 −0.13%」（`generate_dict_balanced` docstring）。102→108 token 属同向风险区。
    **对策**：Wave 1 结束后若 C 组崩溃数与 D 组持平（字典未带来增益），在 Wave 2 追加一个 **C′ 组**（定向字典的精简档：仅保留关键触发 token + 协议结构 token，控制在 30–40 token），以区分「字典无效」与「字典被稀释」。C′ 不进论文表 18，作为附录消融。
-4. **不要复用现成产物**：`derived/seeds/rtsp/live555_20261024_110155/rtsp.dict` 与 `derived/seeds/rtsp/dict_rtsp/rtsp.dict` 均为 102 token 的旧版定向字典，**未被 RQ1.2 使用**（RQ1.2 用的是镜像内 24 token 基础字典）。组装容器时必须显式区分挂载来源，防止误挂。
+4. **不要复用现成产物**：`derived/model/seeds/rtsp/live555_20261024_110155/rtsp.dict` 与 `derived/model/seeds/rtsp/dict_rtsp/rtsp.dict` 均为 102 token 的旧版定向字典，**未被 RQ1.2 使用**（RQ1.2 用的是镜像内 24 token 基础字典）。组装容器时必须显式区分挂载来源，防止误挂。
 
 ### 2.5 是否追加 D 组：推荐 **追加**
 
@@ -676,12 +676,12 @@ MHR_C(group) = 100 × |{crash ∈ crashes/ : 祖先种子 ∈ ③ 层}| / |crash
 
 | # | 脚本 | 输入 | 输出 | 失败回滚点 |
 |---|---|---|---|---|
-| S1 | `scripts/seedgen.py`（**改造**：新增 `--focus-group {A,B,C,D}` + `--layers`/`--no-vuln-boundary`/`--order`/`--no-sort`/`--dict`/`--manifest`；§2.6） | `fused_hub/targets/rtsp/profile.json` + 知识中枢 facts | `derived/seeds/rtsp/rq3_<group>_<ts>/*.raw`（+ `<protocol>.dict`） | 改造前先跑现有 `--protocol rtsp` 回归，确认 50 条 MD5 集合与 `live555_20261024_110155` 一致再继续；不一致则回退。**A 组需额外校验：38 条 + 无③层标签** |
-| S2 | `scripts/rq3_build_corpus.py`（**新增**） | S1 输出 | `derived/rq3/<group>/seeds/`（**保留 `{i:02d}_` 序号前缀** —— 它同时是**变异优先级载体**（§1.4）与 `orig:` 血缘反查锚点；并断言前 60 字符唯一）+ `manifest.tsv`（序号/文件名/MD5/层/分数/legal-illegal/描述/stream）+ `dict/`（A/B/D=base24，C=定向定稿）+ `groups.json` | 语料 MD5 集合校验失败 → 保留旧目录重建；重命名不可逆 → 先写 `groups.json` 再改名 |
-| S3 | `local/_batch_oracle.py`（**增强**：输出层标签汇总 + ERROR 计数 + 墙钟看门狗） | `<group>/seeds/` + VM ASAN 服务器 | `derived/rq3/<group>/dryrun.tsv`（文件名/层/判定）+ `dryrun_summary.json` | 服务器起不来 → 重试 3 次后改端口；仍失败 → 该组判为「干跑不可用」，先修环境再跑 fuzz |
+| S1 | `scripts/seedgen.py`（**改造**：新增 `--focus-group {A,B,C,D}` + `--layers`/`--no-vuln-boundary`/`--order`/`--no-sort`/`--dict`/`--manifest`；§2.6） | `fused_hub/targets/rtsp/profile.json` + 知识中枢 facts | `derived/model/seeds/rtsp/rq3_<group>_<ts>/*.raw`（+ `<protocol>.dict`） | 改造前先跑现有 `--protocol rtsp` 回归，确认 50 条 MD5 集合与 `live555_20261024_110155` 一致再继续；不一致则回退。**A 组需额外校验：38 条 + 无③层标签** |
+| S2 | `scripts/rq3_build_corpus.py`（**新增**） | S1 输出 | `derived/experiments/rq3/<group>/seeds/`（**保留 `{i:02d}_` 序号前缀** —— 它同时是**变异优先级载体**（§1.4）与 `orig:` 血缘反查锚点；并断言前 60 字符唯一）+ `manifest.tsv`（序号/文件名/MD5/层/分数/legal-illegal/描述/stream）+ `dict/`（A/B/D=base24，C=定向定稿）+ `groups.json` | 语料 MD5 集合校验失败 → 保留旧目录重建；重命名不可逆 → 先写 `groups.json` 再改名 |
+| S3 | `local/_batch_oracle.py`（**增强**：输出层标签汇总 + ERROR 计数 + 墙钟看门狗） | `<group>/seeds/` + VM ASAN 服务器 | `derived/experiments/rq3/<group>/dryrun.tsv`（文件名/层/判定）+ `dryrun_summary.json` | 服务器起不来 → 重试 3 次后改端口；仍失败 → 该组判为「干跑不可用」，先修环境再跑 fuzz |
 | S4 | `scripts/rq3_orchestrate.sh`（**新增**，VM 侧；参照 `/home/zxy/rq2_live555_5rep_v2.sh`） | `groups.json` + 镜像 + 字典 | 20 容器 + 各自 `<out>/` + **T+1h / T+2h 的 `queue/` 快照**（§4.8.3） | 启动失败 → 单容器重试 2 次，仍失败则记为缺 rep 并在论文披露（**不静默补跑**）；启动前须校验镜像内 base dict 的 MD5；快照拷贝失败 → 重试 2 次后记录缺失并标注该容器早期指标不可用 |
 | S5 | `scripts/rq3_collect.py`（**新增**，VM 侧采集 + 本地汇总） | 容器 `<out>/` + 早期快照 | `fuzzer_stats`(P2)、**完整 `plot_data` 时间序列**（不得只留首末行）、`queue/` 条目名+MD5+内容摘要、`crashes/` 清单+MD5、`ipsm.dot`、启动期 P1 快照 | `queue/` 过大 → **只导出「文件名 + MD5 + 命中模式标记」的 TSV**，不搬运全量队列内容；采集失败 → 从 `plot_data` 重建指标 |
-| S6 | `scripts/rq3_metrics.py`（**新增**） | S5 TSV + `manifest.tsv` + 早期快照 | `derived/rq3/metrics_<group>.json` + `table18_draft.md`（含 M9 早期指标） | manifest 与语料 MD5 不一致 → 报错中止（不允许静默按文件名匹配） |
+| S6 | `scripts/rq3_metrics.py`（**新增**） | S5 TSV + `manifest.tsv` + 早期快照 | `derived/experiments/rq3/metrics_<group>.json` + `table18_draft.md`（含 M9 早期指标） | manifest 与语料 MD5 不一致 → 报错中止（不允许静默按文件名匹配） |
 | S7 | `scripts/rq3_stats.py`（**新增**） | S6 JSON | Mann-Whitney/KW/Holm/Cliff's δ/HL/bootstrap CI + `stats_report.md`（**末态与早期指标分列两组检验**） | 小样本下检验器不支持精确 p → 手工核算并注明 |
 | S8 | `local/_fill_rq3_docx.py`（**新增**） | S6/S7 | 回填 `docs/实验/实验方案_详细版.docx` 表 18（+ 附录表 R3-1/R3-2） | **先备份** docx（`实验方案_详细版.docx.bak_<ts>`）；回填后重新解析 XML 校验单元格文本 |
 
@@ -721,12 +721,12 @@ flowchart LR
 
 | 产物 | 路径 |
 |---|---|
-| 组语料 | `derived/rq3/<group>/seeds/*.raw` |
-| 种子清单 | `derived/rq3/<group>/manifest.tsv` |
-| 干跑结果 | `derived/rq3/<group>/dryrun.tsv` + `dryrun_summary.json` |
-| 指标 | `derived/rq3/metrics_<group>.json` |
-| 统计报告 | `derived/rq3/stats_report.md` |
-| 表 18 草稿 | `derived/rq3/table18_draft.md` |
+| 组语料 | `derived/experiments/rq3/<group>/seeds/*.raw` |
+| 种子清单 | `derived/experiments/rq3/<group>/manifest.tsv` |
+| 干跑结果 | `derived/experiments/rq3/<group>/dryrun.tsv` + `dryrun_summary.json` |
+| 指标 | `derived/experiments/rq3/metrics_<group>.json` |
+| 统计报告 | `derived/experiments/rq3/stats_report.md` |
+| 表 18 草稿 | `derived/experiments/rq3/table18_draft.md` |
 | 容器输出 | VM：`/home/zxy/rq3_out/<group>_chatafl_r<rep>/` |
 | 采集归档 | `E:\科研\想法idea\rag-chatafl实验数据\rq3\<ts>\` |
 | 论文 | `docs/实验/实验方案_详细版.docx` 表 18（+ 附录表） |
@@ -913,7 +913,7 @@ flowchart LR
 | F7 | **B / C 组种子数** | **50 / 50** | 33 去重 → 多资源展开；同上双向一致 ✅ |
 | F8 | A ⊂ B 逐字节前缀 | MD5 序列 A[0:38] == B[0:38] ✅ | MD5 比对 |
 | F9 | **B ≡ C 种子集合（纯净单变量基础）** | MD5 集合相等 ✅ | MD5 集合比对 |
-| F10 | C 集合 == RQ1.2 `protorag` 语料 | MD5 集合相等（50/50）✅ | 与 `derived/seeds/rtsp/live555_20261024_110155` 比对 |
+| F10 | C 集合 == RQ1.2 `protorag` 语料 | MD5 集合相等（50/50）✅ | 与 `derived/model/seeds/rtsp/live555_20261024_110155` 比对 |
 | F11 | 全部种子 MD5 唯一 | A 38/38、B/C 50/50 唯一 ✅ | MD5 集合大小 |
 | F12 | 排序后层序列（C） | ③(100/95)×6 → ③(85)×6 → ②(60)×15 → ②(40) → ①(20)×5 → ④(10)×18 | `prioritize_seeds` 实跑 |
 | F13 | 自然序列（B） | ④×18 → ①×5 → ②×15 → ③×12 | 生成序实跑 |

@@ -59,7 +59,7 @@ L5 判据原文：**「中枢知识改变下游产出」**。
 
 | 情形 | 后果 |
 |---|---|
-| 继续投入第五源（source） | 产出留在 `derived/source_a/`，**不改变 seedgen** |
+| 继续投入第五源（source） | 产出留在 `derived/model/source/`，**不改变 seedgen** |
 | 继续接入更多 provenance | 同上 |
 | 期望「源越多 fuzz 越强」 | **在通道扩展前不成立** |
 
@@ -230,7 +230,7 @@ D62 打通 security 两个维度后，真实覆盖为 **3 条独立维度**
 
 ### 5.6 种子内容的真实来源
 
-顺带查明：种子的方法路径来自 `derived/spec/<proto>/state_machine/`，
+顺带查明：种子的方法路径来自 `derived/model/spec/<proto>/state_machine/`，
 头部字段来自 **`kb_root`**（`_load_header_templates(kb_root, protocol)`，
 即 `kb/expert_note/required_headers.json` + `value_pool.json`），
 **均不来自 Hub**。
@@ -305,7 +305,7 @@ D62 打通 security 两个维度后，真实覆盖为 **3 条独立维度**
 `generate_seeds_from_hub` 目前：
 
 ```python
-state_machine = _load_state_machine(state_machine_path)   # derived/spec/...
+state_machine = _load_state_machine(state_machine_path)   # derived/model/spec/...
 paths = _plan_paths(state_machine, max_depth)
 ```
 
@@ -404,7 +404,7 @@ Hub 侧现有 4 条 header fact 是 Title-Case（D49 / U1），
 | ~~**L5-Q8**~~ | ~~header 通道与 `kb required_headers.json` 谁权威？~~ | **✅ 已裁定（D63）：Hub 权威，以归一后为准；归一落地前按大小写不敏感匹配；kb-only header 记 extraction gap** |
 | **L5-Q2** | 接线选甲 / 乙 / 丙？ | P1 |
 | **L5-Q7** | 扩通道后种子多样性下降，回退还是接受？需预设判据 | P1 |
-| **L5-Q5** | 与 `derived/spec/rtsp/state_machine/` 的职责边界 | P2 |
+| **L5-Q5** | 与 `derived/model/spec/rtsp/state_machine/` 的职责边界 | P2 |
 | ~~**L5-Q9**~~ | ~~是否先做 emit cardinality 框架修复（0..N）？~~ | **✅ 已完成（D61）**，实测收益 2 → 25 Candidate |
 | **L5-Q12** | **Q5-G 接线**（路径规划改用 Hub transition fact）是否现在做？ | **P0** —— 低风险，不改模型/格式/产物 |
 | **L5-Q13** | 响应方向的扩展是否值得向 AFLNet 侧提议（如扩展 ProFuzzBench 支持 request-response 对）？ | **P2** —— 需外部工具链配合 |

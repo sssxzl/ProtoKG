@@ -38,9 +38,9 @@
 
 用法
 ----
-    python scripts/annotate_candidates.py template --out-dir derived/exp_semantic/truth \\
+    python scripts/annotate_candidates.py template --out-dir derived/experiments/annotation/truth \\
         --annotator A
-    python scripts/annotate_candidates.py validate --annotations derived/exp_semantic/truth/rtsp.annotated.json
+    python scripts/annotate_candidates.py validate --annotations derived/experiments/annotation/truth/rtsp.annotated.json
     python scripts/annotate_candidates.py template --out-dir /tmp/truth --annotator B --protocol rtsp
 
 退出码
@@ -94,7 +94,7 @@ REQUIRED_FIELDS: tuple[str, ...] = (
     "operator", "expected_response_class", "annotator",
 )
 
-DEFAULT_FROZEN = Path("derived/exp_semantic/candidates_frozen.jsonl")
+DEFAULT_FROZEN = Path("derived/experiments/annotation/candidates_frozen.jsonl")
 DEFAULT_GUIDE = Path("docs/工具/人工标注指南.md")
 
 

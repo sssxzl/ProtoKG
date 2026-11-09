@@ -19,8 +19,8 @@ ap.add_argument("--hours", type=float, default=24.0,
 _args = ap.parse_args()
 HOURS = _args.hours
 
-DATA = "derived/analysis/data"
-OUT = "derived/analysis"
+DATA = "derived/experiments/chatafl_analysis/data"
+OUT = "derived/experiments/chatafl_analysis"
 os.makedirs(OUT, exist_ok=True)
 
 
@@ -128,7 +128,7 @@ for ax, key, title, ylabel in [
 fig.suptitle(f"ChatAFL {HOURS:.0f}h 对比实验（testOnDemandRTSPServer / Live555，5 次重复均值±标准差）",
              fontsize=14, fontweight="bold")
 fig.tight_layout(rect=[0, 0, 1, 0.96])
-out1 = "derived/analysis/对比分析图.png"
+out1 = "derived/experiments/chatafl_analysis/对比分析图.png"
 fig.savefig(out1, dpi=150, facecolor="white")
 print("已生成:", out1)
 
@@ -144,7 +144,7 @@ for ax, groups, title in [(axes2[0], ctl, "对照组（原始种子）"),
 
 fig2.suptitle("覆盖率时序（5 次重复原始曲线）", fontsize=13, fontweight="bold")
 fig2.tight_layout(rect=[0, 0, 1, 0.95])
-out2 = "derived/analysis/覆盖率原始曲线.png"
+out2 = "derived/experiments/chatafl_analysis/覆盖率原始曲线.png"
 fig2.savefig(out2, dpi=150, facecolor="white")
 print("已生成:", out2)
 

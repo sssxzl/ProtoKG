@@ -60,7 +60,7 @@ flowchart TB
         S1["S1 seedgen.py --focus-group X<br/>产出 seeds/*.raw + manifest.json"]
         S1b["S1b 定向字典<br/>generate_targeted_dict()"]
         S1 --> S1b
-        S2["S2 rq3_build_corpus.py<br/>组装 derived/rq3/&lt;g&gt;/<br/>断言 MD5 集合关系"]
+        S2["S2 rq3_build_corpus.py<br/>组装 derived/experiments/rq3/&lt;g&gt;/<br/>断言 MD5 集合关系"]
         S1b --> S2
         S3["S3 干跑 oracle（本地发起，VM 执行）<br/>_batch_oracle.py 串行 3 重试"]
         S2 --> S3
@@ -99,14 +99,14 @@ flowchart TB
 
 | 步 | 脚本 | 输入 | 输出 | 失败回滚点 |
 |---|---|---|---|---|
-| S1 | `scripts/seedgen.py --focus-group X` | `fused_hub/targets/rtsp/profile.json` + 知识中枢 facts | `derived/rq3/<g>/seeds/*.raw`、`manifest.json`、`rtsp.dict` | **改造前必跑向后兼容回归**：不加任何开关时输出须与 `derived/seeds/rtsp/live555_20261024_110155/`（50 条）**MD5 集合逐条相等**、字典 102 token 相等；不一致则回退代码 ｜ **★ 2026-11-03：此条已被批次 2.0（P0）作废** —— RFC 源补齐字段取值 ⇒ 取值池变化 ⇒ 种子内容与字典 token 数都变 ⇒ **与历史语料不再逐字节相等**（实测：不一致）。新基线见 §2.2.1 与 `local/baseline_p0_seeds.md5`。⇒ **已跑的 RQ3 实验（2026-10-24）与新语料不可直接比较**，须用历史语料重跑或做对照。 |
-| S2 | `scripts/rq3_build_corpus.py` | S1 产物 ×4 组 | `derived/rq3/<g>/{seeds/,manifest.json,dictionary.dict}`、`derived/rq3/groups.json` | MD5 断言失败 → 不发布语料、保留 `groups.json` 报告差异；**先写 groups.json 再复制种子**（文件名不可逆） |
-| S3 | `local/_batch_oracle.py`（增强） | `<g>/seeds/` + VM ASAN 服务器 | `derived/rq3/<g>/dryrun.tsv`、`dryrun_summary.json` | 服务器起不来 → 换端口重试 3 次；仍失败 → 该组标记「干跑不可用」，**先修环境再跑 fuzz**（不得用猜测值填表） |
+| S1 | `scripts/seedgen.py --focus-group X` | `fused_hub/targets/rtsp/profile.json` + 知识中枢 facts | `derived/experiments/rq3/<g>/seeds/*.raw`、`manifest.json`、`rtsp.dict` | **改造前必跑向后兼容回归**：不加任何开关时输出须与 `derived/model/seeds/rtsp/live555_20261024_110155/`（50 条）**MD5 集合逐条相等**、字典 102 token 相等；不一致则回退代码 ｜ **★ 2026-11-03：此条已被批次 2.0（P0）作废** —— RFC 源补齐字段取值 ⇒ 取值池变化 ⇒ 种子内容与字典 token 数都变 ⇒ **与历史语料不再逐字节相等**（实测：不一致）。新基线见 §2.2.1 与 `local/baseline_p0_seeds.md5`。⇒ **已跑的 RQ3 实验（2026-10-24）与新语料不可直接比较**，须用历史语料重跑或做对照。 |
+| S2 | `scripts/rq3_build_corpus.py` | S1 产物 ×4 组 | `derived/experiments/rq3/<g>/{seeds/,manifest.json,dictionary.dict}`、`derived/experiments/rq3/groups.json` | MD5 断言失败 → 不发布语料、保留 `groups.json` 报告差异；**先写 groups.json 再复制种子**（文件名不可逆） |
+| S3 | `local/_batch_oracle.py`（增强） | `<g>/seeds/` + VM ASAN 服务器 | `derived/experiments/rq3/<g>/dryrun.tsv`、`dryrun_summary.json` | 服务器起不来 → 换端口重试 3 次；仍失败 → 该组标记「干跑不可用」，**先修环境再跑 fuzz**（不得用猜测值填表） |
 | S4a | `local/rq3_preflight.sh` | 镜像 / 语料 / 字典 / 磁盘 | 预检报告（全部 PASS 才放行） | 任一 FAIL → **不启动容器**；磁盘不足 → 先归档清理 |
 | S4b | `local/rq3_orchestrate.sh` | 语料 / 字典 / 配置 | 20 容器 + `<out>/` + T+1h/T+2h 快照 | 单容器启动失败 → 重试 2 次；仍失败 → **记为缺 rep 并在论文披露，不静默补跑** |
 | S5 | `local/rq3_collect_live555.sh` | 容器 `<out>/` + 快照 | P1/P2 CSV + `plot_data` 全时序 CSV + `queue` TSV + `crashes` 清单 + 聚合表 | queue 过大 → 只导出「文件名 + MD5 + P1–P4 命中标记」TSV；采集失败 → 从 `plot_data` 重建 |
-| S6 | `scripts/rq3_metrics.py` | 采集 TSV + manifest | `derived/rq3/metrics_<g>.json`、`table18_draft.md` | manifest 与语料 MD5 不一致 → **报错中止**（不允许静默按文件名匹配） |
-| S7 | `scripts/rq3_stats.py` | S6 JSON | `derived/rq3/stats_report.md` | 小样本检验器不支持精确 p → 手工核算并在报告中注明 |
+| S6 | `scripts/rq3_metrics.py` | 采集 TSV + manifest | `derived/experiments/rq3/metrics_<g>.json`、`table18_draft.md` | manifest 与语料 MD5 不一致 → **报错中止**（不允许静默按文件名匹配） |
+| S7 | `scripts/rq3_stats.py` | S6 JSON | `derived/experiments/rq3/stats_report.md` | 小样本检验器不支持精确 p → 手工核算并在报告中注明 |
 | S8 | `local/_fill_rq3_docx.py` | S6/S7 | 回填后的 `docs/实验/实验方案_详细版.docx` | **先备份** `实验方案_详细版.docx.bak_<ts>`；回填后重新解析 XML 校验单元格文本；**幂等**（重跑得到同一结果） |
 
 ### 1.3 关键时间轴（承接 PM §5.6，插入本方案的实测修正）
@@ -168,7 +168,7 @@ ap.add_argument("--manifest", action="store_true",
 
 | 条件 | 必须产出的结果 |
 |---|---|
-| 不传任何新开关 | 种子 **50 条**、MD5 集合与 `derived/seeds/rtsp/live555_20261024_110155/` **逐条相等**（★ **2026-11-03：P0 后已不成立**，见 §2.2.1）；顺序 = 漏洞接近度降序；`<out>/rtsp.dict` = **102 token**、内容与 `derived/seeds/rtsp/live555_20261024_110155/rtsp.dict` **逐字节相等**；`<out>` 下**不出现** manifest.json |
+| 不传任何新开关 | 种子 **50 条**、MD5 集合与 `derived/model/seeds/rtsp/live555_20261024_110155/` **逐条相等**（★ **2026-11-03：P0 后已不成立**，见 §2.2.1）；顺序 = 漏洞接近度降序；`<out>/rtsp.dict` = **102 token**、内容与 `derived/model/seeds/rtsp/live555_20261024_110155/rtsp.dict` **逐字节相等**；`<out>` 下**不出现** manifest.json |
 | `--focus-group` 与任一原子开关同时出现 | **参数校验失败并退出码 2**，打印冲突项；不做「后者覆盖前者」的隐式行为 |
 | `--focus-group` + `--focused` | **退出码 2**（`--focused` 会改写层②内容并可能截断，会一次性引入三个变化） |
 | `--focus-group` + `--max-seeds` | **退出码 2**（铁律：聚焦 ≠ 砍种子） |
@@ -291,7 +291,7 @@ FOCUS_GROUP_CONFIG = {
 
 | 函数 | RTSP 实测 token 数 | 含触发 token？ | 协议相关性 | 备注 |
 |---|---|---|---|---|
-| `generate_protocol_dict` | **89**（不传 resources）/ **102**（传 resources） | ❌ **故意不收** | **完全协议无关** | ★ **seedgen.py 实际用的就是这个**（传 resources）→ **磁盘产物 102 行**（已核对 `derived/seeds/rtsp/live555_20261024_110155/rtsp.dict`） |
+| `generate_protocol_dict` | **89**（不传 resources）/ **102**（传 resources） | ❌ **故意不收** | **完全协议无关** | ★ **seedgen.py 实际用的就是这个**（传 resources）→ **磁盘产物 102 行**（已核对 `derived/model/seeds/rtsp/live555_20261024_110155/rtsp.dict`） |
 | `generate_dict_minimal` | **30** | ✅ **全含** | RTSP 硬编码 | 历史「63 token 稀释」教训的产物；含 `000022B8` / `Session: 000022B8` / `interleaved=0-1` / `client_port=50000-50001` / `RTSP/1.0` 等 |
 | `generate_dict_balanced` | **34** | ✅ 全含 | RTSP 硬编码 | 折中版（30→34，补 3 个覆盖性流名） |
 | `generate_dict` | （旧版增强） | 部分 | 协议无关 | 本方案不用 |
@@ -435,9 +435,9 @@ def generate_targeted_dict(bundle: dict,
 | 产物 | 路径 | 内容 |
 |---|---|---|
 | 基础字典副本 | `fused_hub/targets/rtsp/rtsp_base.dict` | 镜像内 `/home/ubuntu/experiments/rtsp.dict` 的逐字节副本（24 token，MD5 `464351f88db6c3f0bdac0de01859316b`） |
-| **档 1** 定向字典 | `derived/rq3/dict/c_targeted.dict` | **122 token**；冻结时记录 token 数 + MD5 + 内容 |
-| **档 2** 精简字典 | `derived/rq3/dict/c_compact.dict` | **41 token**；同样记录 MD5 |
-| 字典冻结记录 | `derived/rq3/dict/DICT_FROZEN.json` | `{name, path, token_count, md5, generated_at, generator_version, source_bundle_md5, tier}` |
+| **档 1** 定向字典 | `derived/experiments/rq3/dict/c_targeted.dict` | **122 token**；冻结时记录 token 数 + MD5 + 内容 |
+| **档 2** 精简字典 | `derived/experiments/rq3/dict/c_compact.dict` | **41 token**；同样记录 MD5 |
+| 字典冻结记录 | `derived/experiments/rq3/dict/DICT_FROZEN.json` | `{name, path, token_count, md5, generated_at, generator_version, source_bundle_md5, tier}` |
 
 **「字典是变量但内容在漂移」的防护**：`DICT_FROZEN.json` 中的 MD5 由编排预检（§3.6）在**每次启动前**核对；不一致 → **拒绝启动**。论文附录直接引用该 JSON。**字典 token 变化会改变 C 组种子目录内容** → 故**必须按组指定字典文件**（编排层 `-x /dict_rw/<按组 basename>`，§3.2），且**字典内容记 MD5 冻结**（主理人要求，已落实）。
 
@@ -482,7 +482,7 @@ def plan_seed_filenames(seeds: list) -> list[str]:
 
 #### 2.5.2 JSON Schema
 
-`derived/rq3/<group>/manifest.json`：
+`derived/experiments/rq3/<group>/manifest.json`：
 
 ```json
 {
@@ -578,7 +578,7 @@ def plan_seed_filenames(seeds: list) -> list[str]:
 | A4 | **A 的 md5 序列 == B 的 md5 序列前 38 项**（自然序） | 全等（【实测】成立） |
 | A5 | A 的**文件名**序列 == B 的前 38 个文件名 | 全等（【实测】成立） |
 | A6 | B / C / D 的 md5 **集合**两两相等 | 全等 |
-| A7 | C 的 md5 集合 == `derived/seeds/rtsp/live555_20261024_110155/` 的 50 条 | 全等（RQ1.2 连续性） |
+| A7 | C 的 md5 集合 == `derived/model/seeds/rtsp/live555_20261024_110155/` 的 50 条 | 全等（RQ1.2 连续性） |
 | A8 | 每组语料文件名的**前 60 字符全局唯一** | 唯一（【实测】natural 与 sorted 均成立，最大长度 98） |
 | A9 | C 字典 token 数 == 123；A/B/D 字典 token 数 == 24 且 md5 == 镜像内 base24 | 相等 |
 | A10 | 所有组的 `md5` 在组内唯一 | 唯一（【实测】50/50 唯一） |
@@ -763,7 +763,7 @@ total_enriched=$(for n in $(docker ps --format '{{.Names}}' | grep '^rq3_'); do
 [ "$total_enriched" = "0" ] || { echo "!! FATAL: 全波 enriched 计数 = $total_enriched ≠ 0 → 整波作废"; exit 3; }
 ```
 
-**断言 C（采集阶段，落盘到报告）**：采集脚本统计每容器 `/out/queue` 的 `orig:enriched*` 数量与 `/seeds_work` 的 `enriched_*` 数量，写入 `derived/rq3/enrichment_audit.csv`（列：`container,fuzzer,group,rep,enriched_in_seeds,enriched_in_queue,queue_total,verdict`）。**该 CSV 随论文附录归档，是「增强已关闭」的可审计证据。**
+**断言 C（采集阶段，落盘到报告）**：采集脚本统计每容器 `/out/queue` 的 `orig:enriched*` 数量与 `/seeds_work` 的 `enriched_*` 数量，写入 `derived/experiments/rq3/enrichment_audit.csv`（列：`container,fuzzer,group,rep,enriched_in_seeds,enriched_in_queue,queue_total,verdict`）。**该 CSV 随论文附录归档，是「增强已关闭」的可审计证据。**
 
 **断言 D（对照基线，防「断言写错了」自欺）**：在冒烟阶段额外跑一个 **1 个容器的 bridge 网络对照组**（`--network` 默认），断言其 `orig:enriched*` **> 0**（证明断言逻辑本身能检出增强）。若对照组的 enriched 也为 0，说明端点确实全关 → 记录该事实并仍以 `--network none` 启动正式波（防御性冗余）。
 
@@ -1013,7 +1013,7 @@ def split_messages(data: bytes) -> list[bytes]:
 
 ### 4.3 输出格式
 
-`derived/rq3/<group>/dryrun.tsv`（**TSV，表头固定**）：
+`derived/experiments/rq3/<group>/dryrun.tsv`（**TSV，表头固定**）：
 
 ```
 filename	layer	score	legal_illegal_expected	verdict	retries_used	note
@@ -1022,7 +1022,7 @@ filename	layer	score	legal_illegal_expected	verdict	retries_used	note
 12_DESCRIBE.raw	L3	85	illegal	ERROR	3	server_not_ready
 ```
 
-`derived/rq3/<group>/dryrun_summary.json`：
+`derived/experiments/rq3/<group>/dryrun_summary.json`：
 
 ```json
 {
@@ -1395,8 +1395,8 @@ rq3_winrate.csv: metric,group_a,group_b,fuzzer,n_pairs,wins,ties,losses,
 
 | 项 | 内容 |
 |---|---|
-| 输入 | `derived/rq3/<g>/manifest.json`；`derived/rq3/collect/<ts>/queue_index.tsv`（全时序 + 各快照）；`crashes_index.tsv`；`plot_data` 全时序；`fuzzer_stats`；`dryrun.tsv` |
-| 输出 | `derived/rq3/metrics_<g>.json`（M1–M9 + MHR 三口径 + 审计计数）；`derived/rq3/table18_draft.md` |
+| 输入 | `derived/experiments/rq3/<g>/manifest.json`；`derived/experiments/rq3/collect/<ts>/queue_index.tsv`（全时序 + 各快照）；`crashes_index.tsv`；`plot_data` 全时序；`fuzzer_stats`；`dryrun.tsv` |
+| 输出 | `derived/experiments/rq3/metrics_<g>.json`（M1–M9 + MHR 三口径 + 审计计数）；`derived/experiments/rq3/table18_draft.md` |
 | 失败 | manifest 与语料 MD5 不一致 → **报错中止**（不允许静默按文件名匹配）；`derived` 为空 → 明确报错而非输出 0 |
 
 **`metrics_<g>.json` 结构**
@@ -1612,7 +1612,7 @@ def fill_rq3_table(cells: list[dict], table_id: str):
 | 5. 保存 | `doc_set_table_cells` → `save_file` → `close_file` |
 | 6. 回读校验 | python-docx 重新打开，逐单元格断言 == 目标文本；不一致 → **非零退出**并打印差异 |
 | 7. 表注段落 | 追加段落文本以固定标记开头（如 `【RQ3 表 18 注】`），写入前先搜索该标记：**存在则替换，不存在则追加**（幂等） |
-| 8. 附录表 R3-1 | **默认不写**（需新建表，超出 `doc_set_table_cells` 能力）→ 输出 `derived/rq3/appendix_r3_1.md` 供论文作者手工粘贴；**若主理人要求写入 docx，需先确认 edsdk 是否支持建表**（待确认 #7） |
+| 8. 附录表 R3-1 | **默认不写**（需新建表，超出 `doc_set_table_cells` 能力）→ 输出 `derived/experiments/rq3/appendix_r3_1.md` 供论文作者手工粘贴；**若主理人要求写入 docx，需先确认 edsdk 是否支持建表**（待确认 #7） |
 
 **写入顺序（必须）**：`open_file` → `doc_list_tables`（取 table_id）→ `doc_set_table_cells` → `save_file` → **`close_file`** → python-docx 回读校验 → （如需追加段落）python-docx 追加并保存 → 再 `open_file` 复核。
 ★ **不得**在编辑器会话打开时用 python-docx 保存同一文件（并发写冲突）。
@@ -1641,7 +1641,7 @@ def fill_rq3_table(cells: list[dict], table_id: str):
 | 项 | 内容 |
 |---|---|
 | **源文件** | 新增：`local/rq3_common.py`、`local/rq3_config.json`、`tests/fused/test_rq3_common.py`；修改：无（仅新增）；参考：`local/RQ3_技术方案_20261024.md`（本文档） |
-| **做什么** | ① 建 RQ3 目录骨架 `derived/rq3/{A,B,C,D}/seeds/`、`derived/rq3/dict/`、`derived/rq3/collect/`、`derived/rq3/snap/`；② `rq3_common.py`：集中定义 **组/fuzzer 短名映射、容器命名 `rq3_{group}_{fuzzer}_r{rep}`、CSV 表头常量、目录路径常量、MD5 工具、manifest 读写 schema 常量、TSV 读写（`csv` + `\t`）、`mermaid` 无关的统计小工具（mean/std ddof=1）**；③ `rq3_config.json`：集中配置（镜像名、组定义与期望条数、字典文件名与 token 数、端口基址、时长、rep 列表、容器资源参数、VM 路径）**——★ 全部配置项只此一份，脚本一律从它读，禁止散落硬编码**；④ `tests/fused/test_rq3_common.py` 覆盖映射与 schema |
+| **做什么** | ① 建 RQ3 目录骨架 `derived/experiments/rq3/{A,B,C,D}/seeds/`、`derived/experiments/rq3/dict/`、`derived/experiments/rq3/collect/`、`derived/experiments/rq3/snap/`；② `rq3_common.py`：集中定义 **组/fuzzer 短名映射、容器命名 `rq3_{group}_{fuzzer}_r{rep}`、CSV 表头常量、目录路径常量、MD5 工具、manifest 读写 schema 常量、TSV 读写（`csv` + `\t`）、`mermaid` 无关的统计小工具（mean/std ddof=1）**；③ `rq3_config.json`：集中配置（镜像名、组定义与期望条数、字典文件名与 token 数、端口基址、时长、rep 列表、容器资源参数、VM 路径）**——★ 全部配置项只此一份，脚本一律从它读，禁止散落硬编码**；④ `tests/fused/test_rq3_common.py` 覆盖映射与 schema |
 | **依赖** | 无 |
 | **验收** | ① `E:/app/Anaconda3/python.exe -m pytest tests/fused/test_rq3_common.py -v` 全绿；② `python -c "import sys;sys.path.insert(0,'local');import rq3_common as c;print(c.container_name('C','chatafl',3))"` 输出 `rq3_C_chatafl_r3`；③ `local/rq3_config.json` 能被 `json.load` 且含 §3.6 全部 H1–H8 阈值字段；④ 目录骨架全部存在 |
 | **工作量** | 0.5 人日 |
@@ -1655,7 +1655,7 @@ def fill_rq3_table(cells: list[dict], table_id: str):
 | **源文件** | 修改：`scripts/seedgen.py`、`core/fused/downstream/boundary_probe.py`、`core/fused/downstream/rag_seedgen.py`、`core/fused/downstream/selector.py`、`fused_hub/targets/rtsp/profile.json`；新增：`core/fused/downstream/seed_manifest.py`、`fused_hub/targets/rtsp/rtsp_base.dict`、`tests/fused/test_rq3_focus_group.py`、`tests/fused/test_rq3_dict.py`、`tests/fused/test_rq3_manifest.py` |
 | **做什么** | ① **§2.1 CLI**：加 `--focus-group/--layers/--no-vuln-boundary/--order/--no-sort/--dict/--dict-path/--manifest`；实现 §2.2 的 `FOCUS_GROUP_CONFIG` 与参数互斥校验（退出码 2）；② **§2.3 原子语义**：按层开关生成；`natural` 分支不调用 `prioritize_seeds`；层②强制 `minimal=False`；③ **§2.4 字典**：新增 `boundary_probe.generate_targeted_dict(...)`（5 个 token 来源 + `_is_dict_token` 过滤 + `compact` 分支）；新增 `fused_hub/targets/rtsp/rtsp_base.dict`（镜像内 base24 的逐字节副本，MD5 `464351f88db6c3f0bdac0de01859316b`）；profile 增 `boundary_probe.transport_tokens`（方案 α）；④ **§2.5 manifest**：`rag_seedgen.plan_seed_filenames()`（含宽度自适应）+ `write_seeds` 改为复用它；新增 `seed_manifest.py`（`build_manifest()` / `write_manifest()` / `seed_layer()` / `pattern_tags()` / `legal_illegal()`）；`selector.py` 新增 `seed_layer()`；⑤ `seedgen.py` 落盘 manifest.json |
 | **依赖** | T01 |
-| **验收** | ① **向后兼容回归（硬门槛）**：`E:/app/Anaconda3/python.exe scripts/seedgen.py --protocol rtsp --out /tmp/reg` → 种子 **50 条**，其 md5 集合与 `derived/seeds/rtsp/live555_20261024_110155/*.raw` **逐条相等**；`rtsp.dict` 与该目录的 `rtsp.dict` **逐字节相等**；目录**无** manifest.json；② **四组**：`--focus-group A/B/C/D` → 条数分别 **38/50/50/50**；A 的 md5 序列 == B 的前 38 项；B/C/D 的 md5 集合相等；C 集合 == RQ1.2 protorag 集合；③ **字典**：`--dict targeted` → **122 token** 且**包含 base24 的全部 24 token**；`--dict targeted-compact` → **41 token**；`--dict base` → 24 token 且 md5 == `464351f88db6c3f0bdac0de01859316b`；`--dict protocol` → **102 token**（传 resources 时）且与历史 `rtsp.dict` 逐字节相等；④ **互斥**：`--focus-group B --no-sort` / `--focus-group B --focused` / `--focus-group B --max-seeds 10` / `--focus-group B --layers x` 均以**退出码 2** 退出；⑤ **manifest**：每组产出 `manifest.json`，字段齐全（22 字段/条），`score` 直方图 == `{100:3, 95:3, 85:6, 60:15, 20:5, 10:18}`；`legal_illegal` 对 `"…illegal(同 track)"` 判为 `illegal`（**先判 illegal**）；⑥ `pytest tests/fused/test_rq3_focus_group.py tests/fused/test_rq3_dict.py tests/fused/test_rq3_manifest.py -v` 全绿；⑦ ★ **现有测试必须仍全绿**：`E:/app/Anaconda3/python.exe -m pytest tests/ -q` → **242 passed**（基线实测值；**必须用 Anaconda 的 python，managed python 无 pytest**）；若因新增测试导致数字上升，须能列出新增用例数；⑧ ★ **`generate_protocol_dict` 回归**：`generate_protocol_dict(b,'rtsp')` == **89 token**（不传 resources）、`generate_protocol_dict(b,'rtsp',resources=res)` == **102 token**（传 resources）→ **两者都要有断言**，防止后人误改调用方；⑨ `python scripts/seedgen.py --protocol rtsp --focus-group C --out derived/rq3/C/seeds --manifest` 一次跑通并落 `derived/rq3/C/seeds/manifest.json` |
+| **验收** | ① **向后兼容回归（硬门槛）**：`E:/app/Anaconda3/python.exe scripts/seedgen.py --protocol rtsp --out /tmp/reg` → 种子 **50 条**，其 md5 集合与 `derived/model/seeds/rtsp/live555_20261024_110155/*.raw` **逐条相等**；`rtsp.dict` 与该目录的 `rtsp.dict` **逐字节相等**；目录**无** manifest.json；② **四组**：`--focus-group A/B/C/D` → 条数分别 **38/50/50/50**；A 的 md5 序列 == B 的前 38 项；B/C/D 的 md5 集合相等；C 集合 == RQ1.2 protorag 集合；③ **字典**：`--dict targeted` → **122 token** 且**包含 base24 的全部 24 token**；`--dict targeted-compact` → **41 token**；`--dict base` → 24 token 且 md5 == `464351f88db6c3f0bdac0de01859316b`；`--dict protocol` → **102 token**（传 resources 时）且与历史 `rtsp.dict` 逐字节相等；④ **互斥**：`--focus-group B --no-sort` / `--focus-group B --focused` / `--focus-group B --max-seeds 10` / `--focus-group B --layers x` 均以**退出码 2** 退出；⑤ **manifest**：每组产出 `manifest.json`，字段齐全（22 字段/条），`score` 直方图 == `{100:3, 95:3, 85:6, 60:15, 20:5, 10:18}`；`legal_illegal` 对 `"…illegal(同 track)"` 判为 `illegal`（**先判 illegal**）；⑥ `pytest tests/fused/test_rq3_focus_group.py tests/fused/test_rq3_dict.py tests/fused/test_rq3_manifest.py -v` 全绿；⑦ ★ **现有测试必须仍全绿**：`E:/app/Anaconda3/python.exe -m pytest tests/ -q` → **242 passed**（基线实测值；**必须用 Anaconda 的 python，managed python 无 pytest**）；若因新增测试导致数字上升，须能列出新增用例数；⑧ ★ **`generate_protocol_dict` 回归**：`generate_protocol_dict(b,'rtsp')` == **89 token**（不传 resources）、`generate_protocol_dict(b,'rtsp',resources=res)` == **102 token**（传 resources）→ **两者都要有断言**，防止后人误改调用方；⑨ `python scripts/seedgen.py --protocol rtsp --focus-group C --out derived/experiments/rq3/C/seeds --manifest` 一次跑通并落 `derived/experiments/rq3/C/seeds/manifest.json` |
 | **工作量** | 1.5 人日 |
 
 ---
@@ -1664,8 +1664,8 @@ def fill_rq3_table(cells: list[dict], table_id: str):
 
 | 项 | 内容 |
 |---|---|
-| **源文件** | 新增：`scripts/rq3_build_corpus.py`、`local/rq3_oracle_batch.sh`、`tests/fused/test_rq3_build_corpus.py`；修改：`local/_batch_oracle.py`、`local/_oracle.py`；产出（数据）：`derived/rq3/groups.json`、`derived/rq3/dict/DICT_FROZEN.json` |
-| **做什么** | ① `rq3_build_corpus.py`：调用 T02 的 seedgen 生成四组 → 拷贝到 `derived/rq3/<g>/seeds/` → 生成/拷贝字典到 `derived/rq3/dict/` → **执行 §2.5.3 的 A1–A10 全部断言** → 写 `groups.json`（含每组的组名、字典种类与 MD5、种子数、期望条数、容器名模板、端口）→ 写 `DICT_FROZEN.json`；② `_batch_oracle.py` 增强：加层标签汇总、ERROR 计数、**30 min 墙钟看门狗**、输出 TSV + `dryrun_summary.json`、端口从 **8571** 起；③ `_oracle.py` 增强：★ **`split_messages` 改为格式自适应**（先试 4 字节长度前缀帧并要求精确消费，否则回退 `\r\n\r\n`；对**纯文本种子行为逐字节不变**）+ 单条支持 `--json` 输出、错误信息带种子名；④ `rq3_oracle_batch.sh`：VM 侧串行跑四组（`cd /tmp && python3 batch_oracle.py <dir> <port> 3`），**端口 8571+**，**不与容器 8560 冲突**（容器独立 netns），跑前 `ss -tln` 检查端口空闲 |
+| **源文件** | 新增：`scripts/rq3_build_corpus.py`、`local/rq3_oracle_batch.sh`、`tests/fused/test_rq3_build_corpus.py`；修改：`local/_batch_oracle.py`、`local/_oracle.py`；产出（数据）：`derived/experiments/rq3/groups.json`、`derived/experiments/rq3/dict/DICT_FROZEN.json` |
+| **做什么** | ① `rq3_build_corpus.py`：调用 T02 的 seedgen 生成四组 → 拷贝到 `derived/experiments/rq3/<g>/seeds/` → 生成/拷贝字典到 `derived/experiments/rq3/dict/` → **执行 §2.5.3 的 A1–A10 全部断言** → 写 `groups.json`（含每组的组名、字典种类与 MD5、种子数、期望条数、容器名模板、端口）→ 写 `DICT_FROZEN.json`；② `_batch_oracle.py` 增强：加层标签汇总、ERROR 计数、**30 min 墙钟看门狗**、输出 TSV + `dryrun_summary.json`、端口从 **8571** 起；③ `_oracle.py` 增强：★ **`split_messages` 改为格式自适应**（先试 4 字节长度前缀帧并要求精确消费，否则回退 `\r\n\r\n`；对**纯文本种子行为逐字节不变**）+ 单条支持 `--json` 输出、错误信息带种子名；④ `rq3_oracle_batch.sh`：VM 侧串行跑四组（`cd /tmp && python3 batch_oracle.py <dir> <port> 3`），**端口 8571+**，**不与容器 8560 冲突**（容器独立 netns），跑前 `ss -tln` 检查端口空闲 |
 | **依赖** | T02（语料与字典必须先有） |
 | **验收** | ① `python scripts/rq3_build_corpus.py` 退出码 0，`groups.json` 中 A=38/B=50/C=50/D=50、字典 token 数 24/24/24/123、全部 MD5 断言 PASS；② **A1–A10 断言全绿**（A4/A5/A6/A7/A8/A10 见 §2.5.3）；③ `DICT_FROZEN.json` 含 `c_targeted.dict`(**122**) 与 `rtsp_base.dict`(**24**) 与 `c_compact.dict`(**41**) 的 token 数 + MD5，base 的 MD5 == `464351f88db6c3f0bdac0de01859316b`；④ VM 上 `bash local/rq3_oracle_batch.sh` → 产出 4 个 `dryrun.tsv` + 4 个 `dryrun_summary.json`；**A 组 `n_illegal == 0`**；B/C/D 的判定**逐条一致**（V9）；⑤ **预期形态自检**：A ≈ 100%、B/C/D ≈ 84%（±3 条容差），偏离须人工复核并记录；⑥ `pytest tests/fused/test_rq3_build_corpus.py -v` 全绿；⑦ **端口不冲突断言**：oracle 运行期间 `ss -tln | grep 8560` 无宿主监听；⑧ ★ **`_oracle.py` 格式自适应已实现并有单测**：`tests/fused/test_rq3_oracle_split.py` 断言「种子文件 → 纯文本分支」「真实崩溃样本 → 长度前缀分支且 13 帧精确消费」；⑨ ★ **崩溃可复现性自检**：用 RQ1.2 的 `seed_reuse_aflnet_r1` 崩溃样本跑 oracle → 判 `ILLEGAL`（实测基准） |
 | **工作量** | 1 人日 |
@@ -1688,10 +1688,10 @@ def fill_rq3_table(cells: list[dict], table_id: str):
 
 | 项 | 内容 |
 |---|---|
-| **源文件** | 新增：`local/_fill_rq3_docx.py`、`local/rq3_e2e_check.sh`、`local/RQ1_2_实验记录_污染说明.md`、`derived/rq3/appendix_r3_1.md`（产物）；修改：`local/RQ1_2_实验记录_污染说明.md`（新建即修改语义）；备份：`docs/实验/实验方案_详细版.docx.bak_<ts>` |
+| **源文件** | 新增：`local/_fill_rq3_docx.py`、`local/rq3_e2e_check.sh`、`local/RQ1_2_实验记录_污染说明.md`、`derived/experiments/rq3/appendix_r3_1.md`（产物）；修改：`local/RQ1_2_实验记录_污染说明.md`（新建即修改语义）；备份：`docs/实验/实验方案_详细版.docx.bak_<ts>` |
 | **做什么** | ① `_fill_rq3_docx.py`：**§7.1 运行时三重定位**（index 18 + 表头签名 + 前置段落 `Live555（RTSP，text）`）+ §7.2 的单元格格式（`10.37 ± 0.09` 形式、dry-run 单值、崩溃 `0 (P2=0)`）+ §7.2 的 10 条表注（以 `【RQ3 表 18 注】` 标记，幂等替换）+ **§7.3 的 8 步幂等流程**（备份→定位→读现值→条件写→保存→回读校验→表注段落→附录 md）；② `rq3_e2e_check.sh`：端到端自检（语料 → 干跑 → 预检 → 编排 dry 模式 → 采集 → 指标 → 回填 **dry 到副本**）；③ `RQ1_2_实验记录_污染说明.md`：§9.1.3 的诚实处置文字（**不改数据、不删数据**） |
 | **依赖** | T04 |
-| **验收** | ① **先在 docx 副本上跑通**：`实验方案_详细版.docx.copy` 回填后用 python-docx 逐单元格断言 == 目标文本；② **幂等**：同一脚本连跑两次 → docx 单元格文本与表注段落**完全相同**（第二次无写入）；③ **不误伤**：`index 19/20/21` 三张同表头表（BFTPD/Exim/Kamailio）**内容未变**（用 python-docx 逐表 diff 证明）；④ **表 4 数值未变**（RQ1.2 表 4 的 4 行 × 9 列与回填前逐字节一致）；⑤ **备份存在**且 `实验方案_详细版.docx.bak_<ts>` 存在；⑥ `rq3_e2e_check.sh` 全绿；⑦ 产出 `derived/rq3/appendix_r3_1.md`（D 组六项指标 + MHR_B/MHR_C + 每条种子平均派生条目数 + P1–P4 命中分布 + `DICT_FROZEN.json` 摘要） |
+| **验收** | ① **先在 docx 副本上跑通**：`实验方案_详细版.docx.copy` 回填后用 python-docx 逐单元格断言 == 目标文本；② **幂等**：同一脚本连跑两次 → docx 单元格文本与表注段落**完全相同**（第二次无写入）；③ **不误伤**：`index 19/20/21` 三张同表头表（BFTPD/Exim/Kamailio）**内容未变**（用 python-docx 逐表 diff 证明）；④ **表 4 数值未变**（RQ1.2 表 4 的 4 行 × 9 列与回填前逐字节一致）；⑤ **备份存在**且 `实验方案_详细版.docx.bak_<ts>` 存在；⑥ `rq3_e2e_check.sh` 全绿；⑦ 产出 `derived/experiments/rq3/appendix_r3_1.md`（D 组六项指标 + MHR_B/MHR_C + 每条种子平均派生条目数 + P1–P4 命中分布 + `DICT_FROZEN.json` 摘要） |
 | **工作量** | 1 人日 |
 
 ---
@@ -1945,7 +1945,7 @@ graph LR
 | **4** | ★ **定向字典的协议无关性落地方式**（§2.4.3 方案 α / β） | **方案 α**：`profile.json` 增 `boundary_probe.{version_string, transport_params, transport_param_values, session_header}` 四个字段（**`RTSP/1.0` 无法从 bundle 通用推导 → 必须由 profile 提供**，这是主理人指出的关键点）；同时从 bundle 校验参数名存在性做双保险。符合本项目「换协议 = 加一份 profile.json」的既定架构 | 架构一致性 vs 改动量 | 不决策 → 工程师自行取舍，可能引入不一致的硬编码风格 |
 | **5** | ★ **C 组定向字典采用「严格超集」版（122 token）还是仅补触发 token（≈108）** | **建议采用 122 token 严格超集版**。理由：若只补触发 token，C 会相对 D **丢失 5 个基础 token**（`127.0.0.1/AVP/RTP/Range: npt=9/TCP`）→ D→C 不再是「只加不减」的单变量，H3 的因果解释被污染 | H3 的可解释性 | 不决策 → C 组可能引入第二个混淆变量 |
 | **6** | ★ **是否在 Wave 1 后预留 C′ 组（Wave 3，+5 容器）** | **建议预留**（不启动，只把能力做好）：`--dict targeted-compact` 已实现（**41 token**，关键密度 0.146），编排侧只需 `groups.json` 加一行（`dict_kind="targeted-compact"`），**代码路径与 C 相同** | 稀释风险对冲 | 不预留 → 若 C 无增益，无法区分「字典无效」与「字典被稀释」 |
-| **7** | ★ **D 组数据如何进 docx**（新建附录表 vs 写入表注段落 vs 仅出 md） | 建议：**默认写入表 18 下方的表注段落**（第 9 条）+ 产出 `derived/rq3/appendix_r3_1.md` 供论文作者粘贴。**新建附录表超出 `doc_set_table_cells` 能力**，需先确认 edsdk 是否支持建表 | 论文呈现完整性 | 若强行建表失败 → 回填脚本最后一步失败（表 18 已写入，附录缺失） |
+| **7** | ★ **D 组数据如何进 docx**（新建附录表 vs 写入表注段落 vs 仅出 md） | 建议：**默认写入表 18 下方的表注段落**（第 9 条）+ 产出 `derived/experiments/rq3/appendix_r3_1.md` 供论文作者粘贴。**新建附录表超出 `doc_set_table_cells` 能力**，需先确认 edsdk 是否支持建表 | 论文呈现完整性 | 若强行建表失败 → 回填脚本最后一步失败（表 18 已写入，附录缺失） |
 | **8** | **是否做 A′ 补齐组** | **建议不做**（PM 方案②）。技术侧已写好实现规格（§9.6），编排侧支持是零成本（`groups.json` 加一行），**主理人改主意可直接施工** | A→B 结论强度 | 不做 → A→B 按非单变量表述（不影响主结论链） |
 | **9** | ★ **RQ1.2 是否补跑独立的「关掉增强」复验组**（v2 补充资源冲突分析） | **建议不补跑**，用 **D 组充当**（§9.1.3.6）。**资源冲突量化**：VM 16 核，现役 20 容器 = **1.25× 超订**；补跑 5 容器并行 → **1.56×**，**不可行**；串行 → **日历 +24 h**。而 D 组配置 ≡（RQ1.2 `protorag_chatafl` 语料 + 同一份 base24 字典 + 同参数/时长/rep/fuzzer）− LLM 增强 → **零额外容器、零额外日历**。若坚持补跑：**必须** Wave 1 之后、+5 容器、24 h、~2 GB、不得与 Wave 1 并行 | 日历 vs 独立样本 | 不决策 → 可能在 RQ1.2 还在跑时抢资源 |
 | **10** | **Wave 1 时长** | **24 h**（与 RQ1.2 一致，便于对照）。若 Wave 1 三组崩溃全 0 且资源允许 → 对 B/C/D 追加一轮 24 h（累计 48 h），须在论文说明 | 崩溃观测概率 | — |
@@ -1988,7 +1988,7 @@ E:\科研\想法idea\rag-chatafl\
 │   ├── RQ3_技术方案_20261024.md   # ★ 本文档
 │   ├── RQ1_2_实验记录_污染说明.md  # ★ 新增
 │   └── 实验方案_详细版.docx        # 论文主文件（表 18 = index 18）
-├── derived/rq3/
+├── derived/experiments/rq3/
 │   ├── groups.json                # ★ 组 → 容器/字典/条数 映射（编排的唯一输入）
 │   ├── dict/{rtsp_base.dict, c_targeted.dict, c_compact.dict, DICT_FROZEN.json}
 │   ├── A| B| C| D/{seeds/*.raw, manifest.json, dryrun.tsv, dryrun_summary.json}
@@ -2023,7 +2023,7 @@ E:\科研\想法idea\rag-chatafl\
 |---|---|---|
 | 容器名 | `rq3_{group}_{fuzzer}_r{rep}` | `rq3_C_chatafl_r3` |
 | 容器输出目录 | `/home/zxy/rq3_out/{group}_{fuzzer}/r{rep}/` | `.../C_chatafl/r3/` |
-| 组语料目录 | `derived/rq3/{group}/seeds/` | `derived/rq3/C/seeds/` |
+| 组语料目录 | `derived/experiments/rq3/{group}/seeds/` | `derived/experiments/rq3/C/seeds/` |
 | 种子文件名 | `{NN}_{stream}_{methods}.raw`，NN = 2 位（>99 条时自适应加宽） | `01_DESCRIBE+SETUP.raw` |
 | 字典文件名 | `rtsp_base.dict` / `c_targeted.dict` / `c_compact.dict` | — |
 | 快照目录 | `rq3_snap/T{seconds}s/{container}/` | `rq3_snap/T3600s/rq3_C_chatafl_r1/` |
@@ -2050,10 +2050,10 @@ dryrun.tsv:            filename\tlayer\tscore\tlegal_illegal_expected\tverdict\t
 
 | 论文行名 | `group` | `fuzzer` | 语料 | 字典 | 期望条数 |
 |---|---|---|---|---|---|
-| A 守正 | `A` | `chatafl` | `derived/rq3/A/seeds` | `rtsp_base.dict` | 38 |
-| B 漏洞导向 | `B` | `chatafl` | `derived/rq3/B/seeds` | `rtsp_base.dict` | 50 |
-| C 完整聚焦 | `C` | `chatafl` | `derived/rq3/C/seeds` | `c_targeted.dict` | 50 |
-| D 解耦（附录） | `D` | `chatafl` | `derived/rq3/D/seeds` | `rtsp_base.dict` | 50 |
+| A 守正 | `A` | `chatafl` | `derived/experiments/rq3/A/seeds` | `rtsp_base.dict` | 38 |
+| B 漏洞导向 | `B` | `chatafl` | `derived/experiments/rq3/B/seeds` | `rtsp_base.dict` | 50 |
+| C 完整聚焦 | `C` | `chatafl` | `derived/experiments/rq3/C/seeds` | `c_targeted.dict` | 50 |
+| D 解耦（附录） | `D` | `chatafl` | `derived/experiments/rq3/D/seeds` | `rtsp_base.dict` | 50 |
 
 > ★ **bash 变量名禁用 `GROUPS`**（bash 内建特殊变量 = 当前用户组 ID 数组，赋值无效）→ 一律用 `GRP_LIST`（沿用 `rq1_collect_live555.sh` 的既有约定）。
 
@@ -2067,7 +2067,7 @@ dryrun.tsv:            filename\tlayer\tscore\tlegal_illegal_expected\tverdict\t
 | `rq3_collect_live555.sh` | `bash /home/zxy/rq3_collect.sh <collect_ts>` | VM（实验停后执行，**幂等**） |
 | `rq3_oracle_batch.sh` | `bash local/rq3_oracle_batch.sh` | VM |
 | `rq3_build_corpus.py` | `E:/app/Anaconda3/python.exe scripts/rq3_build_corpus.py` | Windows |
-| `rq3_metrics.py` | `E:/app/Anaconda3/python.exe scripts/rq3_metrics.py --collect derived/rq3/collect/<ts>` | Windows |
+| `rq3_metrics.py` | `E:/app/Anaconda3/python.exe scripts/rq3_metrics.py --collect derived/experiments/rq3/collect/<ts>` | Windows |
 | `rq3_stats.py` | `E:/app/Anaconda3/python.exe scripts/rq3_stats.py` | Windows |
 | `_fill_rq3_docx.py` | `E:/app/Anaconda3/python.exe local/_fill_rq3_docx.py` | Windows（编辑器会话需先 open） |
 | `seedgen.py` | `E:/app/Anaconda3/python.exe scripts/seedgen.py --protocol rtsp --focus-group C --out ... --manifest` | Windows |

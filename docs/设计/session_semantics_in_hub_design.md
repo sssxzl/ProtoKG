@@ -40,7 +40,7 @@ Session」「SETUP 用 /track{N}」），而非知识中枢的 facts。后果：
 ```
 Layer 1 aspect_registry（新增 3 个 aspect）
         ↓
-facts（derived/per_source/semantic/facts/semantic.jsonl，新增协议语义源）
+facts（derived/model/per_source/semantic/facts/semantic.jsonl，新增协议语义源）
         ↓ load_fact_views + assemble_bundle
 bundle.precondition / bundle.session_header / bundle.url_template
         ↓ 两条路径共享
@@ -55,7 +55,7 @@ bundle.precondition / bundle.session_header / bundle.url_template
 
 1. `fused_hub/schema/aspect_registry.json`：新增 `precondition` / `session_header` /
    `url_template` 三个 aspect（applicable_subject_types=method）。
-2. 新建 `derived/per_source/semantic/facts/semantic.jsonl`：rtsp 会话语义规则 facts
+2. 新建 `derived/model/per_source/semantic/facts/semantic.jsonl`：rtsp 会话语义规则 facts
    （precondition：SETUP→DESCRIBE、PLAY→SETUP、PAUSE→PLAY、TEARDOWN→SETUP；
    session_header：SETUP from_occurrence=2 带 Session、PLAY/PAUSE/TEARDOWN 带 Session；
    url_template：SETUP /track{N}、PLAY/PAUSE/TEARDOWN 尾斜杠、DESCRIBE/OPTIONS 裸流名）。

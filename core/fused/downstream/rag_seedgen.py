@@ -157,10 +157,10 @@ def load_fact_views(protocol: str = "rtsp",
 
     ★ 批次 1.6 步 1（中枢布局改 aspect）：**新布局优先、旧布局降级**。
 
-    - 新布局 ``derived/per_source/<protocol>/facts/<aspect>.jsonl``
+    - 新布局 ``derived/model/per_source/<protocol>/facts/<aspect>.jsonl``
       —— 中枢按 **aspect**（知识维度）统一存放；「源」退化为事实内部的
       ``all_claims[].authority`` 字段，不再是目录层级。
-    - 旧布局 ``derived/per_source/<protocol>/*/facts/*.jsonl``
+    - 旧布局 ``derived/model/per_source/<protocol>/*/facts/*.jsonl``
       —— 按源分目录（协议 × 源二维解耦）；**保留**作回退保险。
 
     两种布局**不会**互相重复读到：旧 glob ``*/facts/*.jsonl`` 需要三层路径
@@ -177,8 +177,8 @@ def load_fact_views(protocol: str = "rtsp",
     root = Path(facts_root) / protocol.lower() if facts_root else \
         paths.hub_root()
     # ★★★ **阶段 C：按知识分类的布局优先**（2026-11-09）
-    #   新：derived/hub/<分类>/<文件>.jsonl（A~F 六个知识分类）
-    #   旧：derived/hub/facts/<aspect>.jsonl（批次 1.6 的 aspect 布局）
+    #   新：derived/model/hub/<分类>/<文件>.jsonl（A~F 六个知识分类）
+    #   旧：derived/model/hub/facts/<aspect>.jsonl（批次 1.6 的 aspect 布局）
     #   更旧：<各源根>/*/facts/*.jsonl（按源分目录）
     if root.is_dir():
         from core.fused.hub_layout import read_classified

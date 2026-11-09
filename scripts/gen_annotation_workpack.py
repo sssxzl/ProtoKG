@@ -22,8 +22,8 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-TRUTH_DIR = ROOT / "derived" / "exp_semantic" / "truth"
-FROZEN = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
+TRUTH_DIR = ROOT / "derived" / "experiments" / "annotation" / "truth"
+FROZEN = ROOT / "derived" / "experiments" / "annotation" / "candidates_frozen.jsonl"
 OUT_DIR = ROOT / "local" / "annotation_workpack"
 
 PROTOCOL_LABEL = {"rtsp": "RTSP（RFC 2326）", "sip": "SIP（RFC 3261）",
@@ -89,7 +89,7 @@ def main() -> int:
     md.append("\n### 1.1 标注流程\n")
     md.append("\n1. 读 `docs/工具/人工标注指南.md`（判定标准 + 边界规则）。\n")
     md.append("2. 打开 `待标注模板.json`，逐条填写 4 个判定字段（见 §1.2）。\n")
-    md.append("3. 填完后回填到 `derived/exp_semantic/truth/<协议>.{annotated,holdout}.json`：\n")
+    md.append("3. 填完后回填到 `derived/experiments/annotation/truth/<协议>.{annotated,holdout}.json`：\n")
     md.append("   保持条目顺序与 `candidate_id` 不变，把 `pending` 改为 `false`、"
               "`annotator` 填你的代号。\n")
     md.append("4. 校验：`E:/app/Anaconda3/python.exe scripts/annotate_candidates.py validate "

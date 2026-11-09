@@ -215,7 +215,7 @@ def detect_protocol_kind(protocol: str) -> ProtocolKind:
 
 
 def kind_artifact_path(protocol: str) -> Path:
-    """判定结果的落盘路径：``derived/hub/<协议>/protocol_kind.json``。
+    """判定结果的落盘路径：``derived/model/hub/<协议>/protocol_kind.json``。
 
     ★ 中枢重设计（2026-11-08）：协议类型判定是**中枢级**产物 ⇒ 落 hub/。
     """

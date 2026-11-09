@@ -76,8 +76,8 @@ audit lineage 75 / matches 11 / conflicts 3 / validation 0。
 
 | 源 | 路径 | observation | attachment | 挂载目标 |
 |---|---|---|---|---|
-| traffic | `derived/lane_a/`（500 unit） | **25000** | **11000** | **3 个 Hub fact** |
-| source | `derived/source_a/`（9 unit） | **43** | **7**（2026-10-06 补齐，G-1） | **5 个 `constraint` fact** |
+| traffic | `derived/model/lane_a/`（500 unit） | **25000** | **11000** | **3 个 Hub fact** |
+| source | `derived/model/source/`（9 unit） | **43** | **7**（2026-10-06 补齐，G-1） | **5 个 `constraint` fact** |
 
 traffic 侧细节：11000 条 attachment **全部** `relation=insufficient`；
 14000 条 observation 无 target（§3.4 `no_target`）；
@@ -120,7 +120,7 @@ source 侧细节：`{no_target: 34, conforms_to_spec: 7, unspecified: 2}`；
 
 | # | 缺口 | 证据 | 性质 |
 |---|---|---|---|
-| ~~G-1~~ | ~~source provenance 无 attachment 路径~~ | **✅ 已补齐**（2026-10-06）：`core/source_a/attachment.py` + `derived/source_a/provenance/` 7 条 → 5 个 `constraint` fact | **已解决** |
+| ~~G-1~~ | ~~source provenance 无 attachment 路径~~ | **✅ 已补齐**（2026-10-06）：`core/source_a/attachment.py` + `derived/model/source/provenance/` 7 条 → 5 个 `constraint` fact | **已解决** |
 | **G-2** | **seedgen 桥接无生产调用者** | `generate_seeds_from_hub` 仅被 `tests/fused/pipeline/rules/test_real_rfc_e2e.py` 调用；`pipeline/` / `scripts/` **零调用** | 接线缺失 |
 | **G-3** | **U1 subject normalization** | 7 条 header fact 中 4 条为 Title-Case；**但 `lexical_normalization` 已被实测证明未实现为约束**（D49）⟹ 见 §4.2.2 | 归一缺口（backlog §10.1 / §10.2 / §16） |
 
@@ -191,7 +191,7 @@ F-2 (provenance 挂载) ───────────┘
 
 | 输入 | 来源 | 现状 |
 |---|---|---|
-| 各源抽取产物（ProtocolNorm / observation） | `derived/per_source/*/`、`derived/lane_a/`、`derived/source_a/` | ✅ 齐备 |
+| 各源抽取产物（ProtocolNorm / observation） | `derived/model/per_source/*/`、`derived/model/lane_a/`、`derived/model/source/` | ✅ 齐备 |
 | 冻结契约 | `fused_hub/schema/v1/*.json` | ✅ 齐备 |
 | 抽取规则集 | 各源 Rule Set | ✅ 三源齐备；traffic/source 为 provenance 侧 |
 
@@ -200,9 +200,9 @@ F-2 (provenance 挂载) ───────────┘
 | 产出 | 路径 | 现状 |
 |---|---|---|
 | 统一事实库 | `derived/fused/`（13 文件） | ✅ 65 facts |
-| 单源事实库 | `derived/per_source/{rfc,expert_note,vuln}/` | ✅ 3 × 13 文件 |
-| provenance 挂载 | `derived/lane_a/provenance/` | ✅ traffic 11000 |
-| provenance 挂载 | `derived/source_a/provenance/` | ❌ **不存在**（G-1） |
+| 单源事实库 | `derived/model/per_source/{rfc,expert_note,vuln}/` | ✅ 3 × 13 文件 |
+| provenance 挂载 | `derived/model/lane_a/provenance/` | ✅ traffic 11000 |
+| provenance 挂载 | `derived/model/source/provenance/` | ❌ **不存在**（G-1） |
 | 下游种子 | `seeds/<proto>/seedgen/batch-hub-*` | ⚠ 仅手工批次，无生产接线（G-2） |
 
 ---
@@ -572,7 +572,7 @@ P4  任何新增知识源                      ← 当前暂停
 |---|---|---|
 | **Q1** | L2 的 1 处真冗余（`method.SETUP.security_condition`，expert_note ∩ vuln）应如何处置 —— 合并 / 保留双源 evidence？ | **待裁定** |
 | **Q2** | header subject 归一改哪一侧 —— 改 CR-5 / VR-2 拼写，还是在 identity 层归一？⚠ **前提已变**（D49：词法规则未实现）⟹ 本质是「要不要实现 lexical normalizer」 | **待裁定**（backlog §10.1 / §16） |
-| ~~Q3~~ | ~~source 的 7 条 `conforms_to_spec` 该挂到哪~~ | **✅ 已裁定并落地**：挂到 Hub 的 `constraint` / `status.NNN` fact，落 `derived/source_a/provenance/`，7 条 → 5 个 distinct fact |
+| ~~Q3~~ | ~~source 的 7 条 `conforms_to_spec` 该挂到哪~~ | **✅ 已裁定并落地**：挂到 Hub 的 `constraint` / `status.NNN` fact，落 `derived/model/source/provenance/`，7 条 → 5 个 distinct fact |
 | **Q4** | seedgen 是否应扩通道以消费 `headers` / `security_condition`？扩了会不会反而降低种子多样性？ | **待裁定**（G-2） |
 | ~~Q5~~ | ~~`state` / `transition` 两个 kind 恒为 0~~ | **✅ 已答**：**extraction coverage gap** —— `state_machine.json` 已是 build 输入，property_registry 有 11 个 property 支持，但无规则产出。登记 backlog §17 |
 | **Q6** | traffic 的 11000 条 attachment **全部** `insufficient`，是否意味着 provenance 轨当前**零信息量**？ | **待裁定** |
@@ -624,7 +624,7 @@ python local/kb_fingerprint.py kb --aggregate
 # 期望: sha256:bcc1bd3f3f41d0bdfc2b8cd296297aab1edcbf1fc1766aea1d3c5e7b305bf06a (6061)
 
 # provenance 轨
-python -c "import pathlib; print(sum(1 for p in pathlib.Path('derived/source_a').rglob('observations.jsonl') for l in p.read_text(encoding='utf-8').splitlines() if l.strip()))"
+python -c "import pathlib; print(sum(1 for p in pathlib.Path('derived/model/source').rglob('observations.jsonl') for l in p.read_text(encoding='utf-8').splitlines() if l.strip()))"
 
 # 基线清单
 local/backup/step_fusion_pre/stage_b_status/baseline_manifest.txt

@@ -5,7 +5,7 @@
 ------------------
 `scripts/rq3_build_corpus.py` 原本「首组生成失败即 `return 4` 中止」⇒
 **B/C/D 组永远不会被重新生成**，磁盘上留着旧污染产物
-（QA 实测：`derived/rq3/A/seeds` 的 mtime 最新，而 B/C/D 仍是 10-31 03:24 的旧产物）。
+（QA 实测：`derived/experiments/rq3/A/seeds` 的 mtime 最新，而 B/C/D 仍是 10-31 03:24 的旧产物）。
 
 本文件把修复后的不变式固化成可执行断言：
 
@@ -18,8 +18,8 @@
 另有护栏：构建前后比对各组 `seeds` 目录的 mtime 快照 ⇒ 快照变了即说明本次
 构建改动了产物目录（提示后续流程「语料已被重建」）。
 
-★ 全程走 **tmp 目录 + mock 的 `_run_seedgen`**：**绝不触碰 `derived/rq3/`**
-  （硬约束：不得改动 `derived/rq3/` 下的任何产物）。
+★ 全程走 **tmp 目录 + mock 的 `_run_seedgen`**：**绝不触碰 `derived/experiments/rq3/`**
+  （硬约束：不得改动 `derived/experiments/rq3/` 下的任何产物）。
 """
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ SIGNAL = "语料已被重建"
 
 @pytest.fixture()
 def rq3_root(tmp_path, monkeypatch):
-    """把 rq3 产物根重定向到 tmp 目录（**绝不触碰 derived/rq3/**）。"""
+    """把 rq3 产物根重定向到 tmp 目录（**绝不触碰 derived/experiments/rq3/**）。"""
     root = tmp_path / "rq3"
     root.mkdir(parents=True, exist_ok=True)
     monkeypatch.setattr(C, "RQ3_ROOT", root)

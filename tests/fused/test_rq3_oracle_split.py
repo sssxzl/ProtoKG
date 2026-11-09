@@ -76,7 +76,7 @@ def test_pure_text_split_unchanged():
 
 def test_real_seed_files_unchanged():
     """★ 真实语料种子：切分结果与 v1 完全一致（逐条断言）。"""
-    seeds = ROOT / "derived" / "rq3" / "C" / "seeds"
+    seeds = ROOT / "derived" / "experiments" / "rq3" / "C" / "seeds"
     if not seeds.is_dir():
         pytest.skip("语料未生成")
     files = sorted(seeds.glob("*.raw"))

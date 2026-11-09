@@ -11,10 +11,10 @@
 
 四库（**文件级**隔离 —— 自动生成链路只读 ``rules.jsonl``，读不到候选）::
 
-    derived/per_source/<协议>/rfc/semantic/rules.jsonl       ← authoritative（只有 SemanticRule）
-    derived/per_source/<协议>/rfc/semantic/candidates.jsonl  ← candidate（只有 KnowledgeCandidate）
-    derived/per_source/<协议>/rfc/semantic/revoked.jsonl     ← revoked（被撤销的 SemanticRule）
-    derived/per_source/<协议>/rfc/semantic/feedback.jsonl    ← feedback（实验反馈，**不含规则内容**）
+    derived/model/per_source/<协议>/rfc/semantic/rules.jsonl       ← authoritative（只有 SemanticRule）
+    derived/model/per_source/<协议>/rfc/semantic/candidates.jsonl  ← candidate（只有 KnowledgeCandidate）
+    derived/model/per_source/<协议>/rfc/semantic/revoked.jsonl     ← revoked（被撤销的 SemanticRule）
+    derived/model/per_source/<协议>/rfc/semantic/feedback.jsonl    ← feedback（实验反馈，**不含规则内容**）
 
 ★ **feedback 库是「实验反馈」的唯一落点** —— 边界探测结果写这里，
   **不再**写进权威 facts ⇒ 规范事实与实验反馈严格分离（问题⑤）。
@@ -37,7 +37,7 @@ from core.fused.semantic import (
     SemanticRule,
 )
 
-#: 四库 → 文件名（落在 ``derived/per_source/<协议>/rfc/semantic/`` 下）。
+#: 四库 → 文件名（落在 ``derived/model/per_source/<协议>/rfc/semantic/`` 下）。
 #:
 #: - ``authoritative`` → ``rules.jsonl``：**只有** ``SemanticRule``（且 constraint 非 None）
 #: - ``candidate``     → ``candidates.jsonl``：**只有** ``KnowledgeCandidate``
@@ -65,7 +65,7 @@ FEEDBACK_PROBE_PREFIX = "probe:"
 # ===========================================================================
 
 def semantic_dir(protocol: str) -> Path:
-    """四库根目录 ``derived/per_source/<协议>/rfc/semantic/``。
+    """四库根目录 ``derived/model/per_source/<协议>/rfc/semantic/``。
 
     ★ 不在 ``*/facts/`` 之下 ⇒ 不会被 ``load_fact_views`` 读到
       （强制机制 3 的落盘侧保证）。

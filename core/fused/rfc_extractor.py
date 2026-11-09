@@ -3483,7 +3483,7 @@ def _apply_transition_gate(rows: list[dict], protocol: str) -> list[dict]:
     """对状态机转移过**质量闸**，并把闸的统计**落盘**（可审计）。
 
     ★ 闸是**纯后处理**（缓存存原始抽取结果）⇒ 调整判据不需要重抽 LLM。
-    ★ 统计落盘到 `derived/per_source/<协议>/transition_quality_gate.json`
+    ★ 统计落盘到 `derived/model/per_source/<协议>/transition_quality_gate.json`
       ⇒ 论文可报告「抽到 N 条 / 放行 M 条 / 拦下 K 条（状态名纯但触发列是事件）」。
     """
     _gated, _stat = _transition_quality_gate(
@@ -3756,7 +3756,7 @@ def _psm_conflicts(rows: list[dict]) -> list[dict]:
 
 
 def dump_per_source_artifact(protocol: str, name: str, payload: dict) -> None:
-    """把中间统计落盘到 ``derived/per_source/<协议>/<name>``（审计用，失败不阻断）。"""
+    """把中间统计落盘到 ``derived/model/per_source/<协议>/<name>``（审计用，失败不阻断）。"""
     try:
         _d = paths.hub_root()
         _d.mkdir(parents=True, exist_ok=True)
@@ -5097,7 +5097,7 @@ def extract_constraint_candidates(protocol: str, max_per_rfc: int = 80) -> list[
 #   · B-9 管「**是否产出**语义规则与候选」（构建侧）。
 #   `rules_only` 显式开启**产出**，但**绝不置位** D-6 ⇒ 全局默认仍关闭。
 
-#: 语义四库根目录的**覆盖**环境变量（默认不设 ⇒ 落 `derived/per_source/...`）。
+#: 语义四库根目录的**覆盖**环境变量（默认不设 ⇒ 落 `derived/model/per_source/...`）。
 #: 用途：把构建 / 测试产物隔离到临时目录，避免污染仓库 `derived/`。
 SEMANTIC_ROOT_ENV_KEY = "PROTORAG_SEMANTIC_ROOT"
 
@@ -5117,7 +5117,7 @@ def semantic_library_dir(protocol: str, root=None) -> Path:
     """语义四库目录 ``<root>/<协议>/rfc/semantic/``。
 
     ★ 默认根目录 = `core.fused.downstream.rule_store.semantic_dir(protocol)`
-      （即 `derived/per_source/<协议>/rfc/semantic/`）—— **不改** rule_store
+      （即 `derived/model/per_source/<协议>/rfc/semantic/`）—— **不改** rule_store
       的行为，只是把「根」参数化，便于把构建 / 测试产物隔离到临时目录
       （避免污染仓库 `derived/`）。
     """

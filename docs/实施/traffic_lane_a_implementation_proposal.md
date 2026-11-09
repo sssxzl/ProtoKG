@@ -14,9 +14,9 @@ core/lane_a/        11 模块   pcap / g1 / g2 / g4 / targets /
 tests/lane_a/       85 项测试  全部构造数据 + tmp_path，不碰真实 derived/
 scripts/attach_lane_a_provenance.py   独立入口（不改 build_hub.py）
 
-derived/lane_a/     500 unit   25000 observation
+derived/model/lane_a/     500 unit   25000 observation
                               (insufficient 11000 / no_target 14000)
-derived/lane_a/provenance/
+derived/model/lane_a/provenance/
                    11000 attachment，覆盖 3 条 distinct Hub fact
 ```
 
@@ -25,7 +25,7 @@ derived/lane_a/provenance/
 | 阶段 | 内容 | 结果 |
 |---|---|---|
 | I | 只读探针：G1 重建器 | 500/500 与 udp 侧 `client.log` 一致；两生产源 `capture.pcapng` × `rtsp.csv` 交叉验证 500/500 |
-| II | `derived/lane_a/` 落盘 + reader + schema | 5000 条 G1 observation；模块边界 4 条 AST/落点测试 |
+| II | `derived/model/lane_a/` 落盘 + reader + schema | 5000 条 G1 observation；模块边界 4 条 AST/落点测试 |
 | III | G2 / G3 / G4 / G8 + target 对齐 | 25000 条 observation；11000 条带 target |
 | — | Provenance Attachment（§5.4） | 11000 条 attachment；`derived/fused/` 13 文件逐字节不变 |
 
@@ -34,7 +34,7 @@ derived/lane_a/provenance/
 - `derived/fused/` 13 文件**逐字节不变**
 - `core/fused/` 与 `core/` 既有源码**零改动**（只新增 `core/lane_a/`）
 - `kb/` aggregate `sha256:bcc1bd3f…`（6061 files）不变
-- `derived/spec/rtsp/` NO DIFF
+- `derived/model/spec/rtsp/` NO DIFF
 - 全量 pytest **0 failed / 0 errors**
 
 ---
@@ -74,7 +74,7 @@ Hub protocol Fact，**不产生任何 Hub Candidate / Claim / Fact**。
 3. **C17 贡献集**：frame → message 的归属判定。契约见 §4.13。
 4. **StructuralObservation 记录器**：按
    `设计/traffic_lane_a_provenance_interface.md` §2 的形状写 Lane A 侧记录。
-   **不写 Hub。**落点见 §3.1.1（`derived/lane_a/<unit_id>/`）。
+   **不写 Hub。**落点见 §3.1.1（`derived/model/lane_a/<unit_id>/`）。
 5. **G2 / G4 / G8 提取器**：CSeq pairing、header presence/value、
    Session/Transport 上下文。契约见 §4.11。
 
@@ -133,18 +133,18 @@ Hub protocol Fact，**不产生任何 Hub Candidate / Claim / Fact**。
 
 > **✅ 已落定（2026-10-04）**
 
-#### 3.1.1 observation 的落点与命名 — `derived/lane_a/`
+#### 3.1.1 observation 的落点与命名 — `derived/model/lane_a/`
 
-**裁定**：`derived/lane_a/<unit_id>/`，与 Hub 的 `derived/fused/` 物理隔离。
+**裁定**：`derived/model/lane_a/<unit_id>/`，与 Hub 的 `derived/fused/` 物理隔离。
 
 **依据**：
 
 - `core/fused/runtime/layout.py:124` 的 `verify_layout` 的 root 是
   `workspace_root / "derived" / "fused"`，**只校验 `derived/fused/` 一个子树**，
   不对 `derived/` 顶层做白名单 ⟹ 新增顶层不产生 `layout_unexpected`。
-- 既有先例：`derived/vuln/` 已是 `derived/` 下的非 `fused`/`per_source`/`spec`
+- 既有先例：`derived/model/vuln/` 已是 `derived/` 下的非 `fused`/`per_source`/`spec`
   顶层目录。
-- **排除 `derived/per_source/traffic/lane_a/`**：traffic 尚未入 Hub，
+- **排除 `derived/model/per_source/traffic/lane_a/`**：traffic 尚未入 Hub，
   建一个空的 `per_source/traffic/` 会让接手者误读为 traffic 已入中枢，
   与 D17「不落 Hub」的隔离意图相反。
 
@@ -166,7 +166,7 @@ Hub protocol Fact，**不产生任何 Hub Candidate / Claim / Fact**。
 #### 3.1.3 格式校验 — 独立于 Hub validator 的 Lane A schema
 
 **裁定**：新增 `fused_hub/schema/v1/` 之外的 Lane A schema
-（位置随 3.1.1 定为 `derived/lane_a/` 同级的 schema 定义），
+（位置随 3.1.1 定为 `derived/model/lane_a/` 同级的 schema 定义），
 校验 `设计/traffic_lane_a_provenance_interface.md` §2 的记录形状。
 
 **依据**：Hub validator 校验的是 `Fact`/`Meta`/`Graph`/`Audit`，
@@ -216,7 +216,7 @@ Hub protocol Fact，**不产生任何 Hub Candidate / Claim / Fact**。
   且 `phase_a.py:296/312` 只遍历 `claims`。
 - **无机器强制**。若将来有人修改 writer 使 Evidence 可写在 claim 外，
   本方案**抓不到**。
-- 缓解：阶段 II 落盘时在 `derived/lane_a/` 内自带格式校验（见 3.1.3），
+- 缓解：阶段 II 落盘时在 `derived/model/lane_a/` 内自带格式校验（见 3.1.3），
   该校验覆盖记录自身形状，但不覆盖「是否被误写入 Hub」。
 
 **何时应重新评估**：若 traffic 真的进入 Hub 并开始产出 Claim
@@ -328,7 +328,7 @@ pipeline 根本看不到它——真去跑 pipeline 等于什么都没验。
 本文件转 Frozen
    ↓
 阶段 II —— Lane A 侧记录落盘
-  1. 按 §3.1.1 落点写 StructuralObservation 到 derived/lane_a/<unit>/
+  1. 按 §3.1.1 落点写 StructuralObservation 到 derived/model/lane_a/<unit>/
   2. 实现 §3.1.2 reader（core/lane_a/reader.py，纯读，不反向写 Hub）
   3. 实现 §3.1.3 Lane A schema 校验
   4. 本阶段完成后方可检验「G1 接入后 Hub 仍零副作用」的强断言

@@ -489,7 +489,7 @@ class TestFrozenStats:
         }]
         src.write_text(json.dumps(rows[0]) + "\n", encoding="utf-8")
         # 真实冻结集不在 tmp 里 ⇒ 用真实路径的统计函数，但只断言字段齐全
-        real = ROOT / "derived/exp_semantic/candidates_frozen.jsonl"
+        real = ROOT / "derived/experiments/annotation/candidates_frozen.jsonl"
         if not real.is_file():
             pytest.skip("既有冻结集不存在")
         stats = compute_frozen_stats(real, tmp_path / "out.jsonl")

@@ -19,7 +19,7 @@
 
 ## 1. 输入数据实测画像（设计的事实基础，非推测）
 
-`derived/spec/rtsp/norms/norms.jsonl`，41136 条（**190 个 distinct norm_id**，
+`derived/model/spec/rtsp/norms/norms.jsonl`，41136 条（**190 个 distinct norm_id**，
 按 capture 重复展开），`kb_source_type` 分布：
 
     traffic_pcap 17998 / traffic_raw 23000 / expert_note 89 /
@@ -631,7 +631,7 @@ header 通道，让 `HEADER_PATTERN` 的语义失效。
     returns_code / transitions_to / valid_in_state
 
 其中唯一看似相关的是 `transitions_to`。但实测
-`derived/spec/rtsp/graph/relations.jsonl` 表明它的既有语义是
+`derived/model/spec/rtsp/graph/relations.jsonl` 表明它的既有语义是
 **method → state**：
 
     {"src_id": "rtsp.method.setup",     "rel_type": "transitions_to",

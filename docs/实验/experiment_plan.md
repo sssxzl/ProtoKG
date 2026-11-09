@@ -18,7 +18,7 @@
 
 | 配置 | 种子 | 状态 |
 |---|---|---|
-| ProtoRAG 五源完整种子 | `derived/seeds/rtsp/20261018_205014/`（70 种子） | ✅ 已生成，待启动 |
+| ProtoRAG 五源完整种子 | `derived/model/seeds/rtsp/20261018_205014/`（70 种子） | ✅ 已生成，待启动 |
 | 基线：AFLNet 原始种子 | `/home/zxy/aflnet/tutorials/live555/in-rtsp` | 已有 |
 | 基线：ChatAFL 自带种子 | `in-rtsp-safe`（容器 `/opt/seeds/in-rtsp-safe`） | 已有 |
 | 基线：NSFuzz | 需下载（若不开源用 StateAFL 替代） | 待确认 |

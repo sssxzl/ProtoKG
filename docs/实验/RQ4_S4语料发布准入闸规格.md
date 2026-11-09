@@ -89,7 +89,7 @@ ProtoRAG 语料在 2026-10-31 出现过一次**静默退化**：当前事实重�
 3. **`From:`/`To:` 完全不参与 G1**。
 
 **为什么 SIP 仍要做 G1（不能判「不适用」）**：
-我实测 `derived/per_source/sip/traffic/facts/` **确实含外来主机**：
+我实测 `derived/model/per_source/sip/traffic/facts/` **确实含外来主机**：
 ```
 213.192.59.75   212.242.33.35   192.168.10.2   192.168.1.2   80.230.219.70   2.0.51.16
 ```
@@ -152,7 +152,7 @@ ProtoRAG 语料在 2026-10-31 出现过一次**静默退化**：当前事实重�
   "protocol": "rtsp",
   "env": "rq2-live555",
   "group": "B",
-  "seed_dir": "E:/.../derived/seeds/rtsp/rq4_B",
+  "seed_dir": "E:/.../derived/model/seeds/rtsp/rq4_B",
   "seed_files": 39,
   "gates": {
     "G1": {
@@ -227,13 +227,13 @@ ProtoRAG 语料在 2026-10-31 出现过一次**静默退化**：当前事实重�
 
 | # | 用例 | 期望 |
 |---|---|---|
-| A1 | 对 `derived/seeds/rtsp/rq4_B`（已发表、干净） | **exit 0**；G1 违规 0；G2 违规 0；G5 expected=39 actual=39 |
-| A2 | 对 `derived/seeds/rtsp/20261031_171135`（**已知污染**） | **exit 1**；G1 违规 ≈93 次 `10.11.26.98:554`；G2 违规含 `isapi` |
-| A3 | 对 `derived/seeds/rtsp/live555_20261024_110155`（旧的 47.9% 不可播语料） | **exit 1**；G2 违规 > 0（不可播会话） |
-| A4 | 对 `derived/seeds/sip/rq4_B`（无 URL 的语料） | **exit 0**；G1 `applicable=false` + `skipped_reason` 非空；G2 skip；**不得**因无 URL 而误报 |
-| A5 | 对 `derived/seeds/smtp/rq4_B`（无 URL、`default_url` 为空） | **exit 0**；G1 skip 且 **skipped_reason 必须提到 `default_url` 为空**（防将来有人把 SMTP 当适用） |
-| A5b | 对 `derived/seeds/sip/rq4_B`（**无 `://` 形式**的端点） | **exit 0**；G1 必须正确识别 `sip:127.0.0.1:5060`（R-URI）与 `127.0.0.1:5061`（Via/Contact）为**合法**，不得误报 |
-| A5c | 对 `derived/seeds/sip/rq4_B` | G2 **skip**（SIP 无会话概念），且 `skipped_reason` 非空 |
+| A1 | 对 `derived/model/seeds/rtsp/rq4_B`（已发表、干净） | **exit 0**；G1 违规 0；G2 违规 0；G5 expected=39 actual=39 |
+| A2 | 对 `derived/model/seeds/rtsp/20261031_171135`（**已知污染**） | **exit 1**；G1 违规 ≈93 次 `10.11.26.98:554`；G2 违规含 `isapi` |
+| A3 | 对 `derived/model/seeds/rtsp/live555_20261024_110155`（旧的 47.9% 不可播语料） | **exit 1**；G2 违规 > 0（不可播会话） |
+| A4 | 对 `derived/model/seeds/sip/rq4_B`（无 URL 的语料） | **exit 0**；G1 `applicable=false` + `skipped_reason` 非空；G2 skip；**不得**因无 URL 而误报 |
+| A5 | 对 `derived/model/seeds/smtp/rq4_B`（无 URL、`default_url` 为空） | **exit 0**；G1 skip 且 **skipped_reason 必须提到 `default_url` 为空**（防将来有人把 SMTP 当适用） |
+| A5b | 对 `derived/model/seeds/sip/rq4_B`（**无 `://` 形式**的端点） | **exit 0**；G1 必须正确识别 `sip:127.0.0.1:5060`（R-URI）与 `127.0.0.1:5061`（Via/Contact）为**合法**，不得误报 |
+| A5c | 对 `derived/model/seeds/sip/rq4_B` | G2 **skip**（SIP 无会话概念），且 `skipped_reason` 非空 |
 | A6 | 对当前事实**重新生成**的 RTSP/B（54 条，已修复） | **exit 1**（G5 契约 39≠54）→ **证明 G5 能抓到契约漂移** |
 | A7 | 对不存在的目录 | **exit 2** |
 | A8 | 同一输入连跑两次 | 输出一致（确定性） |
@@ -253,9 +253,9 @@ ProtoRAG 语料在 2026-10-31 出现过一次**静默退化**：当前事实重�
 ```
 # 建议挂载点：语料生成之后、实验之前（语料是实验的输入，不是产物）
 gate:
-  python scripts/check_corpus_release_gate.py --protocol rtsp --seed-dir derived/seeds/rtsp/rq4_B
-  python scripts/check_corpus_release_gate.py --protocol sip  --seed-dir derived/seeds/sip/rq4_B
-  python scripts/check_corpus_release_gate.py --protocol smtp --seed-dir derived/seeds/smtp/rq4_B
+  python scripts/check_corpus_release_gate.py --protocol rtsp --seed-dir derived/model/seeds/rtsp/rq4_B
+  python scripts/check_corpus_release_gate.py --protocol sip  --seed-dir derived/model/seeds/sip/rq4_B
+  python scripts/check_corpus_release_gate.py --protocol smtp --seed-dir derived/model/seeds/smtp/rq4_B
   # 任一非 0 → 阻断
 ```
 

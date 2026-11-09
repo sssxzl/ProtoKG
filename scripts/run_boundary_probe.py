@@ -12,7 +12,7 @@
 oracle 脚本应配置化；当前仅 RTSP 边界探测实验使用，保持现状但明确边界。
 
 用法:
-    python scripts/run_boundary_probe.py [--out derived/seeds/rtsp_boundary]
+    python scripts/run_boundary_probe.py [--out derived/model/seeds/rtsp_boundary]
 """
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def purge_legacy_boundary_facts(protocol: str = "rtsp") -> Optional[Path]:
       否则探测反馈照样进权威知识中枢（改进v2 问题⑤）。
 
     ★ **只删这一个具体文件** —— 不动 derived/ 下任何其它产物
-      （derived/seeds/、derived/rq3/、derived/rq4/、derived/per_source/*/rfc/ …）。
+      （derived/model/seeds/、derived/experiments/rq3/、derived/experiments/rq4/、derived/model/per_source/*/rfc/ …）。
 
     Returns:
         被删除的路径；文件本来就不存在 ⇒ None。
@@ -88,7 +88,7 @@ def batch_oracle(vm_dir: str, retries: int = 3) -> dict[int, bool]:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default=str(ROOT / "derived/seeds/rtsp_boundary"))
+    ap.add_argument("--out", default=str(ROOT / "derived/model/seeds/rtsp_boundary"))
     ap.add_argument("--semantic", action="store_true",
                     help="源 A：协议语义驱动边界（无需漏洞库，从状态机自环推导）")
     args = ap.parse_args()
@@ -113,7 +113,7 @@ def main() -> int:
         print(f"源 B（漏洞知识）边界候选: {len(candidates)} 个")
 
     # 2. 序列化 + scp 到虚拟机（用 forward slash 路径，避免 Windows 路径传给 scp 出错）
-    local_tmp = ROOT / "derived/seeds/bp_candidates"
+    local_tmp = ROOT / "derived/model/seeds/bp_candidates"
     local_tmp.mkdir(parents=True, exist_ok=True)
     for f in local_tmp.glob("*.raw"):
         f.unlink()

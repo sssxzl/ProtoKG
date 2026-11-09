@@ -160,7 +160,7 @@ RQ4 终态数据的「未被篡改」结论，不能靠单一脚本的一次输�
 | 实现 | 位置 | 语言 |
 |---|---|---|
 | 工程师 | `local/rq4_tar_audit.sh` | bash |
-| QA | `derived/rq4/qa/scripts/qa_tar_vs_plain.py` | python |
+| QA | `derived/experiments/rq4/qa/scripts/qa_tar_vs_plain.py` | python |
 
 **结论：12/12 md5 全部一致（0 条不一致），command_line 逐字比对 6/6 一致。**
 
@@ -299,7 +299,7 @@ fingerprint 文件命名 kb_fingerprint_before.txt 与 kb_fingerprint_after.txt�
 
 该源在 norms.jsonl 中的条目
 
-derived/per_source/<该源>/ 下的产物
+derived/model/per_source/<该源>/ 下的产物
 
 禁止改：
 
@@ -307,9 +307,9 @@ derived/per_source/<该源>/ 下的产物
 
 其他源在 norms.jsonl 中的条目
 
-derived/per_source/<其他源>/ 下的产物
+derived/model/per_source/<其他源>/ 下的产物
 
-derived/spec/rtsp/ 下与本次操作无关的文件
+derived/model/spec/rtsp/ 下与本次操作无关的文件
 
 若发现其他源的文件被意外修改（例如测试误写、fixture teardown 失败），不自动修。停下汇报，等指令。
 

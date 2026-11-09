@@ -103,12 +103,12 @@ def test_materialize_skeleton_writes_profile_facts(tmp_path, monkeypatch):
         lambda p: tmp_path / "fused_hub" / "targets" / p.lower()
         / "skeleton.json")
     monkeypatch.setattr(paths_mod, "per_source_facts_dir",
-                        lambda p, s: tmp_path / "derived" / "per_source" / p / s
+                        lambda p, s: tmp_path / "derived" / "model" / "per_source" / p / s
                         / "facts")
 
     n = build_hub._materialize_skeleton("rtsp")
     assert n == 1
-    dest = tmp_path / "derived" / "per_source" / "rtsp" / "profile" / "facts" \
+    dest = tmp_path / "derived" / "model" / "per_source" / "rtsp" / "profile" / "facts" \
         / "profile.jsonl"
     assert dest.is_file()
     fact = json.loads(dest.read_text(encoding="utf-8").splitlines()[0])
@@ -151,9 +151,9 @@ def test_source_manifest_records_source_set_and_skeleton(tmp_path, monkeypatch):
 def test_narrow_hub_state_detects_narrowed_hub(tmp_path, monkeypatch):
     """★ 中枢 source_set 非五源 ⇒ 判为窄化态。"""
     import tools.qa.run_guarded_pytest as guard
-    # ★ 中枢**共用一套**（新布局）⇒ 根是 derived/hub/，
+    # ★ 中枢**共用一套**（新布局）⇒ 根是 derived/model/hub/，
     #   sources.json 是**多协议结构**（protocols 段）。
-    root = tmp_path / "derived" / "hub"
+    root = tmp_path / "derived" / "model" / "hub"
     root.mkdir(parents=True, exist_ok=True)
     (root / "sources.json").write_text(
         json.dumps({"protocols": {"rtsp": {
@@ -168,9 +168,9 @@ def test_narrow_hub_state_detects_narrowed_hub(tmp_path, monkeypatch):
 def test_narrow_hub_state_full_hub_is_not_narrowed(tmp_path, monkeypatch):
     """★ 五源齐备 ⇒ **不**判为窄化 ⇒ 窄化豁免**不生效**（常态护栏不被削弱）。"""
     import tools.qa.run_guarded_pytest as guard
-    # ★ 中枢**共用一套**（新布局）⇒ 根是 derived/hub/，
+    # ★ 中枢**共用一套**（新布局）⇒ 根是 derived/model/hub/，
     #   sources.json 是**多协议结构**（protocols 段）。
-    root = tmp_path / "derived" / "hub"
+    root = tmp_path / "derived" / "model" / "hub"
     root.mkdir(parents=True, exist_ok=True)
     (root / "sources.json").write_text(
         json.dumps({"protocols": {"rtsp": {
