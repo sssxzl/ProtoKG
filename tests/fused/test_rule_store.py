@@ -28,7 +28,7 @@ from core.fused.downstream.boundary_probe import (
     emit_boundary_fact,
     emit_boundary_feedback,
 )
-from core.fused.semantic import (
+from core.fused.semantic.semantic import (
     EvidenceAnchor,
     ExecutableConstraint,
     KnowledgeCandidate,

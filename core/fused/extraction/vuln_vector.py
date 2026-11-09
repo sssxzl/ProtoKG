@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """core/fused/vuln_vector.py —— 漏洞模式向量库（Phase 3，借鉴 GLMFuzz）。
 
-复用 core.fused.source_retrieval 的 embedding 基础设施（sentence-transformers 优先、
+复用 core.fused.extraction.source_retrieval 的 embedding 基础设施（sentence-transformers 优先、
 n-gram 降级 + cosine），把结构化漏洞模式（vuln_pattern）向量化，支撑两个检索场景：
 
   1. 同协议新 CVE：新漏洞描述 → 检索相似历史漏洞模式 → 复用其 boundary/action；
@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Optional
 
 from core import paths
-from core.fused.source_retrieval import _build_embedder, _cosine
+from core.fused.extraction.source_retrieval import _build_embedder, _cosine
 
 
 def pattern_semantic_text(pat: dict) -> str:

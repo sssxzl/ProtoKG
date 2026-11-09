@@ -6,13 +6,13 @@ from pathlib import Path
 
 import pytest
 
-from core.fused.models import (
+from core.fused.hub.models import (
     Fact, FactKey, FactMetadata, Subject, ConditionAlways, Value,
     Claim, Evidence, Scope, Resolution, Support, Generalization,
     Alignment, LocatorLine,
 )
-from core.fused import export
-from core.fused.export import (
+from core.fused.hub import export
+from core.fused.hub.export import (
     get_fact_view, get_claim_view, get_evidence_view, export_facts_for_llm,
 )
 

@@ -1,7 +1,7 @@
 """tests/fused/test_traffic_extractor.py —— traffic extractor（client.log/rtsp.csv → norm）。"""
 from __future__ import annotations
 
-from core.fused.traffic_extractor import (
+from core.fused.extraction.traffic_extractor import (
     _sanitize_auth, _extract_client_log, _extract_csv, extract_traffic_norms,
     _load_traffic_schema,
 )
@@ -88,7 +88,7 @@ def test_extract_traffic_norms_nested_dirs():
 
 def test_infer_traffic_fields_llm_fallback():
     """LLM 兜底：从流量观测字段提取语义（对齐 LLM-Boofuzz「LLM 解析流量提取协议信息」）。"""
-    from core.fused.traffic_extractor import infer_traffic_fields
+    from core.fused.extraction.traffic_extractor import infer_traffic_fields
     from core.llm import StubLLMClient
     stub = StubLLMClient(response={"fields": [
         {"name": "CSeq", "definition": "序列号，用于匹配请求与响应"},

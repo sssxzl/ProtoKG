@@ -48,7 +48,7 @@ def _restore_semantic_switch():
     少了这个 fixture 会污染后续测试（实测：`test_semantic_chain` 的
     「默认路径不应有 semantic_rules 键」在整跑时失败、单跑通过）。
     """
-    from core.fused.llm_ensemble import (semantic_rules_enabled,
+    from core.fused.semantic.llm_ensemble import (semantic_rules_enabled,
                                          set_semantic_rules_enabled)
     _prev = semantic_rules_enabled()
     yield
@@ -62,7 +62,7 @@ def _restore_semantic_switch():
     少了这个 fixture 会污染后续测试（实测：`test_semantic_chain` 的
     「默认路径不应有 semantic_rules 键」在整跑时失败、单跑通过）。
     """
-    from core.fused.llm_ensemble import (semantic_rules_enabled,
+    from core.fused.semantic.llm_ensemble import (semantic_rules_enabled,
                                          set_semantic_rules_enabled)
     _prev = semantic_rules_enabled()
     yield
@@ -237,7 +237,7 @@ def test_no_seed_message_without_headers():
     """★ 端到端：三协议生成的报文**不得有任何一个没有头部**（头部协议）。"""
     from core.fused.downstream import rag_seedgen as RS
     from core.fused.downstream.edge_cover import edge_cover
-    from core.fused.llm_ensemble import set_semantic_rules_enabled
+    from core.fused.semantic.llm_ensemble import set_semantic_rules_enabled
     set_semantic_rules_enabled(True)
     for proto in ("rtsp", "sip"):
         b = RS.assemble_bundle(RS.load_fact_views(proto), proto,

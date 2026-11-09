@@ -1190,7 +1190,7 @@ def main() -> int:
     # ①b **路径式种子**（GraphRAG 批次 5；**默认关闭**）
     if GRAPH_PATH_LAYER_NAME in layers:
         try:
-            from core.fused.graph_query import path_seeds
+            from core.fused.graph.graph_query import path_seeds
             gp = path_seeds(
                 protocol, transitions=transitions,
                 message_instances=bundle.get("message_instances"),

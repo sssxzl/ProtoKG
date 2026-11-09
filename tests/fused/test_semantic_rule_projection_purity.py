@@ -29,7 +29,7 @@ from __future__ import annotations
 import pytest
 
 from core.fused.downstream import rag_seedgen as RS
-from core.fused import hub_view as _hub_view
+from core.fused.hub import hub_view as _hub_view
 
 
 def mk_rule(field: str, operator: str, expected_behavior: str = "",

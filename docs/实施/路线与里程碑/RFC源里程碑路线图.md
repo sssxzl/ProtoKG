@@ -14,7 +14,7 @@
 
 三条最重要的发现：
 
-1. **B 阶段的数据模型确实尚未落地**（确认团队判断）：全仓 `.py` 搜索 `SemanticRule` / `EvidenceAnchor` / `ExecutableConstraint` / `model_confidence` / `.validated` / `explicitness` / `rule_id` **全部 0 命中**。`core/fused/downstream/rule_store.py`、`core/fused/llm_ensemble.py`、`core/fused/downstream/response_oracle.py` 等 B/C/D 规划文件**均不存在**。
+1. **B 阶段的数据模型确实尚未落地**（确认团队判断）：全仓 `.py` 搜索 `SemanticRule` / `EvidenceAnchor` / `ExecutableConstraint` / `model_confidence` / `.validated` / `explicitness` / `rule_id` **全部 0 命中**。`core/fused/downstream/rule_store.py`、`core/fused/semantic/llm_ensemble.py`、`core/fused/downstream/response_oracle.py` 等 B/C/D 规划文件**均不存在**。
 
 2. **但存在一条「影子实现」必须先处理**：改进.md 说的 "旧伪代码" 指的是**文档里的伪代码**。代码里其实已经有一条**自由文本版**的语义约束链路——`rfc_extractor.py:1660 extract_constraint_candidates()` → `:1716 infer_constraints()` → `:1761 extract_constraint_norms()` → `norm.py:220 constraint_norm_to_facts()` → 产出 `legal_boundary` / `response_expectation` 两个 aspect → `rag_seedgen.py:508-510` 进 bundle → `rag_seedgen.py:617 _render_constraints()` 渲染进 LLM prompt → `boundary_probe.py:548 derive_constraint_candidates()` 消费。**这条链路已经在生产运行**，但用的是 `constraint` 自由文本（`"单 label 长度 <= 63"`），不是两层模型。B 阶段不是「从零新建」，而是「**替换这条链路的表达层**」——这改变了任务分解的形状（见 §3.7）。
 
@@ -42,7 +42,7 @@
 ### 1.2　问题①②③ 的代码级验证（A 阶段已完成，可直接采信）
 
 ```
-$ python -c "from core.fused.rfc_extractor import rfc_quality_report; ..."
+$ python -c "from core.fused.extraction.rfc_extractor import rfc_quality_report; ..."
 rtsp passed= True norms= 71 facts= 116 dup= 0 toc_out= 0 toc_only= 0 kinds= {'field': 45, 'method': 11, 'outcome': 15}
 sip  passed= True norms=102 facts= 148 dup= 0 toc_out= 0 toc_only= 0 kinds= {'method': 6, 'field': 46, 'outcome': 50}
 smtp passed= True norms= 10 facts=  10 dup= 0 toc_out= 0 toc_only= 0 kinds= {'method': 10}
@@ -194,7 +194,7 @@ DUP norm_id => {'rtsp.constraint.content-length': 10, 'rtsp.constraint.max-forwa
 ### 2.3　问题⑥ 的 `voting_models` —— 文档已改，**落地表有行但任务表没有**
 
 - 文档 `:577` 已改为 `{c.model_id for c in g}`，`:534-541` 有 `Candidate` 包装类。✅
-- §2.0 里程碑 D 的任务表（`:277-281`）**只有 D1/D2/D3 三行，没有「投票层代码」这一条**，也没写落点文件。§3.6 落地表 `:755` 写了「新建 `core/fused/llm_ensemble.py`」。**任务表缺一行。**
+- §2.0 里程碑 D 的任务表（`:277-281`）**只有 D1/D2/D3 三行，没有「投票层代码」这一条**，也没写落点文件。§3.6 落地表 `:755` 写了「新建 `core/fused/semantic/llm_ensemble.py`」。**任务表缺一行。**
 - 另：`:571` `_align_by_structural_equality(per_model, theta=theta)` 的 `theta` 参数在「span 重叠降级为辅助条件」后已无定义用途——**伪代码签名与语义不符**。
 
 ### 2.4　问题⑦ 的 Oracle —— 文档判定顺序已改，**但落地表落点错误（见 §1.4）**
@@ -893,7 +893,7 @@ graph LR
         SEM["core/fused/semantic.py<br/>rule_id 在 SemanticRule 顶层"]
         RO["core/fused/downstream/rule_store.py<br/>四库 + reflow_rules"]
         ORC["core/fused/downstream/response_oracle.py<br/>三轴枚举 + close_loop"]
-        ENS["core/fused/llm_ensemble.py<br/>Candidate(rule,model_id,run_id)"]
+        ENS["core/fused/semantic/llm_ensemble.py<br/>Candidate(rule,model_id,run_id)"]
     end
 
     subgraph CODE["现有代码（只读定位）"]
@@ -1149,13 +1149,13 @@ derived/experiments/annotation/<实验ID>/
 
 ### 5.2　D 阶段：投票（改进.md 问题⑥）
 
-**当前代码现状**：`core/fused/llm_ensemble.py` 不存在；`Candidate` / `vote_semantic_rules` 全仓 0 命中。D 阶段是**纯新增**，无回归风险。
+**当前代码现状**：`core/fused/semantic/llm_ensemble.py` 不存在；`Candidate` / `vote_semantic_rules` 全仓 0 命中。D 阶段是**纯新增**，无回归风险。
 
 **最小修正清单**：
 
 | # | 修正点 | 涉及文件 | 当前代码对应位置 | 改法 | 验收方式 |
 |---|---|---|---|---|---|
-| **D-1** | **`Candidate` 包装层** | 新建 `core/fused/llm_ensemble.py` | 无 | `@dataclass(frozen=True) class Candidate: rule: SemanticRule; model_id: str; run_id: str` | 单测：`SemanticRule` 上**无** `model_id` 属性（`hasattr(rule,'model_id') == False`）→ 证明模型身份**未污染规范规则** |
+| **D-1** | **`Candidate` 包装层** | 新建 `core/fused/semantic/llm_ensemble.py` | 无 | `@dataclass(frozen=True) class Candidate: rule: SemanticRule; model_id: str; run_id: str` | 单测：`SemanticRule` 上**无** `model_id` 属性（`hasattr(rule,'model_id') == False`）→ 证明模型身份**未污染规范规则** |
 | **D-2** | **投票输入取 model_id** | 同上 | 无 | `voting_models = {c.model_id for c in g}`；`votes = len(voting_models)` | 单测：构造 3 个 Candidate（**同一 model_id**、不同 rule）→ `votes == 1`（**不是** 3）。这条直接覆盖评审 T1 的「`votes=len(g)` 计的是候选数不是模型数」 |
 | **D-3** | **quorum = 严格多数** | 同上 | 无 | `quorum = N // 2 + 1` | 单测 N=1→1、N=2→2、N=3→2、N=5→3（**与文档 `:566` 一致**） |
 | **D-4** | **对齐主判据 = 结构化字段全等** | 同上 | 无 | 逐项比对 subject/operator/operand/expected/证据位置；span 重叠仅辅助 | 单测：两条 span 重叠 0.9 但 operator 不同 → **不对齐**（span 重叠不具传递性，评审 T1 第三点） |
@@ -1318,7 +1318,7 @@ grep -rn "SemanticRule\|EvidenceAnchor\|ExecutableConstraint\|model_confidence\|
 # 2) 三协议质量闸（A 阶段实测）
 C:/Users/13594/.workbuddy/binaries/python/versions/3.13.12/python.exe -c "
 import sys; sys.path.insert(0,'.')
-from core.fused.rfc_extractor import rfc_quality_report
+from core.fused.extraction.rfc_extractor import rfc_quality_report
 for p in ['rtsp','sip','smtp']:
     r = rfc_quality_report(p)
     print(p, r.passed, r.norm_count, r.fact_count, r.dup_fact_ids, r.toc_sourced_outcomes, len(r.toc_only_norms))
@@ -1328,7 +1328,7 @@ for p in ['rtsp','sip','smtp']:
 # 3) 约束候选的 TOC 污染 + 无 span（影子实现缺陷 A/B）
 C:/Users/13594/.workbuddy/binaries/python/versions/3.13.12/python.exe -c "
 import sys; sys.path.insert(0,'.')
-from core.fused.rfc_extractor import extract_constraint_candidates, _is_toc_line
+from core.fused.extraction.rfc_extractor import extract_constraint_candidates, _is_toc_line
 for p in ['rtsp','sip','smtp']:
     c = extract_constraint_candidates(p)
     print(p, len(c), 'toc=', sum(1 for x in c if _is_toc_line(x['text'])),

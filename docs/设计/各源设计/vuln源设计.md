@@ -259,7 +259,7 @@ Value(type=struct, data = vuln_pattern)   # 见 §4.2
   输入:  vuln_pattern × M
   流程:  映射 vuln_pattern fact → 落盘 vuln.jsonl → embedding 建向量库 → 缓存
   输出:  derived/per_source/<协议>/vuln/facts/vuln.jsonl + vuln_pattern_vectors/<协议>.json
-  依赖:  core.fused.vuln（扩展）、core.fused.source_retrieval（embedder 复用）、aspect_registry（新增 vuln_pattern）
+  依赖:  core.fused.extraction.vuln（扩展）、core.fused.extraction.source_retrieval（embedder 复用）、aspect_registry（新增 vuln_pattern）
 
 [阶段三 种子生成]       (依赖：阶段二 + bundle)
   输入:  bundle（assemble_bundle 含 vuln_pattern 桶）+ 向量库

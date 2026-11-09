@@ -22,7 +22,7 @@ from dataclasses import asdict
 import pytest
 
 from core.fused.downstream.boundary_probe import derive_constraint_candidates
-from core.fused.llm_ensemble import ENV_KEY as SEMANTIC_RULES_ENV_KEY
+from core.fused.semantic.llm_ensemble import ENV_KEY as SEMANTIC_RULES_ENV_KEY
 from core.fused.downstream.rag_seedgen import (
     BUNDLE_SCHEMA_VERSION,
     _render_domains,
@@ -33,7 +33,7 @@ from core.fused.downstream.rag_seedgen import (
     project_semantic_rules,
 )
 from core.fused.downstream.strategy import render_attack_prompt
-from core.fused.semantic import (
+from core.fused.semantic.semantic import (
     EvidenceAnchor,
     ExecutableConstraint,
     KnowledgeCandidate,
@@ -120,7 +120,7 @@ def test_bundle_contract_has_semantic_rules_and_version(monkeypatch):
     """assemble_bundle 的产物必须带 `semantic_rules` 与 `bundle_schema_version`。
 
     ★ D-6 起，语义规则参与生成是**默认关闭**的开关位
-      （`core/fused/llm_ensemble.py`）。本用例测的是**开关开启**时的契约 ——
+      （`core/fused/semantic/llm_ensemble.py`）。本用例测的是**开关开启**时的契约 ——
       ⇒ 显式打开开关，避免它随默认值变化而失去意义。
       「开关关闭 ⇒ 产物与 B-8 之前逐字节一致」由
       `tests/fused/test_semantic_rules_switch.py` 覆盖。

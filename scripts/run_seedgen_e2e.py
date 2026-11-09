@@ -29,7 +29,7 @@ from core.fused.downstream.strategy import (  # noqa: E402
     load_vuln_kb, classify_all, classify_vuln, dedupe_reqs, determine_strategies,
     generate_attack_seeds,
 )
-from core.fused.vuln_pattern import crash_streams  # noqa: E402
+from core.fused.extraction.vuln_pattern import crash_streams  # noqa: E402
 from core.fused.downstream.selector import select_seeds  # noqa: E402
 from core.llm import DeepSeekClient  # noqa: E402
 
@@ -200,7 +200,7 @@ def main() -> int:
         probed_streams: list = []
         if not vulns:
             try:
-                from core.fused.source_probe import probe_streams
+                from core.fused.extraction.source_probe import probe_streams
                 probed_streams = probe_streams() or []
                 if probed_streams:
                     print(f"[4c.1] 动态探测到 {len(probed_streams)} 个流名: {probed_streams}")

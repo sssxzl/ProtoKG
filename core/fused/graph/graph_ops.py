@@ -103,7 +103,7 @@ from typing import Any, Iterable, Optional
 
 
 
-from core.fused.graph_schema import edge_type_names, node_type_names
+from core.fused.graph.graph_schema import edge_type_names, node_type_names
 
 
 

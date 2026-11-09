@@ -36,8 +36,8 @@ import sys
 
 import pytest
 
-from core.fused.norm import constraint_identity_digest, map_norm_to_facts
-from core.fused.rfc_extractor import (
+from core.fused.extraction.norm import constraint_identity_digest, map_norm_to_facts
+from core.fused.extraction.rfc_extractor import (
     _independent_toc_lines,
     _line_offsets,
     extract_constraint_candidates,
@@ -66,7 +66,7 @@ def _local_compute_rule_id(protocol: str, spec_version: str,
                            operand, operand_ref, expected_behavior: str) -> str:
     """`compute_rule_id` 的**同契约本地镜像**（纯函数，sha256 派生）。
 
-    ★ 只在 `core.fused.semantic` 此刻不可用（并行编辑中）时兜底；
+    ★ 只在 `core.fused.semantic.semantic` 此刻不可用（并行编辑中）时兜底；
       性质断言（稳定 / 措辞无关）对任何纯函数都成立。
     """
     ident = {
@@ -99,7 +99,7 @@ def _derive_rule_id(section_path, **kw) -> str:
     }
     args.update(kw)
     try:
-        from core.fused.semantic import compute_rule_id
+        from core.fused.semantic.semantic import compute_rule_id
         return compute_rule_id(
             args["protocol"], args["spec_version"], tuple(section_path),
             args["subject_type"], args["subject_name"], args["operator"],
@@ -248,7 +248,7 @@ def test_candidates_are_in_document_order(candidates):
 
 def test_candidates_come_from_section_bodies_not_preamble(candidates, spec_texts):
     """候选**不**来自「首个章节标题之前」的抬头/摘要/目录区（P1-2 语义）。"""
-    from core.fused.rfc_extractor import (
+    from core.fused.extraction.rfc_extractor import (
         _doc_content_lines, _split_heads_bodies,
     )
     for p in PROTOCOLS:
@@ -339,7 +339,7 @@ def _digest_with_hash_seed(hashseed: str) -> str:
     env = dict(os.environ)
     env["PYTHONHASHSEED"] = hashseed
     env["PYTHONPATH"] = str(ROOT)
-    code = ("from core.fused.norm import constraint_identity_digest as d;"
+    code = ("from core.fused.extraction.norm import constraint_identity_digest as d;"
             "print(d('QNAME', '单 label <= 63', 'x', '1'))")
     out = subprocess.run([sys.executable, "-c", code], cwd=str(ROOT), env=env,
                          capture_output=True, text=True, timeout=180)
@@ -430,7 +430,7 @@ def test_section_no_path_skips_unnumbered_levels(candidates):
 
 def test_section_number_path_skips_empty_number_unit_level():
     """单元级：父层**无编号**时，号链**跳过**该层（不留空串）。"""
-    from core.fused.rfc_extractor import (
+    from core.fused.extraction.rfc_extractor import (
         SectionHead, _build_section_tree, _section_number_path, _section_path,
     )
     parent = SectionHead(level=1, number="", title="Unnumbered Section", line=1)

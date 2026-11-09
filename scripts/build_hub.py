@@ -29,7 +29,7 @@
 
 ★ 与 v1 scripts/build_hub.py 的区别:
   - v1 走 core.fused.pipeline (v1 candidateization, 硬编码 rfc 系 + vuln 系);
-  - 本脚本走 core.fused.norm (原生 norm → Fact 映射, 基于 Layer 1 Profile)。
+  - 本脚本走 core.fused.extraction.norm (原生 norm → Fact 映射, 基于 Layer 1 Profile)。
 
 ★ 只读保证:
   kb/ 全程只读; 仅读 derived/spec/<protocol>/norms/norms.jsonl (v1 extractor 产物);
@@ -51,16 +51,16 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from core.fused.norm import map_norm_to_facts                   # noqa: E402
-from core.fused.rfc_extractor import (                           # noqa: E402
+from core.fused.extraction.norm import map_norm_to_facts                   # noqa: E402
+from core.fused.extraction.rfc_extractor import (                           # noqa: E402
     _extract_transition_table, infer_transitions,
 )
-from core.fused.expert_note import expert_note_to_facts         # noqa: E402
-from core.fused.vuln import vuln_to_facts                       # noqa: E402
-from core.fused.registry import load_registry                  # noqa: E402
-from core.fused.validation import validate_fact                # noqa: E402
-from core.fused.export import get_fact_view                    # noqa: E402
-from core.fused.llm_ensemble import (                          # noqa: E402
+from core.fused.extraction.expert_note import expert_note_to_facts         # noqa: E402
+from core.fused.extraction.vuln import vuln_to_facts                       # noqa: E402
+from core.fused.hub.registry import load_registry                  # noqa: E402
+from core.fused.hub.validation import validate_fact                # noqa: E402
+from core.fused.hub.export import get_fact_view                    # noqa: E402
+from core.fused.semantic.llm_ensemble import (                          # noqa: E402
     ENV_KEY as SEMANTIC_RULES_ENV_KEY,
     semantic_rules_enabled,
     set_semantic_rules_enabled,
@@ -995,7 +995,7 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
     #   ★ 落位依据 = knowledge_slots.json 的 aspect_map（**不改抽取器**）
     #   ★ 顺序契约：index/order.jsonl 记**全局下标** ⇒ 读取端排序后
     #     遍历序与旧布局逐字节一致 ⇒ 种子编号不漂移。
-    from core.fused.hub_layout import write_classified
+    from core.fused.hub.hub_layout import write_classified
     # ★★★ **必须传「旧布局的全局下标」**（不是按 aspect 分组后的序号）
     #   ⇒ 否则位置信息丢失 ⇒ 落位后顺序错乱 ⇒ 种子编号漂移！
     _records: list[tuple[int, str, dict]] = []
@@ -1008,7 +1008,7 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
     written = write_classified(paths.hub_root(), _records, protocol)
     # ★ **语义四库提升进中枢**（阶段 C4）⇒ 消解「两套体系」
     #   （四库原本**故意**在 */facts/ 之外 ⇒ 中枢读不到 ⇒ 两套体系）
-    from core.fused.semantic_lift import lift_library, write_lifted
+    from core.fused.semantic.semantic_lift import lift_library, write_lifted
     _lifted = lift_library(protocol)
     _n_lift = write_lifted(paths.hub_root(), protocol, _lifted)
     if _n_lift:
@@ -1073,8 +1073,8 @@ def _build_source(source: str, norms: list[dict], registry,
         # traffic 源：从 kb/<protocol>/数据流量/*/ 的 client.log/rtsp.csv 确定性抽取
         # traffic norm（AutoSeeder 式 rule 部分，对齐 LLM-Boofuzz），再按 norm_id 去重
         # 映射 observed fact。不再依赖 norms.jsonl（v1 extractor 产物）。
-        from core.fused.traffic_extractor import extract_traffic_norms
-        from core.fused.traffic import traffic_norms_to_facts
+        from core.fused.extraction.traffic_extractor import extract_traffic_norms
+        from core.fused.extraction.traffic import traffic_norms_to_facts
         # ★ 批次 2.4：传入**规范（rfc）的方法集**⇒ 观测到的方法名要与
         #   规范求交集（否则 SMTP 邮件正文会被当成「方法」⇒ 442 个伪方法）
         traffic_norms = extract_traffic_norms(
@@ -1089,13 +1089,13 @@ def _build_source(source: str, norms: list[dict], registry,
         # ★ A0.4：rfc 源走**质量闸**——① 构建质量闸（schema/重复ID/TOC残留）
         #   失败则**阻断构建**；② 离线评测（人工真值集）只作发布准入，缺真值集跳过。
         # ★ A0.5：产物按 build_id 写**独立快照**再原子切换，同输入两次 build 字节一致。
-        from core.fused.rfc_extractor import (
+        from core.fused.extraction.rfc_extractor import (
             extract_rfc_norms, rfc_quality_report, compute_build_id,
             _load_rfc_config,
         )
         rfc_norms = extract_rfc_norms(protocol)
         if constraints:
-            from core.fused.rfc_extractor import (extract_constraint_norms,
+            from core.fused.extraction.rfc_extractor import (extract_constraint_norms,
                                                   infer_structures)
             try:
                 rfc_norms.extend(extract_constraint_norms(protocol))
@@ -1140,7 +1140,7 @@ def _build_source(source: str, norms: list[dict], registry,
     # 含字段级实例）。不再走 norms.jsonl 的正则 method 提取（ProtocolGPT 思路已弃用），
     # 也不再单独提取 header 清单（extract_header_facts 已移除，字段全集由字段级实例覆盖）。
     if source == "source":
-        from core.fused.source_autoseeder import infer_source_facts
+        from core.fused.extraction.source_autoseeder import infer_source_facts
         facts = []
         facts.extend(infer_source_facts(protocol))
         return facts, 0
@@ -1195,7 +1195,7 @@ def _run_rules_only(protocol: str, args) -> int:
       ② 落盘后审**真实文件**（强制机制 4 针对的就是文件内容）；
       ③ 报告给出全部度量 + `gate_exercised` 自检。
     """
-    from core.fused.rfc_extractor import (
+    from core.fused.extraction.rfc_extractor import (
         SEMANTIC_ROOT_ENV_KEY, audit_semantic_library, audit_semantic_rows,
         build_semantic_rules, save_semantic_library, semantic_candidate_row,
         semantic_quality_report, semantic_rule_row,

@@ -20,7 +20,7 @@ import json
 from pathlib import Path
 from typing import Any, Optional
 
-from core.fused.graph_ops import (community_class, community_owner_mix,
+from core.fused.graph.graph_ops import (community_class, community_owner_mix,
                                    detect_communities, merge_multidigraph,
                                    split_by_graph)
 
@@ -39,7 +39,7 @@ def build_community_inputs(protocol: str) -> list[dict[str, Any]]:
         ``[{"community_id":..., "members":[...], "edges":[...], "owner_mix":{...},
         "class":..., "facts":[...], "hash":...}, ...]``
     """
-    from core.fused.graph_ops import read_graph
+    from core.fused.graph.graph_ops import read_graph
     nodes, edges = read_graph(protocol)
     sn, se = split_by_graph(nodes, edges, "semantic")
     mn, me = merge_multidigraph(sn, se)
@@ -132,7 +132,7 @@ def generate_community_reports(protocol: str,
 
     ★ **不阻断**：LLM 不可用 / 调用失败 ⇒ 用确定性摘要（仍产出社区）。
     """
-    from core.fused.source_retrieval import CACHE_DIR
+    from core.fused.extraction.source_retrieval import CACHE_DIR
     cache_file = CACHE_DIR / f"{protocol}.community_reports.json"
     cache: dict[str, Any] = {}
     try:
@@ -197,7 +197,7 @@ def generate_community_reports(protocol: str,
 
 def write_communities(protocol: str, reports: list[dict[str, Any]]) -> Path:
     """把社区报告落盘到 ``derived/per_source/<协议>/graph/communities.json``。"""
-    from core.fused.graph_ops import graph_dir
+    from core.fused.graph.graph_ops import graph_dir
     d = graph_dir(protocol)
     d.mkdir(parents=True, exist_ok=True)
     p = d / "communities.json"
@@ -212,7 +212,7 @@ def write_communities(protocol: str, reports: list[dict[str, Any]]) -> Path:
 
 def read_communities(protocol: str) -> list[dict[str, Any]]:
     """读回落盘的社区报告。"""
-    from core.fused.graph_ops import graph_dir
+    from core.fused.graph.graph_ops import graph_dir
     p = graph_dir(protocol) / "communities.json"
     if not p.is_file():
         return []

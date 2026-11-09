@@ -13,11 +13,11 @@ import re
 import unicodedata
 from typing import Any
 
-from core.fused.models import (
+from core.fused.hub.models import (
     Subject, FactKey, ConditionAlways, Value, Fact, FactMetadata,
     Claim, Evidence, Scope,
 )
-from core.fused.canonical import (
+from core.fused.hub.canonical import (
     compute_fact_id, compute_claim_id, compute_evidence_id,
 )
 

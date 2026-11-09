@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import pytest
 
-from core.fused import rfc_extractor as rx
+from core.fused.extraction import rfc_extractor as rx
 
 
 # ===========================================================================

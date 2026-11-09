@@ -20,11 +20,11 @@ from pathlib import Path
 from typing import Any, Optional
 
 from core import paths
-from core.fused.models import (
+from core.fused.hub.models import (
     Subject, FactKey, ConditionAlways, Value, Fact, FactMetadata,
     Claim, Evidence, Scope,
 )
-from core.fused.canonical import (
+from core.fused.hub.canonical import (
     compute_fact_id, compute_claim_id, compute_evidence_id,
 )
 
@@ -123,7 +123,7 @@ def vuln_entry_to_pattern_facts(entry: dict[str, Any], protocol: str = "rtsp",
     {action, trigger_sequence, trigger_field, boundary, cwe, streams, mutation_hint}。
     subject 取触发主锚点（method 优先，否则 header）；epistemic=descriptive，authority=vuln。
     """
-    from core.fused.vuln_pattern import complete_vuln_pattern
+    from core.fused.extraction.vuln_pattern import complete_vuln_pattern
     pat = complete_vuln_pattern(entry, protocol=protocol, llm=llm)
     if pat is None:
         return []

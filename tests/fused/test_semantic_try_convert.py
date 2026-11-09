@@ -28,7 +28,7 @@ import dataclasses
 
 import pytest
 
-from core.fused.semantic import (
+from core.fused.semantic.semantic import (
     EVIDENCE_KINDS,
     MODALITY_MANDATORY,
     MODALITY_NONE,
@@ -654,7 +654,7 @@ def test_try_convert_with_source_auto_loads_source_text():
     ★ 用 **B-3 的真实候选**（真实 span + 真实 anchor）验证 C2 —— 这同时
       验证了「B-2 的逐字比对口径」与「B-3 的产出口径」**严丝合缝**。
     """
-    from core.fused.rfc_extractor import extract_constraint_candidates
+    from core.fused.extraction.rfc_extractor import extract_constraint_candidates
 
     candidates = extract_constraint_candidates("sip")
     assert candidates, "B-3 未产出候选"
@@ -696,7 +696,7 @@ def test_real_candidates_pass_c2_verbatim_check():
     ★ 下面的 `verified == total` 就是精确断言（比例必须为 100%），
       只是不与语料规模绑定。
     """
-    from core.fused.rfc_extractor import extract_constraint_candidates
+    from core.fused.extraction.rfc_extractor import extract_constraint_candidates
 
     from core import paths
 
@@ -753,7 +753,7 @@ def test_compute_explicitness_respects_m4_purity():
 
 def test_explicitness_values_are_within_declared_vocabulary():
     """explicitness 取值必须落在 `EXPLICITNESS` 词表内。"""
-    from core.fused.semantic import EXPLICITNESS
+    from core.fused.semantic.semantic import EXPLICITNESS
 
     for text in (_NORMATIVE_TEXT, _MAY_TEXT, _PROSE_TEXT):
         for kind in ("normative", "abnf", "table", "prose"):

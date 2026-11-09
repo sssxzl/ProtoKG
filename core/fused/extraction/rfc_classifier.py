@@ -92,7 +92,7 @@ def _classify_by_form(window: dict[str, Any]) -> Optional[str]:
     text = window.get("text") or ""
     if not text.strip():
         return None
-    from core.fused.rfc_forms import (classify_form, form_candidates,
+    from core.fused.extraction.rfc_forms import (classify_form, form_candidates,
                                       _match_roles, _split_columns)
     try:
         blocks = form_candidates(text.split("\n"))
@@ -225,7 +225,7 @@ def classify_window(window: dict[str, Any], cfg: Optional[dict] = None,
     # L-D：章节号兜底（旧通道）
     if cfg is not None:
         try:
-            from core.fused.rfc_extractor import _section_kind
+            from core.fused.extraction.rfc_extractor import _section_kind
             return _section_kind(window, cfg, src_name)
         except Exception:                           # noqa: BLE001
             return None

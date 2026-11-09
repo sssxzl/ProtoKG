@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from core.fused.models import (
+from core.fused.hub.models import (
     Fact, Claim, Evidence, Resolution, Support, Generalization,
 )
 # ★ 2026-11-08：v1 兼容层（core/fused/compat.py）已删 ⇒ v1 产物
@@ -228,7 +228,7 @@ def _fact_from_json(line: str) -> Fact:
 
 def _deserialize(obj: dict) -> Fact:
     """从 v2 shape dict 还原 Fact 对象 (双轨阶段, 简化版)。"""
-    from core.fused.models import (
+    from core.fused.hub.models import (
         Subject, FactKey, Value, Claim, Evidence, Scope,
         ConditionAlways, FactMetadata,
     )
@@ -240,7 +240,7 @@ def _deserialize(obj: dict) -> Fact:
         path=fk_d["subject"].get("path", []))
     fid = obj.get("fact_id")
     if not fid:
-        from core.fused.canonical import compute_fact_id
+        from core.fused.hub.canonical import compute_fact_id
         fid = compute_fact_id(FactKey(protocol=fk_d["protocol"],
                                        version=fk_d["version"],
                                        subject=subj, aspect=fk_d["aspect"],

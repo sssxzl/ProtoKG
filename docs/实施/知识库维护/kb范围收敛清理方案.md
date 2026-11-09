@@ -229,7 +229,7 @@ TLS 的 ContentType）全部指向**已不存在的 kb 源**。保留一个自�
 >
 > | 检查项 | 实测结果 |
 > |---|---|
-> | `source_fsm.py:19` 的 `from core.fused.protocol_patterns import get_pattern` | **不受影响** —— 删的是 `PROTOCOL_PATTERNS` 的**字典条目**，不是函数/模块。`get_pattern` 照常存在 |
+> | `source_fsm.py:19` 的 `from core.fused.extraction.protocol_patterns import get_pattern` | **不受影响** —— 删的是 `PROTOCOL_PATTERNS` 的**字典条目**，不是函数/模块。`get_pattern` 照常存在 |
 > | `get_pattern("dns")` 的行为 | `PROTOCOL_PATTERNS.get(key, DEFAULT_PATTERN)` → 删条目后**回落 `DEFAULT_PATTERN`，不抛异常**（`protocol_patterns.py:98`） |
 > | `source_fsm.py` 的调用链 | `_extract_protocol_signals(src_dir, protocol)` → `get_pattern(protocol)`，**协议名由调用方传入**，引擎本身协议无关。删条目只影响「若真有人用 dns/dtls/ssh/tls/ftp 调它」的路径 → **那种调用本来就不该发生**（kb 已无这些协议） |
 > | 测试引用 | `grep -rn "protocol_patterns\|list_protocols\|PROTOCOL_PATTERNS" tests/` → **0 命中** |
@@ -253,7 +253,7 @@ TLS 的 ContentType）全部指向**已不存在的 kb 源**。保留一个自�
 > **整文件退役**（连同 `source_fsm.py` 一起删）—— 而不是留着一个 DEPRECATED 孤岛再逐条削字典。
 > 因为「DEPRECATED + 无调用方 + 无测试」的文件，唯一合理终态是删除；
 > 逐条删字典条目只会产生一个「半死」的模块。
-> **本轮不做，因为整文件退役会动 `source_fsm.py` 的 import（`from core.fused.protocol_patterns import get_pattern`），
+> **本轮不做，因为整文件退役会动 `source_fsm.py` 的 import（`from core.fused.extraction.protocol_patterns import get_pattern`），
 > 属于超出「kb 裁剪」范围的改动。**
 >
 > ---

@@ -24,7 +24,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from core.fused import rfc_extractor as RX                   # noqa: E402
+from core.fused.extraction import rfc_extractor as RX                   # noqa: E402
 from core.fused.downstream.rag_seedgen import (              # noqa: E402
     assemble_bundle, load_fact_views,
 )

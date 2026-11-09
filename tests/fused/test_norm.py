@@ -1,14 +1,14 @@
 """tests/fused/test_norm.py —— norm → Fact 原生映射 (Layer 2 第一源 rfc)。"""
 from __future__ import annotations
 
-from core.fused.norm import (
+from core.fused.extraction.norm import (
     parse_transition_content, transition_norm_to_fact,
     parse_field_content, field_norm_to_facts,
     parse_outcome_content, outcome_norm_to_facts, method_norm_to_facts,
     map_norm_to_facts,
 )
-from core.fused.registry import load_registry
-from core.fused.validation import validate_fact
+from core.fused.hub.registry import load_registry
+from core.fused.hub.validation import validate_fact
 
 
 TRANSITION_NORM = {

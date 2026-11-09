@@ -100,7 +100,7 @@ def test_bitfield_extraction():
       ② 一行**多字段** ⇒ 必须按 ``|`` 切单元格（否则非贪婪匹配会跨 ``|`` 拼名）；
       ③ 字段名与长度之间可有填充空格。
     """
-    from core.fused.rfc_forms_binary import extract_bitfield_blocks
+    from core.fused.extraction.rfc_forms_binary import extract_bitfield_blocks
     lines = [
         "   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+",
         "   |     op (1)    |   htype (1)   |   hlen (1)    |   hops (1)    |",
@@ -122,7 +122,7 @@ def test_option_extraction_two_forms():
     ★ RFC 2132 用的是**独立小节**（正文「The code for this option is 12」）
       ⇒ 只支持汇总表会抽出 0 个。
     """
-    from core.fused.rfc_forms_binary import extract_option_tables
+    from core.fused.extraction.rfc_forms_binary import extract_option_tables
     lines_a = [
         "   Code   Len                 Host Name",
         "   +-----+-----+-----+-----+-----+-----+-----+-----+-----+--",
@@ -143,7 +143,7 @@ def test_option_extraction_two_forms():
 
 def test_fixed_field_excludes_generic_words():
     """★ 定长字段通道排除**通用词**（实测「length 312 octets」被误抽）。"""
-    from core.fused.rfc_forms_binary import extract_fixed_fields
+    from core.fused.extraction.rfc_forms_binary import extract_fixed_fields
     out = extract_fixed_fields([
         "   The total length 312 octets of the vendor field",
         "   xid  4 octets",

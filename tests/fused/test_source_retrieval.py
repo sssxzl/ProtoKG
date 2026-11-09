@@ -4,7 +4,7 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-from core.fused.source_retrieval import (
+from core.fused.extraction.source_retrieval import (
     slice_code, _postprocess, AUTOSEEDER_QUERIES,
 )
 

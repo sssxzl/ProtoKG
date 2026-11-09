@@ -28,7 +28,7 @@ from core.fused.downstream.rule_store import (
     KIND_RULE,
     publish_rules,
 )
-from core.fused.semantic import (
+from core.fused.semantic.semantic import (
     SANITIZE_REJECT_REASONS,
     SemanticRule,
     sanitize_rule,

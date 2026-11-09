@@ -20,7 +20,7 @@ import re
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
-from core.fused.knowledge_slots import locate
+from core.fused.hub.knowledge_slots import locate
 
 #: 实体 id 的分隔符
 _SEP = ":"

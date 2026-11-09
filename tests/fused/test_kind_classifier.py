@@ -26,7 +26,7 @@ def test_classifier_does_not_reference_section_numbers():
 
     ★ 只允许 L-D 兜底里调用旧通道（`_section_kind`）。
     """
-    from core.fused import rfc_classifier as RC
+    from core.fused.extraction import rfc_classifier as RC
     src = inspect.getsource(RC)
     # 主体判据函数里不得出现 section_no / method_sections 等
     for fn_name in ("_classify_by_form", "_classify_by_title",
@@ -45,7 +45,7 @@ def test_classifier_has_no_protocol_names():
       但**代码**里出现协议名就意味着判据被写死了。
     """
     import ast
-    from core.fused import rfc_classifier as RC
+    from core.fused.extraction import rfc_classifier as RC
     src = inspect.getsource(RC)
     tree = ast.parse(src)
     doc_lines: set[int] = set()
@@ -65,7 +65,7 @@ def test_classifier_has_no_protocol_names():
 
 def test_classifier_falls_back_to_config():
     """★ L-D 兜底：配置仍被调用（保留人工纠正入口）。"""
-    from core.fused import rfc_classifier as RC
+    from core.fused.extraction import rfc_classifier as RC
     src = inspect.getsource(RC.classify_window)
     assert "_section_kind" in src
     assert "sections_by_file" in src or "src_name" in src
@@ -77,14 +77,14 @@ def test_classifier_falls_back_to_config():
 
 def test_kinds_cover_all_six():
     """★ 新通道覆盖旧通道的**全部 6 类**（否则不能清除旧通道）。"""
-    from core.fused.rfc_classifier import KINDS
+    from core.fused.extraction.rfc_classifier import KINDS
     assert set(KINDS) == {"method", "field", "status", "transition",
                           "outcome", "required_header"}
 
 
 def test_coverage_table_reports_classes():
     """★ 覆盖统计能报出实际判出的类别。"""
-    from core.fused.rfc_classifier import coverage_table
+    from core.fused.extraction.rfc_classifier import coverage_table
     windows = [
         {"section_no": "10.1", "title": "OPTIONS", "text": "OPTIONS * RTSP/1.0"},
         {"section_no": "12.1", "title": "CSeq", "text": "CSeq: 1"},
@@ -103,7 +103,7 @@ def test_coverage_table_reports_classes():
 
 def test_l1_table_with_roles_is_transition():
     """★ L-A：表头有 from/trigger/to ⇒ 迁移表；否则是字段表。"""
-    from core.fused.rfc_classifier import _classify_by_form
+    from core.fused.extraction.rfc_classifier import _classify_by_form
     tr = {"section_no": "3", "title": "Transitions",
           "text": "From State | Trigger | To State\n"
                   "Init | REQUEST | Ready\n"}
@@ -119,7 +119,7 @@ def test_l1_table_with_roles_is_transition():
 
 def test_l2_title_forms():
     """★ L-B：标题形态 ⇒ 类别。"""
-    from core.fused.rfc_classifier import _classify_by_title
+    from core.fused.extraction.rfc_classifier import _classify_by_title
     assert _classify_by_title({"title": "OPTIONS"}) == "method"
     assert _classify_by_title({"title": "Content-Length"}) == "field"
     assert _classify_by_title({"title": "100 Trying"}) == "status"
@@ -132,7 +132,7 @@ def test_l2_title_forms():
 
 def test_l2_option_registry_form_is_field():
     """★ 选项**登记形态**（Code:/Name:/Defined in:）⇒ 字段，不是方法。"""
-    from core.fused.rfc_classifier import _classify_by_form
+    from core.fused.extraction.rfc_classifier import _classify_by_form
     w = {"section_no": "3.2.3", "title": "URL",
          "text": "   Code:              114\n"
                  "   Name:              URL\n"
@@ -142,7 +142,7 @@ def test_l2_option_registry_form_is_field():
 
 def test_l3_prose_forms():
     """★ L-C：正文句式。"""
-    from core.fused.rfc_classifier import _classify_by_prose
+    from core.fused.extraction.rfc_classifier import _classify_by_prose
     assert _classify_by_prose(
         {"text": "The format of the STARTTLS command is:"}) == "method"
     assert _classify_by_prose(
@@ -152,7 +152,7 @@ def test_l3_prose_forms():
 
 def test_l4_fallback_uses_config():
     """★ L-D：三层都判不出时，用章节号配置兜底。"""
-    from core.fused.rfc_classifier import classify_window
+    from core.fused.extraction.rfc_classifier import classify_window
     cfg = {"method_sections": ["4.3"], "field_sections": [],
            "status_sections": [], "transition_sections": [],
            "sections_by_file": {}}

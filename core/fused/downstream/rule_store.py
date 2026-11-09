@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import Any, Iterable, Optional
 
 from core import paths
-from core.fused.semantic import (
+from core.fused.semantic.semantic import (
     EvidenceAnchor,
     ExecutableConstraint,
     KnowledgeCandidate,
@@ -197,7 +197,7 @@ def publish_rules(protocol: str, rows: Iterable[Any], *,
         报告 dict：``{"authoritative": n, "candidate": n, "rejects": {...},
         "path": str, "candidate_path": str}``。
     """
-    from core.fused.semantic import KnowledgeCandidate, sanitize_rule
+    from core.fused.semantic.semantic import KnowledgeCandidate, sanitize_rule
 
     accepted: list[SemanticRule] = []
     demoted: list[KnowledgeCandidate] = []

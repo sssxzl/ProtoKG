@@ -33,7 +33,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from core.fused import rfc_extractor as rx  # noqa: E402
+from core.fused.extraction import rfc_extractor as rx  # noqa: E402
 
 
 PROTOCOLS = ("rtsp", "sip", "smtp")

@@ -1,12 +1,12 @@
 """tests/fused/test_rfc_extractor.py —— rfc 源（RFC 规范文本 → rfc norm）。"""
 from __future__ import annotations
 
-from core.fused.rfc_extractor import (
+from core.fused.extraction.rfc_extractor import (
     extract_rfc_norms, _clean_body, _first_sentence,
     extract_constraint_candidates, infer_constraints,
     extract_constraint_norms,
 )
-from core.fused.norm import (map_norm_to_facts, constraint_norm_to_facts,
+from core.fused.extraction.norm import (map_norm_to_facts, constraint_norm_to_facts,
                               parse_constraint_content)
 from core.llm import StubLLMClient
 
@@ -65,8 +65,8 @@ def test_methods_map_to_definition_facts():
 
 
 def test_all_rfc_facts_pass_fail_closed():
-    from core.fused.registry import load_registry
-    from core.fused.validation import validate_fact
+    from core.fused.hub.registry import load_registry
+    from core.fused.hub.validation import validate_fact
     norms = extract_rfc_norms("rtsp")
     registry = load_registry()
     for n in norms:
@@ -129,8 +129,8 @@ def test_parse_constraint_content_keeps_spaces_in_values():
 
 def test_constraint_facts_pass_fail_closed():
     """约束映射的 fact 全过 fail-closed（legal_boundary 扩展 header + response_expectation 新 aspect）。"""
-    from core.fused.registry import load_registry
-    from core.fused.validation import validate_fact
+    from core.fused.hub.registry import load_registry
+    from core.fused.hub.validation import validate_fact
     norm = {
         "norm_id": "dns.constraint.qname", "kind": "constraint", "name": "QNAME",
         "kb_source_type": "rfc", "protocol": "dns", "source": "file:rfc1035.txt",
@@ -144,7 +144,7 @@ def test_constraint_facts_pass_fail_closed():
 
 def test_rfc_config_comes_from_profile_not_hardcoded():
     """rfc 配置必须来自 profile，通用层不内置协议默认（标题格式识别协议无关）。"""
-    from core.fused.rfc_extractor import _load_rfc_config
+    from core.fused.extraction.rfc_extractor import _load_rfc_config
     rtsp = _load_rfc_config("rtsp")
     assert rtsp["method_excludes"] == ["EMBEDDED"]
     # smtp 未配 rfc 段 → 全空
@@ -156,7 +156,7 @@ def test_rfc_config_comes_from_profile_not_hardcoded():
 def test_extract_is_section_number_agnostic():
     """标题格式识别不依赖章节号：方法/状态码靠「全大写 / NNN Reason」格式，
     而非「§10=方法」这类 RTSP 特定章节号映射（根治硬编码）。"""
-    from core.fused.rfc_extractor import extract_rfc_norms
+    from core.fused.extraction.rfc_extractor import extract_rfc_norms
     norms = extract_rfc_norms("rtsp")
     methods = {n["name"] for n in norms if n["kind"] == "method"}
     outcomes = {n["name"] for n in norms if n["kind"] == "outcome"}
@@ -168,7 +168,7 @@ def test_extract_is_section_number_agnostic():
 def test_infer_structures_llm_fallback():
     """LLM 兜底：正则识别不了的多词/带括号标题（如 SMTP「Extended HELLO (EHLO)」）
     交给 LLM 识别方法/字段，补齐正则标题格式识别的不足（SemFuzz 式 LLM 补语义）。"""
-    from core.fused.rfc_extractor import infer_structures
+    from core.fused.extraction.rfc_extractor import infer_structures
     stub = StubLLMClient(response={
         "methods": [{"name": "EHLO", "definition": "Extended HELLO greeting"}],
         "fields": [{"name": "Reply-To", "definition": "回复地址"}],

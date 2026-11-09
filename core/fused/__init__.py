@@ -5,7 +5,7 @@
 """
 from __future__ import annotations
 
-from .exceptions import (
+from .hub.exceptions import (
     FusedError,
     FusedIOError,
     FusedRegistryError,

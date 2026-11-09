@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import pytest
 
-from core.fused.semantic import (
+from core.fused.semantic.semantic import (
     OPERATORS,
     REJECT_REASONS,
     EvidenceAnchor,
@@ -30,7 +30,7 @@ from core.fused.semantic import (
     normalize_field_name,
     try_convert,
 )
-from core.fused.semantic_rules import (
+from core.fused.semantic.semantic_rules import (
     LENGTH_UNITS,
     NON_LENGTH_UNITS,
     PATTERNS,
@@ -590,7 +590,7 @@ def test_pattern_table_is_deterministic():
 
 def test_pattern_table_lives_in_semantic_rules_not_semantic():
     """★ 模式表是**独立资产**（§3.7）：`semantic.py` 里不得有 operator 正则。"""
-    import core.fused.semantic as semantic_mod
+    import core.fused.semantic.semantic as semantic_mod
 
     # 模式表（类型 + 入口 + 匹配函数）**只在** semantic_rules.py 里
     for name in ("PATTERNS", "RulePattern", "PatternMatch", "match_pattern"):
@@ -609,7 +609,7 @@ def test_real_candidates_produce_wellformed_results():
     是模式表的真实输入面 —— 这里保证「不崩、
     不产出畸形结果」，不断言召回率。）
     """
-    from core.fused.rfc_extractor import extract_constraint_candidates
+    from core.fused.extraction.rfc_extractor import extract_constraint_candidates
 
     resolver = make_resolver(known_fields=_KNOWN_FIELDS)
     checked = 0

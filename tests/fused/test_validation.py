@@ -3,12 +3,12 @@ from __future__ import annotations
 
 import pytest
 
-from core.fused.models import (
+from core.fused.hub.models import (
     Subject, FactKey, ConditionAlways, Value, Claim, Fact, FactMetadata,
     AspectSpec,
 )
-from core.fused.registry import Registry, UnregisteredReferenceError
-from core.fused.validation import (
+from core.fused.hub.registry import Registry, UnregisteredReferenceError
+from core.fused.hub.validation import (
     ValueTypeMismatchError, UnregisteredAspectError, UnregisteredEpistemicError,
     validate_value, validate_subject, validate_aspect, validate_epistemic,
     validate_claim, validate_fact,
@@ -84,7 +84,7 @@ def test_validate_fact_integration_with_real_registry(tmp_path):
         "registered_types": [{"name": "normative"}]
     }), encoding="utf-8")
 
-    from core.fused.registry import Registry as _R
+    from core.fused.hub.registry import Registry as _R
     reg = _R(tmp_path)
     f = Fact(
         fact_id="f1_x",
@@ -114,7 +114,7 @@ def test_validate_fact_integration_value_type_mismatch(tmp_path):
         json.dumps({"core_version": "1.0",
                     "registered_types": [{"name": "normative"}]}),
         encoding="utf-8")
-    from core.fused.registry import Registry as _R
+    from core.fused.hub.registry import Registry as _R
     reg = _R(tmp_path)
     f = Fact(
         fact_id="f1_x",

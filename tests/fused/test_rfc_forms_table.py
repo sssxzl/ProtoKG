@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from core.fused import rfc_forms as RF
+from core.fused.extraction import rfc_forms as RF
 
 
 def _mk(lines: list[str]) -> RF.FormBlock:

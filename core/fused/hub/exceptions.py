@@ -1,4 +1,4 @@
-"""core.fused.exceptions — Fused Hub 异常类层次.
+"""core.fused.hub.exceptions — Fused Hub 异常类层次.
 
 第一部分契约: fused_hub/docs/fused_knowledge_hub_design.md（v2 设计真源；异常类层次以本模块定义为准）。
 

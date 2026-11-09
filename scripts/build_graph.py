@@ -39,9 +39,9 @@ def _fingerprint(nodes: list[dict], edges: list[dict]) -> str:
 
 def build_one(protocol: str, use_llm: bool = False) -> dict:
     """构建一个协议的图（含 B2：社区检测 + 社区报告）。"""
-    from core.fused.graph_ops import (project_bundle_to_graph, split_by_graph,
+    from core.fused.graph.graph_ops import (project_bundle_to_graph, split_by_graph,
                                       write_graph)
-    from core.fused.rfc_graph import extract_graph
+    from core.fused.graph.rfc_graph import extract_graph
 
     # ---- ① Phase A：确定性抽节点/边 ----
     phase_a_nodes, phase_a_edges = extract_graph(protocol)
@@ -51,7 +51,7 @@ def build_one(protocol: str, use_llm: bool = False) -> dict:
     #   ⇒ GraphRAG 整理层**不再依赖消费层**（消除层次倒置）
     bundle = {}
     try:
-        from core.fused import hub_view as HV
+        from core.fused.hub import hub_view as HV
         from core.fused.downstream import rag_seedgen as RS
         bundle = HV.build_view(RS.load_fact_views(protocol), protocol)
     except Exception as exc:                       # noqa: BLE001
@@ -91,7 +91,7 @@ def build_one(protocol: str, use_llm: bool = False) -> dict:
     # ★★ **顺序修正**（2026-11-08 实测）：社区计算读的是**磁盘上的图**
     #   ⇒ 必须**先落盘再算社区**（之前在 write_graph 之前调用 ⇒
     #   读到的是**上一次的**图 ⇒ 社区数不稳/为 0）。
-    from core.fused.graph_reports import (generate_community_reports,
+    from core.fused.graph.graph_reports import (generate_community_reports,
                                           write_communities)
 
     paths = write_graph(protocol, node_list, edge_list, extra_meta={

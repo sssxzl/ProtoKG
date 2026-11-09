@@ -12,8 +12,8 @@ import inspect
 import pathlib
 import re
 
-from core.fused import rfc_extractor as RX
-from core.fused import norm as NM
+from core.fused.extraction import rfc_extractor as RX
+from core.fused.extraction import norm as NM
 from core.fused.downstream import rag_seedgen as RS
 
 
@@ -27,7 +27,7 @@ def test_switch_code_default_off():
     ★ 协议配置（`rfc_config.json`）**可以显式开启** —— 那时该协议会产出
       这批 RFC 源证据（但仍不进 bundle 桶 ⇒ 产物不变）。
     """
-    import core.fused.rfc_extractor as _rx
+    import core.fused.extraction.rfc_extractor as _rx
     # 内置默认：构造一个「无协议专属配置」时的 cfg ⇒ 默认必须为 False
     import inspect
     src = inspect.getsource(_rx._load_rfc_config)
@@ -124,7 +124,7 @@ def test_rfc_source_headers_are_config_driven():
 
 def test_infer_required_headers_runs_with_stub_llm():
     """★ 开关开启 + 假 LLM ⇒ 能跑通全路径（候选→提示→解析→norm→缓存）。"""
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     from core import paths
     d = paths.kb_source_dir("rtsp", "rfc")
     if not d.is_dir():
@@ -139,7 +139,7 @@ def test_infer_required_headers_runs_with_stub_llm():
                 {"name": "CSeq", "evidence": "This field MUST be present in all requests."}]}
 
     import tempfile
-    import core.fused.source_retrieval as _sr
+    import core.fused.extraction.source_retrieval as _sr
     cfg = RX._load_rfc_config("rtsp")
     cfg["enable_required_headers"] = True
     orig_cfg, orig_cache = RX._load_rfc_config, _sr.CACHE_DIR
@@ -164,7 +164,7 @@ def test_infer_required_headers_runs_with_stub_llm():
 
 def test_infer_required_headers_filters_unknown_names():
     """★ LLM 自造的头名必须被丢弃（不在已知头集内）。"""
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     from core import paths
     d = paths.kb_source_dir("rtsp", "rfc")
     if not d.is_dir():
@@ -178,7 +178,7 @@ def test_infer_required_headers_filters_unknown_names():
                 {"name": "CSeq", "evidence": "real"}]}
 
     import tempfile
-    import core.fused.source_retrieval as _sr
+    import core.fused.extraction.source_retrieval as _sr
     cfg = RX._load_rfc_config("rtsp")
     cfg["enable_required_headers"] = True
     orig_cfg, orig_cache = RX._load_rfc_config, _sr.CACHE_DIR

@@ -23,14 +23,14 @@ import pytest
 
 def test_slots_contract_validates():
     """★ 槽位契约自洽（每个 aspect 有落位、槽位存在、entity_types 合法）。"""
-    from core.fused.knowledge_slots import validate_slots
+    from core.fused.hub.knowledge_slots import validate_slots
     problems = validate_slots()
     assert not problems, problems
 
 
 def test_all_registered_aspects_have_a_location():
     """★ **每个已注册 aspect 都有落位**（漏一个 ⇒ 该维度无处安放）。"""
-    from core.fused.knowledge_slots import aspect_map, load_slots
+    from core.fused.hub.knowledge_slots import aspect_map, load_slots
     from core import paths
     reg = json.loads(
         (paths.PROJECT_ROOT / "fused_hub" / "schema" / "aspect_registry.json")
@@ -43,7 +43,7 @@ def test_all_registered_aspects_have_a_location():
 
 def test_locate_by_aspect_and_entity_type():
     """★ 落位判定：aspect + 实体类型 ⇒ (category, slot)。"""
-    from core.fused.knowledge_slots import locate
+    from core.fused.hub.knowledge_slots import locate
     assert locate("definition", "method") == ("A_structure", "methods")
     assert locate("definition", "header") == ("A_structure", "headers")
     assert locate("definition", "status") == ("A_structure", "statuses")
@@ -59,13 +59,13 @@ def test_locate_by_aspect_and_entity_type():
 
 def test_locate_unknown_aspect_returns_none():
     """★ 未知 aspect ⇒ None（不静默落到某个桶）。"""
-    from core.fused.knowledge_slots import locate
+    from core.fused.hub.knowledge_slots import locate
     assert locate("no_such_aspect", "header") is None
 
 
 def test_six_categories_present():
     """★ 六个知识分类齐备（A~F）。"""
-    from core.fused.knowledge_slots import category_ids
+    from core.fused.hub.knowledge_slots import category_ids
     ids = category_ids()
     for want in ("A_structure", "B_interaction", "C_constraints",
                  "D_construction", "E_observation", "F_security"):
@@ -78,7 +78,7 @@ def test_six_categories_present():
 
 def test_entity_id_is_stable():
     """★ 实体 id **跨源稳定**（同一实体任何源都是同一个 id）。"""
-    from core.fused.hub_entities import entity_id, parse_entity_id
+    from core.fused.hub.hub_entities import entity_id, parse_entity_id
     eid = entity_id("SIP", "method", "INVITE")
     assert eid == "sip:method:invite", eid
     assert parse_entity_id(eid) == ("sip", "method", "invite")
@@ -86,7 +86,7 @@ def test_entity_id_is_stable():
 
 def test_entity_id_normalizes_whitespace_and_case():
     """★ 名字归一（大小写 + 连续空白折叠成一个下划线）。"""
-    from core.fused.hub_entities import entity_id
+    from core.fused.hub.hub_entities import entity_id
     assert entity_id("sip", "header", "Accept  Encoding") == \
         "sip:header:accept_encoding"
     assert entity_id("sip", "header", "Accept-Encoding") == \
@@ -95,7 +95,7 @@ def test_entity_id_normalizes_whitespace_and_case():
 
 def test_entity_index_from_facts():
     """★ 实体主表能从 fact 构造，且**实体数 ≤ fact 数**（有归并）。"""
-    from core.fused.hub_entities import build_entity_index
+    from core.fused.hub.hub_entities import build_entity_index
     facts = [
         {"fact_key": {"protocol": "sip", "aspect": "definition",
                       "subject": {"type": "method", "name": "INVITE"}}},
@@ -114,7 +114,7 @@ def test_entity_index_from_facts():
 
 def test_relation_entity_gets_participants():
     """★ 关系型实体独立登记，且带 **participants**（source/via/target）。"""
-    from core.fused.hub_entities import build_entity_index
+    from core.fused.hub.hub_entities import build_entity_index
     facts = [{"fact_key": {
         "protocol": "sip", "aspect": "target_state",
         "subject": {"type": "relation", "name": "transitions_to",
@@ -131,7 +131,7 @@ def test_relation_entity_gets_participants():
 
 def test_entity_index_is_deterministic():
     """★ 实体主表**确定性**（同输入同输出，逐字节可复现）。"""
-    from core.fused.hub_entities import build_entity_index
+    from core.fused.hub.hub_entities import build_entity_index
     facts = [
         {"fact_key": {"protocol": "sip", "aspect": "definition",
                       "subject": {"type": "method", "name": "INVITE"}}},
@@ -149,7 +149,7 @@ def test_entity_index_is_deterministic():
 
 def test_category_matrix_detects_cross_category_entities():
     """★ 诊断矩阵能识别**跨分类重复**的实体（诊断 P2）。"""
-    from core.fused.hub_entities import entity_category_matrix
+    from core.fused.hub.hub_entities import entity_category_matrix
     facts = [
         {"fact_key": {"protocol": "sip", "aspect": "definition",
                       "subject": {"type": "method", "name": "INVITE"}}},
@@ -167,7 +167,7 @@ def test_category_matrix_detects_cross_category_entities():
 
 def test_category_matrix_counts_by_category():
     """★ 矩阵按分类计数。"""
-    from core.fused.hub_entities import entity_category_matrix
+    from core.fused.hub.hub_entities import entity_category_matrix
     facts = [
         {"fact_key": {"protocol": "sip", "aspect": "target_state",
                       "subject": {"type": "relation", "name": "transitions_to",

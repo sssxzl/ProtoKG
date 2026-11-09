@@ -27,7 +27,7 @@ import re
 
 import pytest
 
-from core.fused import rfc_extractor as RX
+from core.fused.extraction import rfc_extractor as RX
 
 
 def _has_spec(protocol: str) -> bool:

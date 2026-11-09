@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from core.fused.source_retrieval import build_cache  # noqa: E402
+from core.fused.extraction.source_retrieval import build_cache  # noqa: E402
 from core import paths                                          # noqa: E402
 
 

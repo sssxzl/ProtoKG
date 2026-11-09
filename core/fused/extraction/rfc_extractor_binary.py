@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """core/fused/rfc_extractor_binary.py —— **二进制协议**的 RFC 抽取通道（2026-11-07 新增）。
 
-★ 与文本抽取（:mod:`core.fused.rfc_extractor`，5351 行）**并列**、互不依赖。
+★ 与文本抽取（:mod:`core.fused.extraction.rfc_extractor`，5351 行）**并列**、互不依赖。
   文本侧有 8 个通道（A0/A0b/A0c/E/F/D/G/H/H′）；二进制侧有 2 个：
 
   **通道 B1**：**位域图 / 定长字段表** ⇒ 字段的**布局**
@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from core.fused.rfc_forms_binary import (extract_bitfield_blocks,
+from core.fused.extraction.rfc_forms_binary import (extract_bitfield_blocks,
                                           extract_fixed_fields,
                                           extract_option_tables)
 

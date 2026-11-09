@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Optional
 
 from core.models import SeedCorpus, SeedMessage
-from core.fused.vuln_pattern import BoundaryParam, _ACTION_BOUNDARY
+from core.fused.extraction.vuln_pattern import BoundaryParam, _ACTION_BOUNDARY
 from core.fused.downstream.protocol_flags import cseq_with_method
 
 log = logging.getLogger("protorag.boundary_probe")

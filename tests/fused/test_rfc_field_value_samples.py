@@ -20,8 +20,8 @@
 """
 from __future__ import annotations
 
-from core.fused import rfc_extractor as RX   # noqa: E402
-from core.fused import norm as NORM           # noqa: E402
+from core.fused.extraction import rfc_extractor as RX   # noqa: E402
+from core.fused.extraction import norm as NORM           # noqa: E402
 
 PROTOCOL = "rtsp"
 

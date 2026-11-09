@@ -27,7 +27,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from core.fused import rfc_extractor as rx  # noqa: E402
+from core.fused.extraction import rfc_extractor as rx  # noqa: E402
 
 
 PROTOCOLS = ("rtsp", "sip", "smtp")
@@ -138,7 +138,7 @@ def test_source_line_criterion_detects_all_kinds():
     所在行是否被判为目录 —— 不依赖字符串匹配，三类 kind 一律有效。
     """
     import re
-    from core.fused import rfc_extractor as rx
+    from core.fused.extraction import rfc_extractor as rx
 
     lines = (ROOT / "kb" / "sip" / "spec" / "rfc3261.txt").read_text(
         encoding="utf-8", errors="ignore").splitlines()

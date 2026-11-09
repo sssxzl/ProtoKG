@@ -16,7 +16,7 @@
   ⑤ `SemanticRule` 上**没有** `model_id` 属性（D 阶段「模型身份不污染规范规则」）；
   ⑥ `KnowledgeCandidate` 上**没有** `constraint` 属性（「不可转换者不进生成链路」）。
 
-★ 本文件**只测新模块** `core.fused.semantic`，不触碰任何既有生产链路。
+★ 本文件**只测新模块** `core.fused.semantic.semantic`，不触碰任何既有生产链路。
 """
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ from pathlib import Path
 
 import pytest
 
-from core.fused.semantic import (
+from core.fused.semantic.semantic import (
     EVIDENCE_KINDS,
     EXPLICITNESS,
     OPERATORS,
@@ -379,7 +379,7 @@ def test_compute_rule_id_is_stable_across_processes():
     """③ 跨进程（不同 PYTHONHASHSEED）稳定 —— 不用 Python `hash()`。"""
     code = (
         "import sys; sys.path.insert(0, %r);"
-        "from core.fused.semantic import compute_rule_id;"
+        "from core.fused.semantic.semantic import compute_rule_id;"
         "print(compute_rule_id(**%r))" % (str(ROOT), _BASE_IDENTITY)
     )
     outs = []

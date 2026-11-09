@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from core.fused.models import (
+from core.fused.hub.models import (
     Subject, FactKey, ConditionAlways, ConditionPredicate, ConditionAnd,
     ConditionNot, ConditionRef, Value, Scope, Evidence, LocatorLine,
     LocatorField, Resolution, Support, Generalization, Claim, Fact,

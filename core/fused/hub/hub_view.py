@@ -326,7 +326,7 @@ def project_semantic_rules(bundle: dict) -> dict:
     ── 输入形态 ──────────────────────────────────────────────────────────
     `bundle["semantic_rules"]` 是一个**列表**，每项为下列两种形态之一：
 
-      ① `SemanticRule` 本体（`core.fused.semantic` 的 frozen dataclass）；
+      ① `SemanticRule` 本体（`core.fused.semantic.semantic` 的 frozen dataclass）；
       ② `dict` —— `dataclasses.asdict(SemanticRule)` 的产物
          （顶层 `rule_id` / `evidence` / `constraint` / `subject_type` /
          `subject_name` / `rule_state` / ...，其中 `constraint` **嵌套一层**）。
@@ -442,7 +442,7 @@ def build_view(views: list[dict], protocol: str = "rtsp",
       由 `semantic_rules` **投影**填充（追加 + 去重 ⇒ 幂等）；既有 facts 来源
       **保留可用** ⇒ `boundary_probe` / `strategy` 零改动仍工作。
 
-    ★★ D-6（可关闭的开关位，默认关闭 —— 见 `core/fused/llm_ensemble.py`）：
+    ★★ D-6（可关闭的开关位，默认关闭 —— 见 `core/fused/semantic/llm_ensemble.py`）：
 
       「开关关闭」的准确语义是 **「不自动引入语义规则」** —— 关闭时本函数
       **不主动去读规则库**，消费路径（`load_semantic_rules` +
@@ -510,7 +510,7 @@ def build_view(views: list[dict], protocol: str = "rtsp",
       - headers[*].source_values：各源各自给的字段取值（value_enum）
       - available_sources：所有出现过的 authority 集合（供降级决策）
     """
-    from core.fused.llm_ensemble import semantic_rules_enabled
+    from core.fused.semantic.llm_ensemble import semantic_rules_enabled
     from core.fused.downstream.resolver import resolve_claims
     methods: dict[str, dict] = {}
     headers: dict[str, dict] = {}
@@ -1080,7 +1080,7 @@ def build_view(views: list[dict], protocol: str = "rtsp",
     #   · ``by_category``：按**知识分类**（A~F）组织
     #   · ``entities``：实体索引（``entity_id`` ⇒ 实体）
     try:
-        from core.fused.knowledge_slots import locate as _locate
+        from core.fused.hub.knowledge_slots import locate as _locate
         _bc: dict = {}
         for _f in views:
             _fk = _f.get("fact_key") or {}
@@ -1304,7 +1304,7 @@ def load_semantic_rules(protocol: str = "rtsp") -> list[dict]:
     from core import paths
     from core.fused.downstream.rule_store import library_path, load_rules
     # ★★ **阶段 C4**：**优先读中枢**（唯一真源）⇒ 降级读旧四库路径
-    from core.fused.semantic_lift import read_lifted
+    from core.fused.semantic.semantic_lift import read_lifted
     _lifted = read_lifted(paths.hub_root(), protocol)
     if _lifted:
         out = []

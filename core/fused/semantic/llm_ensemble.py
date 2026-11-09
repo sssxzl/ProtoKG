@@ -1,4 +1,4 @@
-"""core/fused/llm_ensemble.py —— 多模型投票（默认关闭）。
+"""core/fused/semantic/llm_ensemble.py —— 多模型投票（默认关闭）。
 
 ★ 当前只落地 D-6 的**开关位**：语义规则是否参与生成。
   投票本体（D-1~D-5、D-7）属于 D 阶段其余任务，**在 B-10 实验判定
@@ -33,7 +33,7 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
-from core.fused.semantic import EvidenceAnchor, SemanticRule
+from core.fused.semantic.semantic import EvidenceAnchor, SemanticRule
 
 #: 语义规则参与生成的环境变量名。
 ENV_KEY = "PROTORAG_SEMANTIC_RULES"

@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Iterable, Optional
 
 from core import paths
-from core.fused.llm_ensemble import semantic_rules_enabled
+from core.fused.semantic.llm_ensemble import semantic_rules_enabled
 
 
 
@@ -34,7 +34,7 @@ from core.fused.llm_ensemble import semantic_rules_enabled
 #   （core/fused/hub_view.py）⇒ 「读中枢 ⇒ 组装视图」归中枢层，
 #   消费层只保留**消费策略**（白名单 / 骨架方法 / 实例迁移）。
 #   ★ 下列名字**从视图层再导出** ⇒ 既有 import 路径**全部不变**（零改动）。
-from core.fused.hub_view import (          # noqa: E402
+from core.fused.hub.hub_view import (          # noqa: E402
     BUNDLE_SCHEMA_VERSION,
     RFC_AUTHORITY,
     SKELETON_AUTHORITY,
@@ -181,7 +181,7 @@ def load_fact_views(protocol: str = "rtsp",
     #   旧：derived/hub/facts/<aspect>.jsonl（批次 1.6 的 aspect 布局）
     #   更旧：<各源根>/*/facts/*.jsonl（按源分目录）
     if root.is_dir():
-        from core.fused.hub_layout import read_classified
+        from core.fused.hub.hub_layout import read_classified
         _cls = read_classified(root, protocol)
         if _cls:
             return _filter_protocol(_cls, protocol)

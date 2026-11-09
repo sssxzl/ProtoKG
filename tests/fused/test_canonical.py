@@ -1,11 +1,11 @@
 """tests/fused/test_canonical.py —— canonical 序列化与 ID 计算。"""
 from __future__ import annotations
 
-from core.fused.canonical import (
+from core.fused.hub.canonical import (
     canonical_serialize, compute_fact_id, compute_claim_id,
     compute_evidence_id, _self_tests,
 )
-from core.fused.models import (
+from core.fused.hub.models import (
     Subject, FactKey, ConditionAlways, ConditionPredicate, Value,
     LocatorField, Evidence, Claim,
 )

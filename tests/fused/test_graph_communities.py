@@ -25,7 +25,7 @@ import pytest
 
 def test_merge_keeps_multiple_edges_between_same_pair():
     """★ 同对节点的**多条不同条件边**都要保留（MultiDiGraph 语义）。"""
-    from core.fused.graph_ops import merge_multidigraph
+    from core.fused.graph.graph_ops import merge_multidigraph
     nodes = [{"node_id": "a", "confidence": "medium"},
              {"node_id": "b", "confidence": "high"}]
     edges = [
@@ -40,7 +40,7 @@ def test_merge_keeps_multiple_edges_between_same_pair():
 
 def test_merge_keeps_higher_confidence_node():
     """★ 同 id 节点保留**置信度更高**的那份。"""
-    from core.fused.graph_ops import merge_multidigraph
+    from core.fused.graph.graph_ops import merge_multidigraph
     nodes = [{"node_id": "a", "confidence": "medium"},
              {"node_id": "a", "confidence": "high"}]
     mn, _ = merge_multidigraph(nodes, [])
@@ -58,14 +58,14 @@ def test_defines_edge_excluded_from_communities():
     ★ 实测：它把协议节点连到**所有**字段 ⇒ 整图连通 ⇒ 社区检测必然
       只出 1 个社区（实测 rtsp 69 节点全落一个社区）。
     """
-    from core.fused.graph_ops import COMMUNITY_EXCLUDED_EDGE_TYPES
+    from core.fused.graph.graph_ops import COMMUNITY_EXCLUDED_EDGE_TYPES
     assert "defines" in COMMUNITY_EXCLUDED_EDGE_TYPES
 
 
 def test_communities_not_collapsed_to_one():
     """★ 社区**不得**塌成 1 个（否则社区报告失去意义）。"""
-    from core.fused.graph_ops import read_graph, split_by_graph
-    from core.fused.graph_ops import merge_multidigraph, detect_communities
+    from core.fused.graph.graph_ops import read_graph, split_by_graph
+    from core.fused.graph.graph_ops import merge_multidigraph, detect_communities
     for proto in ("rtsp", "dhcpv4"):
         nodes, edges = read_graph(proto)
         sn, se = split_by_graph(nodes, edges, "semantic")
@@ -82,7 +82,7 @@ def test_community_detection_never_crashes():
     ★ 无边图 ⇒ 每个节点**自成一社区**（不是合并成一个）
       ⇒ 断言：社区数 == 节点数，且每个社区只有 1 个成员。
     """
-    from core.fused.graph_ops import detect_communities
+    from core.fused.graph.graph_ops import detect_communities
     assert detect_communities([], []) == ([], "none")
     nodes = [{"node_id": "a"}, {"node_id": "b"}]
     comms, algo = detect_communities(nodes, [])
@@ -97,7 +97,7 @@ def test_split_by_graph_completes_endpoints():
       而 message 节点在 structure 图 ⇒ 若不补齐，边会**端点悬空**
       ⇒ 社区检测退化成全孤立。
     """
-    from core.fused.graph_ops import split_by_graph
+    from core.fused.graph.graph_ops import split_by_graph
     nodes = [
         {"node_id": "entity:a", "graph": "semantic"},
         {"node_id": "message:m", "graph": "structure"},
@@ -118,7 +118,7 @@ def test_split_by_graph_completes_endpoints():
 
 def test_community_inputs_have_channel_annotation():
     """★ 每个社区都带 **owner_mix** 与 **class**（知识通道标注）。"""
-    from core.fused.graph_reports import build_community_inputs
+    from core.fused.graph.graph_reports import build_community_inputs
     items = build_community_inputs("dhcpv4")
     assert items, "没有社区"
     for it in items:
@@ -132,7 +132,7 @@ def test_owner_mix_only_counts_nodes():
     ★ 实测：若把边的 owner 也计入，`defines` 边（owner=rfc，数量压倒性多）
       会把每个社区的 class 都压成 MIXED ⇒ 分类失去区分度。
     """
-    from core.fused.graph_ops import community_owner_mix
+    from core.fused.graph.graph_ops import community_owner_mix
     nodes = [{"node_id": "a", "source_owner": "rfc"},
              {"node_id": "b", "source_owner": "profile"}]
     edges = [{"from": "a", "to": "b", "source_owner": "rfc"}]
@@ -142,7 +142,7 @@ def test_owner_mix_only_counts_nodes():
 
 def test_community_class_rules():
     """★ 社区的**知识层级**判定规则。"""
-    from core.fused.graph_ops import community_class
+    from core.fused.graph.graph_ops import community_class
     assert community_class({"rfc": 3}) == "L1"
     assert community_class({"profile": 3}) == "L2"
     assert community_class({"rfc": 1, "profile": 2}) == "MIXED"
@@ -151,7 +151,7 @@ def test_community_class_rules():
 
 def test_community_reports_fallback_when_no_llm():
     """★ **LLM 不可用时不阻断**（确定性降级）。"""
-    from core.fused.graph_reports import generate_community_reports
+    from core.fused.graph.graph_reports import generate_community_reports
     reports = generate_community_reports("dhcpv4", use_llm=False)
     assert reports
     for r in reports:
@@ -161,7 +161,7 @@ def test_community_reports_fallback_when_no_llm():
 
 def test_community_reports_written_and_readable():
     """★ 社区报告落盘 + 可读回。"""
-    from core.fused.graph_reports import (generate_community_reports,
+    from core.fused.graph.graph_reports import (generate_community_reports,
                                           read_communities, write_communities)
     reports = generate_community_reports("dhcpv4", use_llm=False)
     p = write_communities("dhcpv4", reports)
@@ -182,7 +182,7 @@ def test_community_report_prompt_version_recorded():
     ⇒ 改写到**临时目录**，不碰共享产物。
     """
     import tempfile
-    from core.fused.graph_reports import COMMUNITY_REPORT_PROMPT_VERSION
+    from core.fused.graph.graph_reports import COMMUNITY_REPORT_PROMPT_VERSION
     assert COMMUNITY_REPORT_PROMPT_VERSION
     with tempfile.TemporaryDirectory() as td:
         out = Path(td) / "communities.json"

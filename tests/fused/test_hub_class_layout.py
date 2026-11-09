@@ -24,8 +24,8 @@ from pathlib import Path
 
 import pytest
 
-from core.fused import hub_layout
-from core.fused.knowledge_slots import category_ids, locate
+from core.fused.hub import hub_layout
+from core.fused.hub.knowledge_slots import category_ids, locate
 
 
 # ===========================================================================
@@ -84,7 +84,7 @@ def test_classify_falls_back_without_losing_data():
 
 def test_locate_covers_all_registered_aspects():
     """★ **每个已注册 aspect 都有落位**（漏一个 ⇒ 该维度无处安放）。"""
-    from core.fused.knowledge_slots import aspect_map
+    from core.fused.hub.knowledge_slots import aspect_map
     assert aspect_map(), "aspect_map 为空"
 
 
@@ -222,7 +222,7 @@ def test_upgrade_adds_entity_epistemic_resolution():
       只**新增** ``entity`` / ``epistemic``，并把 ``resolution`` 从
       ``null`` 补成实际内容。
     """
-    from core.fused.hub_layout import _upgrade_record
+    from core.fused.hub.hub_layout import _upgrade_record
     v = _fact("target_state", "transitions_to", stype="relation",
               fid="f1", claim="c1")
     v["fact_key"]["subject"]["qualifiers"] = {
@@ -250,7 +250,7 @@ def test_upgrade_adds_entity_epistemic_resolution():
 
 def test_upgrade_epistemic_mapping():
     """★ fact 级 ``epistemic``（四档）由 claim 级 ``epistemic_type`` 归并。"""
-    from core.fused.hub_layout import _fact_epistemic
+    from core.fused.hub.hub_layout import _fact_epistemic
     assert _fact_epistemic({"all_claims": [{"epistemic_type": "must"}]}) == \
         "normative"
     assert _fact_epistemic({"all_claims": [{"epistemic_type": "descriptive"}]}) == \
@@ -265,7 +265,7 @@ def test_upgrade_epistemic_mapping():
 
 def test_upgrade_resolution_multi_claim():
     """★ 多 claim ⇒ ``consensus`` 策略。"""
-    from core.fused.hub_layout import _fact_resolution
+    from core.fused.hub.hub_layout import _fact_resolution
     v = {"all_claims": [{"claim_id": "c1"}, {"claim_id": "c2"}]}
     r = _fact_resolution(v)
     assert r["strategy"] == "consensus"
@@ -274,7 +274,7 @@ def test_upgrade_resolution_multi_claim():
 
 def test_epistemic_registry_values_covered():
     """★ claim 级判据**全部**能映射到 fact 级四档。"""
-    from core.fused.hub_layout import _EPI_MAP
+    from core.fused.hub.hub_layout import _EPI_MAP
     import json as _json
     from core import paths
     reg = _json.loads(
@@ -296,7 +296,7 @@ def test_upgrade_adds_entity_epistemic_resolution():
       只**新增** ``entity`` / ``epistemic``，并把 ``resolution`` 从
       ``null`` 补成实际内容。
     """
-    from core.fused.hub_layout import _upgrade_record
+    from core.fused.hub.hub_layout import _upgrade_record
     v = _fact("target_state", "transitions_to", stype="relation",
               fid="f1", claim="c1")
     v["fact_key"]["subject"]["qualifiers"] = {
@@ -324,7 +324,7 @@ def test_upgrade_adds_entity_epistemic_resolution():
 
 def test_upgrade_epistemic_mapping():
     """★ fact 级 ``epistemic``（四档）由 claim 级 ``epistemic_type`` 归并。"""
-    from core.fused.hub_layout import _fact_epistemic
+    from core.fused.hub.hub_layout import _fact_epistemic
     assert _fact_epistemic({"all_claims": [{"epistemic_type": "must"}]}) == \
         "normative"
     assert _fact_epistemic({"all_claims": [{"epistemic_type": "descriptive"}]}) == \
@@ -339,7 +339,7 @@ def test_upgrade_epistemic_mapping():
 
 def test_upgrade_resolution_multi_claim():
     """★ 多 claim ⇒ ``consensus`` 策略。"""
-    from core.fused.hub_layout import _fact_resolution
+    from core.fused.hub.hub_layout import _fact_resolution
     v = {"all_claims": [{"claim_id": "c1"}, {"claim_id": "c2"}]}
     r = _fact_resolution(v)
     assert r["strategy"] == "consensus"
@@ -348,7 +348,7 @@ def test_upgrade_resolution_multi_claim():
 
 def test_epistemic_registry_values_covered():
     """★ claim 级判据**全部**能映射到 fact 级四档。"""
-    from core.fused.hub_layout import _EPI_MAP
+    from core.fused.hub.hub_layout import _EPI_MAP
     import json as _json
     from core import paths
     reg = _json.loads(

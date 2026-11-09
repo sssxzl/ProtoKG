@@ -47,7 +47,7 @@ PROTO = "fakeproto"
 
 def _make_fact(fact_id: str, name: str, protocol: str = PROTO):
     """造一个最小可用的 Fact（definition aspect，text 类型值）。"""
-    from core.fused.models import (
+    from core.fused.hub.models import (
         Claim, ConditionAlways, Fact, FactKey, Subject, Value,
     )
     subject = Subject(type="method", name=name, qualifiers={}, path=[])
@@ -78,7 +78,7 @@ def _fake_norms(protocol: str) -> list[dict]:
 
 def _failing_report(protocol: str, facts=None, norms=None):
     """质量闸**必然不通过**的报告（构造一个阻断项即可）。"""
-    from core.fused.rfc_extractor import QualityReport
+    from core.fused.extraction.rfc_extractor import QualityReport
     rep = QualityReport(protocol=protocol,
                         norm_count=len(norms or []),
                         fact_count=len(facts or []))
@@ -88,7 +88,7 @@ def _failing_report(protocol: str, facts=None, norms=None):
 
 def _passing_report(protocol: str, facts=None, norms=None):
     """质量闸**通过**的报告（无阻断项 ⇒ passed=True）。"""
-    from core.fused.rfc_extractor import QualityReport
+    from core.fused.extraction.rfc_extractor import QualityReport
     return QualityReport(protocol=protocol,
                          norm_count=len(norms or []),
                          fact_count=len(facts or []))
@@ -111,7 +111,7 @@ def _isolate(tmp_path, monkeypatch, *, gate=None, build_ids=None):
         (per_source_root, facts_dir) —— 隔离后的产物目录。
     """
     from core import paths
-    from core.fused import rfc_extractor as rx
+    from core.fused.extraction import rfc_extractor as rx
 
     # 1) kb 根：只放一个协议目录，满足 main() 的「协议存在」校验
     kb_root = tmp_path / "kb"
@@ -146,7 +146,7 @@ def _isolate(tmp_path, monkeypatch, *, gate=None, build_ids=None):
 
         monkeypatch.setattr(rx, "compute_build_id", _next_build_id)
 
-    # 4) 映射链路替身：合成 Fact（不依赖 core.fused.norm 的具体实现）
+    # 4) 映射链路替身：合成 Fact（不依赖 core.fused.extraction.norm 的具体实现）
     def _fake_map(norm):
         name = norm.get("name", "X")
         return [_make_fact("f_" + name.lower(), name)]
@@ -251,7 +251,7 @@ def test_gate_failure_exit_code_is_nonzero_at_process_level(tmp_path):
     runner.write_text(textwrap.dedent(f"""
         import sys
         sys.path.insert(0, {str(REPO_ROOT)!r})
-        from core.fused import rfc_extractor as rx
+        from core.fused.extraction import rfc_extractor as rx
 
         def _failing(protocol, facts=None, norms=None):
             rep = rx.QualityReport(protocol=protocol)

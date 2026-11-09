@@ -1,9 +1,9 @@
 """tests/fused/test_vuln.py —— vuln 源（kb/历史漏洞）→ Fact 原生映射。"""
 from __future__ import annotations
 
-from core.fused.vuln import vuln_to_facts, vuln_entry_to_facts
-from core.fused.registry import load_registry
-from core.fused.validation import validate_fact
+from core.fused.extraction.vuln import vuln_to_facts, vuln_entry_to_facts
+from core.fused.hub.registry import load_registry
+from core.fused.hub.validation import validate_fact
 
 
 def test_vuln_to_facts_non_empty():

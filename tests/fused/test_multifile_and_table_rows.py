@@ -39,14 +39,14 @@ def test_build_hub_protocol_name_check_is_case_insensitive():
 
 def test_section_kind_supports_file_specific_config():
     """★ `_section_kind` 支持 ``sections_by_file``（按文件限定章节）。"""
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     assert "sections_by_file" in inspect.getsource(RX._section_kind)
     assert "src_name" in inspect.signature(RX._section_kind).parameters
 
 
 def test_file_specific_config_wins_over_global():
     """★ 文件专属配置**优先**于全局配置。"""
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     cfg = {
         "method_sections": ["4.3"],          # 全局：所有文件的 §4.3 都算 method
         "field_sections": [],
@@ -66,7 +66,7 @@ def test_file_specific_config_wins_over_global():
 
 def test_config_reads_sections_by_file():
     """★ ``rfc_config.json`` 的 ``sections_by_file`` 段能被读到。"""
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     cfg = RX._load_rfc_config("dhcpv4")
     sbf = cfg.get("sections_by_file") or {}
     assert sbf, "dhcpv4 应配 sections_by_file"
@@ -77,7 +77,7 @@ def test_config_reads_sections_by_file():
 
 def test_dhcpv4_method_set_has_no_false_positive():
     """★ DHCPv4 的方法集**只含真消息类型**（无表格行误抽的 NVT）。"""
-    from core.fused.rfc_extractor import extract_rfc_norms
+    from core.fused.extraction.rfc_extractor import extract_rfc_norms
     ns = extract_rfc_norms("DHCPv4")
     methods = {n["norm_id"].split(".")[-1].upper()
                for n in ns if n.get("kind") == "method"}
@@ -96,7 +96,7 @@ def test_table_data_row_is_not_a_heading():
     ★ 实测踩坑：它被 `_RE_TOP_HEADING` 判成一级标题（number='0'）
       ⇒ 整段被当「方法章」⇒ 抽出误抽的方法 ``NVT``。
     """
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     assert RX._parse_heading_shape(
         "0       Network Virtual Terminal (NVT) ASCII VPN identifier") is not None
     # ★ 但**窗口层**（kind 判定）必须排除它
@@ -110,7 +110,7 @@ def test_table_data_row_is_not_a_heading():
 
 def test_real_headings_unaffected_by_table_row_exclusion():
     """★ 真标题**不受**表格行排除影响（章节号 "0" 之外全放行）。"""
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     for t, num in (("10.1 OPTIONS", "10.1"), ("5 General Header Fields", "5"),
                    ("4.3.  Required Support", "4.3")):
         h = RX._parse_heading_shape(t)
@@ -123,14 +123,14 @@ def test_wrapped_toc_entry_still_treated_as_heading_shape():
     ★ 这是与表格数据行排除**必须分开**的机制（实测踩过：
       在 `_parse_heading` 里排除表格行 ⇒ 破坏了目录块兜底 ⇒ SIP 目录条目污染）。
     """
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     wrapped = "   26         Security Considerations: Threat Model and Security"
     assert RX._parse_heading_shape(wrapped) is not None
 
 
 def test_text_protocols_method_sets_unchanged():
     """★ **回归护栏**：三个文本协议的方法集必须与基线一致。"""
-    from core.fused.rfc_extractor import extract_rfc_norms
+    from core.fused.extraction.rfc_extractor import extract_rfc_norms
     expected = {
         "rtsp": {"ANNOUNCE", "DESCRIBE", "GET_PARAMETER", "OPTIONS", "PAUSE",
                  "PLAY", "RECORD", "REDIRECT", "SETUP", "SET_PARAMETER",
@@ -157,7 +157,7 @@ def test_generic_stopwords_do_not_hurt_real_fields():
       （``rtsp.field.server`` = Server 头、``rtsp.method.options`` = OPTIONS 方法）
       ⇒ 头字段与方法**双双丢失**。
     """
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     for word in ("OPTIONS", "SERVER", "REQUEST", "CLIENT", "SECURITY"):
         assert word not in RX._GENERIC_SECTION_WORDS, \
             f"停用词表含 {word} ⇒ 可能误伤某协议的真字段"
@@ -169,7 +169,7 @@ def test_protocol_own_name_excluded_from_fields():
     实测：RFC 3396 §2 Terminology 的缩进术语条目 ``   DHCP``
     ⇒ 被当成字段 ``DHCP`` / ``DHCPv4``。
     """
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     src = inspect.getsource(RX._extract_rfc_file)
     assert "协议自身名" in src, "字段通道应排除协议自身名"
 

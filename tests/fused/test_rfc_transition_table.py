@@ -15,7 +15,7 @@
 """
 from __future__ import annotations
 
-from core.fused import rfc_extractor as RX   # noqa: E402
+from core.fused.extraction import rfc_extractor as RX   # noqa: E402
 from core import paths                        # noqa: E402
 
 PROTOCOL = "rtsp"

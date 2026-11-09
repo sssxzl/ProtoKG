@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from core.fused.vuln_pattern import (
+from core.fused.extraction.vuln_pattern import (
     classify_action, extract_stream_hints, normalize_field,
 )
 

@@ -801,7 +801,7 @@ def reflow_rules(rules: list[SemanticRule],
 | `SemanticRule` | `core/fused/models.py`（新增 dataclass）+ `core/fused/registry.py`（注册 aspect）| 复用 `Subject` / `Fact` / `ConditionAlways` / `ConditionPredicate` |
 | `map_norm_to_facts` 扩展 | `core/fused/norm.py`（`RFC_KIND_MAP` 增 "constraint" / "expectation"）| 复用现有 kind→Fact 分派 |
 | 期望响应词表 | `fused_hub/targets/<协议>/profile.json`（新增段）+ `core/fused/rfc_extractor.py` | 复用 `profile.seedgen` 的 per-protocol 配置模式 |
-| 投票层 | 新建 `core/fused/llm_ensemble.py` | 复用 `core/llm.py` 的 `chat_json` |
+| 投票层 | 新建 `core/fused/semantic/llm_ensemble.py` | 复用 `core/llm.py` 的 `chat_json` |
 | 字段路径树 | 新建 `core/fused/downstream/field_mutation.py` | 复用 traffic 源已抽出的真实字段值（P4 成果）|
 | 变异引擎 | 同上 | 复用 `core/fused/downstream/edge_cover.py` 的 `build_message` |
 | 语义 oracle | 新建 `core/fused/downstream/response_oracle.py` | 复用其现有 SIP 响应码正则 |

@@ -137,7 +137,7 @@ def test_class_layout_keeps_source_as_fact_field(hub):
     ])
     build_hub._write_aspect_layout(PROTOCOL)
 
-    from core.fused.knowledge_slots import category_ids
+    from core.fused.hub.knowledge_slots import category_ids
     authorities = []
     for cat in category_ids():
         cd = paths_mod.hub_root() / cat

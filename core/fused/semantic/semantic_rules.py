@@ -30,7 +30,7 @@ import re
 from dataclasses import dataclass
 from typing import Callable, Iterable, Optional
 
-from core.fused.semantic import (
+from core.fused.semantic.semantic import (
     MODALITY_NONE,
     MODALITY_OPTIONAL,
     MODALITY_RECOMMENDED,

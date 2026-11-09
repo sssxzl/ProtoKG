@@ -4,13 +4,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from core.fused.traffic import (
+from core.fused.extraction.traffic import (
     parse_message, parse_field_occurrence, parse_field_samples,
     parse_state_machine, parse_outcome, parse_distribution_keys,
     parse_bracketed_list, traffic_norm_to_facts, traffic_norms_to_facts,
 )
-from core.fused.registry import load_registry
-from core.fused.validation import validate_fact
+from core.fused.hub.registry import load_registry
+from core.fused.hub.validation import validate_fact
 
 MESSAGE_NORM = {
     "norm_id": "message.describe", "protocol": "rtsp", "kind": "message",
@@ -150,7 +150,7 @@ def test_dedup_records_capture_count():
 
 def test_all_real_traffic_norms_pass_fail_closed():
     """从数据流量目录抽取真实 traffic norm（client.log/rtsp.csv），映射后全过 fail-closed。"""
-    from core.fused.traffic_extractor import extract_traffic_norms
+    from core.fused.extraction.traffic_extractor import extract_traffic_norms
     traffic_norms = extract_traffic_norms("rtsp")
     assert len(traffic_norms) > 0  # 真实流量至少抽出 message/state_machine
     facts, skipped = traffic_norms_to_facts(traffic_norms)

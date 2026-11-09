@@ -31,8 +31,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
-from core.fused.graph_schema import protocol_hints
-from core.fused.rfc_forms import (NOISE_KINDS, split_form_blocks,
+from core.fused.graph.graph_schema import protocol_hints
+from core.fused.extraction.rfc_forms import (NOISE_KINDS, split_form_blocks,
                                   _match_roles, _split_columns)
 
 # ===========================================================================

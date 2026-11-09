@@ -32,8 +32,8 @@ import re
 
 import pytest
 
-from core.fused import rfc_extractor as R
-from core.fused.semantic_rules import PATTERNS, match_pattern
+from core.fused.extraction import rfc_extractor as R
+from core.fused.semantic.semantic_rules import PATTERNS, match_pattern
 
 PROTOCOLS = ("rtsp", "sip", "smtp")
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -408,7 +408,7 @@ def test_abnf_line_regex_matches_b5_pattern():
     ★ 两者必须一致，否则「抽取器认为是 ABNF」与「B-5 认为是 ABNF」会分叉
       ⇒ 抽取器把 ABNF 行并进散文句，B-5 却仍想按 ABNF 抽 ⇒ 静默失配。
     """
-    from core.fused.semantic_rules import PATTERNS as _P
+    from core.fused.semantic.semantic_rules import PATTERNS as _P
     b5 = next(p for p in _P if p.name == "abnf_rule")
     assert R._RE_ABNF_RULE.pattern == b5.regex.pattern, (
         "抽取器的 ABNF 判据与 B-5 的 abnf_rule 正则不同形")

@@ -38,8 +38,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from core.fused.norm import parse_outcome_content  # noqa: E402
-from core.fused.rfc_extractor import extract_rfc_norms  # noqa: E402
+from core.fused.extraction.norm import parse_outcome_content  # noqa: E402
+from core.fused.extraction.rfc_extractor import extract_rfc_norms  # noqa: E402
 
 
 # ===========================================================================
@@ -178,7 +178,7 @@ def test_case_variants_share_one_norm_id():
     ⇒ 两者既躲过去重、又撞了 norm_id ⇒ ``dup_norm_ids > 0`` ⇒ 质量闸
     误判「合法语料重复」并**阻断构建**。
     """
-    from core.fused.rfc_extractor import _norm
+    from core.fused.extraction.rfc_extractor import _norm
     a = _norm("field", "Accept", "", "rtsp", "rfcA.txt", "@1")
     b = _norm("field", "accept", "", "rtsp", "rfcB.txt", "@1")
     assert a["norm_id"] == b["norm_id"] == "rtsp.field.accept"
@@ -190,7 +190,7 @@ def test_distinct_entities_are_not_merged():
     ``Content-Length`` 与 ``content_length`` 的 norm_id 不同
     （连字符 vs 下划线），故是不同实体 —— 归一化不能把它们混为一谈。
     """
-    from core.fused.rfc_extractor import _norm
+    from core.fused.extraction.rfc_extractor import _norm
     a = _norm("field", "Content-Length", "", "rtsp", "rfcA.txt", "@1")
     b = _norm("field", "content_length", "", "rtsp", "rfcB.txt", "@1")
     assert a["norm_id"] != b["norm_id"]
@@ -203,7 +203,7 @@ def test_protocol_level_dedup_keeps_one_of_case_variants(tmp_path, monkeypatch):
       修复前 ⇒ 2 条同名 norm、norm_id 相同 ⇒ dup_norm_ids=1 ⇒ passed=False
       修复后 ⇒ 只保留首个（按文件名排序）⇒ dup_norm_ids=0 ⇒ passed=True
     """
-    from core.fused import rfc_extractor as rx
+    from core.fused.extraction import rfc_extractor as rx
 
     spec = tmp_path / "spec"
     spec.mkdir()

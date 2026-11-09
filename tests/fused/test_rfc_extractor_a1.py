@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from core.fused import rfc_extractor as rx
+from core.fused.extraction import rfc_extractor as rx
 
 
 # ===========================================================================
@@ -381,7 +381,7 @@ def test_real_rtsp_methods_exact_set():
 
 def test_real_sip_has_no_dup_fact_ids():
     """★ SIP 是 TOC 污染最严重的协议（改造前 68 个 fact_id 冲突）。"""
-    from core.fused.norm import map_norm_to_facts
+    from core.fused.extraction.norm import map_norm_to_facts
     facts = []
     for n in rx.extract_rfc_norms("sip"):
         facts.extend(map_norm_to_facts(n))

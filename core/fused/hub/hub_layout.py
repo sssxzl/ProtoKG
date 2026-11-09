@@ -30,7 +30,7 @@ import json
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
-from core.fused.knowledge_slots import category_file, category_ids, locate
+from core.fused.hub.knowledge_slots import category_file, category_ids, locate
 
 #: 顺序索引文件名（放在 ``derived/hub/index/order.jsonl``）
 ORDER_INDEX_NAME = "order.jsonl"
@@ -139,7 +139,7 @@ def _fact_entity(view: dict[str, Any]) -> Optional[dict[str, Any]]:
 
     ★ 关系型 fact ⇒ participants = [source / via / target]（端点也带 entity_id）。
     """
-    from core.fused.hub_entities import fact_entity_id
+    from core.fused.hub.hub_entities import fact_entity_id
     fk = view.get("fact_key") or {}
     subj = fk.get("subject") or {}
     _eid = fact_entity_id(view)
@@ -172,7 +172,7 @@ def _fact_entity(view: dict[str, Any]) -> Optional[dict[str, Any]]:
 def entity_id_of(protocol: Any, etype: Any, name: Any) -> str:
     """（薄封装）实体 id 生成 —— 避免 hub_layout 直接依赖 hub_entities 的内部。
     """
-    from core.fused.hub_entities import entity_id
+    from core.fused.hub.hub_entities import entity_id
     return entity_id(str(protocol or ""), str(etype or ""),
                    str(name or ""))
 
@@ -216,7 +216,7 @@ def _with_entity_id(line: str, view: dict[str, Any]) -> str:
     ★ **字符串插入**（不是重新序列化）⇒ 原有字节**完全不变**
       ⇒ 只多一个字段 ⇒ 顺序契约与内容等价性都不受影响。
     """
-    from core.fused.hub_entities import fact_entity_id
+    from core.fused.hub.hub_entities import fact_entity_id
     _eid = fact_entity_id(view)
     if not _eid or "\"entity_id\"" in line:
         return line
@@ -235,7 +235,7 @@ def _write_entity_table(hub_root: Path,
       它们指向**同一个** ``entity_id`` ⇒ 事实/关系/规则/图可对齐。
     ★ 保留其它协议的实体（中枢共用一套 ⇒ 多协议共存）。
     """
-    from core.fused.hub_entities import build_entity_index
+    from core.fused.hub.hub_entities import build_entity_index
     hub_root = Path(hub_root)
     pk = str(protocol or "").strip().lower()
     d = hub_root / "index"

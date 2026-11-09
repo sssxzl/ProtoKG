@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """core/fused/rfc_forms_binary.py —— **二进制协议**的 RFC 形态层（2026-11-07 新增）。
 
-★ 与文本形态层（:mod:`core.fused.rfc_forms`）**并列**、互不依赖：
+★ 与文本形态层（:mod:`core.fused.extraction.rfc_forms`）**并列**、互不依赖：
     · 文本形态层按**行**分类（table / normative / example / prose / …）；
     · 二进制形态层按**表块**分类（位域图 / 定长字段表 / 选项表）。
 

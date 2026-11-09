@@ -21,7 +21,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from core import paths                                     # noqa: E402
-from core.fused import rfc_extractor as rx                 # noqa: E402
+from core.fused.extraction import rfc_extractor as rx                 # noqa: E402
 
 
 #: 真实章节标题判定（用于「标题召回率」口径）：
@@ -93,8 +93,8 @@ def probe_protocol(protocol: str) -> dict:
     out["dup_norm_ids"] = {k: v for k, v in id_counter.items() if v > 1}
 
     # ---- 重复抽取对 fact_id 的影响 ----
-    from core.fused.norm import map_norm_to_facts
-    from core.fused.canonical import compute_fact_id
+    from core.fused.extraction.norm import map_norm_to_facts
+    from core.fused.hub.canonical import compute_fact_id
     fact_ids = []
     for n in norms:
         for f in map_norm_to_facts(n):

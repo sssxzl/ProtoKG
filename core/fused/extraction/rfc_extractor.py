@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any, Iterable, Optional
 
 from core import paths
-from core.fused.norm import constraint_identity_digest
+from core.fused.extraction.norm import constraint_identity_digest
 
 #: 任意层级章节标题（协议无关，不限定层级数）：`N.N(...) Title`（标题为无空格单词）。
 #: 要求至少一个 `.N`（二级及以上），排除一级标题（如「6 Request」「13 Caching」这类章节名）。
@@ -769,7 +769,7 @@ def _section_kind(window: dict, cfg: dict,
         if not _backfill:
             return None
         try:
-            from core.fused.rfc_classifier import classify_window
+            from core.fused.extraction.rfc_classifier import classify_window
             _ck = classify_window(window, None, src_name)
         except Exception:                       # noqa: BLE001
             _ck = None
@@ -808,7 +808,7 @@ def _section_kind(window: dict, cfg: dict,
     _backfill = cfg.get("content_backfill_kinds") or []
     if _backfill:
         try:
-            from core.fused.rfc_classifier import classify_window
+            from core.fused.extraction.rfc_classifier import classify_window
             _ck = classify_window(window, None, src_name)
         except Exception:                       # noqa: BLE001
             _ck = None
@@ -1032,7 +1032,7 @@ def _extract_transition_tables_by_form(text: str) -> list[dict]:
 
     ★ 与 `_extract_transition_table`（三列定宽硬编码）的关系：
       - 旧实现按**固定三列 + 状态名继承**匹配 ⇒ 只认一种表格形态；
-      - 本实现先由 `core.fused.rfc_forms` 按**内容形态**切出 `table` 块，
+      - 本实现先由 `core.fused.extraction.rfc_forms` 按**内容形态**切出 `table` 块，
         再按**表头列名**判定起态/触发/目标列 ⇒ 换协议、换列名、换列数都能解析。
     ★ 两者**合并去重**后使用 ⇒ 结果与旧实现等价（实测同协议的转移集相同），
       但新增「按形态定位 + 逐行溯源」的能力，且不依赖章节树（附录里的表也能覆盖）。
@@ -1041,7 +1041,7 @@ def _extract_transition_tables_by_form(text: str) -> list[dict]:
     Returns:
         `[{"from":…, "method":…, "to":…}, …]`
     """
-    from core.fused.rfc_forms import parse_state_table, split_form_blocks
+    from core.fused.extraction.rfc_forms import parse_state_table, split_form_blocks
     if not text:
         return []
     out: list[dict] = []
@@ -2587,10 +2587,10 @@ def _build_skeleton_constraint(protocol: str) -> tuple[str, set[str], set[str]]:
     msgs = _protocol_entity_names(protocol)
     states: set[str] = set()
     try:
-        from core.fused.rfc_graph import (extract_state_candidates,
+        from core.fused.graph.rfc_graph import (extract_state_candidates,
                                         extract_state_definitions,
                                         _same_sentence_migration)
-        from core.fused.graph_schema import protocol_hints
+        from core.fused.graph.graph_schema import protocol_hints
         spec_dir = paths.kb_source_dir(protocol, "rfc")
         hints = protocol_hints(protocol)
         if spec_dir.is_dir():
@@ -2637,7 +2637,7 @@ def _protocol_entity_names(protocol: str) -> set[str]:
     """
     names: set[str] = set()
     try:
-        from core.fused.norm import RFC_KIND_MAP  # noqa: F401
+        from core.fused.extraction.norm import RFC_KIND_MAP  # noqa: F401
     except Exception:                           # noqa: BLE001
         pass
     try:
@@ -3197,8 +3197,8 @@ def infer_method_required_headers(protocol: str, llm=None) -> list[dict]:
     Returns:
         ``[{"method": ..., "name": ..., "evidence": ..., "source": ...}, ...]``
     """
-    from core.fused.rfc_forms import split_form_blocks
-    from core.fused.source_retrieval import CACHE_DIR
+    from core.fused.extraction.rfc_forms import split_form_blocks
+    from core.fused.extraction.source_retrieval import CACHE_DIR
     cfg = _load_rfc_config(protocol)
     if not cfg.get("enable_required_headers"):
         return []
@@ -3367,8 +3367,8 @@ def infer_required_headers(protocol: str, llm=None) -> list[dict]:
 
     ★ **默认关闭**（`rfc_config.enable_required_headers`）⇒ 产物逐字节不变。
     """
-    from core.fused.rfc_forms import split_form_blocks
-    from core.fused.source_retrieval import CACHE_DIR
+    from core.fused.extraction.rfc_forms import split_form_blocks
+    from core.fused.extraction.source_retrieval import CACHE_DIR
     cfg = _load_rfc_config(protocol)
     if not cfg.get("enable_required_headers"):
         return []
@@ -3868,7 +3868,7 @@ def infer_transitions(protocol: str, llm=None) -> list[dict]:
     candidates = extract_transition_candidates(protocol)
     if not candidates:
         return []
-    from core.fused.source_retrieval import CACHE_DIR
+    from core.fused.extraction.source_retrieval import CACHE_DIR
     cache_file = CACHE_DIR / f"{protocol}.transitions.json"
     # ★ E′（2026-11-06）：缓存键**并入 prompt_version** ⇒ 改提示词自动失效。
     #   历史缺陷：只哈希候选块文本 ⇒ 改提示词但缓存命中 ⇒ 改动静默不生效。
@@ -4070,7 +4070,7 @@ def extract_rfc_norms(protocol: str) -> list[dict]:
     except Exception:                     # noqa: BLE001 —— 判定失败不阻断构建
         _kind = None
     if _kind is not None and _kind.is_binary:
-        from core.fused.rfc_extractor_binary import extract_binary_norms
+        from core.fused.extraction.rfc_extractor_binary import extract_binary_norms
         for _bn in extract_binary_norms(protocol):
             if _bn["norm_id"] in seen_protocol_level:
                 continue
@@ -4201,7 +4201,7 @@ def rfc_quality_report(protocol: str, facts=None,
     if norms is None:
         norms = extract_rfc_norms(protocol)
     if facts is None:
-        from core.fused.norm import map_norm_to_facts
+        from core.fused.extraction.norm import map_norm_to_facts
         facts = []
         for n in norms:
             facts.extend(map_norm_to_facts(n))
@@ -5248,11 +5248,11 @@ def build_semantic_rules(protocol: str, *, known_fields=None,
     """
     from collections import Counter
 
-    from core.fused.semantic import (EvidenceAnchor, KnowledgeCandidate,
+    from core.fused.semantic.semantic import (EvidenceAnchor, KnowledgeCandidate,
                                      SemanticRule, compute_evidence_id,
                                      compute_explicitness, compute_rule_id,
                                      load_source_text, try_convert)
-    from core.fused.semantic_rules import (make_resolver, match_pattern,
+    from core.fused.semantic.semantic_rules import (make_resolver, match_pattern,
                                            resolve_evidence_kind)
 
     fields = (list(known_fields) if known_fields is not None
@@ -5684,7 +5684,7 @@ def infer_constraints(protocol: str, llm=None, max_candidates: int = 40,
             #   （否则视为 LLM 输出不完整 ⇒ 留空，由下游按「无可执行算子」处理）。
             #   ★ 算子词表的**唯一真源**是 ``core.fused.semantic.OPERATORS``
             #     （惰性导入 ⇒ 避免模块级循环导入）。
-            from core.fused.semantic import OPERATORS as _OPERATOR_DOMAIN
+            from core.fused.semantic.semantic import OPERATORS as _OPERATOR_DOMAIN
             operator = (c.get("operator") or "").strip()
             if operator not in _OPERATOR_DOMAIN:
                 operator = ""

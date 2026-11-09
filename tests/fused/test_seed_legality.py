@@ -37,7 +37,7 @@ def _restore_semantic_switch():
     """★ 本仓有**全局**开关 `semantic_rules_enabled()`：测试里打开后必须恢复，
     否则会污染后续测试（实测曾让 `test_semantic_chain` 在整跑时随机失败、
     单跑却通过 —— 典型的测试间污染）。"""
-    from core.fused.llm_ensemble import (semantic_rules_enabled,
+    from core.fused.semantic.llm_ensemble import (semantic_rules_enabled,
                                          set_semantic_rules_enabled)
     _prev = semantic_rules_enabled()
     yield
@@ -139,7 +139,7 @@ def test_no_fallback_keeps_empty():
 
 def test_real_corpus_url_gap_closed():
     """★ 实测锚点：修前 rtsp 6 / sip 34 条报文 url 空，修后均 **0**。"""
-    from core.fused.llm_ensemble import set_semantic_rules_enabled
+    from core.fused.semantic.llm_ensemble import set_semantic_rules_enabled
     from core.fused.downstream.edge_cover import edge_cover
     set_semantic_rules_enabled(True)
     for proto in ("rtsp", "sip"):
@@ -193,7 +193,7 @@ def test_known_fields_none_keeps_legacy_behaviour():
 
 def test_real_corpus_smtp_command_params_fixed():
     """★ 实测锚点：smtp 修后 `AUTH` 的 argument 是 'PLAIN'、headers 为空。"""
-    from core.fused.llm_ensemble import set_semantic_rules_enabled
+    from core.fused.semantic.llm_ensemble import set_semantic_rules_enabled
     from core.fused.downstream.edge_cover import edge_cover
     set_semantic_rules_enabled(True)
     b = _bundle("smtp", apply_allowed_methods=False)

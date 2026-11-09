@@ -23,7 +23,7 @@ import pytest
 
 def test_retrieve_neighborhood_expands_by_hops():
     """★ k-hop 邻域按跳数扩展。"""
-    from core.fused.graph_query import retrieve_neighborhood
+    from core.fused.graph.graph_query import retrieve_neighborhood
     nodes = [{"node_id": "a", "name": "A", "type": "message"},
              {"node_id": "b", "name": "B", "type": "message"},
              {"node_id": "c", "name": "C", "type": "message"}]
@@ -37,7 +37,7 @@ def test_retrieve_neighborhood_expands_by_hops():
 
 def test_retrieve_neighborhood_respects_edge_types():
     """★ 边类型可限定（⇒ 扩展性）。"""
-    from core.fused.graph_query import retrieve_neighborhood
+    from core.fused.graph.graph_query import retrieve_neighborhood
     nodes = [{"node_id": "a"}, {"node_id": "b"}]
     edges = [{"type": "required_by", "from": "a", "to": "b"},
              {"type": "followed_by", "from": "a", "to": "b"}]
@@ -48,8 +48,8 @@ def test_retrieve_neighborhood_respects_edge_types():
 
 def test_retrieve_subgraph_graph_is_data_driven():
     """★ 图驱动子图检索的**边类型来自 graph_schema**（数据驱动）。"""
-    from core.fused.graph_query import retrieve_subgraph_graph
-    from core.fused.graph_schema import traversal
+    from core.fused.graph.graph_query import retrieve_subgraph_graph
+    from core.fused.graph.graph_schema import traversal
     tr = traversal()
     assert tr, "traversal 配置为空"
     nodes = [{"node_id": "message:setup", "name": "SETUP", "type": "message"},
@@ -106,7 +106,7 @@ def _tri_graph():
 
 def test_find_paths_returns_method_sequence():
     """★ 路径查询返回**带方法名**的序列。"""
-    from core.fused.graph_query import find_paths
+    from core.fused.graph.graph_query import find_paths
     nodes, edges = _tri_graph()
     paths = find_paths(nodes, edges, "state:init", "state:requesting")
     assert paths, "没找到路径"
@@ -123,7 +123,7 @@ def test_find_paths_method_order_matches_state_order():
       （得到 ``[REQUEST, OFFER, DISCOVER]`` 这种荒谬顺序）。
     ⇒ 改成指向**源状态**后对齐。
     """
-    from core.fused.graph_query import find_paths
+    from core.fused.graph.graph_query import find_paths
     nodes, edges = _tri_graph()
     p = find_paths(nodes, edges, "state:init", "state:requesting")[0]
     # 第一个方法触发的迁移是 init→selecting ⇒ 方法是 DISCOVER
@@ -134,7 +134,7 @@ def test_find_paths_method_order_matches_state_order():
 
 def test_find_paths_respects_purity():
     """★ **纯度闸**：owner 不在 source_set 的边 ⇒ 路径不经过它。"""
-    from core.fused.graph_query import find_paths
+    from core.fused.graph.graph_query import find_paths
     nodes, edges = _tri_graph()
     # 把中间那条边染成 traffic
     for e in edges:
@@ -148,7 +148,7 @@ def test_find_paths_respects_purity():
 
 def test_find_paths_respects_max_depth():
     """★ 深度上限生效（防组合爆炸）。"""
-    from core.fused.graph_query import find_paths
+    from core.fused.graph.graph_query import find_paths
     nodes, edges = _tri_graph()
     assert find_paths(nodes, edges, "state:init", "state:requesting",
                       max_depth=2) == []
@@ -156,7 +156,7 @@ def test_find_paths_respects_max_depth():
 
 def test_find_paths_unknown_endpoints():
     """★ 端点不存在 ⇒ 空（不崩）。"""
-    from core.fused.graph_query import find_paths
+    from core.fused.graph.graph_query import find_paths
     nodes, edges = _tri_graph()
     assert find_paths(nodes, edges, "state:nope", "state:init") == []
 
@@ -167,7 +167,7 @@ def test_find_paths_unknown_endpoints():
 
 def test_retrieve_communities_by_query():
     """★ 社区检索按查询词命中（确定性、零 LLM）。"""
-    from core.fused.graph_query import retrieve_communities
+    from core.fused.graph.graph_query import retrieve_communities
     comms = retrieve_communities("dhcpv4", query="option")
     assert comms, "没匹配到社区"
     assert any("option" in (c.get("summary") or "").lower()
@@ -177,7 +177,7 @@ def test_retrieve_communities_by_query():
 
 def test_retrieve_communities_returns_largest_without_query():
     """★ 无查询 ⇒ 返回最大的社区。"""
-    from core.fused.graph_query import retrieve_communities
+    from core.fused.graph.graph_query import retrieve_communities
     comms = retrieve_communities("dhcpv4")
     assert comms
     counts = [c.get("member_count", 0) for c in comms]
@@ -190,7 +190,7 @@ def test_retrieve_communities_returns_largest_without_query():
 
 def test_path_seeds_generates_session_seeds():
     """★ 路径式种子产出**有序的会话**（≥2 个消息）。"""
-    from core.fused.graph_query import path_seeds
+    from core.fused.graph.graph_query import path_seeds
     from core.fused.downstream import rag_seedgen as RS
     b = RS.assemble_bundle(RS.load_fact_views("DHCPv4"), "DHCPv4")
     seeds = path_seeds("DHCPv4", transitions=b["transitions"],
@@ -217,7 +217,7 @@ def test_path_seeds_only_from_init_state():
       ⇒ 契约是「**路径从初始状态出发**」⇒ 断言**状态路径的首个节点**
         是初始状态。
     """
-    from core.fused.graph_query import (_detect_init_from_bundle,
+    from core.fused.graph.graph_query import (_detect_init_from_bundle,
                                           path_seeds)
     from core.fused.downstream import rag_seedgen as RS
     b = RS.assemble_bundle(RS.load_fact_views("DHCPv4"), "DHCPv4")
@@ -237,7 +237,7 @@ def test_path_seeds_only_from_init_state():
 
 def test_path_seeds_strict_purity_filters():
     """★ 严格纯度 ⇒ 纯 RFC 口径下**没有**可用路径（迁移边来自骨架）。"""
-    from core.fused.graph_query import path_seeds
+    from core.fused.graph.graph_query import path_seeds
     from core.fused.downstream import rag_seedgen as RS
     b = RS.assemble_bundle(RS.load_fact_views("DHCPv4"), "DHCPv4")
     loose = path_seeds("DHCPv4", transitions=b["transitions"],
@@ -259,7 +259,7 @@ def test_path_seeds_strict_purity_filters():
 
 def test_check_path_purity():
     """★ 纯度闸报告违规的边。"""
-    from core.fused.graph_query import check_path_purity
+    from core.fused.graph.graph_query import check_path_purity
     path = {"edges": [{"edge_id": "e1", "type": "transitions_to",
                        "source_owner": "rfc", "from": "a", "to": "b"},
                       {"edge_id": "e2", "type": "triggers",

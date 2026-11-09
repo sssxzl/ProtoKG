@@ -2,7 +2,7 @@
 
 core/fused/source_fsm.py —— 从协议实现源码推断状态机（LLM，ProtocolGPT 思路）。
 
-协议无关引擎 + 协议 Profile：从 core.fused.protocol_patterns 读取协议的状态机信号
+协议无关引擎 + 协议 Profile：从 core.fused.extraction.protocol_patterns 读取协议的状态机信号
 pattern（消息处理函数名 + 状态变量名），提取信号后 LLM 推断状态机。
 设计（历史）: 引擎调用 get_pattern(protocol) 读取 protocol_patterns 配置…
 
@@ -14,9 +14,9 @@ import json
 import re
 from pathlib import Path
 
-from core.fused.models import Subject, Value, Fact
-from core.fused.source import _make_fact
-from core.fused.protocol_patterns import get_pattern
+from core.fused.hub.models import Subject, Value, Fact
+from core.fused.extraction.source import _make_fact
+from core.fused.extraction.protocol_patterns import get_pattern
 
 #: 非消息类型的辅助函数（RTSP handleCmd_xxx 里的错误/内部回调），过滤掉
 #: TODO: 后续可把各协议的非消息过滤集也移入 protocol_patterns.py

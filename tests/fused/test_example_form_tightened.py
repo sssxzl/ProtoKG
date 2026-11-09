@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-from core.fused import rfc_forms as RF
+from core.fused.extraction import rfc_forms as RF
 
 REPO = Path(__file__).resolve().parents[2]
 

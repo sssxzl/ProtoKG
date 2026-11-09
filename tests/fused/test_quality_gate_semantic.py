@@ -20,7 +20,7 @@ import json
 
 import pytest
 
-from core.fused import rfc_extractor as rx
+from core.fused.extraction import rfc_extractor as rx
 
 
 # ===========================================================================
@@ -310,7 +310,7 @@ def test_rules_only_library_passes_gate_and_is_readable(tmp_path):
 
 def test_build_hub_rules_only_cli_does_not_flip_d6(tmp_path, monkeypatch):
     """★ `rules_only` **不得**改变 D-6 开关位（全局默认仍为关闭）。"""
-    from core.fused.llm_ensemble import (ENV_KEY, semantic_rules_enabled,
+    from core.fused.semantic.llm_ensemble import (ENV_KEY, semantic_rules_enabled,
                                          set_semantic_rules_enabled)
     from scripts import build_hub
 

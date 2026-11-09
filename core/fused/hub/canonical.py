@@ -30,7 +30,7 @@ def _self_tests():
     注：源码按 Case 标签编号到 Case 5，但 Case 4（联合类型）内含两个独立断言
     （不等时不同 / 等时同），故 cases 列表共 6 项、total = 6。
     """
-    from core.fused.models import (
+    from core.fused.hub.models import (
         Subject, FactKey, ConditionAlways, ConditionPredicate, Value,
     )
     cases = []

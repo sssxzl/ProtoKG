@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from core.fused.exceptions import FusedSchemaError  # 同包异常基类
+from core.fused.hub.exceptions import FusedSchemaError  # 同包异常基类
 
 
 SCHEMA_DIR = Path("fused_hub") / "schema"

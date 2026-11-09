@@ -15,7 +15,7 @@ import json
 import re
 from pathlib import Path
 
-from core.fused import rfc_extractor as RX
+from core.fused.extraction import rfc_extractor as RX
 
 
 # ===========================================================================

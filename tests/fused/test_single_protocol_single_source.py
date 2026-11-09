@@ -128,7 +128,7 @@ def test_write_goes_to_target_protocol_and_source(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "per_source_facts_dir",
                         lambda protocol, source: fake_facts_root / protocol / source)
 
-    from core.fused.registry import load_registry
+    from core.fused.hub.registry import load_registry
     registry = load_registry()
     failed, dest = build_hub._write_and_validate(
         "rfc", [], registry, "sip", build_id="rb_testbuild00000001")
@@ -194,7 +194,7 @@ def test_rfc_extraction_uses_target_protocol_config_only():
     ⚠ 标题形如「200 OK」的会先被**状态码标题启发式**判为 status
       （协议通用特征，与配置无关），故此处用非状态码标题来验证配置隔离。
     """
-    from core.fused import rfc_extractor as rx
+    from core.fused.extraction import rfc_extractor as rx
 
     sip_cfg = rx._load_rfc_config("sip")
     rtsp_cfg = rx._load_rfc_config("rtsp")
@@ -217,7 +217,7 @@ def test_rfc_extraction_uses_target_protocol_config_only():
 
 def test_rfc_norms_are_scoped_to_target_protocol():
     """不同协议的 norms 不能互相污染（norm_id 带协议名）。"""
-    from core.fused import rfc_extractor as rx
+    from core.fused.extraction import rfc_extractor as rx
 
     sip_ids = {n["norm_id"] for n in rx.extract_rfc_norms("sip")}
     rtsp_ids = {n["norm_id"] for n in rx.extract_rfc_norms("rtsp")}

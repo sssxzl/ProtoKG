@@ -17,7 +17,7 @@ import dataclasses
 
 import pytest
 
-from core.fused.llm_ensemble import (
+from core.fused.semantic.llm_ensemble import (
     DEFAULT_THETA,
     Alignment,
     Candidate,
@@ -25,7 +25,7 @@ from core.fused.llm_ensemble import (
     evidence_overlap,
     rule_content_identity,
 )
-from core.fused.semantic import (
+from core.fused.semantic.semantic import (
     EvidenceAnchor,
     ExecutableConstraint,
     SemanticRule,
@@ -233,7 +233,7 @@ class TestKnownNonTransitivity:
         """★ 该性质必须**写在代码里**（否则后来者会误以为对齐是等价关系）。"""
         import inspect
 
-        from core.fused import llm_ensemble
+        from core.fused.semantic import llm_ensemble
         doc = inspect.getdoc(llm_ensemble.align_by_structural_equality) or ""
         assert "传递" in doc
         assert "成对判定" in doc

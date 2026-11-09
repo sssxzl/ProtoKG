@@ -14,7 +14,7 @@
   · 「显式传入 `semantic_rules=`」= **调用方的显式授权**（程序化 API 层面的直接
     输入），**优先于开关** —— 照常装载 + 投影，**不得**静默丢弃（B-8 契约）。
 
-本文件只测 `core/fused/llm_ensemble.py`（开关位）+ `rag_seedgen.assemble_bundle`
+本文件只测 `core/fused/semantic/llm_ensemble.py`（开关位）+ `rag_seedgen.assemble_bundle`
 （行为矩阵）+ `scripts/build_hub.py`（CLI 暴露）。
 
 ★ 本文件**不改动** B-8 的契约文件 `tests/fused/test_bundle_projection.py`（只读）。
@@ -31,7 +31,7 @@ import pytest
 
 from core.fused.downstream import rag_seedgen
 from core.fused.downstream.rag_seedgen import assemble_bundle
-from core.fused.llm_ensemble import (
+from core.fused.semantic.llm_ensemble import (
     ENV_KEY,
     VOTING_ENV_KEY,
     reset_semantic_rules_enabled,
@@ -40,7 +40,7 @@ from core.fused.llm_ensemble import (
     set_semantic_rules_enabled,
     voting_enabled,
 )
-from core.fused.semantic import (
+from core.fused.semantic.semantic import (
     EvidenceAnchor,
     ExecutableConstraint,
     SemanticRule,
@@ -317,7 +317,7 @@ def test_off_consumption_path_is_never_called(monkeypatch):
     monkeypatch.setattr(rag_seedgen, "load_semantic_rules", _fake_load)
     # ★ 阶段 D1：``project_semantic_rules`` 已搬到**中枢视图层**
     #   ⇒ monkeypatch 必须打在 hub_view 上（打 rag_seedgen 已无效）。
-    from core.fused import hub_view as _hub_view
+    from core.fused.hub import hub_view as _hub_view
     monkeypatch.setattr(_hub_view, "project_semantic_rules", _fake_project)
 
     bundle = assemble_bundle(_views(), PROTO)
@@ -374,7 +374,7 @@ def test_off_bundle_is_byte_identical_to_pre_b8(monkeypatch, isolated_library):
 
     # ★ 阶段 D1：``project_semantic_rules`` 已搬到**中枢视图层**
     #   ⇒ monkeypatch 必须打在 hub_view 上（打 rag_seedgen 已无效）。
-    from core.fused import hub_view as _hub_view
+    from core.fused.hub import hub_view as _hub_view
     monkeypatch.setattr(_hub_view, "project_semantic_rules", _no_project)
     set_semantic_rules_enabled(True)
     ref_bundle = assemble_bundle(_views(), PROTO)

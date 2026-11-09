@@ -42,7 +42,7 @@ def _normalize_transitions(transitions: Iterable, method_order: Optional[dict] =
 
 # ★ 阶段 D1：``_detect_init`` 已移到**中枢层**（core/fused/state_graph.py）
 #   ⇒ 消费层与 GraphRAG 整理层**并列**依赖它 ⇒ 无层次倒置。
-from core.fused.state_graph import _detect_init  # noqa: E402,F401
+from core.fused.graph.state_graph import _detect_init  # noqa: E402,F401
 
 
 def _adjacency(transitions: list) -> dict:

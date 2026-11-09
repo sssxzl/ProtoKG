@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Optional
 
-from core.fused.graph_schema import traversal
+from core.fused.graph.graph_schema import traversal
 
 #: 路径枚举的**默认深度上限**（防止组合爆炸）
 DEFAULT_MAX_DEPTH = 8
@@ -38,7 +38,7 @@ DEFAULT_MAX_PATHS = 32
 
 def load_graph(protocol: str) -> tuple[list[dict], list[dict]]:
     """读回该协议的显式图（``nodes.jsonl`` / ``edges.jsonl``）。"""
-    from core.fused.graph_ops import read_graph
+    from core.fused.graph.graph_ops import read_graph
     return read_graph(protocol)
 
 
@@ -351,7 +351,7 @@ def retrieve_communities(protocol: str,
     ★ 相关性判据（**确定性、零 LLM**）：社区成员名/摘要里命中查询词的数量。
       ⇒ 可复现、可解释；LLM 排序留作后续增强。
     """
-    from core.fused.graph_reports import read_communities
+    from core.fused.graph.graph_reports import read_communities
     comms = read_communities(protocol)
     if not comms:
         return []
@@ -513,7 +513,7 @@ def _detect_init_from_bundle(transitions: Optional[list]) -> str:
         return ""
     try:
         # ★ 阶段 D1：改用**中枢层**的 state_graph（原先反向 import 消费层）
-        from core.fused.state_graph import _detect_init
+        from core.fused.graph.state_graph import _detect_init
         return _detect_init([tuple(t) for t in transitions
                              if isinstance(t, (list, tuple)) and len(t) >= 3])
     except Exception:                           # noqa: BLE001

@@ -4,9 +4,9 @@
 """
 from __future__ import annotations
 
-from core.fused.exceptions import FusedSchemaError
-from core.fused.registry import UnregisteredReferenceError
-from core.fused.models import (
+from core.fused.hub.exceptions import FusedSchemaError
+from core.fused.hub.registry import UnregisteredReferenceError
+from core.fused.hub.models import (
     Subject, Value, FactKey, Claim, Fact, AspectSpec, ValueType,
 )
 
@@ -80,7 +80,7 @@ def validate_claim(claim: Claim, registry) -> None:
 
 def validate_fact(fact: Fact, registry) -> None:
     """完整验证一个 Fact: subject / aspect / epistemic 全部注册 + 类型匹配。"""
-    from core.fused.models import AspectSpec
+    from core.fused.hub.models import AspectSpec
     validate_subject(fact.fact_key.subject, registry)
     validate_aspect(fact.fact_key, registry)
 

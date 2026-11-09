@@ -26,11 +26,11 @@ import json
 from typing import Any, Optional
 
 from core import paths
-from core.fused.models import (
+from core.fused.hub.models import (
     Subject, FactKey, ConditionAlways, Value, Fact, FactMetadata,
     Claim, Evidence, Scope,
 )
-from core.fused.canonical import (
+from core.fused.hub.canonical import (
     compute_fact_id, compute_claim_id, compute_evidence_id,
 )
 
@@ -418,13 +418,13 @@ def map_to_facts(ss: list[dict], sm: list[dict], sst: list[dict],
 def infer_source_facts(protocol: str = "rtsp", llm=None) -> list[Fact]:
     """AutoSeeder 方法完整入口：源码 → 检索 → LLM 分析 → 六元组 fact。
 
-    依赖 core.fused.source_retrieval 检索相关代码块（协议无关通用 query）。
+    依赖 core.fused.extraction.source_retrieval 检索相关代码块（协议无关通用 query）。
 
     稳定化（P4）：LLM 分析结果按 code_blocks 的 hash 缓存到
     ``derived/source_blocks/<protocol>.state.json``，后续 build 命中缓存则不再调 LLM，
     消除「每次 build 状态机都不同」的随机性（temperature=0 仍不稳定的兜底）。
     """
-    from core.fused.source_retrieval import retrieve_state_relevant_code, CACHE_DIR
+    from core.fused.extraction.source_retrieval import retrieve_state_relevant_code, CACHE_DIR
     if llm is None:
         from core.llm import DeepSeekClient
         llm = DeepSeekClient()

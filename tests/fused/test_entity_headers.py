@@ -73,7 +73,7 @@ def test_entity_headers_rendered_before_body():
     """★ RFC 5321 §2.3.9：头段属于 message content ⇒ 必须在正文之前。"""
     from core.fused.downstream import rag_seedgen as RS
     from core.fused.downstream.edge_cover import edge_cover
-    from core.fused.llm_ensemble import set_semantic_rules_enabled
+    from core.fused.semantic.llm_ensemble import set_semantic_rules_enabled
     from core.raw_writers import seedcorpus_to_raw
     set_semantic_rules_enabled(True)
     b = RS.assemble_bundle(RS.load_fact_views("smtp"), "smtp",
@@ -116,7 +116,7 @@ def test_entity_header_values_come_from_hub():
     """★ 实体头的取值取自 ``headers`` 桶（RFC 抽取），不写死。"""
     from core.fused.downstream import rag_seedgen as RS
     from core.fused.downstream.edge_cover import build_message
-    from core.fused.llm_ensemble import set_semantic_rules_enabled
+    from core.fused.semantic.llm_ensemble import set_semantic_rules_enabled
     set_semantic_rules_enabled(True)
     b = RS.assemble_bundle(RS.load_fact_views("smtp"), "smtp",
                             apply_allowed_methods=False)
@@ -134,7 +134,7 @@ def test_entity_header_values_come_from_hub():
 
 def test_smtp_mail_headers_are_extracted_from_rfc():
     """★ RFC 5322 的邮件头必须被抽到（Date/From/To/Subject…）。"""
-    from core.fused.rfc_extractor import (_rfc_source_headers,
+    from core.fused.extraction.rfc_extractor import (_rfc_source_headers,
                                           _load_rfc_config)
     cfg = _load_rfc_config("smtp")
     known = _rfc_source_headers("smtp", cfg)
@@ -153,14 +153,14 @@ def test_abnf_field_regex_has_multiline():
       ``finditer`` **永远命中 0 条**（实测邮件规范的 20 个 ABNF 头全丢）。
       ★ 这个 bug 极隐蔽：逐行 ``match`` 能命中 ⇒ 单行测试通过、全文扫描全灭。
     """
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_extractor as RX
     assert RX._RE_ABNF_FIELD.flags & __import__("re").MULTILINE, \
         "_RE_ABNF_FIELD 缺 re.MULTILINE ⇒ 全文 finditer 恒 0 条"
 
 
 def test_abnf_field_extraction_works_on_full_text():
     """★ 全文扫描能抽到 ABNF 头名。"""
-    from core.fused.rfc_extractor import _extract_abnf_fields
+    from core.fused.extraction.rfc_extractor import _extract_abnf_fields
     txt = (ROOT / "kb" / "smtp" / "spec" / "rfc5322.txt").read_text(
         encoding="utf-8", errors="ignore")
     names = {f["name"] for f in _extract_abnf_fields(txt)}
@@ -174,7 +174,7 @@ def test_address_headers_exempt_from_uri_exclusion():
     理由：``From: John Doe <jdoe@machine.example>`` 的**整个值**就是邮箱地址
     （不是「URI 实例」）⇒ 按 URI 规则排除会把邮件头的取值**全灭**。
     """
-    from core.fused.rfc_extractor import _is_address_header
+    from core.fused.extraction.rfc_extractor import _is_address_header
     assert _is_address_header("From", "mailbox-list CRLF") is True
     assert _is_address_header("To", "address-list CRLF") is True
     assert _is_address_header("Date", "date-time CRLF") is False
@@ -183,7 +183,7 @@ def test_address_headers_exempt_from_uri_exclusion():
 
 def test_address_header_values_extracted():
     """★ 地址类头的取值要能抽到（实测 From/To 各有多个取值）。"""
-    from core.fused.rfc_extractor import (_doc_content_lines,
+    from core.fused.extraction.rfc_extractor import (_doc_content_lines,
                                           _extract_field_value_samples,
                                           _extract_abnf_fields,
                                           _is_address_header)

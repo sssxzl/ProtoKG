@@ -29,14 +29,14 @@ def test_graph_schema_is_self_consistent():
     ★ 踩过的坑：初版把 ``transitions_to``（**边类型**）写进 ``triggers.to``
       ⇒ 校验器抓到（这是校验器的价值）。
     """
-    from core.fused.graph_schema import validate_schema
+    from core.fused.graph.graph_schema import validate_schema
     problems = validate_schema()
     assert not problems, problems
 
 
 def test_graph_schema_has_two_graphs():
     """★ D2：两类知识分开 ⇒ schema 里有 structure / semantic 两张图。"""
-    from core.fused.graph_schema import edge_type_names, node_type_names
+    from core.fused.graph.graph_schema import edge_type_names, node_type_names
     assert "state" in node_type_names("structure")
     assert "message" in node_type_names("structure")
     assert "header" in node_type_names("semantic")
@@ -48,7 +48,7 @@ def test_graph_schema_has_two_graphs():
 
 def test_traversal_is_data_driven():
     """★ 遍历配置是**数据**（加边类型不改代码）。"""
-    from core.fused.graph_schema import traversal
+    from core.fused.graph.graph_schema import traversal
     tr = traversal()
     assert "state_to_state" in tr
     assert "transitions_to" in tr["state_to_state"]
@@ -64,7 +64,7 @@ def test_state_definition_list_extraction():
     ★ 踩过的坑：该形态**不是 ASCII 图** ⇒ 形态层的 diagram 判据识别不出
       ⇒ 只靠图形块收状态会漏掉 rtsp 全部状态（实测 0 个）。
     """
-    from core.fused.rfc_graph import extract_state_definitions
+    from core.fused.graph.rfc_graph import extract_state_definitions
     lines = [
         "A.1 Client State Machine",
         "",
@@ -92,7 +92,7 @@ def test_state_definitions_reject_non_states():
     ★ 实测：rtsp 的 ``Conference:`` / ``SETUP:`` 形态与状态定义**完全同构**
       ⇒ 纯形态无法区分 ⇒ 必须靠「迁移语义上下文」过滤。
     """
-    from core.fused.rfc_graph import extract_state_definitions
+    from core.fused.graph.rfc_graph import extract_state_definitions
     lines = [
         "   Conference:",
         "          A conference is a set of participants.",
@@ -113,7 +113,7 @@ def test_state_definitions_reject_non_states():
 
 def test_message_extraction_excludes_protocol_name():
     """★ N2：消息名不是协议自身名（DHCP vs DHCPDISCOVER）。"""
-    from core.fused.rfc_graph import extract_message_nodes
+    from core.fused.graph.rfc_graph import extract_message_nodes
     lines = ["   DHCP messages: DHCPDISCOVER, DHCPOFFER and DHCPACK"]
     got = {n.name for n in extract_message_nodes(lines, "x.txt",
                                                   ["DHCPDISCOVER"], "DHCPv4")}
@@ -123,7 +123,7 @@ def test_message_extraction_excludes_protocol_name():
 
 def test_state_extraction_excludes_message_names():
     """★ 消息名（DHCPOFFER）本身是全大写 ⇒ 不得被当状态。"""
-    from core.fused.rfc_graph import extract_state_candidates
+    from core.fused.graph.rfc_graph import extract_state_candidates
     lines = ["   The server responds with DHCPOFFER then DHCPACK."]
     got = {n.name for n in extract_state_candidates(
         lines, "x.txt", ("INIT",), exclude={"DHCPOFFER", "DHCPACK"})}
@@ -132,7 +132,7 @@ def test_state_extraction_excludes_message_names():
 
 def test_wrapped_word_not_treated_as_term():
     """★ 折行截断：``DHCPREQU`` + ``EST`` 不该是两个术语。"""
-    from core.fused.rfc_graph import _is_wrapped_continuation
+    from core.fused.graph.rfc_graph import _is_wrapped_continuation
     lines = ["   The client sends a DHCPREQUEST", "   EST message to server."]
     assert _is_wrapped_continuation(lines, 2, "EST")
     assert not _is_wrapped_continuation(lines, 2, "DHCPREQUEST")
@@ -140,7 +140,7 @@ def test_wrapped_word_not_treated_as_term():
 
 def test_graph_message_sequence_extraction():
     """★ E1：图形里的消息序列（RFC 2131 Figure 3 时序图形态）。"""
-    from core.fused.rfc_graph import extract_graph_message_sequences
+    from core.fused.graph.rfc_graph import extract_graph_message_sequences
     lines = [
         "        v               v               v",
         "        |               |               |",
@@ -159,7 +159,7 @@ def test_graph_message_sequence_extraction():
 
 def test_prose_transition_extraction():
     """★ E3：散文里的状态迁移（RFC 2131 的状态名**只在散文里**）。"""
-    from core.fused.rfc_graph import extract_prose_transitions
+    from core.fused.graph.rfc_graph import extract_prose_transitions
     lines = ["   the client reverts to INIT state and starts over."]
     got = extract_prose_transitions(lines, "x.txt", {"INIT", "SELECTING"})
     assert got and got[0].to_id == "state:init", [e.as_dict() for e in got]
@@ -168,7 +168,7 @@ def test_prose_transition_extraction():
 
 def test_extraction_is_deterministic():
     """★ 抽取**零 LLM** ⇒ 同输入同输出（逐字节可复现）。"""
-    from core.fused.rfc_graph import extract_graph
+    from core.fused.graph.rfc_graph import extract_graph
     a_nodes, a_edges = extract_graph("dhcpv4")
     b_nodes, b_edges = extract_graph("dhcpv4")
     assert [n.node_id for n in a_nodes] == [n.node_id for n in b_nodes]
@@ -183,7 +183,7 @@ def test_projection_does_not_touch_hub():
     """★ 投影是**只读**的 ⇒ 中枢产物零改动。"""
     from core import paths
     from core.fused.downstream import rag_seedgen as RS
-    from core.fused.graph_ops import project_bundle_to_graph
+    from core.fused.graph.graph_ops import project_bundle_to_graph
     facts_dir = paths.per_source_aspect_facts_dir("rtsp")
     before = {}
     for p in sorted(facts_dir.glob("*.jsonl")):
@@ -196,7 +196,7 @@ def test_projection_does_not_touch_hub():
 
 def test_projection_makes_transitions_into_edges():
     """★ 三元组 (src, method, dst) ⇒ 拆成 transitions_to + triggers 两条边。"""
-    from core.fused.graph_ops import project_bundle_to_graph
+    from core.fused.graph.graph_ops import project_bundle_to_graph
     bundle = {
         "methods": {"OPTIONS": {}},
         "headers": {"CSeq": {}},
@@ -217,7 +217,7 @@ def test_projection_makes_transitions_into_edges():
 
 def test_projection_is_idempotent():
     """★ 同一 bundle 投影两次 ⇒ 同样的图。"""
-    from core.fused.graph_ops import project_bundle_to_graph
+    from core.fused.graph.graph_ops import project_bundle_to_graph
     bundle = {"methods": {"A": {}}, "headers": {}, "statuses": [],
               "transitions": [], "required_headers": {}, "method_sequences": [],
               "message_instances": {}}
@@ -232,7 +232,7 @@ def test_projection_is_idempotent():
 
 def test_split_by_graph_keeps_two_graphs_separate():
     """★ D2：精确图**不含** header 节点；社区图**不含** state 节点。"""
-    from core.fused.graph_ops import split_by_graph
+    from core.fused.graph.graph_ops import split_by_graph
     nodes = [{"node_id": "state:a", "graph": "structure"},
              {"node_id": "entity:b", "graph": "semantic"}]
     edges = [{"edge_id": "e1", "graph": "structure"},
@@ -246,7 +246,7 @@ def test_split_by_graph_keeps_two_graphs_separate():
 
 def test_graph_metrics_computation():
     """★ 度量计算正确（孤立节点比 / 最大连通分量比）。"""
-    from core.fused.graph_ops import graph_metrics
+    from core.fused.graph.graph_ops import graph_metrics
     nodes = [{"node_id": "a"}, {"node_id": "b"}, {"node_id": "c"}]
     edges = [{"from": "a", "to": "b"}]
     m = graph_metrics(nodes, edges)
@@ -260,7 +260,7 @@ def test_graph_metrics_computation():
 
 def test_graph_metrics_empty_graph():
     """★ 空图不崩。"""
-    from core.fused.graph_ops import graph_metrics
+    from core.fused.graph.graph_ops import graph_metrics
     m = graph_metrics([], [])
     assert m["node_count"] == 0
     assert m["isolated_node_ratio"] == 0.0
@@ -279,8 +279,8 @@ def test_graph_build_for_each_protocol(protocol):
         （孤立比 ≤ 0.25）以防回归。
     """
     from core.fused.downstream import rag_seedgen as RS
-    from core.fused.graph_ops import graph_metrics, project_bundle_to_graph
-    from core.fused.rfc_graph import extract_graph
+    from core.fused.graph.graph_ops import graph_metrics, project_bundle_to_graph
+    from core.fused.graph.rfc_graph import extract_graph
     nodes, edges = extract_graph(protocol)
     assert nodes, f"{protocol} 没抽出任何节点"
     # ★ 度量必须在**投影后**的图上算（Phase A 单独算时字段节点必然孤立
@@ -298,7 +298,7 @@ def test_graph_build_for_each_protocol(protocol):
 
 def test_dhcpv4_graph_has_expected_states():
     """★ DHCPv4 的图里有 RFC 2131 §4.4 的真状态。"""
-    from core.fused.rfc_graph import extract_graph
+    from core.fused.graph.rfc_graph import extract_graph
     nodes, _ = extract_graph("dhcpv4")
     states = {n.name for n in nodes if n.type == "state"}
     for want in ("INIT", "SELECTING", "REQUESTING", "BOUND"):

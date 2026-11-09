@@ -1,9 +1,9 @@
 """tests/fused/test_expert_note.py —— expert_note v3（专家判断）→ Fact 原生映射。"""
 from __future__ import annotations
 
-from core.fused.expert_note import expert_note_to_facts
-from core.fused.registry import load_registry
-from core.fused.validation import validate_fact
+from core.fused.extraction.expert_note import expert_note_to_facts
+from core.fused.hub.registry import load_registry
+from core.fused.hub.validation import validate_fact
 
 
 def test_expert_note_to_facts_non_empty():

@@ -19,7 +19,7 @@
 """
 from __future__ import annotations
 
-from core.fused import rfc_extractor as RX   # noqa: E402
+from core.fused.extraction import rfc_extractor as RX   # noqa: E402
 from core import paths                        # noqa: E402
 
 PROTOCOL = "rtsp"
@@ -173,7 +173,7 @@ def test_transition_candidates_have_stable_hash():
 
 def test_llm_transitions_cache_makes_second_call_free():
     """★ 缓存生效 ⇒ 第二次调用**不调 LLM**（用计数桩验证）。"""
-    from core.fused import rfc_extractor as RX2
+    from core.fused.extraction import rfc_extractor as RX2
 
     calls = {"n": 0}
 
@@ -189,7 +189,7 @@ def test_llm_transitions_cache_makes_second_call_free():
     tmp = _P(tempfile.mkdtemp(prefix="trans_cache_"))
     orig = RX2.__dict__.get("_TRANS_CACHE_DIR")
     # monkeypatch CACHE_DIR 的来源：infer_transitions 里 from ... import CACHE_DIR
-    import core.fused.source_retrieval as SR
+    import core.fused.extraction.source_retrieval as SR
     old_cache = SR.CACHE_DIR
     SR.CACHE_DIR = tmp
     try:

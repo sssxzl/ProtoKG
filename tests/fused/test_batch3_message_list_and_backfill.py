@@ -26,7 +26,7 @@ def test_message_list_entry_extraction():
     ★ 形态：缩进 + 消息名 + ``-`` + 用途描述。
     ★ 与「命令条目」（``名称 (缩写)``）**不同构** ⇒ 不冲突。
     """
-    from core.fused.rfc_extractor import _extract_message_list_entries
+    from core.fused.extraction.rfc_extractor import _extract_message_list_entries
     text = ("   Message         Use\n"
             "   -------         ---\n"
             "\n"
@@ -44,7 +44,7 @@ def test_message_list_excludes_table_column_marks():
 
     ★ 那是**头字段表**，不是消息清单 ⇒ 排除。
     """
-    from core.fused.rfc_extractor import _extract_message_list_entries
+    from core.fused.extraction.rfc_extractor import _extract_message_list_entries
     text = ("      Expires                              -   -   -   o   -   o\n"
             "      From                    c       r    m   m   m   m   m   m\n")
     got = _extract_message_list_entries(text)
@@ -53,7 +53,7 @@ def test_message_list_excludes_table_column_marks():
 
 def test_message_list_does_not_hit_text_protocols():
     """★ 消息清单表在三个文本协议上**几乎不命中** ⇒ 不污染。"""
-    from core.fused.rfc_extractor import _extract_message_list_entries
+    from core.fused.extraction.rfc_extractor import _extract_message_list_entries
     import pathlib
     counts = {}
     for proto in ("rtsp", "sip", "smtp"):
@@ -74,7 +74,7 @@ def test_dhcpv4_methods_include_server_messages():
     ★ 这是「状态机断裂 ⇒ 只 1 条种子」的根因修复点
       （RFC 2131 的 DHCPOFFER/DHCPACK/DHCPNAK **没有独立小节**）。
     """
-    from core.fused.rfc_extractor import extract_rfc_norms
+    from core.fused.extraction.rfc_extractor import extract_rfc_norms
     ns = extract_rfc_norms("DHCPv4")
     methods = {n["name"].upper() for n in ns if n.get("kind") == "method"}
     for want in ("DHCPDISCOVER", "DHCPOFFER", "DHCPREQUEST", "DHCPACK",
@@ -89,22 +89,22 @@ def test_dhcpv4_methods_include_server_messages():
 
 def test_backfill_kinds_default_empty():
     """★ 补漏白名单**缺省为空** ⇒ 旧行为完全不变。"""
-    from core.fused.rfc_extractor import _load_rfc_config
+    from core.fused.extraction.rfc_extractor import _load_rfc_config
     for proto in ("rtsp", "sip", "smtp"):
         assert _load_rfc_config(proto).get("content_backfill_kinds") == []
 
 
 def test_backfill_kinds_is_configurable():
     """★ 补漏白名单可按协议配置（DHCPv4 配了 3 类）。"""
-    from core.fused.rfc_extractor import _load_rfc_config
+    from core.fused.extraction.rfc_extractor import _load_rfc_config
     cfg = _load_rfc_config("DHCPv4")
     assert "outcome" in cfg.get("content_backfill_kinds", [])
 
 
 def test_backfill_only_when_config_judges_none():
     """★ 互补语义：**config 判出 ⇒ 不用 content**（config 优先）。"""
-    from core.fused import rfc_classifier as RC
-    from core.fused import rfc_extractor as RX
+    from core.fused.extraction import rfc_classifier as RC
+    from core.fused.extraction import rfc_extractor as RX
     cfg = {"method_sections": ["4.3"], "field_sections": [],
            "status_sections": [], "transition_sections": [],
            "sections_by_file": {},
@@ -124,7 +124,7 @@ def test_entity_names_collected_from_deterministic_channels():
 
     ★ 不认协议名 ⇒ 换协议自动生效。
     """
-    from core.fused.rfc_extractor import _protocol_entity_names
+    from core.fused.extraction.rfc_extractor import _protocol_entity_names
     dhcp = _protocol_entity_names("DHCPv4")
     assert "DHCPOFFER" in dhcp, sorted(dhcp)
     rtsp = _protocol_entity_names("rtsp")
@@ -137,7 +137,7 @@ def test_dhcpv4_transition_candidates_found():
     ★ 实测：旧判据（``state machine`` 字样）在 36 份 DHCP RFC 里命中 **0**
       ⇒ LLM 状态机通道从未被调用 ⇒ transitions 只能来自骨架。
     """
-    from core.fused.rfc_extractor import extract_transition_candidates
+    from core.fused.extraction.rfc_extractor import extract_transition_candidates
     cands = extract_transition_candidates("DHCPv4")
     assert cands, "DHCPv4 没有候选段落 ⇒ LLM 通道仍是死的"
     files = {c["source"].split("/")[-1].split("#")[0] for c in cands}
@@ -149,7 +149,7 @@ def test_transition_prompt_has_skeleton_constraint():
 
     ★ 且 **prompt_version 必须同步升**（缓存键含它 ⇒ 不升会读旧缓存）。
     """
-    from core.fused.rfc_extractor import (_PROMPT_TRANSITION,
+    from core.fused.extraction.rfc_extractor import (_PROMPT_TRANSITION,
                                           TRANSITION_PROMPT_VERSION)
     assert "{skeleton_constraint}" in _PROMPT_TRANSITION
     assert "skeleton" in TRANSITION_PROMPT_VERSION.lower()
@@ -157,7 +157,7 @@ def test_transition_prompt_has_skeleton_constraint():
 
 def test_skeleton_constraint_built_from_entities():
     """★ 骨架约束能构造出**实体白名单**（状态 + 消息）。"""
-    from core.fused.rfc_extractor import _build_skeleton_constraint
+    from core.fused.extraction.rfc_extractor import _build_skeleton_constraint
     text, states, msgs = _build_skeleton_constraint("DHCPv4")
     assert msgs, "消息白名单为空"
     assert "DHCPOFFER" in msgs, sorted(msgs)
@@ -178,7 +178,7 @@ def test_skeleton_constraint_built_from_entities():
 ])
 def test_text_protocol_methods_unchanged(protocol, expected):
     """★ 三个文本协议的**方法集完全不变**（批次 3 的硬护栏）。"""
-    from core.fused.rfc_extractor import extract_rfc_norms
+    from core.fused.extraction.rfc_extractor import extract_rfc_norms
     ns = extract_rfc_norms(protocol)
     got = {n["name"].upper() for n in ns if n.get("kind") == "method"}
     assert got == expected, (protocol, sorted(got - expected),

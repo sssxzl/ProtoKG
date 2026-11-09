@@ -157,12 +157,12 @@ def _subj(t: str, name: str) -> dict:
 
 
 def _fid(protocol: str, fk: dict) -> str:
-    from core.fused.canonical import canonical_serialize, compute_fact_id
+    from core.fused.hub.canonical import canonical_serialize, compute_fact_id
     return compute_fact_id(fk)
 
 
 def _cid(claim_value: dict, epistemic: str) -> str:
-    from core.fused.canonical import canonical_serialize
+    from core.fused.hub.canonical import canonical_serialize
     raw = canonical_serialize(claim_value) + epistemic.encode("utf-8")
     return "c2_" + hashlib.sha256(raw).hexdigest()[:16]
 

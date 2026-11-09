@@ -4,11 +4,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from core.fused.vuln_pattern import (
+from core.fused.extraction.vuln_pattern import (
     classify_action, boundary_for_action, extract_vuln_pattern,
     normalize_field, extract_stream_hints, complete_vuln_pattern,
 )
-from core.fused.vuln import vuln_entry_to_pattern_facts
+from core.fused.extraction.vuln import vuln_entry_to_pattern_facts
 from core.llm import StubLLMClient
 from core.fused.downstream.boundary_probe import (
     derive_vuln_pattern_candidates, vuln_pattern_dict_tokens,
@@ -252,6 +252,6 @@ def test_vuln_pattern_dict_tokens():
 
 def test_boundary_and_stream_from_profile():
     """流名/边界从 profile 的 vuln 段读（协议特定知识归位，不再硬编码通用层）。"""
-    from core.fused.vuln_pattern import boundary_for_action, extract_stream_hints
+    from core.fused.extraction.vuln_pattern import boundary_for_action, extract_stream_hints
     assert boundary_for_action("double_setup", "rtsp").dim == "track_number"
     assert extract_stream_hints("matroska", "rtsp") == ["matroskaFileTest"]

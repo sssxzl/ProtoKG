@@ -57,7 +57,7 @@ def rule_to_fact(rule: dict[str, Any], protocol: str) -> Optional[dict[str, Any]
     anchor = ""
     if isinstance(ev, dict):
         anchor = str(ev.get("source_anchor") or ev.get("evidence_id") or "")
-    from core.fused.hub_entities import fact_entity_id
+    from core.fused.hub.hub_entities import fact_entity_id
     fact = {
         "fact_key": {
             "protocol": str(protocol or ""),
@@ -90,7 +90,7 @@ def rule_to_fact(rule: dict[str, Any], protocol: str) -> Optional[dict[str, Any]
     fact["entity_id"] = fact_entity_id(fact)
     # ★ **C2 结构对齐**：与普通 fact 一样带 ``entity`` / ``epistemic``
     #   ⇒ 中枢里的记录**结构统一**（读端不用分支处理）。
-    from core.fused.hub_layout import _fact_entity, _fact_epistemic
+    from core.fused.hub.hub_layout import _fact_entity, _fact_epistemic
     _ent = _fact_entity(fact)
     if _ent is not None:
         fact["entity"] = _ent
