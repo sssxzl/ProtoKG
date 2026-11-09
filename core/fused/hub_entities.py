@@ -57,6 +57,34 @@ def parse_entity_id(eid: str) -> tuple[str, str, str]:
 # 实体主表
 # ===========================================================================
 
+def fact_entity_id(fact: dict[str, Any]) -> str:
+    """一条 fact ⇒ 它的 ``entity_id``（**唯一映射**，C3 落盘时写进 fact）。
+
+    ★ 与 :func:`build_entity_index` **共用同一套规则** ⇒
+      实体主表与 fact 里的引用**永远一致**。
+    ★ 关系型 fact（subject.type=relation）⇒ 用 qualifiers 构造关系实体
+      （``源--方法-->目标``）。
+    """
+    fk = fact.get("fact_key") or {}
+    subject = fk.get("subject") or {}
+    etype = str(subject.get("type") or "").strip().lower()
+    name = str(subject.get("name") or "").strip()
+    protocol = str(fk.get("protocol") or "")
+    if etype == "relation":
+        quals = subject.get("qualifiers") or {}
+        src = quals.get("source") or {}
+        tgt = quals.get("target") or {}
+        mth = quals.get("method") or {}
+        s_name = str(src.get("name") or "")
+        t_name = str(tgt.get("name") or "")
+        m_name = str(mth.get("name") or "")
+        rel = (f"{s_name}--{m_name}-->{t_name}" if m_name
+               else f"{s_name}-->{t_name}")
+        return entity_id(protocol, "relation", rel)
+    if not name:
+        return ""
+    return entity_id(protocol, etype, name)
+
 def build_entity_index(facts: Iterable[dict[str, Any]]
                        ) -> tuple[list[dict[str, Any]], dict[str, list[str]]]:
     """从一批 fact 构造**实体主表** + **实体 × aspect 明细**。

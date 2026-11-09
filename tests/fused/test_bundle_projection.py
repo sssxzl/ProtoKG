@@ -519,12 +519,17 @@ def test_existing_derived_bundle_still_loads():
 # ===========================================================================
 
 def _isolate_per_source(tmp_path, monkeypatch):
-    """把 `paths.per_source_root` 指到 tmp_path（**不污染仓库的 derived/**）。"""
+    """把 `paths.per_source_root` 指到 tmp_path（**不污染仓库的 derived/**）。
+
+    ★ 中枢**共用一套**（也是数据源）⇒ **一起隔离**，否则
+      ``load_semantic_rules`` 会优先读到仓库里的**真实中枢**。
+    """
     from core import paths
     monkeypatch.setattr(
         paths, "per_source_root",
         lambda protocol: tmp_path / "per_source" / protocol.lower(),
     )
+    monkeypatch.setattr(paths, "hub_root", lambda *a: tmp_path / "hub")
     return tmp_path
 
 

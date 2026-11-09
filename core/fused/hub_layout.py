@@ -84,6 +84,64 @@ def collect(records: Iterable[tuple[Any, str, dict[str, Any]]]
     return by_cat, pos
 
 
+def _with_entity_id(line: str, view: dict[str, Any]) -> str:
+    """给 fact 行**追加** ``entity_id``（C3：fact 引用实体主表）。
+
+    ★ **字符串插入**（不是重新序列化）⇒ 原有字节**完全不变**
+      ⇒ 只多一个字段 ⇒ 顺序契约与内容等价性都不受影响。
+    """
+    from core.fused.hub_entities import fact_entity_id
+    _eid = fact_entity_id(view)
+    if not _eid or "\"entity_id\"" in line:
+        return line
+    _s = line.rstrip()
+    if not _s.endswith('}'):
+        return line
+    return _s[:-1] + ', ' + chr(34) + 'entity_id' + chr(34) + ': ' \
+           + json.dumps(_eid, ensure_ascii=False) + '}'
+
+def _write_entity_table(hub_root: Path,
+                       by_cat: dict[str, list[tuple[int, str, dict]]],
+                       protocol: str) -> int:
+    """写**实体主表** ``index/entities.jsonl``（C3）。
+
+    ★ 实体主表是**跨分类的唯一索引** ⇒ 同一实体在 A/B/C 分类里出现时，
+      它们指向**同一个** ``entity_id`` ⇒ 事实/关系/规则/图可对齐。
+    ★ 保留其它协议的实体（中枢共用一套 ⇒ 多协议共存）。
+    """
+    from core.fused.hub_entities import build_entity_index
+    hub_root = Path(hub_root)
+    pk = str(protocol or "").strip().lower()
+    d = hub_root / "index"
+    d.mkdir(parents=True, exist_ok=True)
+    dest = d / "entities.jsonl"
+    # 已有实体（其它协议的）⇒ 保留
+    _old: list[dict] = []
+    if dest.is_file():
+        for ln in dest.read_text(encoding="utf-8").splitlines():
+            ln = ln.strip()
+            if not ln:
+                continue
+            try:
+                e = json.loads(ln)
+            except json.JSONDecodeError:
+                continue
+            _kp = str(e.get("protocol") or "").strip().lower()
+            if _kp and _kp != pk:
+                _old.append(e)
+    # 本协议的实体（从**落盘的事实**构建 ⇒ 与 fact 里的引用一致）
+    _facts: list[dict] = []
+    for _cat in sorted(by_cat):
+        for _o, _ln, _v in by_cat[_cat]:
+            _facts.append(_v)
+    _ents, _detail = build_entity_index(_facts)
+    _all = _old + _ents
+    _all.sort(key=lambda e: str(e.get("entity_id") or ""))
+    with dest.open("w", encoding="utf-8", newline="") as fh:
+        for e in _all:
+            fh.write(json.dumps(e, ensure_ascii=False) + "\n")
+    return len(_all)
+
 def write_classified(hub_root: Path,
                      records: Iterable[tuple[Any, str, dict[str, Any]]],
                      protocol: str = "",
@@ -145,7 +203,7 @@ def write_classified(hub_root: Path,
                 for ln in blk:
                     fh.write(ln + "\n")
             for _o, ln, _v in items:
-                fh.write(ln + "\n")
+                fh.write(_with_entity_id(ln, _v) + "\n")
         written[cat] = len(items)
         index_rows.append({"file": rel,
                            "positions": [o for o, _l, _v in items],
@@ -177,6 +235,9 @@ def write_classified(hub_root: Path,
     with ip.open("w", encoding="utf-8", newline="") as fh:
         for row in _all_rows:
             fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+    # ★ **实体主表**（C3）：``index/entities.jsonl`` —— 中枢的**跨分类唯一索引**
+    #   ⇒ 事实/关系/规则/图全部引用同一 ``entity_id`` ⇒ 四套视图可对齐。
+    _write_entity_table(hub_root, by_cat, pk)
     return written
 
 

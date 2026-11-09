@@ -1006,6 +1006,14 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
             except json.JSONDecodeError:
                 continue
     written = write_classified(paths.hub_root(), _records, protocol)
+    # ★ **语义四库提升进中枢**（阶段 C4）⇒ 消解「两套体系」
+    #   （四库原本**故意**在 */facts/ 之外 ⇒ 中枢读不到 ⇒ 两套体系）
+    from core.fused.semantic_lift import lift_library, write_lifted
+    _lifted = lift_library(protocol)
+    _n_lift = write_lifted(paths.hub_root(), protocol, _lifted)
+    if _n_lift:
+        print(f"[语义] ★ {protocol}: {len(_lifted)} 条 authoritative 规则"
+              f"已提升进中枢 C_constraints/semantic_rules.jsonl")
 
     # ★ 顺序索引**已由 write_classified 写入** `derived/hub/index/order.jsonl`
     #   （分类布局的全局下标）⇒ 读端排序后遍历序与旧布局一致。

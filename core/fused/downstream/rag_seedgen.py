@@ -814,6 +814,17 @@ def load_semantic_rules(protocol: str = "rtsp") -> list[dict]:
       权威规则，与 `project_semantic_rules` 的 `rule_state` 过滤**同口径**。
     ★ 库文件不存在 ⇒ 返回空列表（B 阶段前语义库尚未落地，**不是错误**）。
     """
+    # ★★ **阶段 C4**：**优先读中枢**（唯一真源）⇒ 降级读旧四库路径
+    from core.fused.semantic_lift import read_lifted
+    _lifted = read_lifted(paths.hub_root(), protocol)
+    if _lifted:
+        out = []
+        for f in _lifted:
+            plain = _lifted_fact_to_plain(f)
+            if plain is not None:
+                out.append(plain)
+        if out:
+            return out
     from .rule_store import library_path, load_rules
     path = library_path(protocol, "authoritative")
     if not path.is_file():
@@ -825,6 +836,33 @@ def load_semantic_rules(protocol: str = "rtsp") -> list[dict]:
             out.append(plain)
     return out
 
+
+def _lifted_fact_to_plain(fact: dict) -> Optional[dict]:
+    """中枢里提升出的语义 fact ⇒ bundle 形态（与旧四库**逐字段同构**）。
+
+    ★ **复用 ``_rule_to_plain``**（提升时保存了完整规则）⇒
+      输出与旧四库路径**完全一致** ⇒ 消费端零改动。
+    """
+    rule = fact.get("semantic_rule")
+    if isinstance(rule, dict):
+        return _rule_to_plain(rule)
+    # ★ 兜底：没有完整规则 ⇒ 用 claim 里的 constraint 组装
+    cl = (fact.get("all_claims") or [])
+    if not cl:
+        return None
+    c = cl[0]
+    data = ((c.get("value") or {}).get("data"))
+    if not isinstance(data, dict):
+        return None
+    fk = fact.get("fact_key") or {}
+    subj = fk.get("subject") or {}
+    return {
+        "rule_id": str(c.get("claim_id") or ""),
+        "subject_type": str(subj.get("type") or ""),
+        "subject_name": str(subj.get("name") or ""),
+        "constraint": data,
+        "evidence": {},
+    }
 
 def _resolve_semantic_rules(semantic_rules: Optional[list],
                             protocol: str) -> list[dict]:
