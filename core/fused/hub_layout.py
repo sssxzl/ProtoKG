@@ -84,6 +84,128 @@ def collect(records: Iterable[tuple[Any, str, dict[str, Any]]]
     return by_cat, pos
 
 
+#: fact 级 ``epistemic``（四档）← claim 级 ``epistemic_type``（细粒度）的映射
+_EPI_MAP = {
+    "must": "normative",
+    "normative": "normative",
+    "normative_unspecified": "normative",
+    "descriptive": "informative",
+    "observed": "observed",
+    "inferred": "inferred",
+}
+
+
+def _fact_epistemic(view: dict[str, Any]) -> str:
+    """fact 级 ``epistemic``（normative / informative / observed / inferred）。
+
+    ★ 由 claim 级 ``epistemic_type``（细粒度）**归并** ⇒ 两级并存：
+      claim 级保留原始判据（must/descriptive/…）⇒ 既有口径**不受影响**。
+    """
+    _best = ""
+    _rank = {"normative": 3, "informative": 2, "observed": 1,
+              "inferred": 0}
+    for c in (view.get("all_claims") or []):
+        _e = _EPI_MAP.get(str(c.get("epistemic_type") or "").strip().lower())
+        if _e and (_rank.get(_e, -1) > _rank.get(_best, -1)):
+            _best = _e
+    return _best or "informative"
+
+
+def _fact_resolution(view: dict[str, Any]) -> Optional[dict[str, Any]]:
+    """由 ``all_claims`` 推导 ``resolution``（C2：必填 ⇒ 不再是 ``null``）。
+
+    ★ 单 claim ⇒ ``single_source``；多 claim ⇒ ``consensus``（取第一个为 winner）。
+    """
+    claims = view.get("all_claims") or []
+    if not claims:
+        return None
+    if len(claims) == 1:
+        _strategy = "single_source"
+        _reason = "唯一 claim"
+    else:
+        _strategy = "consensus"
+        _reason = f"{len(claims)} 个 claim，取首个为 winner"
+    _cid = str((claims[0] or {}).get("claim_id") or "")
+    return {
+        "strategy": _strategy,
+        "decided": None,
+        "winners": {"value": _cid} if _cid else {},
+        "reason": _reason,
+    }
+
+
+def _fact_entity(view: dict[str, Any]) -> Optional[dict[str, Any]]:
+    """fact 级 ``entity``（entity_id + 类型 + 名称 + participants）。
+
+    ★ 关系型 fact ⇒ participants = [source / via / target]（端点也带 entity_id）。
+    """
+    from core.fused.hub_entities import fact_entity_id
+    fk = view.get("fact_key") or {}
+    subj = fk.get("subject") or {}
+    _eid = fact_entity_id(view)
+    if not _eid:
+        return None
+    _out = {
+        "entity_id": _eid,
+        "type": str(subj.get("type") or ""),
+        "name": str(subj.get("name") or ""),
+        "aliases": [],
+    }
+    _quals = subj.get("qualifiers") or {}
+    if str(subj.get("type") or "").strip().lower() == "relation":
+        _parts = []
+        for _role, _key in (("source", "source"), ("via", "method"),
+                          ("target", "target")):
+            _d = _quals.get(_key) or {}
+            _nm = str(_d.get("name") or "")
+            if not _nm:
+                continue
+            _peid = entity_id_of(fk.get("protocol"),
+                                  _d.get("type"), _nm)
+            _parts.append({"role": _role, "entity_id": _peid,
+                           "name": _nm})
+        if _parts:
+            _out["participants"] = _parts
+    return _out
+
+
+def entity_id_of(protocol: Any, etype: Any, name: Any) -> str:
+    """（薄封装）实体 id 生成 —— 避免 hub_layout 直接依赖 hub_entities 的内部。
+    """
+    from core.fused.hub_entities import entity_id
+    return entity_id(str(protocol or ""), str(etype or ""),
+                   str(name or ""))
+
+def _upgrade_record(line: str, view: dict[str, Any]) -> str:
+    """**阶段 C2**：把 fact 升级成 v2 记录结构。
+
+    ★ **纯增量**（既有字段一律不动）：
+      · 追加 ``entity``   = {entity_id, type, name, participants[]}
+      · 追加 ``epistemic`` = 四档（由 claim 级 epistemic_type 归并）
+      · ``resolution`` 由 ``null`` 补成实际内容（单/多 claim 两种策略）
+    ★ **字符串级替换**（不是整体重新序列化）⇒ 除被替换的字段外，
+      原有字节**完全不变** ⇒ 顺序契约与内容等价性都不受影响。
+    """
+    _s = line.rstrip()
+    if not _s.endswith("}"):
+        return line
+    _add = []
+    _ent = _fact_entity(view)
+    if _ent is not None:
+        _add.append('"entity": ' + json.dumps(_ent, ensure_ascii=False))
+    _add.append('"epistemic": '
+                + json.dumps(_fact_epistemic(view), ensure_ascii=False))
+    _res = _fact_resolution(view)
+    if _res is not None:
+        _null = chr(34) + "resolution" + chr(34) + ": null"
+        if _null in _s:
+            _s = _s.replace(_null,
+                             chr(34) + "resolution" + chr(34) + ": "
+                             + json.dumps(_res, ensure_ascii=False), 1)
+    if not _add:
+        return _s
+    return _s[:-1] + ", " + ", ".join(_add) + "}"
+
 def _with_entity_id(line: str, view: dict[str, Any]) -> str:
     """给 fact 行**追加** ``entity_id``（C3：fact 引用实体主表）。
 
@@ -203,7 +325,7 @@ def write_classified(hub_root: Path,
                 for ln in blk:
                     fh.write(ln + "\n")
             for _o, ln, _v in items:
-                fh.write(_with_entity_id(ln, _v) + "\n")
+                fh.write(_upgrade_record(ln, _v) + "\n")
         written[cat] = len(items)
         index_rows.append({"file": rel,
                            "positions": [o for o, _l, _v in items],

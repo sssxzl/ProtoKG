@@ -209,3 +209,151 @@ def test_six_categories_are_declared():
     for want in ("A_structure", "B_interaction", "C_constraints",
                  "D_construction", "E_observation", "F_security"):
         assert want in ids, ids
+
+
+# ===========================================================================
+# ④ 阶段 C2：记录结构升级（纯增量）
+# ===========================================================================
+
+def test_upgrade_adds_entity_epistemic_resolution():
+    """★ **阶段 C2**：fact 升级成 v2 记录结构。
+
+    ★ **纯增量**：``fact_key`` / ``all_claims`` **一字不改**，
+      只**新增** ``entity`` / ``epistemic``，并把 ``resolution`` 从
+      ``null`` 补成实际内容。
+    """
+    from core.fused.hub_layout import _upgrade_record
+    v = _fact("target_state", "transitions_to", stype="relation",
+              fid="f1", claim="c1")
+    v["fact_key"]["subject"]["qualifiers"] = {
+        "source": {"type": "state", "name": "Idle"},
+        "target": {"type": "state", "name": "Ready"},
+        "method": {"type": "method", "name": "REGISTER"},
+    }
+    v["all_claims"][0]["epistemic_type"] = "normative"
+    v["resolution"] = None
+    line = json.dumps(v, ensure_ascii=False)
+    out = json.loads(_upgrade_record(line, v))
+
+    # ★ 既有字段**一字不改**
+    assert out["fact_key"] == v["fact_key"]
+    assert out["all_claims"] == v["all_claims"]
+    # ★ 新增字段
+    assert out["entity"]["entity_id"] == "rtsp:relation:idle--register-->ready"
+    roles = [p["role"] for p in out["entity"]["participants"]]
+    assert roles == ["source", "via", "target"], roles
+    assert out["epistemic"] == "normative"
+    # ★ resolution 必填
+    assert out["resolution"]["strategy"] == "single_source"
+    assert out["resolution"]["winners"]["value"] == "c1"
+
+
+def test_upgrade_epistemic_mapping():
+    """★ fact 级 ``epistemic``（四档）由 claim 级 ``epistemic_type`` 归并。"""
+    from core.fused.hub_layout import _fact_epistemic
+    assert _fact_epistemic({"all_claims": [{"epistemic_type": "must"}]}) == \
+        "normative"
+    assert _fact_epistemic({"all_claims": [{"epistemic_type": "descriptive"}]}) == \
+        "informative"
+    assert _fact_epistemic({"all_claims": [{"epistemic_type": "observed"}]}) == \
+        "observed"
+    # ★ 多个 claim ⇒ 取「最强」的一档
+    assert _fact_epistemic({"all_claims": [
+        {"epistemic_type": "observed"}, {"epistemic_type": "must"}]}) == \
+        "normative"
+
+
+def test_upgrade_resolution_multi_claim():
+    """★ 多 claim ⇒ ``consensus`` 策略。"""
+    from core.fused.hub_layout import _fact_resolution
+    v = {"all_claims": [{"claim_id": "c1"}, {"claim_id": "c2"}]}
+    r = _fact_resolution(v)
+    assert r["strategy"] == "consensus"
+    assert r["winners"]["value"] == "c1"
+
+
+def test_epistemic_registry_values_covered():
+    """★ claim 级判据**全部**能映射到 fact 级四档。"""
+    from core.fused.hub_layout import _EPI_MAP
+    import json as _json
+    from core import paths
+    reg = _json.loads(
+        (paths.PROJECT_ROOT / "fused_hub" / "schema"
+         / "epistemic_type_registry.json").read_text(encoding="utf-8"))
+    for t in (reg.get("registered_types") or []):
+        name = str(t.get("name") or "")
+        assert name in _EPI_MAP, f"未映射的判据：{name}"
+
+
+# ===========================================================================
+# ④ 阶段 C2：记录结构升级（纯增量）
+# ===========================================================================
+
+def test_upgrade_adds_entity_epistemic_resolution():
+    """★ **阶段 C2**：fact 升级成 v2 记录结构。
+
+    ★ **纯增量**：``fact_key`` / ``all_claims`` **一字不改**，
+      只**新增** ``entity`` / ``epistemic``，并把 ``resolution`` 从
+      ``null`` 补成实际内容。
+    """
+    from core.fused.hub_layout import _upgrade_record
+    v = _fact("target_state", "transitions_to", stype="relation",
+              fid="f1", claim="c1")
+    v["fact_key"]["subject"]["qualifiers"] = {
+        "source": {"type": "state", "name": "Idle"},
+        "target": {"type": "state", "name": "Ready"},
+        "method": {"type": "method", "name": "REGISTER"},
+    }
+    v["all_claims"][0]["epistemic_type"] = "normative"
+    v["resolution"] = None
+    line = json.dumps(v, ensure_ascii=False)
+    out = json.loads(_upgrade_record(line, v))
+
+    # ★ 既有字段**一字不改**
+    assert out["fact_key"] == v["fact_key"]
+    assert out["all_claims"] == v["all_claims"]
+    # ★ 新增字段
+    assert out["entity"]["entity_id"] == "rtsp:relation:idle--register-->ready"
+    roles = [p["role"] for p in out["entity"]["participants"]]
+    assert roles == ["source", "via", "target"], roles
+    assert out["epistemic"] == "normative"
+    # ★ resolution 必填
+    assert out["resolution"]["strategy"] == "single_source"
+    assert out["resolution"]["winners"]["value"] == "c1"
+
+
+def test_upgrade_epistemic_mapping():
+    """★ fact 级 ``epistemic``（四档）由 claim 级 ``epistemic_type`` 归并。"""
+    from core.fused.hub_layout import _fact_epistemic
+    assert _fact_epistemic({"all_claims": [{"epistemic_type": "must"}]}) == \
+        "normative"
+    assert _fact_epistemic({"all_claims": [{"epistemic_type": "descriptive"}]}) == \
+        "informative"
+    assert _fact_epistemic({"all_claims": [{"epistemic_type": "observed"}]}) == \
+        "observed"
+    # ★ 多个 claim ⇒ 取「最强」的一档
+    assert _fact_epistemic({"all_claims": [
+        {"epistemic_type": "observed"}, {"epistemic_type": "must"}]}) == \
+        "normative"
+
+
+def test_upgrade_resolution_multi_claim():
+    """★ 多 claim ⇒ ``consensus`` 策略。"""
+    from core.fused.hub_layout import _fact_resolution
+    v = {"all_claims": [{"claim_id": "c1"}, {"claim_id": "c2"}]}
+    r = _fact_resolution(v)
+    assert r["strategy"] == "consensus"
+    assert r["winners"]["value"] == "c1"
+
+
+def test_epistemic_registry_values_covered():
+    """★ claim 级判据**全部**能映射到 fact 级四档。"""
+    from core.fused.hub_layout import _EPI_MAP
+    import json as _json
+    from core import paths
+    reg = _json.loads(
+        (paths.PROJECT_ROOT / "fused_hub" / "schema"
+         / "epistemic_type_registry.json").read_text(encoding="utf-8"))
+    for t in (reg.get("registered_types") or []):
+        name = str(t.get("name") or "")
+        assert name in _EPI_MAP, f"未映射的判据：{name}"

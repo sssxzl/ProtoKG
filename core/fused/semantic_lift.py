@@ -88,6 +88,13 @@ def rule_to_fact(rule: dict[str, Any], protocol: str) -> Optional[dict[str, Any]
     #   **原样还原** ⇒ 与旧四库路径**逐字段同构** ⇒ 消费端零改动。
     fact["semantic_rule"] = rule
     fact["entity_id"] = fact_entity_id(fact)
+    # ★ **C2 结构对齐**：与普通 fact 一样带 ``entity`` / ``epistemic``
+    #   ⇒ 中枢里的记录**结构统一**（读端不用分支处理）。
+    from core.fused.hub_layout import _fact_entity, _fact_epistemic
+    _ent = _fact_entity(fact)
+    if _ent is not None:
+        fact["entity"] = _ent
+    fact["epistemic"] = _fact_epistemic(fact)
     return fact
 
 
