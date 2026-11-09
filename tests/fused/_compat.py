@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/_v2_compat.py —— **v2 记录结构**的测试兼容辅助（阶段 C2/D1）。
+"""tests/fused/_compat.py —— **v2 记录结构**的测试兼容辅助（阶段 C2/D1）。
 
 ★ 背景：
   阶段 C2 给中枢 fact **新增**了三个字段（**纯增量**）：

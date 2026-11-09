@@ -46,7 +46,7 @@ PROTO = "fakeproto"
 # ===========================================================================
 
 def _make_fact(fact_id: str, name: str, protocol: str = PROTO):
-    """造一个最小可用的 v2 Fact（definition aspect，text 类型值）。"""
+    """造一个最小可用的 Fact（definition aspect，text 类型值）。"""
     from core.fused.models import (
         Claim, ConditionAlways, Fact, FactKey, Subject, Value,
     )

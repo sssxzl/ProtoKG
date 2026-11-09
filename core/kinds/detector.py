@@ -49,7 +49,7 @@ from core.kinds.evidence import KindDecision, KindEvidence
 
 #: B1 位域图行：**实测形态**（RFC 2131 §4.1）``|     op (1)    |   htype (1)   |``
 #:   ⇒ 长度标记**只有数字**（没有 "octet"/"byte" 单位词）⇒ 单位词必须**可选**。
-#:   ★ 第一版把单位词写成必需 ⇒ 实测 0 命中 ⇒ 位域判据完全失效（已修）。
+#:   ★ 初版把单位词写成必需 ⇒ 实测 0 命中 ⇒ 位域判据完全失效（已修）。
 RE_BITFIELD = re.compile(
     r"\|\s*([A-Za-z][A-Za-z0-9 _-]*?)\s*\((\d+)(?:\s*(?:octet|byte)s?)?\)\s*\|",
     re.IGNORECASE)

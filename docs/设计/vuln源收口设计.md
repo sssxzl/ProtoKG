@@ -1,8 +1,8 @@
-# docs/设计/vuln_source_closure_design.md — vuln 源收口 + 中枢分层原则 + claim_class 裁定
+# docs/设计/vuln源收口设计.md — vuln 源收口 + 中枢分层原则 + claim_class 裁定
 
 > Step 4.8g 收口 · 设计真源
 > 契约依据：`fused_hub/docs/fused_pipeline_v1.md` (v0.4.7 Final Frozen)、`fused_hub/docs/fused_policy_v1.md`、`fused_hub/docs/fused_registry_v1.md`、`fused_hub/docs/fused_schema_v1.md`
-> 上游：`docs/设计/vuln_rules_design.md`、`docs/设计/pipeline_rules_design.md`
+> 上游：`docs/设计/vuln源规则集设计.md`、`docs/设计/规则集设计.md`
 > 状态：Final Frozen
 > 本文件为 standalone 设计真源，不依赖任何 superseded draft。
 

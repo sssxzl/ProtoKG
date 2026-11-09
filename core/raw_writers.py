@@ -72,7 +72,7 @@ def _get_rtsp_transitions() -> dict:
     v1 expert_note 读链路已退役：kb_adapter._load_kb 返回 None → from_protocol
     返 GenericAdapter（无 .transitions() 方法）。这里优雅降级返回空 dict，
     使 _infer_state_path 退回只含 "Init" 的路径，不再崩溃。
-    v2 seedgen 通路（roadmap 4.3）建好后从 v2 中枢读回状态机。
+    v2 seedgen 通路（roadmap 4.3）建好后从 中枢读回状态机。
     """
     return {}
 
@@ -474,7 +474,7 @@ PLACEHOLDER_PATH_BRACED = "{{{path}}}"
 # v2.1.3: runtime 占位符 hardcode 默认值（写盘前可执行性前置）
 #   - 所有 {{xxx}} runtime 占位符在 .raw 写盘前 hardcode 成实际值
 #   - AFLNet 原版不替换占位符, 字面值 12345678 / 8000 等能让 RTSP server 直接接受
-#   - 用户可后续加 fuzzer 端占位符替换 (超出 ProtoRAG 仓库范围)
+#   - 用户可后续加 fuzzer 端占位符替换 (超出 ProtoKG 仓库范围)
 import re
 import base64 as _b64
 

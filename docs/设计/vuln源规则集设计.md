@@ -1,9 +1,9 @@
-# docs/设计/vuln_rules_design.md — vuln 源 Candidateization 规则集设计
+# docs/设计/vuln源规则集设计.md — vuln 源 Candidateization 规则集设计
 
 > Step 4.8g · vuln 源收尾 · 设计真源
 > 契约: `fused_hub/docs/fused_pipeline_v1.md` 第二章 §2.1–§2.3（Rule Contract 8 字段）
 > 参照实现: `core/fused/pipeline/rules/candidateization.py`（4.8b 的 CR-1..CR-5）
-> 上游: `docs/设计/pipeline_rules_design.md` §3（4.8b 四类规则集设计）
+> 上游: `docs/设计/规则集设计.md` §3（4.8b 四类规则集设计）
 
 
 ## 0. 素材实测（本步重新核对，非沿用描述）

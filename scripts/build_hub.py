@@ -1,4 +1,4 @@
-"""scripts/build_hub.py —— v2 中枢真实构建入口（Layer 2 单源抽取）。
+"""scripts/build_hub.py —— 中枢真实构建入口（Layer 2 单源抽取）。
 
 用法::
 
@@ -9,7 +9,7 @@
 
 产出::
 
-    derived/model/per_source/<protocol>/<source>/facts/<source>.jsonl   v2 Fact (六元组, 单源)
+    derived/model/per_source/<protocol>/<source>/facts/<source>.jsonl   Fact (六元组, 单源)
     derived/model/per_source/<protocol>/facts/<aspect>.jsonl            ★ 批次 1.6 步 1：
         **新中枢布局** —— 按 aspect（知识维度）统一存放；「源」退化为事实内部的
         ``all_claims[].authority`` 字段，不再是目录层级。旧布局**保留**（回退保险），
@@ -29,7 +29,7 @@
 
 ★ 与 v1 scripts/build_hub.py 的区别:
   - v1 走 core.fused.pipeline (v1 candidateization, 硬编码 rfc 系 + vuln 系);
-  - 本脚本走 core.fused.norm (原生 norm → v2 Fact 映射, 基于 Layer 1 Profile)。
+  - 本脚本走 core.fused.norm (原生 norm → Fact 映射, 基于 Layer 1 Profile)。
 
 ★ 只读保证:
   kb/ 全程只读; 仅读 derived/model/spec/<protocol>/norms/norms.jsonl (v1 extractor 产物);
@@ -231,7 +231,7 @@ RUNTIME_ENRICH_DIRS: tuple[str, ...] = ("boundary_probe",)
 #:   备份落到自己的目录，不会污染主仓库的备份（副本自测时踩到）。
 SEMANTIC_BACKUP_ROOT = Path(os.environ.get(
     "PROTORAG_SEMANTIC_BACKUP",
-    r"E:\科研\想法idea\ProtoRAG_快照_20261102\semantic_backup"))
+    r"E:\科研\想法idea\ProtoKG_快照_20261102\semantic_backup"))
 
 
 def _backup_semantic_before_purge(protocol: str) -> str:
@@ -837,7 +837,7 @@ def _check_required_headers_coverage(protocol: str,
     rh = sg.get("required_headers") or {}
     # ★ 判据②：该协议是否用**头部行语法**（命令协议 ⇒ 不用 ⇒ 整体豁免）。
     #   ★ **纯语法判据，零协议名**（2026-11-07 两次修正）：
-    #     第一版写的是 `protocol in ("rtsp","sip","http")` ⇒ 新协议会被误豁免；
+    #     初版写的是 `protocol in ("rtsp","sip","http")` ⇒ 新协议会被误豁免；
     #     第二版用「headers 桶非空」⇒ **误报 smtp**（smtp 的 headers 桶是
     #     RFC 5322 的**信体头** Date/From/Subject…，不是 SMTP 命令的头）。
     #   最终判据：**`raw_format.header_line` 非空** ⇒ 该协议有头部行语法。
@@ -1300,7 +1300,7 @@ def _write_and_validate(source: str, facts, registry, protocol: str = "rtsp",
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
-        description="v2 中枢构建入口（**一次一个协议 x 一个知识源**）")
+        description="中枢构建入口（**一次一个协议 x 一个知识源**）")
     parser.add_argument("--list-sources", action="store_true",
                         help="识别知识库中有哪几种知识源, 打印后退出")
     # ★★ 架构约束（2026-10-31 用户明确）：本模型**一次只处理一个知识库 ×

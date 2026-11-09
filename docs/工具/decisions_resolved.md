@@ -333,7 +333,7 @@ Lane A 依 rule_set §1.2 本就不经 §6.3 / §6.4 measurement contract，
 反证：14 个 property 无 D9 覆盖、层级未定义（D15 已按「未定层级而非
 被判定为非 instance-level」处理），故本条只关闭 observed_* 家族，不
 推广到全部 19 个 property。
-决策影响：批次 1 阶段 B 第一版的「契约缺口」结论作废；相关 errata
+决策影响：批次 1 阶段 B 初版的「契约缺口」结论作废；相关 errata
 已追加到 step_traffic_c0 与 step_traffic_c1 报告末尾，原文保留。
 
 ## D20 — Lane A §5/§6 转正 Final Frozen（2026-10-04）
@@ -523,7 +523,7 @@ attachment 不产生 Hub fact，故 §3.2 不阻断它。
 
 - 问题 3（代码包）按原则须「分两包」⟹ 见 D26。
 - 问题 2（D9）实现数 = 1，默认不需要独立 D9，见 D25。
-- 设计方向见 `docs/设计/source_source_design.md`（草案，步骤 C）。
+- 设计方向见 `docs/设计/第五源设计.md`（草案，步骤 C）。
 
 ## D25 — 问题2 裁定：不需要独立 D9 文档
 
@@ -1074,7 +1074,7 @@ status: "3-digit numeric, e.g. 200, 454"
 ## D33 — S-SM 不可抽取（建议剔除）/ S-PH 部分可抽取（建议收窄）
 
 **提出时间**：2026-10-05（步骤 B 起草时暴露的未知，顺手勘察关闭）
-**产物**：`docs/设计/source_lane_a_rule_set_design.md` §3.3 / §3.4
+**产物**：`docs/设计/source源规则集设计.md` §3.3 / §3.4
 
 ### S-SM 状态机组：不可抽取
 
@@ -1832,7 +1832,7 @@ run1 与 run2 产物**逐字节一致** ⟹ 缺陷只影响**汇报与验证环�
 
 ## D46 — 五源融合现状裁定：已完成的是「事实汇总」，不是「融合」
 
-**日期**：2026-10-06　**产出**：`docs/设计/five_source_fusion_framework.md`（Draft Framework）
+**日期**：2026-10-06　**产出**：`docs/设计/五源融合框架.md`（Draft Framework）
 
 ### 事实
 
@@ -3096,7 +3096,7 @@ paths = _plan_paths(state_machine, max_depth)
 ### 依据
 
 `docs/step7_series_summary.md`：2026-09 的 12h AFLNet 实测
-**ProtoRAG 3.16% vs ChatAFL 10.57%**，根因归因为
+**ProtoKG 3.16% vs ChatAFL 10.57%**，根因归因为
 「**Accept / User-Agent / URL 多样性不足 → server 频繁 reject**」。
 
 实测桥接产物（修复前）：User-Agent **0**、Accept **1**、

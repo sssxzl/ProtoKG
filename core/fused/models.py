@@ -1,6 +1,6 @@
 """core/fused/models.py —— Layer 0 中枢核心数据结构（v2 设计真源）。
 
-本模块是 Layer 0 中枢核心数据结构的唯一实现（v1 架构已于 2026-10-09 退役）。
+本模块是 Layer 0 中枢核心数据结构的唯一实现（架构已于 2026-10-09 退役）。
 
 设计真源: fused_hub/docs/fused_knowledge_hub_design.md 第三部分。
 """

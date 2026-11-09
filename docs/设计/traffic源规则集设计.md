@@ -1,9 +1,9 @@
-# docs/设计/traffic_lane_a_rule_set_design.md — Traffic Lane A Rule Set 设计
+# docs/设计/traffic源规则集设计.md — Traffic Lane A Rule Set 设计
 
 > 状态：**Final Frozen**（批次 4，2026-10-04；带 1 条 PARTIAL 判据，见 §10.1 判据 4）
-> 上游：`docs/设计/traffic_d9_design.md`（Final Frozen）
->       `docs/设计/traffic_corpus_capability_profile.md`（ACTIVE）
->       `docs/设计/traffic_candidateization_pre_design.md`（ACTIVE）
+> 上游：`docs/设计/traffic源观测独立性设计.md`（Final Frozen）
+>       `docs/设计/traffic源语料能力档位.md`（ACTIVE）
+>       `docs/设计/traffic源候选项化预设计.md`（ACTIVE）
 > 本文件为 Lane A Rule Set 设计真源。
 > 本文件为 standalone 设计真源，不依赖任何 superseded draft。
 
@@ -606,7 +606,7 @@ StructuralObservation + Provenance
 
 **Lane A v1 不得 emit Evidence DTO**——Hub Storage Model 中 Evidence 不是独立顶层对象；它属于 Claim，Claim 属于 Fact。没有 Fact/Claim 宿主时 Evidence 无处挂载。
 
-挂载机制由 `docs/设计/traffic_lane_a_provenance_interface.md` 定义。
+挂载机制由 `docs/设计/traffic源溯源接口.md` 定义。
 
 #### 4.8.3 Future Lane（严格例外条款）
 
@@ -1081,7 +1081,7 @@ Lane A 是 instance-level structural fact；§8 是 population-level Claim。语
 3. 所有组完成 Evidence Emission Rule Contract（A–J 重构版）
 4. 所有组完成 provenance alignment target 定义
 5. 所有组不得产生 Hub Candidate / Claim / Fact
-6. 与 `docs/设计/traffic_lane_a_provenance_interface.md` 无矛盾
+6. 与 `docs/设计/traffic源溯源接口.md` 无矛盾
 7. 所有 subject：只使用 Registry canonical subject ID
 8. 所有 condition：只表达真实 protocol-semantic applicability，不得由 observation-instance metadata 污染
 9. 22/22 primary group assigned

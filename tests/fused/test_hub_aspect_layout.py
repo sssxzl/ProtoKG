@@ -232,7 +232,7 @@ def test_legacy_and_aspect_layout_produce_identical_bundle(hub):
     new_bundle = rag_seedgen.assemble_bundle(list(new_views), PROTOCOL)
     # ★ 阶段 C2/D1 给 fact / bundle **新增**了字段（纯增量）
     #   ⇒ 比对前剥离（被比对的仍是**旧契约**的全部内容）。
-    from tests.fused._v2_compat import strip_bundle
+    from tests.fused._compat import strip_bundle
     assert _dump(strip_bundle(new_bundle)) == _dump(strip_bundle(legacy_bundle))
 
 

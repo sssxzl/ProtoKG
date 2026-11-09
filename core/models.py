@@ -1,7 +1,7 @@
-"""ProtoRAG 数据模型 —— 生成的种子（输出层）。
+"""ProtoKG 数据模型 —— 生成的种子（输出层）。
 
 2026-10-09 清理：v1 的 ProtocolNorm / StateMachine / Transition / FieldConstraint /
-VulnSeed / RetrievalBundle / NORM_KINDS / NORM_FACETS 已退役（对应代码已随 v1 架构
+VulnSeed / RetrievalBundle / NORM_KINDS / NORM_FACETS 已退役（对应代码已随 架构
 退役删除，2026-10-09）。现仅保留 v2 通路需要的 SeedMessage / SeedCorpus。
 """
 from __future__ import annotations

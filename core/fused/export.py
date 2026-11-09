@@ -176,7 +176,7 @@ def get_fact_view(fact: Fact) -> dict:
 def export_facts_for_llm(protocol: str, version: str,
                          facts_source: Path,
                          profile_version: str = "v2") -> dict:
-    """从 v2 Fact 列表或 JSONL 读, 产出 LLM 安全导出。
+    """从 Fact 列表或 JSONL 读, 产出 LLM 安全导出。
 
     支持两种输入:
       - list[Fact]: 直接给出

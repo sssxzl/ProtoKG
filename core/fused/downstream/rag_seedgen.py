@@ -1,10 +1,10 @@
 """core/fused/downstream/rag_seedgen.py —— 知识中枢 → RAG → LLM → 种子。
 
-这是 v2 中枢的「LLM RAG 消费通路」（第一步，全量分桶组装）。
+这是 中枢的「LLM RAG 消费通路」（第一步，全量分桶组装）。
 
 定位
 ----
-v2 中枢的 facts（<Subject, Aspect, Condition, Value, Epistemic, Evidence> 知识原子）
+中枢的 facts（<Subject, Aspect, Condition, Value, Epistemic, Evidence> 知识原子）
 是**结构化知识图谱**（Knowledge-based GraphRAG 范式），不需要向量检索。
 本模块把 facts 按 aspect 分桶组装成「种子生成知识」，渲染成 prompt，调 LLM
 生成种子，再用中枢知识做轻量校验。
@@ -855,7 +855,7 @@ def parse_seed_response(resp: Any, protocol: str,
 
 
 # ===========================================================================
-# 5. 轻量校验（用 v2 中枢知识，非 JointConstraint）
+# 5. 轻量校验（用 中枢知识，非 JointConstraint）
 # ===========================================================================
 
 def validate_seed(seed, bundle: dict) -> list[str]:

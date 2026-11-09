@@ -1,4 +1,4 @@
-"""core/fused/vuln.py —— vuln 源（kb/历史漏洞/*.json）→ v2 Fact 的原生映射。
+"""core/fused/vuln.py —— vuln 源（kb/历史漏洞/*.json）→ Fact 的原生映射。
 
 甲方案：直接读 kb/历史漏洞/*.json（结构化字段），不经过 norms.jsonl（与
 expert_note 一致）。scope=seedgen 的漏洞才产 fact；其余 scope 值（历史漏洞数据
@@ -10,7 +10,7 @@ not_trigger_vulnerability 等）均不相关 —— 判定只比较 scope == "se
       trigger.field.value（str 或数组）→ header+security_property；
       value = description_raw（漏洞描述），epistemic = descriptive。
 
-设计依据: docs/设计/layer2_extraction_methods.md §三 vuln 行
+设计依据: docs/设计/抽取层方法借鉴.md §三 vuln 行
            （rule 抽固定字段，LLM 抽后果语义归入 security_property）。
 """
 from __future__ import annotations
@@ -140,7 +140,7 @@ def vuln_entry_to_pattern_facts(entry: dict[str, Any], protocol: str = "rtsp",
 
 def vuln_to_facts(vuln_dir: Path = VULN_DIR,
                   protocol: Optional[str] = None, llm=None) -> list[Fact]:
-    """读 kb/历史漏洞/*.json，映射到 v2 Fact 列表。
+    """读 kb/历史漏洞/*.json，映射到 Fact 列表。
 
     protocol 给定且 vuln_dir 未显式指定时，用 kb/<protocol>/历史漏洞/
     （协议×源二维解耦）；否则用传入目录（向后兼容）。

@@ -1,7 +1,7 @@
 # D9 Aggregate Carrier 立项
 
 > 状态：Proposal（未冻结）
-> 上游：docs/设计/traffic_d9_design.md §6.x-gap-r1
+> 上游：docs/设计/traffic源观测独立性设计.md §6.x-gap-r1
 > 合并自：GAP-R1（rate 承载）+ §7 independence 四量承载
 > 勘察来源：§6-Pre6 阶段 B（rate）、§6-Pre8 阶段 B（independence）
 > 本文件仅登记问题与路径，**不做技术裁定**。

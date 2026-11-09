@@ -1,4 +1,4 @@
-"""ProtoRAG LLM 客户端(异化实现)。
+"""ProtoKG LLM 客户端(异化实现)。
 
 模块分层:
   - LLMClient:         Protocol 接口(内联在本模块, v1 退役后从 interfaces.py 移入)

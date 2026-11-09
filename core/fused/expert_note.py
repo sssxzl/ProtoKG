@@ -1,7 +1,7 @@
-"""core/fused/expert_note.py —— expert_note 维度 JSON → v2 Fact 的原生映射（v3 专家判断）。
+"""core/fused/expert_note.py —— expert_note 维度 JSON → Fact 的原生映射（v3 专家判断）。
 
-从 kb/<protocol>/expert_note/*.json（schema v3, 4 维度）直接映射到 v2 Fact。
-v3 定位（对齐 docs/设计/expert_note_redesign.md v3）：expert_note 是「专家的判断和引导」，
+从 kb/<protocol>/expert_note/*.json（schema v3, 4 维度）直接映射到 Fact。
+v3 定位（对齐 docs/设计/专家注记重新设计.md v3）：expert_note 是「专家的判断和引导」，
 回答「哪里危险、怎么进入深层、该往哪使劲」，不重复客观源（rfc/source/traffic/vuln）
 能给的客观事实。
 
@@ -157,7 +157,7 @@ _DIMENSION_MAPPERS = [
 
 def expert_note_to_facts(expert_note_dir: Path = EXPERT_NOTE_DIR,
                          protocol: Optional[str] = None) -> list[Fact]:
-    """读 expert_note 的维度 JSON，映射到 v2 Fact 列表。
+    """读 expert_note 的维度 JSON，映射到 Fact 列表。
 
     protocol 给定且 expert_note_dir 未显式指定时，用 kb/<protocol>/expert_note/
     （协议×源二维解耦）；否则用传入目录（向后兼容）。

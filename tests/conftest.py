@@ -1,4 +1,4 @@
-"""conftest — shared pytest root for ProtoRAG tests.
+"""conftest — shared pytest root for ProtoKG tests.
 
 2026-10-09 清理：v1 代码已退役，原 _ensure_registry_builtins（依赖 v1 的
 core.classifier / core.extractors / core.registry）与 kb_driven_spec_graph

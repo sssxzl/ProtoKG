@@ -10,7 +10,7 @@
     "header_line": "",
     "trailing_blank_line": false,
     "command_extra": {
-      "DATA": "Subject: ProtoRAG SMTP fuzz seed\r\n\r\nProtoRAG SMTP fuzz test body.\r\n."
+      "DATA": "Subject: ProtoKG SMTP fuzz seed\r\n\r\nProtoKG SMTP fuzz test body.\r\n."
     },
     "entity_headers": {
       "DATA": [

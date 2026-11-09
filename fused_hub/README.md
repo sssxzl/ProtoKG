@@ -1,7 +1,7 @@
 # Fused Knowledge Hub
 
 > 结构化知识中枢模块
-> 当前版本：v2 结构化知识中枢（registry `core_version` 1.0 / 3 个注册表 / 4 份设计文档）
+> 当前版本：结构化知识中枢（registry `core_version` 1.0 / 3 个注册表 / 4 份设计文档）
 
 ## 一、中枢定位
 
@@ -26,8 +26,8 @@ fused_hub/
 ├── docs/                ← 四份设计文档
 │   ├── fused_knowledge_hub_design.md     ← v2 Layer 0 设计真源（知识原子 / 防矛盾 / LLM 安全）
 │   ├── fused_canonical_spec.md           ← canonical 序列化规范 + 确定性 ID
-│   ├── fused_compatibility_mapping.md    ← v1 → v2 映射规则
-│   └── rtsp_profile_v1_draft.md           ← Layer 1 Profile 首个实例（草案）
+│   ├── fused_compatibility_mapping.md    ← 早期 → 当前 映射规则
+│   └── RTSP协议档案草案.md           ← Layer 1 Profile 首个实例（草案）
 ├── schema/              ← 3 个注册表 JSON（core_version 均为 "1.0"）
 │   ├── subject_type_registry.json       (1211 B, 7 个 subject type)
 │   ├── aspect_registry.json             (5148 B, 19 个 aspect)
@@ -63,9 +63,9 @@ fused_hub/
 |------|------|
 | `kb/<协议>/<源>/`（read-only 五源）| `derived/model/per_source/<协议>/<源>/facts/<源>.jsonl`（v2 单源事实）|
 | `derived/model/per_source/` | `core/fused/downstream/` 三层检索 → `scripts/seedgen.py` |
-| `derived/fused/`（v1 遗留融合产物）| `core/fused/compat.py` 双轨映射（v1 fact → v2 Fact）|
+| `derived/fused/`（v1 遗留融合产物）| `core/fused/compat.py` 双轨映射（fact → Fact）|
 | `fused_hub/targets/<协议>/profile.json` | `scripts/seedgen.py`（per-protocol 参数与字典）|
-| `derived/model/spec/<协议>/norms/norms.jsonl` | `core/fused/norm.py`（v1 norm → v2 Fact）|
+| `derived/model/spec/<协议>/norms/norms.jsonl` | `core/fused/norm.py`（v1 norm → Fact）|
 
 ## 五、当前状态（2026-10-30）
 

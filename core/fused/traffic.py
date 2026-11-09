@@ -1,4 +1,4 @@
-"""core/fused/traffic.py —— traffic 源（pcap/raw 观测 norm）→ v2 Fact 映射。
+"""core/fused/traffic.py —— traffic 源（pcap/raw 观测 norm）→ Fact 映射。
 
 traffic 源现走确定性抽取（core/fused/traffic_extractor.py 从数据流量目录读 client.log / csv / packets.ndjson）, 不再依赖 norms.jsonl。
 同一 norm_id 被大量抓包 capture 重复展开（按 norm_id 去重, 每 distinct norm 产 observed fact），evidence quote 记录
@@ -13,7 +13,7 @@ kind → 映射（epistemic 一律 observed）:
   protocol     transport distribution / methods    → protocol + value_enum（set）
   actor        RTSP server observed on ports [...] → actor   + value_enum（set）
 
-设计依据: docs/设计/layer2_extraction_methods.md §三 traffic 行（LLM-Boofuzz 借鉴，
+设计依据: docs/设计/抽取层方法借鉴.md §三 traffic 行（LLM-Boofuzz 借鉴，
            rule 做统计/边界，LLM 增强字段语义 —— 本模块只做 rule 部分）。
 """
 from __future__ import annotations

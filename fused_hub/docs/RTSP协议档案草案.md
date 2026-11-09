@@ -4,12 +4,12 @@
 > 以 rtsp 为样例。Profile 机制本身协议无关——Layer 0 核心（models/canonical/registry/
 > validation/export）与注册表加载、fail-closed 校验均为通用。
 > ⚠ 但当前 `fused_hub/schema/` 为**单协议平铺**结构：`core/fused/registry.py:28-33` 按固定文件名加载三个注册表，新增协议需先改造为 per-protocol 目录约定（如 `fused_hub/schema/<协议>/`）并让 `load_registry` 支持 `base_dir` 切换（`Registry.__init__` 已接受 `base_dir` 参数），**不改任何核心代码**这一条目前不成立。
-> 本草案为甲方案（最小可用）：只注册 131 条 v1 facts **映射后实测出现**的项（映射后 118 facts），不预设未出现的项。
+> 本草案为甲方案（最小可用）：只注册 131 条 facts **映射后实测出现**的项（映射后 118 facts），不预设未出现的项。
 
 - **依据**: `fused_hub/docs/fused_knowledge_hub_design.md` §3 / §6
 - **范围**: Layer 1（rtsp Profile），甲方案（最小可用）
 - **状态**: 已落地（草案内容已进 `fused_hub/schema/` 三个注册表 JSON，`core_version: 1.0`；后续修订以本文档为准）
-- **数据来源**: `derived/fused/facts/*.jsonl` 经 `core/fused/compat.py` 映射为 v2 Fact
+- **数据来源**: `derived/fused/facts/*.jsonl` 经 `core/fused/compat.py` 映射为 Fact
   （Step C1 探针：131 → 118 facts，0 errors；v2 映射结果未落盘，产物在 `derived/model/per_source/<协议>/<源>/facts/`）
 
 ---

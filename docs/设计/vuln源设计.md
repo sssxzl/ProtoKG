@@ -1,13 +1,13 @@
-# docs/设计/vuln_source_design.md — vuln 源 GLMFuzz 本地化适配方案
+# docs/设计/vuln源设计.md — vuln 源 GLMFuzz 本地化适配方案
 
 > 定位：五源深化收尾。参照 GLMFuzz（QRS 2025）「漏洞知识引导的协议 fuzzing」，
 > 结合本项目「知识源 → 结构化知识中枢 → 生成初始种子」架构，给出 vuln 源的
 > 本地化适配方案（改造目标 / 抽取范围 / 数据模型 / 种子生成 / 本地化改造点 / 流程依赖）。
 >
 > 落盘日期：2026-10-20
-> 上游：`docs/设计/vuln_rules_design.md`（v1 pipeline 时代，已脱节）、
->        `docs/设计/vuln_source_closure_design.md`（v1 claim_class 裁定，已脱节）
-> 对标本：rfc→SemFuzz（`docs/设计/rfc_source_design.md`）、source→AutoSeeder、
+> 上游：`docs/设计/vuln源规则集设计.md`（v1 pipeline 时代，已脱节）、
+>        `docs/设计/vuln源收口设计.md`（v1 claim_class 裁定，已脱节）
+> 对标本：rfc→SemFuzz（`docs/设计/RFC源改造设计.md`）、source→AutoSeeder、
 >        traffic→LLM-Boofuzz、expert_note→v3 主观定位
 
 ---

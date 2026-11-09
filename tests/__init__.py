@@ -1,1 +1,1 @@
-"""ProtoRAG tests."""
+"""ProtoKG tests."""

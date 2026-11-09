@@ -1,8 +1,8 @@
-# Fused Knowledge Hub v2 — 设计真源
+# Fused Knowledge Hub — 设计真源
 
 > **状态：Draft（待用户审后冻结）**
 >
-> 本文档定义 **Layer 0（中枢核心）** 的结构契约。Layer 1（协议 Profile）已有首个实例（rtsp Profile v1，见 `rtsp_profile_v1_draft.md`）；Layer 2（知识填充）已实现于 `core/fused/norm.py` / `expert_note.py` / `vuln.py` / `source.py` / `traffic.py`，其具体行为不在本文档规格内。
+> 本文档定义 **Layer 0（中枢核心）** 的结构契约。Layer 1（协议 Profile）已有首个实例（rtsp Profile v1，见 `RTSP协议档案草案.md`）；Layer 2（知识填充）已实现于 `core/fused/norm.py` / `expert_note.py` / `vuln.py` / `source.py` / `traffic.py`，其具体行为不在本文档规格内。
 >
 > 落盘日期：2026-10-08（Layer 0 抽象部分持续有效；注册表实际内容见 `fused_hub/schema/` 三个 JSON，已于 2026-10-09 扩展至 7 个 subject type / 19 个 aspect）
 
@@ -458,10 +458,10 @@ v2 前缀，与历史 `f1_` 产物隔离。）
 2. 双轨：旧 `fact_key` 作为兼容层保留，新知识走新格式
 3. 切换：五源走新格式，旧格式归档
 
-**当前进展（2026-10-30）**：第 1 步已完成（v2 结构落地 + rtsp Profile v1 注册表）；第 2 步双轨已实现 —— v1 产物在 `derived/fused/`（131 facts），v2 产物在 `derived/model/per_source/`（4 协议 × 五源），`core/fused/compat.py` 提供 v1 → v2 映射与 `core/fused/export.py` 的 v1 回退入口。第 3 步（切换）未触发。
+**当前进展（2026-10-30）**：第 1 步已完成（结构落地 + rtsp Profile v1 注册表）；第 2 步双轨已实现 —— v1 产物在 `derived/fused/`（131 facts），v2 产物在 `derived/model/per_source/`（4 协议 × 五源），`core/fused/compat.py` 提供 早期 → 当前 映射与 `core/fused/export.py` 的 v1 回退入口。第 3 步（切换）未触发。
 
 ---
 
 ## 第八部分：Layer 1（Profile）现状
 
-Layer 1 已落地首个实例：**rtsp Profile v1（甲方案最小可用）**，见 `fused_hub/docs/rtsp_profile_v1_draft.md`。实际注册表内容在 `fused_hub/schema/` 三个 JSON（subject_type_registry 7 项 / aspect_registry 19 项 / epistemic_type_registry 4 项），其中已含 2026-10-09 traffic 源扩展的 `protocol` / `actor` 两个 subject type。协议运行期参数（allowed_methods / transport / message_schema）在 `fused_hub/targets/<协议>/profile.json`。
+Layer 1 已落地首个实例：**rtsp Profile v1（甲方案最小可用）**，见 `fused_hub/docs/RTSP协议档案草案.md`。实际注册表内容在 `fused_hub/schema/` 三个 JSON（subject_type_registry 7 项 / aspect_registry 19 项 / epistemic_type_registry 4 项），其中已含 2026-10-09 traffic 源扩展的 `protocol` / `actor` 两个 subject type。协议运行期参数（allowed_methods / transport / message_schema）在 `fused_hub/targets/<协议>/profile.json`。

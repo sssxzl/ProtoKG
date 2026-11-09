@@ -384,7 +384,7 @@ def test_off_bundle_is_byte_identical_to_pre_b8(monkeypatch, isolated_library):
                 if k not in ("semantic_rules", "bundle_schema_version",
                              "by_category", "entities")}
 
-    from tests.fused._v2_compat import strip_bundle
+    from tests.fused._compat import strip_bundle
     assert _dump(strip_bundle(stripped)) == _dump(strip_bundle(off_bundle))
 
 

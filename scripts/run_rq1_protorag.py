@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""RQ1 测量：ProtoRAG 种子构造（build_hub + seedgen），统计 Time / Tokens / 种子数。
+"""RQ1 测量：ProtoKG 种子构造（build_hub + seedgen），统计 Time / Tokens / 种子数。
 
 用法:
     E:/python/python.exe scripts/run_rq1_protorag.py [--seedgen-only]
@@ -119,7 +119,7 @@ def main() -> int:
                             encoding="utf-8")
 
     print("\n" + "=" * 64)
-    print("ProtoRAG RQ1 种子构造测量结果")
+    print("ProtoKG RQ1 种子构造测量结果")
     print("=" * 64)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     print(f"metrics 已落盘: {metrics_path}")

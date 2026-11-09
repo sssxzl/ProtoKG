@@ -2,7 +2,7 @@
 
 > 生成时间：2026-11-01
 > 适用代码库：`E:\科研\想法idea\rag-chatafl`
-> 上游输入：`docs/实施/RFC源知识抽取改造方案.md`（v3，951 行）、`改进v2.md`（8 个问题）、`ProtoRAG RFC 源知识抽取改造方案——技术评审报告.md`
+> 上游输入：`docs/实施/RFC源知识抽取改造方案.md`（v3，951 行）、`改进v2.md`（8 个问题）、`ProtoKG RFC 源知识抽取改造方案——技术评审报告.md`
 > 本文档性质：**只读调研 + 设计规划**。撰写过程中未修改仓库任何文件（唯一写入为本文件）。
 > 运行环境：Python `C:/Users/13594/.workbuddy/binaries/python/versions/3.13.12/python.exe`（无 pytest）；pytest 用 `E:/app/Anaconda3/python.exe`。
 
@@ -239,7 +239,7 @@ DUP norm_id => {'rtsp.constraint.content-length': 10, 'rtsp.constraint.max-forwa
 
 ### 3.1　两层模型的具体字段
 
-落点：**新建 `core/fused/semantic.py`**（不塞进 `core/fused/models.py`——后者是 v2 Fact/Claim/Evidence 的中枢模型，语义规则是**派生知识产物**，混入会破坏 `models.py` 的单一职责；也避免 `models.py` 的 `Fact`/`Claim` 与新模型在 import 上形成环）。
+落点：**新建 `core/fused/semantic.py`**（不塞进 `core/fused/models.py`——后者是 Fact/Claim/Evidence 的中枢模型，语义规则是**派生知识产物**，混入会破坏 `models.py` 的单一职责；也避免 `models.py` 的 `Fact`/`Claim` 与新模型在 import 上形成环）。
 
 ```python
 # core/fused/semantic.py
@@ -588,7 +588,7 @@ C4/C5 是整个 B 阶段最难的一环（评审 T2 明确指出「缺少真正�
 
 **结论：不修改 `models.py` 的数据结构；新增独立模块 `core/fused/semantic.py`，两者通过「转换器」相连。**
 
-理由：`models.py` 是 v2 中枢的**核心数据模型**（文件头 docstring 自称「Layer 0 中枢核心数据结构的唯一实现」），`Fact`/`Claim`/`Evidence` 有 `canonical.py` 的 `compute_fact_id`/`compute_claim_id`/`compute_evidence_id` 三套哈希依赖，任何改动都会波及**已落盘的 `derived/model/per_source/*/facts/*.jsonl`**（实测 rtsp 116 / sip 148 / smtp 10 行）与跨源去重。**B 阶段不应该动它。**
+理由：`models.py` 是 中枢的**核心数据模型**（文件头 docstring 自称「Layer 0 中枢核心数据结构的唯一实现」），`Fact`/`Claim`/`Evidence` 有 `canonical.py` 的 `compute_fact_id`/`compute_claim_id`/`compute_evidence_id` 三套哈希依赖，任何改动都会波及**已落盘的 `derived/model/per_source/*/facts/*.jsonl`**（实测 rtsp 116 / sip 148 / smtp 10 行）与跨源去重。**B 阶段不应该动它。**
 
 并存方式：
 
@@ -1291,7 +1291,7 @@ derived/experiments/annotation/<实验ID>/
    - **强烈建议同时执行 `git init`**：B 阶段要新增 5+ 文件、改 7+ 文件，没有版本控制风险太高。`git init && git add -A && git commit -m "baseline before milestone B"` 一步就能消除这个风险（`.gitignore` 已就位，会自动排除 `derived/`、`.env`、`__pycache__`）。
    - **注意**：`.gitignore` 里 `derived/` 被排除——这意味着**落盘产物不会进版本控制**。B 阶段新增的 `derived/model/per_source/<p>/rfc/semantic/*.jsonl` 属于再生数据，符合该策略；但**规则模式表在 `core/fused/semantic_rules.py`（源码）→ 会进版本控制** ✅。
 
-2. **改 `core/fused/models.py` 前先三思**。它是 v2 中枢的核心数据模型，`canonical.py` 的三套哈希（`compute_fact_id`/`compute_claim_id`/`compute_evidence_id`）依赖它的字段结构。任何字段变动 → `fact_id` 全变 → **已落盘的 `derived/model/per_source/*/facts/*.jsonl`（rtsp 116 / sip 148 / smtp 10 行）与跨源去重全部失效**。本设计**不改 `models.py`**（见 §3.6）。
+2. **改 `core/fused/models.py` 前先三思**。它是 中枢的核心数据模型，`canonical.py` 的三套哈希（`compute_fact_id`/`compute_claim_id`/`compute_evidence_id`）依赖它的字段结构。任何字段变动 → `fact_id` 全变 → **已落盘的 `derived/model/per_source/*/facts/*.jsonl`（rtsp 116 / sip 148 / smtp 10 行）与跨源去重全部失效**。本设计**不改 `models.py`**（见 §3.6）。
 
 3. **每次改动后立刻跑基线测试**：
    ```bash

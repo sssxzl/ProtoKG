@@ -1,7 +1,7 @@
 # docs/实施/layer0_delivery_report.md — Layer 0 交付报告
 
 **日期**: 2026-10-08
-**依据**: rag-chatafl · v2 中枢 · Step C 系列 + 批次 A + B1
+**依据**: rag-chatafl · 中枢 · Step C 系列 + 批次 A + B1
 **范围**: Layer 0 收口完整闭环（不含 Layer 1 / Layer 2）
 
 ---
@@ -10,7 +10,7 @@
 
 | 阶段 | 步骤 | 状态 |
 |---|---|---|
-| 批次 C (v2 中枢修复) | Step C-diagnose (canonical + 5 组溯源) | ✅ |
+| 批次 C (中枢修复) | Step C-diagnose (canonical + 5 组溯源) | ✅ |
 | | Step C-reconcile (入口差异定位) | ✅ |
 | | Step C-close (修法 1-2 + collision fixture + P7 测试) | ✅ |
 | | Step C-verify (三处账核实) | ✅ |
@@ -68,7 +68,7 @@
 | 其他（--ignore=tests/fused） | 738 passed, 5 skipped |
 | **合计** | **3005 passed / 8 skipped / 1 xfailed / 0 failed / 0 errors** |
 | **evidence 保留率**（本批新增验收） | **100% (27081/27081 distinct)** |
-| v2 facts | 118 |
+| facts | 118 |
 | v2 claims | 132 |
 | v2 evidence total | 34126 (去重前) / 27081 (distinct) |
 | evidence_id 前缀 | 100% e2_ |
@@ -91,7 +91,7 @@ v1 evidence total 34135，v2 evidence total 34126，差 -9。
 
 | 阶段 | 旧口径 | 旧"成功"判定 | 实际保留率 |
 |---|---|---|---|
-| T0-T4 hub_v2 | fact 转换 100% (118/118) | 2684 passed / 8 skipped | 未含 evidence 保留率 |
+| T0-T4 hub | fact 转换 100% (118/118) | 2684 passed / 8 skipped | 未含 evidence 保留率 |
 | Step C-close | 同 T0-T4 | 3005 passed | 未含 evidence 保留率 |
 | Step A2 (security_consequence) | 同 T0-T4 | 3005 passed | 未含 evidence 保留率 |
 | Step A3 (前缀 f2_/c2_/e2_) | 同 T0-T4 | 3005 passed | 未含 evidence 保留率 |
@@ -124,7 +124,7 @@ v1 evidence total 34135，v2 evidence total 34126，差 -9。
 |---|---|---|
 | Layer 1 Profile | **未启动** | fused_hub/schema/v2/3 个 JSON 为空模板（registered_aspects/types: []），待 Layer 1 填充具体 aspect / subject_type / epistemic_type |
 | Layer 2 知识填充 | **未启动** | v2 数据从 derived/fused/facts/*.jsonl 转换，但未落盘到 derived/v2/；新 fact 写入路径未实装 |
-| v2 产物落盘 | **未做** | 现有 v2 Fact 仅在内存（convert_v1_fact_jsonl 返回值），未序列化到 jsonl/yaml |
+| v2 产物落盘 | **未做** | 现有 Fact 仅在内存（convert_v1_fact_jsonl 返回值），未序列化到 jsonl/yaml |
 | hub_contract v2 部分（fused_hub/docs/*） | 仅 T2 阶段完成 1 个 spec 文档（canonical_v2_spec.md，2549 B） | 其他设计文档未落盘 |
 | validate_v2 与 convert_v1_fact_jsonl 联动 | **未做** | 当前 131/131 转换成功仅因 mapping 表完整，未触发 fail-closed 路径 |
 
@@ -174,4 +174,4 @@ local/
 ---
 
 *Layer 0 收口完成时间：2026-10-08*
-*本报告是 v2 中枢 Layer 0 的状态快照 + Layer 1/2 的交接依据*
+*本报告是 中枢 Layer 0 的状态快照 + Layer 1/2 的交接依据*

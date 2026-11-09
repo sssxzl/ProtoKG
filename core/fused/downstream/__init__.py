@@ -1,4 +1,4 @@
-"""core.fused.downstream — v2 中枢的下游消费方。
+"""core.fused.downstream — 中枢的下游消费方。
 
 2026-10-09 清理：v1 的 seedgen_bridge（读 v1 Fused Dataset）已退役，
 现仅保留 v2 的 rag_seedgen（知识中枢 → RAG → LLM → 种子）。

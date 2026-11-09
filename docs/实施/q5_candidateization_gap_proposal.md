@@ -5,7 +5,7 @@
 > `transition.jsonl` **21 条**，既有 65 条 fact 零变化。
 >
 > 日期：2026-10-06
-> 来源：`docs/设计/five_source_fusion_framework.md` Q5 / `实施/hub_contract_errata_backlog.md` §17
+> 来源：`docs/设计/五源融合框架.md` Q5 / `实施/hub_contract_errata_backlog.md` §17
 
 ---
 

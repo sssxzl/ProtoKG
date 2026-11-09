@@ -1,4 +1,4 @@
-"""tests/fused/test_norm.py —— norm → v2 Fact 原生映射 (Layer 2 第一源 rfc)。"""
+"""tests/fused/test_norm.py —— norm → Fact 原生映射 (Layer 2 第一源 rfc)。"""
 from __future__ import annotations
 
 from core.fused.norm import (
@@ -174,4 +174,4 @@ def test_map_norm_to_facts_dispatches():
     assert len(map_norm_to_facts(OUTCOME_NORM)) == 1
     assert len(map_norm_to_facts(METHOD_NORM)) == 1
     src_norm = dict(FIELD_NORM, kb_source_type="vuln")
-    assert map_norm_to_facts(src_norm) == []       # 第一版只 rfc
+    assert map_norm_to_facts(src_norm) == []       # 初版只 rfc

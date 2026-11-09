@@ -1,6 +1,6 @@
 """core/fused/downstream/selector.py —— 三层语料库选择器编排 + 降级。
 
-对齐 docs/设计/three_layer_seedgen_design.md §五：
+对齐 docs/设计/三层语料选择器设计.md §五：
       ① 结构覆盖（永远）  edge_cover
       ② 通用危险（永远）  generic_danger
       ③ 漏洞特定（有漏洞 + llm 才叠加）  strategy.classify_all/dedupe_reqs/generate_attack_seeds

@@ -1,7 +1,7 @@
 # D9 GAP-R1/R2/R3 rate 承载立项
 
 > 状态：Proposal（未冻结）
-> 上游：docs/设计/traffic_d9_design.md §6.x-gap-r1
+> 上游：docs/设计/traffic源观测独立性设计.md §6.x-gap-r1
 > 勘察来源：local/backup/step_d9_6_pre6/rate_carrier_design/（§6-Pre6 阶段 B）
 > 本文件仅登记问题与路径，**不做技术裁定**。
 

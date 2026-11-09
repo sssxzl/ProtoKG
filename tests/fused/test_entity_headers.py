@@ -92,8 +92,8 @@ def test_entity_headers_rendered_before_body():
         seg = txt[i:i + 400]
         for h in ("Date:", "From:", "To:"):
             assert h in seg, f"{h} 不在 DATA 段里：{seg[:200]!r}"
-        # 头必须在正文（ProtoRAG SMTP fuzz test body）之前
-        assert seg.find("Date:") < seg.find("ProtoRAG SMTP fuzz test body"), seg
+        # 头必须在正文（ProtoKG SMTP fuzz test body）之前
+        assert seg.find("Date:") < seg.find("ProtoKG SMTP fuzz test body"), seg
         return
     pytest.skip("本次 edge_cover 未产出 DATA 报文")
 

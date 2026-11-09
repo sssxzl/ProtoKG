@@ -13,7 +13,7 @@
 **不表示 D9 semantic capability**。
 
 D9 semantic design 的权威真源是
-`docs/设计/traffic_d9_design.md`（Final Frozen）。
+`docs/设计/traffic源观测独立性设计.md`（Final Frozen）。
 
 **Corpus 弱不等于 contract 错。**
 
@@ -265,7 +265,7 @@ contract 错」。本节是反向的一例——**Corpus 强也不能补上 cont
 
 ### 9.5 登记来源
 
-`docs/设计/traffic_candidateization_pre_design.md` §4.4
+`docs/设计/traffic源候选项化预设计.md` §4.4
 （同轮的 §4.0 已把它归入 **Lane B 前置**类）。
 
 ---
@@ -322,8 +322,8 @@ CSV 的 gap（13,15,17 + RTP 段）就是被丢弃的帧。
 
 | N | capture units | 对应 3-variant |
 |---|---|---|
-| 55 | 936 | V1（主变体） |
-| 56 | 60 | V2（尾部 +1） |
+| 55 | 936 | 早期（主变体） |
+| 56 | 60 | 当前（尾部 +1） |
 | 57 | 2 | V3（尾部 +2） |
 | 58 | 2 | V3（尾部 +2） |
 
@@ -351,7 +351,7 @@ CSV 的 gap（13,15,17 + RTP 段）就是被丢弃的帧。
 - `local/backup/step_traffic_pre_candidateization/stage_a_rtsp_variants/`
 - `local/backup/step_traffic_pre_candidateization/stage_b_frame_number/`
 - `local/backup/step_traffic_pre_design_closure/stage_a_overturn_sweep/`
-- `docs/设计/traffic_candidateization_pre_design.md` §4.2 / §4.5
+- `docs/设计/traffic源候选项化预设计.md` §4.2 / §4.5
 
 ---
 

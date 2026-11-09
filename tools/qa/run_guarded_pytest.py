@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """带**三道护栏**的全量 pytest 跑法 —— CI 与本机共用的标准验收跑法（可复现、可采信）。
 
-本脚本是 ProtoRAG CI 的**验收闸门本体**：``.github/workflows/ci.yml`` 的
+本脚本是 ProtoKG CI 的**验收闸门本体**：``.github/workflows/ci.yml`` 的
 ``guarded-pytest`` job 直接调用它。它解决三个已被实测踩到的坑：
 
   ① **并发写文件让数字漂移**：同一棵树连跑三次得 38 → 46 → 37。

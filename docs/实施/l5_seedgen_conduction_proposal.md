@@ -2,7 +2,7 @@
 
 > **状态：Proposal（未冻结）**
 > 日期：2026-10-06
-> 来源：`docs/设计/five_source_fusion_framework.md` §4 L5 判据 FAIL
+> 来源：`docs/设计/五源融合框架.md` §4 L5 判据 FAIL
 > **本文件只出框架，不实现任何代码。**
 
 ---

@@ -662,7 +662,7 @@ def build_candidateization_rules() -> tuple:
 
 ### S-EX 客户端调用侧遍历入口缺失（D44，2026-10-06）
 
-- **主登记**：`docs/设计/source_lane_a_rule_set_design.md` §9 **问题 14**
+- **主登记**：`docs/设计/source源规则集设计.md` §9 **问题 14**
 - **性质**：Rule Set 实现缺口，**非** Hub 冻结文档 / schema 不一致
 - **实测**：`derived/model/source/` 首次落盘中 `S-EX.client_invocation` 产出 **0**；
   `writer.is_client_invocation` 分支的**前置条件永不成立**
@@ -748,7 +748,7 @@ Hub 侧现有的 `transport`（小写）才是**合规**的一侧。
 **本批不修** —— 修它须改 `core/`（候选乙）或跨源规则集（候选甲），
 均在本批授权之外。
 
-已作为 **Q2** 登记于 `docs/设计/five_source_fusion_framework.md` §7，
+已作为 **Q2** 登记于 `docs/设计/五源融合框架.md` §7，
 并作为 L3 判据 FAIL 项计入融合未完成清单。
 ---
 
@@ -1104,8 +1104,8 @@ transition entity（2026-10-08 实测），`graph_registry.json` 的
 （`tests/fused/runtime/test_runtime_contract_consistency.py:1605`）
 2026-10-08 加 xfail 标注——真实契约缺口，不是实现缺陷。
 
-**处理**：v2 中枢以 `Subject.type` 开放注册替代固定 `kind` 枚举
-（见 `fused_hub/docs/fused_knowledge_hub_v2_design.md` 第三部分 Subject），
+**处理**：中枢以 `Subject.type` 开放注册替代固定 `kind` 枚举
+（见 `fused_hub/docs/fused_knowledge_hub_design.md` 第三部分 Subject），
   到时 transition 由 Profile 层声明即可解决，v1 不动。
 
 **回归**：rfc 源 366 条 norm（method 11 / field 232 / outcome 80 /
@@ -1114,7 +1114,7 @@ transition）被结构性挡住——这是本次重设计的最直接动因。
 
 ---
 
-## 22. v2 中枢设计期间：fused_canonical_v2_spec.md 落盘时机越界（2026-10-08）
+## 22. 中枢设计期间：fused_canonical_v2_spec.md 落盘时机越界（2026-10-08）
 
 **越界项**：used_hub/docs/fused_canonical_v2_spec.md (2549 B, mtime 2026/10/8 4:52:15)
 
@@ -1143,7 +1143,7 @@ transition）被结构性挡住——这是本次重设计的最直接动因。
   - Step A 主报告自报该越界项，已落盘于 stage0_5_report.txt 与 stage4_report.txt
   - 本条与该自报**一致**，仅是 hub_contract_errata_backlog.md 的正式登记
 
-**关联背景**：Stage T0-T4 重做 v2 中枢是为解决 `transition` entity 与
+**关联背景**：Stage T0-T4 重做 中枢是为解决 `transition` entity 与
 `rfc 18 个 property 词表` 等 v1 容量不足的设计根源问题。
 v2 的设计目标之一即"开放注册替代固定枚举"。canonical_v2_spec.md 落盘时机的越界与该
 设计目标无关——属"文档同步时机"的流程问题, 非"内容合规"问题。
@@ -1253,7 +1253,7 @@ A5-fix 改走 `claim.evidence[]` 后：
 
 - 14 outlier fact 的 evidence 99.6% 来自 traffic（traffic_raw 22000 + traffic_pcap 12000）
 - 但这些 evidence 实际挂在 Hub fact 上（method.jsonl 中 SETUP/existence 等）
-- A5-fix 全量保留 → v2 Fact 含 1000-5000 traffic evidence / claim
+- A5-fix 全量保留 → Fact 含 1000-5000 traffic evidence / claim
 
 **性质**：Hub 与 Lane A 边界语义不一致。
 

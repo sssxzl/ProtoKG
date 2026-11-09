@@ -355,7 +355,7 @@ def test_legacy_bundle_without_semantic_rules_is_noop():
     legacy = {
         "legal_boundary": {"QNAME": [{"dim": "QNAME", "legal": "L1",
                                       "illegal": "I1", "trigger": "T1"}]},
-        "response_expectation": {"QNAME": [{"violation": "V1",
+        "response_expectation": {"QNAME": [{"violation": "早期",
                                             "expected_code": "400",
                                             "expected_behavior": "B1"}]},
     }

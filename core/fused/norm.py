@@ -1,10 +1,10 @@
-"""core/fused/norm.py —— Layer 2: 知识源 ProtocolNorm → v2 Fact 的原生映射。
+"""core/fused/norm.py —— Layer 2: 知识源 ProtocolNorm → Fact 的原生映射。
 
 rfc 源的 5 种 kind 映射已全部实现（transition / field / outcome / method / constraint，见 RFC_KIND_MAP）。
 
 设计依据: fused_hub/docs/fused_knowledge_hub_design.md +
-           fused_hub/docs/rtsp_profile_v1_draft.md +
-           docs/设计/layer2_extraction_methods.md（LLM 增强部分留 -m llm 钩子）。
+           fused_hub/docs/RTSP协议档案草案.md +
+           docs/设计/抽取层方法借鉴.md（LLM 增强部分留 -m llm 钩子）。
 """
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def _make_evidence(norm: dict[str, Any], claim_id: str) -> Evidence:
 
 def _make_fact(subject: Subject, aspect: str, value: Value,
                epistemic_type: str, norm: dict[str, Any]) -> Fact:
-    """构造单个 v2 Fact（subject + aspect + value，单 claim）。"""
+    """构造单个 Fact（subject + aspect + value，单 claim）。"""
     fact_key = FactKey(
         protocol=norm.get("protocol", "rtsp"),
         version="1.0",
@@ -488,7 +488,7 @@ RFC_KIND_MAP = {
 
 
 def map_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
-    """按 norm 的 (kb_source_type, kind) 分派，返回 0 或多个 v2 Fact。"""
+    """按 norm 的 (kb_source_type, kind) 分派，返回 0 或多个 Fact。"""
     source_type = norm.get("kb_source_type", "")
     kind = norm.get("kind", "")
     if source_type == "rfc":

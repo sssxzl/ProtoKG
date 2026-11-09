@@ -10,9 +10,9 @@
 
 ## 二、当前状态（截至 2026-10-08）
 
-- **Layer 0（v2 中枢核心）已完成**：6 个 `core/fused/*_v2.py` + 3 个 `fused_hub/schema/v2/` 注册表
+- **Layer 0（中枢核心）已完成**：6 个 `core/fused/*_v2.py` + 3 个 `fused_hub/schema/v2/` 注册表
 - **全量 pytest**：3005 passed / 8 skipped / 1 xfailed / 0 failed
-- **v1 → v2 转换**：131 facts → 118 facts（合并 13 条）+ 27081 distinct evidence（保留率 100%）
+- **早期 → 当前 转换**：131 facts → 118 facts（合并 13 条）+ 27081 distinct evidence（保留率 100%）
 - **Layer 1（rtsp Profile）未启动**
 - **Layer 2（五源映射）未启动**
 - **v2 产物未落盘**（决策未定）
@@ -30,11 +30,11 @@
 | `docs/工具/agent_rules.md` | **硬约束（必读）** |
 | `docs/实施/roadmap_next.md` | **当前下一步（必读）** |
 | `docs/工具/workbuddy_onboarding.md` | 本文件 |
-| `fused_hub/docs/fused_knowledge_hub_v2_design.md` | v2 设计真源 |
+| `fused_hub/docs/fused_knowledge_hub_design.md` | v2 设计真源 |
 | `docs/实施/hub_contract_errata_backlog.md` | 已知遗留 |
 | `docs/工具/project_handoff.md` | 项目恢复入口（部分过时） |
 | `local/backup/step_v2_*/audit.txt` | 各步证据 |
-| `core/fused/*_v2.py` | v2 中枢代码 |
+| `core/fused/*_v2.py` | 中枢代码 |
 | `tests/fused/v2/` | v2 测试 |
 | `kb/` | 知识库（**只读**） |
 | `derived/` | 派生产物（**不许写，除指定步**） |

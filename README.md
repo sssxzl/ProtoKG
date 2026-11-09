@@ -1,19 +1,22 @@
-# ProtoRAG
+# ProtoKG
 
-> **Protocol-aware fuzzing with Retrieval-Augmented Generation.**
-> 基于动态 RAG 的协议模糊测试用例生成器。
+> **Protocol Knowledge Graph for Fuzzing Seed Generation.**
+> 基于协议知识图（中枢 + GraphRAG 整理层）的模糊测试种子生成器。
+
+★ 五源协议知识（规范 / 源码 / 流量 / 漏洞 / 专家注记）→ **按知识分类的结构化中枢**
+→ **实体关系图 + 社区** → 五层种子生成。
 
 ## 设计原则
 
 1. **协议级隔离,跨协议共享** — `kb/<协议>/<源>/` 在各协议间共享（源维度 5 档：`spec` / `协议实现源码` / `数据流量` / `历史漏洞` / `expert_note`）
 2. **协议无关主程序 + per-protocol Profile** — 协议特定配置集中在 `fused_hub/targets/<协议>/profile.json`（`allowed_methods` / `transport` / `message_schema`），主程序 `core/fused/` 不含协议分支
-3. **五源解耦 + 三层检索** — 五源（spec / 协议实现源码 / 数据流量 / 历史漏洞 / expert_note）各自抽取为独立 v2 Fact，下游按 ①结构覆盖 ②通用危险 ③漏洞导向边界探针 三层组织语料
+3. **五源解耦 + 中枢 + 知识图** — 五源（spec / 协议实现源码 / 数据流量 / 历史漏洞 / expert_note）各自抽取为独立 Fact，汇聚进**按知识分类的中枢**（A~F 六分类），再投影成**实体关系图 + 社区**，供检索与种子生成
 4. **fail-closed 校验** — LLM 写出的种子必须通过 `core/fused/validation.py` 七级校验，未注册引用（subject.type / aspect / epistemic_type）直接硬错误
 5. **流程到"生成高价值初始种子"结束** — 种子产出 `.raw` + `<协议>.dict` 定向字典，由 `scripts/seedgen.py` 落盘
 
 ## 命名约定
 
-| 概念 | ProtoRAG v2 命名 |
+| 概念 | 命名 |
 |---|---|
 | 中枢核心 | `core/fused/`（Layer 0）|
 | 知识原子 | `Fact`（六元组 fact_key + claims + resolution）|
@@ -23,11 +26,13 @@
 | 语料选择器 | `core/fused/downstream/selector.py`（`select_seeds` / `prioritize_seeds` / `vuln_proximity_score`）|
 | 知识维度 | **Subject.type(7) × Aspect(19) 开放注册**|
 
-## 当前阶段（v2 结构化知识中枢 + 多源种子生成）
+## 当前阶段（结构化知识中枢 + 知识图 + 多源种子生成）
 
-- **五源知识抽取**：`kb/<协议>/<源>/` → `derived/model/per_source/<协议>/<源>/facts/`，覆盖 ftp / rtsp / sip / smtp 四协议 × 五源
-- **三层检索**：`edge_cover`（结构覆盖）/ `generic_danger`（通用危险）/ `boundary_probe`（漏洞导向边界探针）
-- **协议无关主程序**：`core/fused/`（Layer 0 核心 + Layer 2 源映射）+ `core/fused/downstream/`（11 个下游消费模块）
+- **五源知识抽取**：`kb/<协议>/<源>/` → `derived/model/per_source/<协议>/<源>/facts/`，覆盖 rtsp / sip / smtp / dhcpv4 四协议 × 五源
+- **知识分类中枢**：`derived/model/hub/<分类>/`（A~F 六分类）+ `index/entities.jsonl`（实体主表）
+- **知识图整理层**：`derived/model/graph/`（实体图 + 社区 + 社区报告）
+- **五层种子**：`edge_cover`（结构覆盖）/ `generic_danger`（通用危险）/ `boundary_probe`（漏洞边界）/ `strategy`（目标聚焦）/ `action_seq`（动作序列）
+- **协议无关主程序**：`core/fused/`（中枢核心 + 源映射 + 视图层）+ `core/fused/downstream/`（消费层）
 - **全量回归**：**560 passed / 0 skipped / 0 failed**（2026-10-30 实测）
 
 ## 代码结构（按功能编排）
@@ -39,14 +44,14 @@ rag-chatafl/
 │   ├── models.py              # 数据模型（SeedMessage / SeedCorpus / ...）
 │   ├── paths.py               # 路径常量 + SOURCE_DIRS 五源→kb 子目录映射
 │   ├── raw_writers.py         # ProFuzzBench 兼容 .raw writer
-│   └── fused/                 # v2 结构化知识中枢（33 个 .py）
+│   └── fused/                 # 结构化知识中枢（33 个 .py）
 │       ├── models.py          # Layer 0 数据结构（26 dataclass）
 │       ├── canonical.py       # canonical 序列化 + 确定性 ID
 │       ├── registry.py        # 加载 3 个注册表（fail-closed）
 │       ├── validation.py      # 7 个 validate_* 函数
 │       ├── export.py          # LLM 安全接口（P10）
 │       ├── norm.py / expert_note.py / vuln.py / source.py / traffic.py   # Layer 2 五源→Fact
-│       ├── compat.py          # v1 fact → v2 Fact 双轨映射
+│       ├── compat.py          # fact → Fact 双轨映射
 │       ├── traffic_extractor.py     # traffic 源抽取（含 packets.ndjson 真实字段）
 │       ├── source_autoseeder.py     # AutoSeeder 状态机分析（source 源）
 │       └── downstream/        # 11 个下游消费模块
@@ -128,7 +133,7 @@ python scripts/seedgen.py --protocol rtsp --focus-group B
 |---|---|---|
 | LLM | 协议 prompt + JSON 输出 | `core/llm.py` + Stub/DeepSeek |
 | 协议层 | per-protocol Profile 配置 | `fused_hub/targets/<协议>/profile.json` |
-| 抽取层 | 五源 → v2 Fact（六元组）| `core/fused/norm.py` + `expert_note.py` + `vuln.py` + `source.py` + `traffic.py` |
+| 抽取层 | 五源 → Fact（六元组）| `core/fused/norm.py` + `expert_note.py` + `vuln.py` + `source.py` + `traffic.py` |
 | 校验层 | fail-closed 校验 + 注册表治理 | `core/fused/validation.py` + `core/fused/registry.py` |
 | 生成层 | 三层检索 + LLM 写 + 落盘 | `core/fused/downstream/selector.py` + `rag_seedgen.py` + `scripts/seedgen.py` |
 | 导出层 | LLM 安全接口（P10）| `core/fused/export.py` |

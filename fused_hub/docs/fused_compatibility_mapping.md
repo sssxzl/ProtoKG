@@ -1,4 +1,4 @@
-# Compatibility Mapping v1 → v2（2026-10-08）
+# Compatibility Mapping 早期 → 当前（2026-10-08）
 
 > 状态：Draft｜实现见 `core/fused/compat.py`（`convert_v1_fact`）
 >
@@ -72,5 +72,5 @@ packet_role_pair     packet_role   ⚠ v2 注册表未注册 packet_role
 
 本文仅定义**映射规则**与**实现入口**。
 旧 fact 的物理格式（derived/fused/facts/*.jsonl）**完全不动**；
-新结构（v2 core/）与 v1 共存；v1 的裁决链 / validation chain 所在的 `core/fused/runtime/`、`reader.py`、`writer.py` 已于 2026-10-09 随 v1 架构退役移除，不存在「不修改 v1 代码链」这一约束。
-切换发生在用户**明确迁移**时（v1 → v2 的语义化切换由后续决策触发）。
+新结构（v2 core/）与 v1 共存；v1 的裁决链 / validation chain 所在的 `core/fused/runtime/`、`reader.py`、`writer.py` 已于 2026-10-09 随 架构退役移除，不存在「不修改 v1 代码链」这一约束。
+切换发生在用户**明确迁移**时（早期 → 当前 的语义化切换由后续决策触发）。

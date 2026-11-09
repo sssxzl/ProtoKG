@@ -72,12 +72,12 @@
    - `aspect`（v1 property 映射后的）
    - `epistemic_type`
    - `value.type`
-2. 设计文档 `fused_hub/docs/rtsp_profile_v1_draft.md`：
+2. 设计文档 `fused_hub/docs/RTSP协议档案草案.md`：
    - Subject Type Registry（逐项声明 name + 语义契约）
    - Aspect Registry（逐项声明 value_type + applicable_subject_types + resolution_semantics + cardinality）
    - Epistemic Type Registry（逐项声明 authority_rank + can_be_canonical + scope_required + llm_interpretation）
 3. **不预设 v1 未出现的项**——甲方案只注册实测出现的
-4. 若发现某 v1 fact 无法被现有 Layer 0 结构表达 → **停，报告**（可能是 Layer 0 设计缺口，回退修 Layer 0）
+4. 若发现某 fact 无法被现有 Layer 0 结构表达 → **停，报告**（可能是 Layer 0 设计缺口，回退修 Layer 0）
 
 **交付验收**：
 - ✅ 设计文档落盘
@@ -85,7 +85,7 @@
 - ✅ 无「暂缺待补」项（若有 → 停在汇报里）
 
 **参照**：
-- `fused_hub/docs/fused_knowledge_hub_v2_design.md` §3 / §6
+- `fused_hub/docs/fused_knowledge_hub_design.md` §3 / §6
 - A5-fix 的 131→118 facts 映射结果
 
 ---
@@ -155,8 +155,8 @@
 
 **停止条件**：产出 ≤ 11 → 停，说明 v2 未解决原问题，回设计层讨论
 
-**第一版（transition）已完成（2026-10-08，Step C3a）**：
-- 新增 `core/fused/norm_v2.py` + `scripts/build_hub_v2.py`（--list-sources + --sources）
+**初版（transition）已完成（2026-10-08，Step C3a）**：
+- 新增 `core/fused/norm_v2.py` + `scripts/build_hub.py`（--list-sources + --sources）
 - rfc 366 norm → 43 transition facts（≥ v1 的 11），fail-closed 0 失败
 - 落盘 `derived/model/per_source/rfc/v2/facts/rfc.jsonl`；修复 export_v2 嵌套 Subject 序列化
 - 详见 `local/backup/step_v2_C3a/audit.txt`
@@ -229,7 +229,7 @@
 - 生成 `.raw` 种子 —— 已接 `write_seeds`（`seedcorpus_to_raw`）
 - 对比 v1 通路产物 —— 待做（验证步骤，不阻塞通路）
 
-### 4.4 v1 → v2 生产切换
+### 4.4 早期 → 当前 生产切换
 - 三步走：Layer 1 落地 / Layer 2 至少一源 / 端到端验证
 - 全过 → 切；否则保留双轨
 
@@ -259,7 +259,7 @@
   raw_writers._get_rtsp_transitions 优雅降级返空。全量 pytest 基线恢复为
   **仅 6 failed（kb/数据流量 布局遗留）+ 0 error**。详见
   `local/backup/step_v1_expert_note_retire/audit.txt`。
-  ★ 后续 v2 seedgen 通路（roadmap 4.3）建好后，从 v2 中枢读回 RTSP 特化知识，
+  ★ 后续 v2 seedgen 通路（roadmap 4.3）建好后，从 中枢读回 RTSP 特化知识，
     届时补回本步退役的 seedgen/adapter 测试。
 
 ---
@@ -272,7 +272,7 @@
 | `工具/agent_rules.md` | 硬约束——每次先读它 |
 | `工具/project_handoff.md` | 项目全景——**注意 §7 可能过时，以本文件为准** |
 | `实施/hub_contract_errata_backlog.md` | 遗留登记本 |
-| `fused_knowledge_hub_v2_design.md` | v2 设计真源 |
+| `fused_knowledge_hub_design.md` | v2 设计真源 |
 | `实施/layer0_delivery_report.md` | Layer 0 交付报告（B1 产出） |
 | `local/backup/step_*/audit.txt` | 各步证据 |
 

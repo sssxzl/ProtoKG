@@ -110,7 +110,7 @@ SemFuzz 把 RFC 规范形式化为 **SR = (协议 p, 消息 m, 字段 f, 构造�
 
 ### 阶段 4：接入边界探针
 
-边界探针（`docs/设计/boundary_probe_design.md`）的「源 A 协议语义」目前靠人工推导，改造后：
+边界探针（`docs/设计/边界探针设计.md`）的「源 A 协议语义」目前靠人工推导，改造后：
 
 ```
 rfc 源抽取的 legal_boundary（构造约束）

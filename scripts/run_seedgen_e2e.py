@@ -145,7 +145,7 @@ def main() -> int:
         args.out = str(_base / datetime.now().strftime("%Y%m%d_%H%M%S"))
 
     print("=" * 64)
-    print("ProtoRAG 真 LLM 端到端验证（含目标资源清单 + 漏洞导向）")
+    print("ProtoKG 真 LLM 端到端验证（含目标资源清单 + 漏洞导向）")
     print("=" * 64)
 
     # 0. 加载目标资源清单 + 真实请求模板 + 历史漏洞

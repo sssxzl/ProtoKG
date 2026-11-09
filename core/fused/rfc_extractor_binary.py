@@ -41,7 +41,7 @@ def _norm(kind: str, name: str, content: str, protocol: str,
         "protocol": protocol,
         "kb_source_type": "rfc",
         # ★ source 已含 ``file:`` 前缀（抽取层给的）⇒ 这里**不要再包一层**
-        #   （第一版写成 ``f"file:{source}#"`` ⇒ 落盘变成 ``file:file:xxx``）
+        #   （初版写成 ``f"file:{source}#"`` ⇒ 落盘变成 ``file:file:xxx``）
         "source": f"{source}#{section}",
         "section": section,
     }

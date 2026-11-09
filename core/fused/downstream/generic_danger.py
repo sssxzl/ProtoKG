@@ -1,6 +1,6 @@
 """core/fused/downstream/generic_danger.py —— ② 通用危险层（规则推导，不调 LLM，不依赖漏洞）。
 
-对齐 docs/设计/three_layer_seedgen_design.md §四-②：
+对齐 docs/设计/三层语料选择器设计.md §四-②：
     从状态机拓扑自动推导「通用危险模式」，协议无关、永远生效：
       2.1 自环重复    —— 自环边 X --M--> X 连续 2 次（UAF/资源/断言）
       2.2 生命周期    —— 进入 B -> 离开 B -> 再进入 B（UAF）

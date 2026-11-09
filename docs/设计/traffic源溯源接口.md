@@ -1,8 +1,8 @@
 # Traffic Lane A Provenance Interface
 
 > 状态：**Final Frozen**（批次 4，2026-10-04；依 D14–D19 填实）
-> 上游：`docs/设计/traffic_lane_a_rule_set_design.md` §4.8
-> 　　　`docs/设计/traffic_d9_design.md`（Final Frozen）
+> 上游：`docs/设计/traffic源规则集设计.md` §4.8
+> 　　　`docs/设计/traffic源观测独立性设计.md`（Final Frozen）
 > 　　　`fused_hub/docs/fused_storage_design_v1.md`
 > 　　　`fused_hub/docs/fused_schema_v1.md`
 > 本文件为 Lane A → Hub provenance 接口设计真源。

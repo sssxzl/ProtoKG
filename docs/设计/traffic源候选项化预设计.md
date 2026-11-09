@@ -1,8 +1,8 @@
 # Traffic Candidateization Pre-Design
 
 > 状态：Pre-Design（未冻结）
-> 上游：`docs/设计/traffic_d9_design.md`（Final Frozen）
-> 　　　`docs/设计/traffic_corpus_capability_profile.md`（ACTIVE）
+> 上游：`docs/设计/traffic源观测独立性设计.md`（Final Frozen）
+> 　　　`docs/设计/traffic源语料能力档位.md`（ACTIVE）
 > 本文件是**设计前的约束冻结**，不是 Rule Set。
 
 ---
@@ -11,7 +11,7 @@
 
 **1. 状态标注冲突**
 
-`docs/设计/traffic_lane_a_rule_set_design.md`（Final Frozen）的上游声明把本文件
+`docs/设计/traffic源规则集设计.md`（Final Frozen）的上游声明把本文件
 标为 `ACTIVE`，与本文件自身状态行 `Pre-Design（未冻结）` 冲突。
 
 **以本文件自身状态行为准：本文件从未冻结。** 产生该标注的一方是 Final Frozen
@@ -23,8 +23,8 @@
 §4.0 与 §7 中「Lane A Rule Set 暂不可开写」「C-6 / C-7 / C-8 阻塞 Lane A
 Rule Set 开写」等表述，**在写作当时为真**，现已过时：
 
-- `docs/设计/traffic_lane_a_rule_set_design.md` 已 **Final Frozen**（2026-10-04）
-- `docs/设计/traffic_lane_a_provenance_interface.md` 已 **Final Frozen**（2026-10-04）
+- `docs/设计/traffic源规则集设计.md` 已 **Final Frozen**（2026-10-04）
+- `docs/设计/traffic源溯源接口.md` 已 **Final Frozen**（2026-10-04）
 - Lane A v1 冻结为 **PROVENANCE-ONLY**；§4.7 / §4.8 的产物即规则集 §4.5–§4.11
 
 保留 §4.0 / §7 原文不改写，是为了让「当时为何认为不可开写」这一推理过程
@@ -51,11 +51,11 @@ Rule Set 设计在本文件冻结后另立。
 
 ### 1.1 D9 Final Frozen 语义
 
-见 `docs/设计/traffic_d9_design.md` §0–§13。
+见 `docs/设计/traffic源观测独立性设计.md` §0–§13。
 
 ### 1.2 Current Corpus Capability Profile
 
-见 `docs/设计/traffic_corpus_capability_profile.md`。
+见 `docs/设计/traffic源语料能力档位.md`。
 
 ### 1.3 Dependency Clustering Input Gap
 
@@ -299,7 +299,7 @@ D9 §7 已定义 independence 的三态语义（§7.1）、三态判定条件（
 - `ip.src`/`ip.dst`、`method`、`status`、`url`、`session`
   在全部 1000 个 capture 中逐字节相同
 - 前 14 行的帧号 `[1..11,16,18,21]` 是 n=1000 的唯一前缀
-- 尾部算术：V1 `49,50,51,53,54,55` / V2 `+1` / V3 `+2`
+- 尾部算术：早期 `49,50,51,53,54,55` / 当前 `+1` / V3 `+2`
   —— 纯加性偏移，无重排、无丢行、无消息变化
 
 **不是语义差异，是 capture 时间线 artifact。**
@@ -307,7 +307,7 @@ D9 §7 已定义 independence 的三态语义（§7.1）、三态判定条件（
 **与 pair 结构 ALIGNED，500/500**（推翻前序结论）。
 其余 5 个 sidecar 的 sha 分组与 `rtsp.csv` 分组**完全同构**
 （500/500 pure）——偏移是整条 capture 的属性。
-（V1 = 468 pairs、V2 = 30 pairs、V3 = 2 pairs；
+（早期 = 468 pairs、当前 = 30 pairs、V3 = 2 pairs；
 936/60/4 的文件切分即 468/30/2 的 pair 切分。）
 
 **对 Lane A / Lane B 影响**：

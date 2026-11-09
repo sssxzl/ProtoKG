@@ -1,1 +1,1 @@
-"""ProtoRAG entry-point scripts."""
+"""ProtoKG entry-point scripts."""

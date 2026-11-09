@@ -64,7 +64,7 @@ def test_fact_id_format():
                  subject=Subject(type="method", name="SETUP"),
                  aspect="existence", condition=ConditionAlways())
     fid = compute_fact_id(fk)
-    assert fid.startswith("f2_")    # Step A3 2026-10-08: v2 fact_id 前缀 f2_
+    assert fid.startswith("f2_")    # Step A3 2026-10-08: fact_id 前缀 f2_
     assert len(fid) == 3 + 16    # "f2_" + 16 hex
 
 

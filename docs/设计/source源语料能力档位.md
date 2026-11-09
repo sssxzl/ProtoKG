@@ -1,10 +1,10 @@
-# docs/设计/source_corpus_capability_profile.md — Source 语料能力档案
+# docs/设计/source源语料能力档位.md — Source 语料能力档案
 
 > 状态：**ACTIVE**（2026-10-05 新建）
 > 来源：`local/backup/step_source_recon/`（只读勘察）、`step_source_a/`、`step_source_a2/`
 > 范围：**current source corpus empirical capability**
 > **非** Hub Contract capability（Hub 侧能力见 `fused_hub/docs/`）
-> 参照：`docs/设计/traffic_corpus_capability_profile.md`（结构类比，内容不复制）
+> 参照：`docs/设计/traffic源语料能力档位.md`（结构类比，内容不复制）
 
 **本档案的作用**：记录**当前语料能支撑什么、不能支撑什么**，
 使后续 Rule Set 的组边界有据可依，并防止「实现选择」被读成「协议要求」。
@@ -16,7 +16,7 @@
 | 项 | 归属 |
 |---|---|
 | 本档案 | **仅记录语料事实**，不是设计真源 |
-| 设计真源 | `docs/设计/source_source_design.md`、`docs/设计/source_lane_a_rule_set_design.md` |
+| 设计真源 | `docs/设计/第五源设计.md`、`docs/设计/source源规则集设计.md` |
 | 契约真源 | `fused_hub/docs/fused_registry_v1.md`、`fused_hub/schema/v1/*.json` |
 | Hub 能力 | **不在本档案范围**（Hub 侧能力是 Hub Contract 的事） |
 
