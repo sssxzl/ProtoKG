@@ -1,7 +1,7 @@
 """tests/fused/test_rule_store.py —— B-7 四库分离 + `reflow_rules`。
 
-对应 docs/rfc_source_bcd_roadmap.md §3.8 任务表 B-7（文档任务号 B5）与
-§3.3 强制机制 3（落盘隔离），以及 docs/rfc_source_reform_plan.md §3.5
+对应 docs/RFC源里程碑BCD路线图.md §3.8 任务表 B-7（文档任务号 B5）与
+§3.3 强制机制 3（落盘隔离），以及 docs/RFC源知识抽取改造方案.md §3.5
 的 `reflow_rules()` 伪代码。
 
 验收：

@@ -361,7 +361,7 @@ def _inject_vuln_self_loops(transitions: list, vuln_patterns: dict,
 # ===========================================================================
 # 2.5 bundle 契约扩展 + 语义规则投影（B-8）
 #
-# 设计依据：docs/rfc_source_bcd_roadmap.md
+# 设计依据：docs/RFC源里程碑BCD路线图.md
 #   · §3.6（选项 c：「影子实现升级为两层模型，`legal_boundary` 桶保留但由两层
 #     模型投影填充」）—— 语义规则走 bundle 的**独立键** `semantic_rules`，
 #     不进 `facts.jsonl`（`models.py` 的 fact_id 派生链零影响）；

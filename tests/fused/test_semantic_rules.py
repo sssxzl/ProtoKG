@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """tests/fused/test_semantic_rules.py —— B-5（operator/operand 模式表 + 字段绑定）。
 
-对应 docs/rfc_source_bcd_roadmap.md §3.8 任务表 **B-5** 行（:673）的验收标准：
+对应 docs/RFC源里程碑BCD路线图.md §3.8 任务表 **B-5** 行（:673）的验收标准：
 
   ① **≥12 条有序模式**，每条配 **≥1 个最小可执行样例**单测；
      模式表是**可回归资产**。

@@ -496,7 +496,7 @@ class TestGuideLeak:
     def test_real_guide_does_not_leak_real_frozen_set(self):
         """★ 对**真实冻结集**跑：标注指南必须零泄漏。"""
         frozen_path = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
-        guide_path = ROOT / "docs" / "annotation_guide.md"
+        guide_path = ROOT / "docs" / "人工标注指南.md"
         if not frozen_path.is_file() or not guide_path.is_file():
             pytest.skip("冻结集或指南尚未生成（该用例需真实数据）")
         frozen = [json.loads(line) for line in
@@ -645,8 +645,8 @@ class TestCRLFRobustness:
                      "calc_cohen_kappa.py"):
             src = (ROOT / "scripts" / name).read_bytes()
             (probe / name).write_bytes(src.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
-        guide = (ROOT / "docs" / "annotation_guide.md").read_bytes()
-        (probe / "annotation_guide.md").write_bytes(
+        guide = (ROOT / "docs" / "人工标注指南.md").read_bytes()
+        (probe / "人工标注指南.md").write_bytes(
             guide.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
         return probe
 
@@ -705,9 +705,9 @@ class TestCRLFRobustness:
         frozen = ROOT / "derived" / "exp_semantic" / "candidates_frozen.jsonl"
         if not frozen.is_file():
             pytest.skip("冻结集尚未生成")
-        guide_crlf = repo_crlf_probe / "annotation_guide.md"
-        guide_src = (ROOT / "docs" / "annotation_guide.md").read_bytes()
-        (repo_crlf_probe / "annotation_guide.md").write_bytes(
+        guide_crlf = repo_crlf_probe / "人工标注指南.md"
+        guide_src = (ROOT / "docs" / "人工标注指南.md").read_bytes()
+        (repo_crlf_probe / "人工标注指南.md").write_bytes(
             guide_src.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
         r = subprocess.run(
             [sys.executable, str(repo_crlf_probe / "annotate_candidates.py"),

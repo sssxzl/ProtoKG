@@ -21,7 +21,7 @@
   | **带操作数** | 可执行（**存在类算子免操作数**） | 规则数 | ⚠ **不对称**，但差距缩小 |
   | **同等严格度** | `decidable_with_operand` | 只算**绑定字段 + 可验证证据**的规则 | ✅ 两边都要求「有操作数 + 有依据」 |
 
-★ 不臆造：人工标注上界（26.7% = 32/120）来自 `docs/annotation_status.md`
+★ 不臆造：人工标注上界（26.7% = 32/120）来自 `docs/人工标注现状.md`
   的**实际标注结果**，本脚本只**引用**不改写；M2 的 F1 / Cohen's κ
   **不可计算**（标注集未完成、缺第二名标注者）⇒ 明确标注为「不可计算」。
 
@@ -46,10 +46,10 @@ sys.path.insert(0, str(ROOT))
 EXP_DIR = ROOT / "derived" / "exp_semantic_gain"
 PROTOCOLS = ("rtsp", "sip", "smtp")
 
-#: 预登记阈值（`docs/semantic_gain_report.md` §4.6 / `docs/rfc_source_bcd_roadmap.md` §4.5）
+#: 预登记阈值（`docs/语义增益实验预登记.md` §4.6 / `docs/RFC源里程碑BCD路线图.md` §4.5）
 PREREG = {"成立": 15.0, "部分成立": 5.0}
 
-#: 人工标注实测的可执行率**上界**（`docs/annotation_status.md` §2.4）
+#: 人工标注实测的可执行率**上界**（`docs/人工标注现状.md` §2.4）
 #: —— 120 条候选里人工判定可执行的只有 32 条 ⇒ 任何口径下 E1 都不应显著超过它
 ANNOTATION_UPPER_BOUND = {"total": 32, "denominator": 120, "pct": 26.6667}
 
@@ -147,13 +147,13 @@ def main() -> int:
     n_candidates = len(c0)
     result: dict = {
         "prereg": {
-            "source": "docs/semantic_gain_report.md §4.6",
+            "source": "docs/语义增益实验预登记.md §4.6",
             "threshold_pp": PREREG,
         },
         "denominator": {"candidates": n_candidates,
                         "note": "三组共用同一批冻结候选句（candidates_frozen.jsonl）"},
         "annotation_upper_bound": dict(ANNOTATION_UPPER_BOUND,
-                                       source="docs/annotation_status.md §2.4"),
+                                       source="docs/人工标注现状.md §2.4"),
         "m2": {
             "computable": False,
             "reason": "人工标注集未完成、缺第二名真人标注者 ⇒ "
@@ -337,7 +337,7 @@ def main() -> int:
         "required_rules": need_n, "denominator": n_all,
         "annotation_upper_bound_pct": ub["pct"],
         "reachable": reachable,
-        "note": "上界来自实际标注结果（docs/annotation_status.md §2.4）；"
+        "note": "上界来自实际标注结果（docs/人工标注现状.md §2.4）；"
                 "标注文档另注明「粒度修正后上界会抬高、预登记须重算」",
     }
 

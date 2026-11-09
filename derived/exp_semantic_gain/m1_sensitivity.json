@@ -1,6 +1,6 @@
 {
   "prereg": {
-    "source": "docs/semantic_gain_report.md §4.6",
+    "source": "docs/语义增益实验预登记.md §4.6",
     "threshold_pp": {
       "成立": 15.0,
       "部分成立": 5.0
@@ -14,7 +14,7 @@
     "total": 32,
     "denominator": 120,
     "pct": 26.6667,
-    "source": "docs/annotation_status.md §2.4"
+    "source": "docs/人工标注现状.md §2.4"
   },
   "m2": {
     "computable": false,
@@ -126,7 +126,7 @@
     "denominator": 120,
     "annotation_upper_bound_pct": 26.6667,
     "reachable": false,
-    "note": "上界来自实际标注结果（docs/annotation_status.md §2.4）；标注文档另注明「粒度修正后上界会抬高、预登记须重算」"
+    "note": "上界来自实际标注结果（docs/人工标注现状.md §2.4）；标注文档另注明「粒度修正后上界会抬高、预登记须重算」"
   },
   "attribution": {
     "buckets": {

@@ -24,7 +24,7 @@ B 阶段要回答的问题只有一个：**「规则条目级」的表达层升�
 · **防信息泄漏**：分层用的主体分类只依据 **RFC 章节结构**
   （``fused_hub/targets/<p>/rfc_config.json`` 的章节号前缀 + 章节标题），
   **绝不读 ``profile.json`` 的 ``allowed_methods``**。理由见
-  ``docs/rfc_source_bcd_roadmap.md`` §4.6 第 4 条：RTSP 的 ``allowed_methods``
+  ``docs/RFC源里程碑BCD路线图.md`` §4.6 第 4 条：RTSP 的 ``allowed_methods``
   只有 8 个而实抽 11 个，差集 ``ANNOUNCE``/``RECORD``/``REDIRECT`` 是**真实 RTSP 方法** ——
   若拿它当「方法全集」参照，标注者会把真实方法误判为「不存在的方法」。
 · **只写 derived/exp_semantic/**：不碰 kb/、fused_hub/、derived/per_source/。
@@ -403,7 +403,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                     help=f"每协议条数（默认 {PER_PROTOCOL}）")
     ap.add_argument("--holdout-total", type=int, default=HOLDOUT_TOTAL,
                     help=f"holdout 总条数（默认 {HOLDOUT_TOTAL}）")
-    ap.add_argument("--guide", default=str(REPO_ROOT / "docs" / "annotation_guide.md"),
+    ap.add_argument("--guide", default=str(REPO_ROOT / "docs" / "人工标注指南.md"),
                     help="标注指南路径；用于剔除『指南已逐字用过』的候选（默认启用）")
     ap.add_argument("--salt", default=DEFAULT_SALT,
                     help=f"稳定哈希盐（默认 {DEFAULT_SALT}）")

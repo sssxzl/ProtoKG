@@ -1186,7 +1186,7 @@ def parse_raw_seed(text: str, profile: dict, *, protocol: str = "",
 #: ★ **语义命名**的目录（``rq4_B`` / ``pfb_exp_B`` /
 #:   ``live555_20261024_110155`` / ``dict_rtsp`` / ``focused20_*`` …）是
 #:   **人工/工具整理的正式语料**（有的**天然没有** manifest，例如真实抓包语料
-#:   ``live555_20261024_110155`` —— ``docs/ci_and_acceptance.md:122`` 记载
+#:   ``live555_20261024_110155`` —— ``docs/CI与验收说明.md:122`` 记载
 #:   「CI 无法重建」）⇒ **一律保留**，不因缺 manifest 而排除。
 TIMESTAMP_DIR_PATTERN = re.compile(r"^\d{8}_\d{6}$")
 
@@ -1228,7 +1228,7 @@ def _published_group_dirs(protocol: str, group: Optional[str],
           的**自动产出** ⇒ 正式发布时会写 ``manifest.json``
           ⇒ **无 manifest ⇒ 未正式发布 ⇒ 排除**。
           （未正式发布的时间戳批次里可能混着**已书面废弃、且被外网摄像机 URL
-          污染**的语料：``docs/rq4_aflnet_exp_design.md:770``：「``derived/seeds/
+          污染**的语料：``docs/RQ4_AFLNet实验设计.md:770``：「``derived/seeds/
           rtsp/20261031_171135`` 这份**已被污染**，不应作为任何实验语料使用」；
           同文件 716 行量化：含 ``isapi`` / ``10.11.26.98`` 的文件 **22/37 = 59.5%**。
           本函数按 **mtime 新→旧**排序 ⇒ 未发布的污染目录会排在第一
@@ -1237,7 +1237,7 @@ def _published_group_dirs(protocol: str, group: Optional[str],
           ``live555_20261024_110155`` / ``dict_rtsp`` / ``focused20_*`` …）
           = **人工/工具整理的正式语料** ⇒ **一律保留**。
           ★ 其中 ``live555_20261024_110155`` 是**真实抓包语料**（**天然没有**
-            manifest —— ``docs/ci_and_acceptance.md:122`` 记载「CI 无法重建」）
+            manifest —— ``docs/CI与验收说明.md:122`` 记载「CI 无法重建」）
             ⇒ **绝不能**因为缺 manifest 而被排除。
       ⇒ 护栏只针对**时间戳形态**：既挡掉废弃污染目录，也挡住将来任何
         「新生成但未正式发布」的时间戳批次（同类问题不再复发），
@@ -1261,11 +1261,11 @@ def _published_group_dirs(protocol: str, group: Optional[str],
         # ★★ 护栏：**时间戳形态**的批次目录必须带 ``manifest.json`` 才算
         #   「正式发布」⇒ 可作底料；无 manifest ⇒ 生成过但未发布的中间产物
         #   ⇒ 可能混着**已废弃且被污染**的语料
-        #   （docs/rq4_aflnet_exp_design.md:770）⇒ 绝不入候选。
+        #   （docs/RQ4_AFLNet实验设计.md:770）⇒ 绝不入候选。
         #   ★ **语义命名**的目录（rq4_B / pfb_exp_B / live555_* / dict_rtsp
         #     / focused20_* …）是**人工/工具整理的正式语料**，**一律保留** ——
         #     真实抓包语料 live555_20261024_110155 就**没有** manifest
-        #     （docs/ci_and_acceptance.md:122：CI 无法重建）⇒ 不能误伤。
+        #     （docs/CI与验收说明.md:122：CI 无法重建）⇒ 不能误伤。
         if _is_timestamp_batch_dir(child.name) \
                 and not (child / "manifest.json").is_file():
             continue

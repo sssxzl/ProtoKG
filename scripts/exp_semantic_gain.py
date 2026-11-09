@@ -4,7 +4,7 @@
 
 实验目的
 --------
-验证路线图 ``docs/rfc_source_bcd_roadmap.md`` §4.1 的**命题 B-1**：
+验证路线图 ``docs/RFC源里程碑BCD路线图.md`` §4.1 的**命题 B-1**：
 
     把 RFC 约束从「自由文本」升级为「两层可执行模型」后，产出的规则中
     **可机械判定**的比例（可执行率）显著高于当前影子实现的可判定比例，
@@ -28,19 +28,19 @@
 =========  =========================================  ==================================
 
 ★ **三组共用同一批候选句**：候选句来自 ``derived/exp_semantic/candidates_frozen.jsonl``
-（B-13 后的 120 条逻辑句，指纹见 ``docs/semantic_gain_report.md`` 的预登记节）。
+（B-13 后的 120 条逻辑句，指纹见 ``docs/语义增益实验预登记.md`` 的预登记节）。
 
 ★ **不触碰 rq3/rq4 语料**（§4.6 第 1 条）：本脚本**不调用**
 ``scripts/seedgen.py`` / ``scripts/rq3_build_corpus.py`` / ``scripts/corpus_gate.py``，
-产物只落在 ``derived/exp_semantic_gain/`` 与 ``docs/semantic_gain_results.md``。
+产物只落在 ``derived/exp_semantic_gain/`` 与 ``docs/语义增益实验结果.md``。
 
 子命令
 ------
-* ``--prereg``：只写预登记文件 ``docs/semantic_gain_report.md``（**实验前定稿，事后不得改**）。
-* ``--run``：跑实验，产出 ``derived/exp_semantic_gain/`` + ``docs/semantic_gain_results.md``。
+* ``--prereg``：只写预登记文件 ``docs/语义增益实验预登记.md``（**实验前定稿，事后不得改**）。
+* ``--run``：跑实验，产出 ``derived/exp_semantic_gain/`` + ``docs/语义增益实验结果.md``。
 * ``--all``：先 ``--prereg`` 后 ``--run``。
 
-★ ``--run`` **不会**写 ``docs/semantic_gain_report.md``（预登记文件与结果文件分离，
+★ ``--run`` **不会**写 ``docs/语义增益实验预登记.md``（预登记文件与结果文件分离，
 保证「预登记先于结果」可被 git 历史证明）。
 
 用法
@@ -108,8 +108,8 @@ EXPECTED_VOCAB: tuple[str, ...] = (
 )
 
 DEFAULT_OUT_DIR = "derived/exp_semantic_gain"
-DEFAULT_REPORT = "docs/semantic_gain_report.md"
-DEFAULT_RESULTS_DOC = "docs/semantic_gain_results.md"
+DEFAULT_REPORT = "docs/语义增益实验预登记.md"
+DEFAULT_RESULTS_DOC = "docs/语义增益实验结果.md"
 DEFAULT_FROZEN_SRC = "derived/exp_semantic/candidates_frozen.jsonl"
 
 #: 冻结候选集源文件（B-13 后重冻结，120 条）。
@@ -126,7 +126,7 @@ TRUTH_DIR = "derived/exp_semantic/truth"
 DRIFT_DECLARATION = """rtsp: A 38→52 / B 50→65 / C 50→65 / D 50→65
 sip:  A 15→?  / B 25→20 / C 25→?  / D 25→?
 smtp: A 76→?  / B 78→61 / C 78→?  / D 78→?
-根因（docs/rfc_reform_a_implementation_report.md §10.4 已实测）：source 源引入
+根因（docs/RFC源改造里程碑A实施报告.md §10.4 已实测）：source 源引入
 LIVE555 真实状态名，取代 expert_note v3 的虚构状态名 → 状态机层与种子序列全变。
 ★ 与 rfc 源**零影响**（剔除 rfc 源后条数与 md5 完全相同）。
 本实验的判定指标中**不含任何种子条数**，故该漂移不影响结论。"""
@@ -301,7 +301,7 @@ def load_frozen_candidates(
     2. **含 span**：每条带 ``span_start``/``span_end``；
     3. **三协议各 40 条**：rtsp 40 / sip 40 / smtp 40。
 
-    且其 md5 指纹与路线图 §4.6 / ``docs/annotation_status.md`` 记录的一致
+    且其 md5 指纹与路线图 §4.6 / ``docs/人工标注现状.md`` 记录的一致
     ⇒ **复用，不重新冻结**。
 
     唯一差异
@@ -915,7 +915,7 @@ _KNOWN_FIELDS: dict[str, tuple[str, ...]] = {}
 #:   而 explicitness 正是按大小写不敏感的 MUST 判出来的 ⇒ 判定必须同口径。
 _MUST_RE = re.compile(r"(?<!\w)(?:MUST|SHALL|REQUIRED)(?!\w)", re.IGNORECASE)
 #: M4 附加诊断：**只认全大写**（RFC 2119 §3：只有全大写关键字有规范力）。
-#: 与 ``docs/semantic_rules_coverage_matrix.md`` §5 的口径一致（该文亦指出
+#: 与 ``docs/语义规则覆盖矩阵.md`` §5 的口径一致（该文亦指出
 #: 规则表内部大小写不敏感、覆盖矩阵用大写，两套口径并存）。
 _MUST_RE_UPPER = re.compile(r"(?<!\w)(?:MUST|SHALL|REQUIRED)(?!\w)")
 _MAY_RE = re.compile(r"(?<!\w)(?:MAY|OPTIONAL)(?!\w)")
@@ -1287,8 +1287,8 @@ def render_prereg(frozen_stats: dict) -> str:
     return f"""# B-10 实验预登记（ProtoRAG 里程碑 B 出口闸门）
 
 > ★ **本文件是实验前定稿的预登记，事后不得修改。**
-> 依据：`docs/rfc_source_bcd_roadmap.md` §4.1~§4.6。
-> 实验结果**不写在本文件**，另见 `docs/semantic_gain_results.md` 与
+> 依据：`docs/RFC源里程碑BCD路线图.md` §4.1~§4.6。
+> 实验结果**不写在本文件**，另见 `docs/语义增益实验结果.md` 与
 > `derived/exp_semantic_gain/results.json`（git 历史可证明「预登记先于结果」）。
 
 ## 1　预登记（§4.5 阈值表，逐字照抄）
@@ -1356,7 +1356,7 @@ def render_prereg(frozen_stats: dict) -> str:
 ### 4.5　不触碰 rq3/rq4 语料（§4.6 第 1 条）
 
 - **不调用** `scripts/seedgen.py`、`scripts/rq3_build_corpus.py`、`scripts/corpus_gate.py`。
-- 产物只落在 `derived/exp_semantic_gain/` 与 `docs/semantic_gain_results.md`。
+- 产物只落在 `derived/exp_semantic_gain/` 与 `docs/语义增益实验结果.md`。
 
 ### 4.6　判定口径（指标定义 M1~M7）
 
@@ -1427,7 +1427,7 @@ def render_results(
     add(f"- LLM：实际调用 **{llm_stats['calls_made']}** 次，"
         f"缓存命中 **{llm_stats['cache_hits']}** 次，失败 **{len(llm_stats['failures'])}** 次")
     add("")
-    add("> ★ 本文件只放**结果**；预登记在 `docs/semantic_gain_report.md`（实验前定稿）。")
+    add("> ★ 本文件只放**结果**；预登记在 `docs/语义增益实验预登记.md`（实验前定稿）。")
     add("")
 
     add("## 1　M1 可执行率")
@@ -1874,8 +1874,8 @@ def run_experiment(
 
     results = {
         "experiment": "B-10",
-        "roadmap": "docs/rfc_source_bcd_roadmap.md §4",
-        "prereg": "docs/semantic_gain_report.md",
+        "roadmap": "docs/RFC源里程碑BCD路线图.md §4",
+        "prereg": "docs/语义增益实验预登记.md",
         "generated_at": groups_meta["generated_at"],
         "elapsed_s": groups_meta["elapsed_s"],
         "frozen_candidates": frozen_stats,
@@ -1953,7 +1953,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     ap = argparse.ArgumentParser(
         description="B-10 实验：RFC 约束表达层升级的可执行性收益")
     ap.add_argument("--prereg", action="store_true",
-                    help="只写预登记文件（docs/semantic_gain_report.md）")
+                    help="只写预登记文件（docs/语义增益实验预登记.md）")
     ap.add_argument("--run", action="store_true",
                     help="跑实验，产出 derived/exp_semantic_gain/ + 结果文档")
     ap.add_argument("--all", action="store_true",

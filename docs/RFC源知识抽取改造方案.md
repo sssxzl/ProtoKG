@@ -943,7 +943,7 @@ def reflow_rules(rules: list[SemanticRule],
 # 只扫描 ```python 代码块（正文与表格里的「引用旧字段名」说明不算残留）
 python - <<'PY'
 import re, pathlib
-src = pathlib.Path("docs/rfc_source_reform_plan.md").read_text(encoding="utf-8")
+src = pathlib.Path("docs/RFC源知识抽取改造方案.md").read_text(encoding="utf-8")
 blocks = re.findall(r"```python\n(.*?)```", src, re.S)
 code = "\n".join(blocks)
 old = ["r.confidence", "r.constraint_kind", "r.constraint_text", "r.expectation_class",

@@ -29,7 +29,7 @@ OUT_DIR = ROOT / "local" / "annotation_workpack"
 PROTOCOL_LABEL = {"rtsp": "RTSP（RFC 2326）", "sip": "SIP（RFC 3261）",
                   "smtp": "SMTP（RFC 5321/5322）"}
 
-#: 判定选项（与 ``docs/annotation_guide.md`` §2~§5 一致）。
+#: 判定选项（与 ``docs/人工标注指南.md`` §2~§5 一致）。
 OPTIONS = {
     "has_normative_requirement": "是 / 否（这条候选句本身是否含规范性约束）",
     "modality": "MUST / SHOULD / MAY / 无",
@@ -82,12 +82,12 @@ def main() -> int:
     md: list[str] = []
     md.append("# M2 人工标注工作包（117 条待标）\n")
     md.append("> 生成脚本：`scripts/gen_annotation_workpack.py`（可重复运行，内容确定）\n")
-    md.append("> 标注规范：**`docs/annotation_guide.md`**（判定标准、边界规则、正反例）\n")
+    md.append("> 标注规范：**`docs/人工标注指南.md`**（判定标准、边界规则、正反例）\n")
     md.append("> ⚠️ **标注前请完整读一遍指南**，尤其 §2.3 / §3.3 / §4.3 / §5.4 的边界规则。\n")
     md.append("\n---\n")
     md.append("\n## 一、怎么用这份工作包\n")
     md.append("\n### 1.1 标注流程\n")
-    md.append("\n1. 读 `docs/annotation_guide.md`（判定标准 + 边界规则）。\n")
+    md.append("\n1. 读 `docs/人工标注指南.md`（判定标准 + 边界规则）。\n")
     md.append("2. 打开 `待标注模板.json`，逐条填写 4 个判定字段（见 §1.2）。\n")
     md.append("3. 填完后回填到 `derived/exp_semantic/truth/<协议>.{annotated,holdout}.json`：\n")
     md.append("   保持条目顺序与 `candidate_id` 不变，把 `pending` 改为 `false`、"
@@ -160,7 +160,7 @@ def main() -> int:
         split = "holdout" if "holdout" in t["_src_file"] else "train"
         prog.append(f"| {idx} | `{t['candidate_id']}` | {t['protocol']} | {split} "
                     f"| ☐ | | |")
-    prog.append(f"\n**合计 {idx} 条**（已标 3 条沿用旧轮，见 `docs/annotation_status.md` §0.3）\n")
+    prog.append(f"\n**合计 {idx} 条**（已标 3 条沿用旧轮，见 `docs/人工标注现状.md` §0.3）\n")
     (OUT_DIR / "标注进度表.md").write_text("\n".join(prog), encoding="utf-8")
 
     # ── 汇总 ────────────────────────────────────────────────────────

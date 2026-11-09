@@ -1,7 +1,7 @@
 # 里程碑 A 实施报告 —— rfc 源知识抽取改造
 
 > 完成时间：2026-10-31
-> 依据：`docs/rfc_source_reform_plan.md` v3（§0.0 v3 修订说明 + 附录追溯表）
+> 依据：`docs/RFC源知识抽取改造方案.md` v3（§0.0 v3 修订说明 + 附录追溯表）
 > 范围：A0.1 ~ A0.6 + A1.1 ~ A1.7（评审建议的「里程碑 A 编码范围锁定」）
 
 ---
@@ -265,7 +265,7 @@ DNS 的字段（QNAME/QTYPE/QCLASS/RDLENGTH）是**表格 + ABNF 形态**，需 
 ### 9.6 契约文档同步
 - `fused_hub/README.md`：入口改为单协议单源写法
 - `scripts/gen_docs.py`、`scripts/seedgen.py` 的提示文案同步
-- 新增 `docs/single_protocol_single_source.md` 作为契约的独立说明
+- 新增 `docs/单协议单源契约.md` 作为契约的独立说明
 
 ---
 
