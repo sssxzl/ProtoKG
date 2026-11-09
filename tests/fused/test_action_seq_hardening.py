@@ -4,7 +4,7 @@
 覆盖 QA 独立验证（批次 1 首轮实现）查出的两个安全相关缺陷：
 
   · **P0-1 纵深防御**：变异写入的端点必须在**合法端点集合**内
-    （与 ``scripts/corpus_gate.py`` 的 G1 **共用同一份实现**）
+    （与 **合法端点闸**的 G1 **共用同一份实现**）
   · **P1-1（安全）**：``value`` 含 CR/LF/NUL 等控制字符 ⇒ 拒绝
     （否则头值里会凭空多出一个头 ⇒ **协议/头注入**）
   · **P0-1 根因**：端点归一化必须覆盖**头部里嵌的 URI**
@@ -69,16 +69,10 @@ def _profile(proto: str = "rtsp") -> dict:
 class TestEndpointAllowlist:
     """★ P0-1：变异写入的端点必须在**合法端点集合**内。"""
 
-    def test_whitelist_is_shared_with_corpus_gate(self):
-        """★ 白名单判据**必须与 corpus_gate 的 G1 共用同一份实现**（口径不得漂移）。"""
+    def test_whitelist_is_shared_with_target_env(self):
+        """★ 白名单判据**必须与 target_env 共用同一份实现**（口径不得漂移）。"""
         from core.fused.downstream import action_seq, target_env
         assert action_seq._allowed_endpoints is target_env.allowed_endpoints
-
-    def test_corpus_gate_reexports_the_same_function(self):
-        """★ `scripts/corpus_gate.py` 必须**转出同一份**（既有调用方不改）。"""
-        from scripts.corpus_gate import allowed_endpoints as cg_fn
-        from core.fused.downstream.target_env import allowed_endpoints as te_fn
-        assert cg_fn is te_fn
 
     def test_foreign_endpoint_is_rejected(self):
         """外网端点 ⇒ 拒绝，并记 `endpoint_not_allowed`。"""
@@ -217,7 +211,7 @@ class TestActionSeqPostProcessing:
     def test_action_seq_seeds_are_rewritten_by_seedgen(self):
         """★ 端到端：⑤ 层种子的 Via/Contact 必须被改写到客户端监听地址。
 
-        判据用 ``corpus_gate`` 的**同一份** G1 判据（``extract_endpoints`` +
+        判据用 **合法端点闸** 的**同一份** G1 判据（``extract_endpoints`` +
         ``allowed_endpoints``）⇒ 不用另写一套「看起来一样」的判据。
         """
         import scripts.seedgen as seedgen_mod

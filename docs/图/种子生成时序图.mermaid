@@ -6,7 +6,6 @@ sequenceDiagram
     participant SL as selector.py
     participant RM as rag_seedgen.py
     participant MF as seed_manifest.py
-    participant BC as rq3_build_corpus.py
     participant OR as scripts/_batch_oracle.py
     participant VM as VM 192.168.37.130
     participant PF as rq3_preflight.sh（已清理）
@@ -50,7 +49,6 @@ sequenceDiagram
 
     Note over PM,DX: 阶段二 · 语料组装 + 干跑校验
 
-    PM->>BC: python scripts/rq3_build_corpus.py
     BC->>SG: 对 A/B/C/D 各跑一次
     SG-->>BC: 4 组 seeds + manifest + 字典
     BC->>BC: 断言 A1–A10（A⊂B 前缀 / B≡C≡D 集合 / C≡RQ1.2 / 前60唯一 / MD5 唯一）

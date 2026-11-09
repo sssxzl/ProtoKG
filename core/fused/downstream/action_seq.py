@@ -83,7 +83,7 @@ REJECT_MALFORMED_ACTION = "malformed_action"
 #:   （``X-Evil: pwned``）或消息**提前截断** ⇒ 这是**协议/头注入**风险。
 REJECT_VALUE_HAS_CONTROL_CHARS = "value_has_control_chars"
 #: ★ P0-1 纵深防御：``url`` 字段的端点不在**合法端点集合**内 ⇒ 拒绝。
-#:   合法端点集合与 ``scripts/corpus_gate.py`` 的 G1 **共用同一份实现**
+#:   合法端点集合与 **合法端点闸**的 G1 **共用同一份实现**
 #:   （``core.fused.downstream.target_env.allowed_endpoints``）。
 REJECT_ENDPOINT_NOT_ALLOWED = "endpoint_not_allowed"
 #: ★ R-2：``value`` 是**空串** ⇒ 拒绝。
@@ -333,7 +333,7 @@ class ActionOpSpec:
 def _allowed_endpoint_set(profile: Optional[dict]) -> Optional[set[str]]:
     """该协议的**合法端点集合**（``host:port``）；无 profile ⇒ ``None``（不启用校验）。
 
-    ★ 与 ``scripts/corpus_gate.py`` 的 G1 **共用同一份实现**
+    ★ 与 **合法端点闸**的 G1 **共用同一份实现**
       （``core.fused.downstream.target_env.allowed_endpoints``）⇒ 口径不会漂移。
     ★ 返回 ``None``（而非空集）表示「**未启用**端点校验」—— 与「启用了但集合为空」
       语义不同（后者意味着该协议没有端点概念，如 SMTP）。
@@ -366,7 +366,7 @@ def _has_control_chars(value: Any) -> bool:
 def _endpoint_of_value(value: Any) -> str:
     """从 URL 值里取出 ``host:port``（无则空串）。
 
-    与 ``corpus_gate.allowed_endpoints`` 的**口径一致**：剥 ``user@``、去 ``<>``。
+    与 ``action_seq.allowed_endpoints`` 的**口径一致**：剥 ``user@``、去 ``<>``。
     """
     if not isinstance(value, str) or not value:
         return ""
@@ -515,7 +515,7 @@ def _reject_reason(action: Action, message: Optional[SeedMessage],
             if name.lower() in reqs:
                 return REJECT_HEADER_IS_REQUIRED
     # ★ P0-1 纵深防御：``url`` 字段的端点必须在**合法端点集合**内。
-    #   合法端点集合与 ``corpus_gate`` 的 G1 **共用一份实现**
+    #   合法端点集合与 **合法端点闸** 的 G1 **共用一份实现**
     #   （``core.fused.downstream.target_env.allowed_endpoints``）⇒ 口径不会漂移。
     if allowed_endpoints is not None:
         kind, _name = normalize_field_path(getattr(action, "field_path", ""))

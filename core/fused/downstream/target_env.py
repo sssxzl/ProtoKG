@@ -35,7 +35,7 @@
         （SIP URI 必须**逐字节不变**）。
     ★ 注意「**改写**」与「**检测**」是两件事：SIP 的 traffic 源确实含外来主机
       （`sip:213.192.59.75`），需要被**检出**——但检出属于语料准入闸门
-      （`scripts/corpus_gate.py`）的职责，**不在本模块**（本模块只管改写）。
+      （**发布准入闸**）的职责，**不在本模块**（本模块只管改写）。
 
 设计原则（与本仓既有风格一致）
 ------------------------------
@@ -374,7 +374,7 @@ def _split_url(url: str) -> tuple[str, str, str]:
     """把 URL 拆成 `(scheme, host:port, path)`（不含 query / fragment）。
 
     ★ 兼容入口：`_split_url_parts` 的三元组视图，供只需要
-    scheme/netloc/path 的调用方使用（如 `scripts/corpus_gate.py`）。
+    scheme/netloc/path 的调用方使用（如**发布准入闸**）。
     """
     scheme, netloc, path, _query, _fragment = _split_url_parts(url)
     return scheme, netloc, path

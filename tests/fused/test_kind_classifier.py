@@ -165,25 +165,4 @@ def test_l4_fallback_uses_config():
 # ④ 端到端：两通道的对照结论（护栏）
 # ===========================================================================
 
-def test_e1_experiment_script_exists():
-    """★ E-1 对照实验脚本在位（批次 2 / S2 的交付物）。"""
-    from pathlib import Path
-    p = Path(__file__).resolve().parents[2] / "scripts" / "exp_kind_channel.py"
-    assert p.is_file(), p
 
-
-def test_known_methods_cover_dhcp_server_messages():
-    """★ 真值集必须包含 DHCP 的**服务器方向**消息（RFC 2131 §3.1 表 2）。
-
-    ★ 踩过的坑：真值集只列了客户端 5 个 ⇒ 把 content 通道正确抽出的
-      ``DHCPOFFER``/``DHCPACK``/``DHCPNAK`` 误判成「误抽」。
-    """
-    import importlib.util
-    from pathlib import Path
-    p = Path(__file__).resolve().parents[2] / "scripts" / "exp_kind_channel.py"
-    spec = importlib.util.spec_from_file_location("exp_kind_channel", p)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    km = mod.KNOWN_METHODS["dhcpv4"]
-    for want in ("DHCPOFFER", "DHCPACK", "DHCPNAK"):
-        assert want in km, (want, sorted(km))

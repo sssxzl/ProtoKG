@@ -5,7 +5,7 @@
 
 ## 设计原则
 
-1. **协议级隔离,跨实验共享** — `kb/<协议>/<源>/` 在所有 fuzzing 实验间共享（源维度 5 档：`spec` / `协议实现源码` / `数据流量` / `历史漏洞` / `expert_note`）
+1. **协议级隔离,跨协议共享** — `kb/<协议>/<源>/` 在各协议间共享（源维度 5 档：`spec` / `协议实现源码` / `数据流量` / `历史漏洞` / `expert_note`）
 2. **协议无关主程序 + per-protocol Profile** — 协议特定配置集中在 `fused_hub/targets/<协议>/profile.json`（`allowed_methods` / `transport` / `message_schema`），主程序 `core/fused/` 不含协议分支
 3. **五源解耦 + 三层检索** — 五源（spec / 协议实现源码 / 数据流量 / 历史漏洞 / expert_note）各自抽取为独立 v2 Fact，下游按 ①结构覆盖 ②通用危险 ③漏洞导向边界探针 三层组织语料
 4. **fail-closed 校验** — LLM 写出的种子必须通过 `core/fused/validation.py` 七级校验，未注册引用（subject.type / aspect / epistemic_type）直接硬错误
@@ -58,25 +58,27 @@ rag-chatafl/
 │           ├── resolver.py           # claim 冲突消解
 │           ├── source_availability.py / source_retrieval.py
 │           └── seed_manifest.py / strategy.py / target_env.py
-├── scripts/                   # 构建与分析脚本
-│   ├── build_hub.py           # v2 中枢构建入口
-│   ├── seedgen.py             # 种子生成 CLI（--focus-group / --focused / --max-seeds）
-│   ├── seed_oracle_filter.py  # SIP 响应码 oracle 过滤
-│   └── rq4_*.py|rq4_*.sh      # 三协议对照实验的编排 / 采集 / 分析
+├── scripts/                   # 构建脚本（模型链路）
+│   ├── build_hub.py           # 中枢构建入口
+│   ├── build_graph.py         # GraphRAG 整理层构建入口
+│   ├── seedgen.py             # 种子生成 CLI
+│   ├── run_pipeline.py        # ★ 统一入口：识别协议 → 建模 → 出种子
+│   └── seed_oracle_filter.py  # SIP 响应码 oracle 过滤
 ├── kb/<协议>/<源>/             # 五源知识库（read-only）
 │   └── spec/协议实现源码/数据流量/历史漏洞/expert_note
-├── fused_hub/                 # 中枢文档与配置
-│   ├── schema/                # 3 个注册表 JSON
-│   ├── docs/                  # 4 份设计文档
-│   └── targets/<协议>/        # 4 协议 profile.json + 字典
-├── derived/                   # 派生数据
-│   ├── per_source/<协议>/<源>/facts/<源>.jsonl   # v2 单源事实
-│   ├── fused/                 # v1 遗留融合产物
-│   ├── seeds/                 # 生成的种子
-│   ├── source_blocks/         # 检索缓存 + source 状态机缓存
-│   └── rq4/                   # RQ4 实验的分析产物
-├── tests/                     # 44 个测试文件，全量 560 passed
-└── local/                     # 临时调试脚本与实验记录
+├── fused_hub/                 # 中枢文档与配置（**人工资产**，进 git）
+│   ├── schema/                # 5 个契约 JSON（知识分类/属性/图/实体/判据）
+│   ├── docs/                  # 融合中枢规范与设计
+│   └── targets/<协议>/        # 4 协议 profile.json + rfc_config + skeleton + 字典
+├── derived/                   # 派生数据（**可重建**，不进 git）
+│   └── model/                 # ★ 模型链路产物
+│       ├── per_source/<协议>/<源>/facts/   # 各源中间产物
+│       ├── hub/               # ★ 结构化知识中枢（按知识分类 A~F + 索引）
+│       ├── graph/             # ★ GraphRAG 整理层（实体图 + 社区）
+│       └── seeds/<协议>/      # 生成的种子
+├── tools/qa/                  # 护栏（编码卫生 / 期望集比对 / 分布校验）
+├── tests/                     # 全量测试
+└── docs/                      # 文档（设计/实施/工具/图）
 ```
 
 ## 协议无关架构
