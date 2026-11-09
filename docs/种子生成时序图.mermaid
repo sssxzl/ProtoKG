@@ -7,9 +7,9 @@ sequenceDiagram
     participant RM as rag_seedgen.py
     participant MF as seed_manifest.py
     participant BC as rq3_build_corpus.py
-    participant OR as _batch_oracle.py
+    participant OR as scripts/_batch_oracle.py
     participant VM as VM 192.168.37.130
-    participant PF as rq3_preflight.sh
+    participant PF as rq3_preflight.sh（已清理）
     participant OC as rq3_orchestrate.sh
     participant DK as Docker(afl-fuzz)
     participant CL as rq3_collect_live555.sh
