@@ -258,6 +258,20 @@ def iter_source_fact_files(protocol: str, source: str) -> list[Path]:
     return buckets if buckets else all_jsonl
 
 
+def iter_source_fact_files_in(source_dir: Path) -> list[Path]:
+    """列出**某源目录**下的事实文件（不依赖 protocol ⇒ 便于克隆布局等场景）。
+
+    ★ 与 :func:`iter_source_fact_files` 同语义，但直接给源目录。
+    """
+    facts_dir = Path(source_dir) / "facts"
+    if not facts_dir.is_dir():
+        return []
+    source = Path(source_dir).name
+    all_jsonl = sorted(facts_dir.glob("*.jsonl"))
+    buckets = [f for f in all_jsonl if f.stem != source]
+    return buckets if buckets else all_jsonl
+
+
 def per_source_aspect_facts_dir(protocol: str) -> Path:
     """★ **中枢本体**的 fact 目录（按知识分类落盘的**过渡布局**）。
 
