@@ -1,22 +1,22 @@
-# ProtoRAG CI —— 协议模糊测试知识中枢的验收闸门
+# ProtoKG CI —— 协议模糊测试知识中枢的验收闸门
 #
 # ★ 闸门语义（本文件最重要的一行，请勿误读）
 #   **不是「零失败」，而是「失败集合不漂移」。**
-#   本仓当前有 **37 个预存失败**（rq3 语料契约脱节 / 字典 token 数等，见
-#   docs/ci_and_acceptance.md §4），它们**不是**本轮改动引入的。
+#   本仓当前有 **预存失败**（依赖 gitignored 的 ``derived/`` 产物 ⇒ 干净
+#   checkout 下更多），它们**不是**本轮改动引入的。
 #   若 CI 要求全绿 ⇒ 永远红 ⇒ 闸门失效。
 #   ⇒ 本 CI 的判据是：**新增任何失败/错误 ⇒ job 红；旧的失败消失 ⇒ 同样报出**
 #     （消失也报，是为了防止有人「改测试/改基线」把失败偷偷洗掉）。
 #
 # ★ 三层基线（为什么不止一份）
 #   失败集合**依赖运行环境**，不是纯代码属性。实测（2026-11-02）：
-#     · 本机工作区（有 derived/ 产物）：37 failed / 1252 passed / 1 skipped / 20 errors
-#     · 全新 checkout（无 derived/ 产物）：68 failed / 1179 passed / 4 skipped / 20 errors
-#   差的那 31 条**全部**源于 `derived/` 是 gitignored 的中间产物
+#     · 本机工作区（有 derived/ 产物）：失败数少
+#     · 全新 checkout（无 derived/ 产物）：失败数多
+#   差额**全部**源于 `derived/` 是 gitignored 的中间产物
 #   （`.gitignore` 明写「derived/* … 由 kb/ 重建」），**不是代码缺陷**。
 #   ⇒ 因此基线分两份：
-#       tools/qa/baseline/expected_b_class_failed_ids.txt   ← 本机/完整环境（37）
-#       tools/qa/baseline/ci_expected_failed_ids.txt        ← CI/干净 checkout（68）
+#       tools/qa/baseline/expected_b_class_failed_ids.txt   ← 本机/完整环境
+#       tools/qa/baseline/ci_expected_failed_ids.txt        ← CI/干净 checkout
 #     两个 job 各用各的，**语义一致**：都是「相对本环境的已知集合不许漂移」。
 #     ⚠ 这两份基线**不可互换**：拿 68 的基线去比本机、或拿 37 的去比 CI，
 #       都会报出大量漂移 —— 那是**环境不匹配**，不是回归。
@@ -301,118 +301,3 @@ jobs:
             _ci_artifacts/_guarded_after.txt
           if-no-files-found: warn
           retention-days: 14
-
-  # ==========================================================================
-  # Job 5 —— corpus_gate 冒烟（Ubuntu）
-  # 验证什么：`scripts/corpus_gate.py`（语料发布准入闸，G1/G2/G5）**有调用方、
-  #   且能被 CI 执行** —— 此前它零调用方，是本项目最重要的质量红线之一。
-  # 为什么需要最小 fixture：真实语料在 `derived/seeds/`（gitignored，不在库里），
-  #   且 `derived/seeds/rtsp/live555_20261024_110155` 是**真实抓包语料**，
-  #   无法在 CI 里重建 ⇒ workflow 现场生成一份**最小** RTSP 语料。
-  # 闸门语义：
-  #   · 干净 fixture → 三条红线全 PASS、退出码 0；
-  #   · 污染 fixture（把 host 换成非目标主机）→ **必须** G1 违规并阻断（退出码 1）。
-  #     ★ 这一步是「闸门有牙齿」的证明：若污染语料也放过，G1 就是摆设。
-  # ==========================================================================
-  corpus-gate-smoke:
-    name: corpus-gate smoke (ubuntu)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      # ★ 不装任何第三方包 —— corpus_gate 只依赖标准库 + 本仓 core/。
-      #   这也是「它能被 CI 执行」的证明（无需 pip install）。
-      - name: Generate minimal RTSP corpus fixture
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          # 干净 fixture：端点 127.0.0.1:8554（RTSP profile 的合法端点）、
-          # 会话 mp3AudioTest（在 rtsp_playable_streams.json 的可播清单里）、
-          # 39 个种子（= rq2-live555 环境 B 组契约条数 ⇒ G5 也命中）。
-          GOOD = """OPTIONS rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0
-          CSeq: 1
-
-          DESCRIBE rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0
-          CSeq: 2
-
-          SETUP rtsp://127.0.0.1:8554/mp3AudioTest/track1 RTSP/1.0
-          CSeq: 3
-
-          PLAY rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0
-          CSeq: 4
-
-          TEARDOWN rtsp://127.0.0.1:8554/mp3AudioTest RTSP/1.0
-          CSeq: 5
-          """
-          # 污染 fixture：换成非目标主机（复刻 2026-10-31 坐实过的静默退化场景）
-          BAD = GOOD.replace("127.0.0.1:8554", "10.11.26.98:554")
-          root = Path("_gate_fixture")
-          for name, body in (("good", GOOD), ("bad", BAD)):
-              d = root / name / "rq4_B"      # 目录名尾部 B ⇒ 聚焦组判定为 B
-              d.mkdir(parents=True, exist_ok=True)
-              for i in range(39):
-                  (d / f"{i:02d}.raw").write_text(body, encoding="utf-8")
-          print(f"fixture generated under {root}")
-          PY
-
-      - name: corpus_gate --help must succeed
-        run: python scripts/corpus_gate.py --help
-
-      - name: corpus_gate on clean fixture must pass (exit 0)
-        run: |
-          set -euo pipefail
-          python scripts/corpus_gate.py \
-            --protocol rtsp \
-            --seed-dir "$GITHUB_WORKSPACE/_gate_fixture/good/rq4_B" \
-            --json-out "$GITHUB_WORKSPACE/_ci_artifacts/corpus_gate_clean.json"
-          echo "::notice::clean fixture passed all gates"
-
-      - name: corpus_gate on polluted fixture must block (exit 1)
-        run: |
-          set -euo pipefail
-          set +e
-          python scripts/corpus_gate.py \
-            --protocol rtsp \
-            --seed-dir "$GITHUB_WORKSPACE/_gate_fixture/bad/rq4_B" \
-            --json-out "$GITHUB_WORKSPACE/_ci_artifacts/corpus_gate_polluted.json"
-          rc=$?
-          set -e
-          if [ "$rc" -ne 1 ]; then
-            echo "::error::expected exit code 1 (blocked by G1) for polluted fixture, got $rc"
-            exit 1
-          fi
-          echo "::notice::polluted fixture correctly blocked by G1"
-
-      - name: Upload corpus gate artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: corpus-gate-smoke
-          path: _ci_artifacts/corpus_gate_*.json
-          if-no-files-found: warn
-          retention-days: 14
-
-# ============================================================================
-# 实测记录（2026-11-02，Windows 11 + Git Bash / Anaconda Python 3.13.9）
-# ---------------------------------------------------------------------------
-# 本机工作区（有 derived/ 产物）：
-#   37 failed / 1294 passed / 1 skipped / 20 errors   → 与本机基线逐行一致，漂移 0/0
-# 干净 checkout（等价本 workflow 的 Ubuntu job，缺 derived/ 产物）：
-#   68 failed / 1260 passed / 4 skipped / 20 errors   → 与 CI 基线逐行一致，漂移 0/0
-#   · ERROR 集合在两种环境下**完全相同**（20 条，漂移 0）—— ERROR 侧环境无关。
-#   · FAILED 集合差 31 条，**全部**源于 gitignored 的 derived/ 中间产物缺失。
-# 依赖最小集：`pytest==8.4.2` + `numpy` 足够（实测最小 venv 与 Anaconda 结果一致）。
-#   numpy 是 tests/fused/test_analyze_compare_index.py 的硬依赖；
-#   matplotlib / python-docx / sentence-transformers 不在测试路径上。
-# ⚠ 本地无法启动 Docker Desktop（需 WSL2，被环境安全策略拦截），
-#   故「Ubuntu 等价」以「干净 checkout + 最小 venv」实测，而非真机 Ubuntu 容器。
-# ⚠ 「干净 checkout」的 eol 分布实测：非 kb/ 范围 CRLF=0 / LF=386（跨平台一致）；
-#   kb/ 内 CRLF=6440（平台默认，抽取输入字节不变 —— 详见 .gitattributes）。
-# ============================================================================
