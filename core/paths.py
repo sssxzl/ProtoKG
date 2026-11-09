@@ -53,12 +53,12 @@ def kb_source_dir(protocol: str, source: str) -> Path:
 
 #: ★★ 模型链路各阶段的产物目录（**在 derived/ 顶层并列**）
 #:   per_source（抽取）/ hub（中枢）/ graph（知识图）/ seeds（生成）
-#:   + 中间产物：spec / source / vuln / vuln_pattern_vectors / lane_a / source_blocks
+#:   + 缓存：cache/{source_blocks, vuln_pattern_vectors}
 #: ★ **只有一个维度**（流水线阶段）⇒ 目录结构 = 数据流结构
 #: ★ 论文实验产物另置 ``derived/experiments/``（与模型产物分开）
 MODEL_STAGE_DIRS = (
     "per_source", "hub", "graph", "seeds",
-    "spec", "source", "vuln", "vuln_pattern_vectors", "lane_a", "source_blocks",
+    "per_source", "hub", "graph", "seeds", "cache",
 )
 
 #: ★★ 论文实验产物的根（derived/experiments/）
@@ -83,14 +83,21 @@ def derived_root() -> Path:
     return PROJECT_ROOT / "derived"
 
 
+
+
 def norms_path(protocol: str) -> Path:
-    """v1 norms 产物 derived/spec/<protocol>/norms/norms.jsonl（rfc/traffic 源）。"""
+    """规范抽取的 norms 中间产物（**历史路径**，现各源已不走 norms）。
+
+    ★ 仍被 ``build_hub`` 用于「闸门检查（提示 norms 不存在）」与
+      ``test_build_hub_gate_order`` 的 monkeypatch ⇒ 保留函数，
+      但**目录已随旧布局清理而删除**（无源再产出 norms）。
+    """
     return model_root() / "spec" / protocol.lower() / "norms" / "norms.jsonl"
 
 
 def source_blocks_cache(protocol: str) -> Path:
-    """source 源检索缓存 derived/source_blocks/<protocol>.json。"""
-    return model_root() / "source_blocks" / f"{protocol.lower()}.json"
+    """source 源检索缓存 derived/cache/source_blocks/<protocol>.json。"""
+    return model_root() / "cache" / "source_blocks" / f"{protocol.lower()}.json"
 
 
 #: ★★ 中枢根目录（2026-11-08 中枢重设计）
@@ -232,6 +239,23 @@ def per_source_facts_dir(protocol: str, source: str) -> Path:
     ★ 中枢重设计后**位置不变**（它本来就是「各源」的东西）。
     """
     return per_source_root(protocol) / source / "facts"
+
+
+def iter_source_fact_files(protocol: str, source: str) -> list[Path]:
+    """列出某源的事实文件（**阶段 D1 方案②**：按 aspect 分桶）。
+
+    ★ 新布局：``per_source/<协议>/<源>/facts/<aspect>.jsonl``（每 aspect 一文件）
+    ★ 旧布局：``per_source/<协议>/<源>/facts/<源>.jsonl``（源级合并）
+
+    ⇒ 若存在**分桶文件**，就**只读分桶文件**（避免与源级合并文件**重复读**）；
+      否则回退读源级合并文件（兼容旧产物）。
+    """
+    d = per_source_facts_dir(protocol, source)
+    if not d.is_dir():
+        return []
+    all_jsonl = sorted(d.glob("*.jsonl"))
+    buckets = [f for f in all_jsonl if f.stem != source]
+    return buckets if buckets else all_jsonl
 
 
 def per_source_aspect_facts_dir(protocol: str) -> Path:

@@ -88,7 +88,8 @@ def _clone_layout(src_root: Path, dst_root: Path) -> None:
             continue
         out = dst_root / src_dir.name / "facts"
         out.mkdir(parents=True, exist_ok=True)
-        for jsonl in sorted(facts_dir.glob("*.jsonl")):
+        # ★ D1 方案②：按 aspect 分桶 ⇒ 用 helper（避免重复读）
+        for jsonl in paths.iter_source_fact_files(protocol, facts_dir.parent.name):
             shutil.copy2(jsonl, out / jsonl.name)
 
 

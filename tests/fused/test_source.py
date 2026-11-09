@@ -52,17 +52,3 @@ def test_source_empty_content_returns_empty():
     assert source_norm_to_facts(dict(SOURCE_NORM, content="")) == []
     assert source_norm_to_facts(dict(SOURCE_NORM, name="")) == []
 
-
-def test_all_real_source_norms_pass_fail_closed():
-    norms_path = Path("derived") / "spec" / "rtsp" / "norms" / "norms.jsonl"
-    norms = [json.loads(l) for l in norms_path.read_text(encoding="utf-8").splitlines()
-             if l.strip()]
-    src_norms = [n for n in norms if n.get("kb_source_type") == "source"]
-    assert len(src_norms) == 10
-    registry = load_registry()
-    total = 0
-    for n in src_norms:
-        for f in source_norm_to_facts(n):
-            validate_fact(f, registry)
-            total += 1
-    assert total == 10

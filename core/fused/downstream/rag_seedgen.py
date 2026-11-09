@@ -199,7 +199,12 @@ def load_fact_views(protocol: str = "rtsp",
     #   ⇒ 中枢共用一套后，各源目录仍在 ``per_source/<协议>/<源>/facts/``
     #   ⇒ 降级时用 ``per_source_root``（不是 hub_root）。
     _src_root = paths.per_source_root(protocol)
-    for jsonl in sorted(_src_root.glob("*/facts/*.jsonl")):
+    # ★ D1 方案②：按 aspect 分桶 ⇒ 用 helper（**避免与源级合并文件重复读**）
+    _src_files: list[Path] = []
+    for _sd in sorted(_src_root.iterdir()) if _src_root.is_dir() else []:
+        if _sd.is_dir():
+            _src_files.extend(paths.iter_source_fact_files(protocol, _sd.name))
+    for jsonl in _src_files:
         for line in jsonl.read_text(encoding="utf-8").splitlines():
             line = line.strip()
             if not line:

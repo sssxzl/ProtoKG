@@ -922,7 +922,8 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
             facts_dir = src_dir / "facts"
             if not facts_dir.is_dir():
                 continue
-            for jsonl in sorted(facts_dir.glob("*.jsonl")):
+            # ★ D1 方案②：按 aspect 分桶 ⇒ 用 helper（避免与源级合并文件重复读）
+            for jsonl in paths.iter_source_fact_files(protocol, src_dir.name):
                 for line in jsonl.read_text(encoding="utf-8").splitlines():
                     line = line.strip()
                     if not line:
@@ -1262,7 +1263,6 @@ def _write_and_validate(source: str, facts, registry, protocol: str = "rtsp",
     """
     dest_dir = paths.per_source_facts_dir(protocol, source)
     dest_dir.mkdir(parents=True, exist_ok=True)
-    dest = dest_dir / f"{source}.jsonl"
 
     # 1. 内存 fail-closed
     failed_mem = 0
@@ -1273,27 +1273,62 @@ def _write_and_validate(source: str, facts, registry, protocol: str = "rtsp",
             failed_mem += 1
             print(f"    [fail-closed] {f.fact_id}: {exc}")
 
-    # 2. 落盘（先写快照，再原子切换）
+    # 2. ★★ 阶段 D1（方案②）：**按 aspect 分桶落盘**
+    #    旧：一个源一个文件（``<源>.jsonl``）⇒ 改一个 aspect 要重写整文件
+    #    新：``<源>/facts/<aspect>.jsonl`` ⇒ **单 aspect 可增量重建**
+    #    （rfc 抽最贵 ⇒ 增量价值最大）
+    #    ★ 读端本来就是 ``facts_dir.glob("*.jsonl")`` ⇒ **天然兼容**
     views = [get_fact_view(f) for f in facts]
-    lines = [json.dumps(v, ensure_ascii=False) + "\n" for v in views]
+    _buckets: dict[str, list[str]] = {}
+    for v in views:
+        _asp = str(((v.get("fact_key") or {}).get("aspect")) or "") or "_unknown"
+        _buckets.setdefault(_asp, []).append(json.dumps(v, ensure_ascii=False) + "\n")
+    lines = [ln + "\n" for ln in
+             [json.dumps(v, ensure_ascii=False) for v in views]]
 
+    # 3. 落盘（每个 aspect 一个文件；先写快照，再原子切换）
+    dest = dest_dir / f"{source}.jsonl"      # 兼容旧读端（合并视图）
+    snap_dir = dest_dir / "snapshots" / (build_id or "_nobuild")
     if build_id:
-        snap_dir = dest_dir / "snapshots" / build_id
         snap_dir.mkdir(parents=True, exist_ok=True)
-        snap_file = snap_dir / f"{source}.jsonl"
-        with snap_file.open("w", encoding="utf-8") as fh:
+    written: list[Path] = []
+    for _asp, _rows in sorted(_buckets.items()):
+        _dest = dest_dir / f"{_asp}.jsonl"
+        if build_id:
+            _snap = snap_dir / f"{_asp}.jsonl"
+            with _snap.open("w", encoding="utf-8") as fh:
+                fh.writelines(_rows)
+            # ★ 复制（不是搬移）→ 快照内容留存，历史版本可回滚；
+            #   正式路径走「临时文件 + os.replace」保证原子切换。
+            _tmp = dest_dir / f".{_asp}.jsonl.tmp"
+            shutil.copy2(_snap, _tmp)
+            os.replace(_tmp, _dest)
+        else:
+            with _dest.open("w", encoding="utf-8") as fh:
+                fh.writelines(_rows)
+        written.append(_dest)
+
+    # 3b. 兼容：**源级合并文件**（旧读端/旧产物仍可读）
+    if build_id:
+        _snap = snap_dir / f"{source}.jsonl"
+        with _snap.open("w", encoding="utf-8") as fh:
             fh.writelines(lines)
-        # ★ 复制（不是搬移）→ 快照内容留存，历史版本可回滚；
-        #   正式路径仍走「临时文件 + os.replace」保证原子切换。
-        tmp_file = dest_dir / f".{source}.jsonl.tmp"
-        shutil.copy2(snap_file, tmp_file)
-        os.replace(tmp_file, dest)
+        _tmp = dest_dir / f".{source}.jsonl.tmp"
+        shutil.copy2(_snap, _tmp)
+        os.replace(_tmp, dest)
         # 记录本次 build_id（供回溯/回滚）
         (dest_dir / "current_build_id.txt").write_text(
             build_id + "\n", encoding="utf-8")
     else:
         with dest.open("w", encoding="utf-8") as fh:
             fh.writelines(lines)
+
+    # 4. ★ 索引：aspect → 条数（读端可秒判，不必全量扫）
+    _idx = {a: len(rows) for a, rows in sorted(_buckets.items())}
+    (dest_dir / "_index.json").write_text(
+        json.dumps({"source": source, "protocol": protocol,
+                    "build_id": build_id or "", "aspects": _idx},
+                   ensure_ascii=False, indent=2), encoding="utf-8")
 
     return failed_mem, dest
 

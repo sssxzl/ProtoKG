@@ -61,7 +61,7 @@ def _load_patterns(protocol: str) -> list[dict]:
 
 
 def _cache_path(protocol: str) -> Path:
-    return paths.model_root() / "vuln_pattern_vectors" / f"{protocol}.json"
+    return paths.model_root() / "cache" / "vuln_pattern_vectors" / f"{protocol}.json"
 
 
 def build_vuln_pattern_vectors(protocol: str, use_cache: bool = True):
