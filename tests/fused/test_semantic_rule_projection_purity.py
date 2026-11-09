@@ -29,6 +29,7 @@ from __future__ import annotations
 import pytest
 
 from core.fused.downstream import rag_seedgen as RS
+from core.fused import hub_view as _hub_view
 
 
 def mk_rule(field: str, operator: str, expected_behavior: str = "",
@@ -86,7 +87,7 @@ def test_absent_rejected_generically(field):
 
 def test_absent_rejection_can_be_switched_off(monkeypatch):
     """回退开关有效：关掉后 `absent` 会照旧投影（供将来抽取器修好后放开）。"""
-    monkeypatch.setattr(RS, "_REJECT_ABSENT_OPERATOR", False)
+    monkeypatch.setattr(_hub_view, "_REJECT_ABSENT_OPERATOR", False)
     out = RS._project_rule(mk_rule("X-Test", "absent"))
     assert out is not None
     key, lb, _re = out

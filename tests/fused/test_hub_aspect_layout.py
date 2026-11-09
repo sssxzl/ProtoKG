@@ -230,7 +230,10 @@ def test_legacy_and_aspect_layout_produce_identical_bundle(hub):
 
     legacy_bundle = rag_seedgen.assemble_bundle(list(legacy_views), PROTOCOL)
     new_bundle = rag_seedgen.assemble_bundle(list(new_views), PROTOCOL)
-    assert _dump(new_bundle) == _dump(legacy_bundle)
+    # ★ 阶段 C2/D1 给 fact / bundle **新增**了字段（纯增量）
+    #   ⇒ 比对前剥离（被比对的仍是**旧契约**的全部内容）。
+    from tests.fused._v2_compat import strip_bundle
+    assert _dump(strip_bundle(new_bundle)) == _dump(strip_bundle(legacy_bundle))
 
 
 # ===========================================================================
@@ -295,6 +298,11 @@ def test_bundle_key_insertion_order_identical(hub):
 
     legacy_bundle = rag_seedgen.assemble_bundle(list(legacy_views), PROTOCOL)
     new_bundle = rag_seedgen.assemble_bundle(list(new_views), PROTOCOL)
+    # ★ 阶段 D1：视图层新增 ``by_category`` / ``entities``（**追加在末尾**
+    #   ⇒ 不影响旧键的插入序）⇒ 本断言只关心**旧契约**。
+    for _k in ("by_category", "entities"):
+        legacy_bundle.pop(_k, None)
+        new_bundle.pop(_k, None)
     for key in legacy_bundle:
         if isinstance(legacy_bundle[key], dict):
             assert list(legacy_bundle[key].keys()) == list(new_bundle[key].keys()), \

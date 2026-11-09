@@ -512,7 +512,8 @@ def _detect_init_from_bundle(transitions: Optional[list]) -> str:
     if not transitions:
         return ""
     try:
-        from core.fused.downstream.edge_cover import _detect_init
+        # ★ 阶段 D1：改用**中枢层**的 state_graph（原先反向 import 消费层）
+        from core.fused.state_graph import _detect_init
         return _detect_init([tuple(t) for t in transitions
                              if isinstance(t, (list, tuple)) and len(t) >= 3])
     except Exception:                           # noqa: BLE001

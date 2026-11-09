@@ -193,6 +193,10 @@ def _upgrade_record(line: str, view: dict[str, Any]) -> str:
     _ent = _fact_entity(view)
     if _ent is not None:
         _add.append('"entity": ' + json.dumps(_ent, ensure_ascii=False))
+        # ★ 顶层也保留 ``entity_id``（C3 契约：fact 引用实体主表）
+        _eid = str(_ent.get("entity_id") or "")
+        if _eid and '"entity_id"' not in _s:
+            _add.append('"entity_id": ' + json.dumps(_eid, ensure_ascii=False))
     _add.append('"epistemic": '
                 + json.dumps(_fact_epistemic(view), ensure_ascii=False))
     _res = _fact_resolution(view)

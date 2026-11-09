@@ -40,29 +40,9 @@ def _normalize_transitions(transitions: Iterable, method_order: Optional[dict] =
     return sorted(out, key=lambda t: (order.get(t[1], n), t[0], t[1], t[2]))
 
 
-def _detect_init(transitions: list) -> str:
-    """确定起点：优先 "Init"，否则取无入边的状态，再否则字典序第一个状态。
-
-    ★无入边判断须排除自环（src == dst）：自环边 X --M--> X 的 dst 也是 X，
-    若不算自环，会导致「有自环的起点状态」被误判为「有入边」，进而错把
-    字典序最小状态（可能是无出边的响应码状态）当起点，edge_cover 无从出发返回空。
-    （实测 ftp：State_Connected 有 NOOP/SYST 自环且无真实入边，是唯一起点；
-    旧逻辑因自环误判，落到字典序最小状态 '150'（响应码、无出边），种子生成为 0。）
-    """
-    states = {s for s, _, _ in transitions} | {d for _, _, d in transitions}
-    if _INIT_STATE in states:
-        return _INIT_STATE
-    no_incoming = [s for s in states
-                   if not any(d == s for src, _, d in transitions if src != s)]
-    if no_incoming:
-        # P2：优先选「出边最多」的无入边状态，而非字母序 sorted()[0]。
-        # 会话入口（如 SIP 的 Idle、FTP 的 State_Connected）通常出度最大；
-        # 字母序首个无入边状态可能落到中间态（如 SIP 的 Early，A < I），
-        # 该状态无出边，edge_cover 无从出发返回空、种子生成为 0。
-        out_degree = {s: sum(1 for src, _, _ in transitions if src == s)
-                      for s in no_incoming}
-        return max(no_incoming, key=lambda s: (out_degree[s], s))
-    return sorted(states)[0] if states else _INIT_STATE
+# ★ 阶段 D1：``_detect_init`` 已移到**中枢层**（core/fused/state_graph.py）
+#   ⇒ 消费层与 GraphRAG 整理层**并列**依赖它 ⇒ 无层次倒置。
+from core.fused.state_graph import _detect_init  # noqa: E402,F401
 
 
 def _adjacency(transitions: list) -> dict:

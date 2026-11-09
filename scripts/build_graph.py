@@ -47,10 +47,13 @@ def build_one(protocol: str, use_llm: bool = False) -> dict:
     phase_a_nodes, phase_a_edges = extract_graph(protocol)
 
     # ---- ② B0：中枢 16 桶 → 显式图 ----
+    # ★★ 阶段 D1：改用**中枢视图层**（core/fused/hub_view.py）
+    #   ⇒ GraphRAG 整理层**不再依赖消费层**（消除层次倒置）
     bundle = {}
     try:
+        from core.fused import hub_view as HV
         from core.fused.downstream import rag_seedgen as RS
-        bundle = RS.assemble_bundle(RS.load_fact_views(protocol), protocol)
+        bundle = HV.build_view(RS.load_fact_views(protocol), protocol)
     except Exception as exc:                       # noqa: BLE001
         print(f"[图] {protocol}: 中枢不可用（{type(exc).__name__}: {exc}）"
               f" ⇒ 只用 Phase A 的抽取结果")

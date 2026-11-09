@@ -315,7 +315,10 @@ def test_off_consumption_path_is_never_called(monkeypatch):
         return bundle
 
     monkeypatch.setattr(rag_seedgen, "load_semantic_rules", _fake_load)
-    monkeypatch.setattr(rag_seedgen, "project_semantic_rules", _fake_project)
+    # ★ 阶段 D1：``project_semantic_rules`` 已搬到**中枢视图层**
+    #   ⇒ monkeypatch 必须打在 hub_view 上（打 rag_seedgen 已无效）。
+    from core.fused import hub_view as _hub_view
+    monkeypatch.setattr(_hub_view, "project_semantic_rules", _fake_project)
 
     bundle = assemble_bundle(_views(), PROTO)
 
@@ -359,21 +362,30 @@ def test_off_bundle_is_byte_identical_to_pre_b8(monkeypatch, isolated_library):
     off_bundle = assemble_bundle(_views(), PROTO)
     assert "semantic_rules" not in off_bundle
     assert "bundle_schema_version" not in off_bundle
+    # ★ 阶段 D1：视图层新增 ``by_category`` / ``entities``（**追加在末尾**）
+    #   ⇒ 逐字节比对前剔除（它们不属「B-8 之前形态」的契约）。
+    for _k in ("by_category", "entities"):
+        off_bundle.pop(_k, None)
 
     # ② 参考形态：同 views、同一份规则，但**不调** project_semantic_rules
     #    （= B-8 之前的投影行为）⇒ 剔除两个新键后应与 OFF 产物逐字节相同。
     def _no_project(bundle):
         return bundle
 
-    monkeypatch.setattr(rag_seedgen, "project_semantic_rules", _no_project)
+    # ★ 阶段 D1：``project_semantic_rules`` 已搬到**中枢视图层**
+    #   ⇒ monkeypatch 必须打在 hub_view 上（打 rag_seedgen 已无效）。
+    from core.fused import hub_view as _hub_view
+    monkeypatch.setattr(_hub_view, "project_semantic_rules", _no_project)
     set_semantic_rules_enabled(True)
     ref_bundle = assemble_bundle(_views(), PROTO)
     assert "semantic_rules" in ref_bundle          # 参考形态确实带了新键
     assert "bundle_schema_version" in ref_bundle
     stripped = {k: v for k, v in ref_bundle.items()
-                if k not in ("semantic_rules", "bundle_schema_version")}
+                if k not in ("semantic_rules", "bundle_schema_version",
+                             "by_category", "entities")}
 
-    assert _dump(stripped) == _dump(off_bundle)
+    from tests.fused._v2_compat import strip_bundle
+    assert _dump(strip_bundle(stripped)) == _dump(strip_bundle(off_bundle))
 
 
 def test_on_bundle_actually_projects(isolated_library):
