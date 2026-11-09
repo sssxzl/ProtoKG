@@ -995,7 +995,7 @@ Lane A 是 instance-level structural fact；§8 是 population-level Claim。语
 | **M5** | Whether a structural fact derived from a PARTIAL observation may be emitted at all, given §4.8 says partial never relaxes identity. **→ 允许观察、标注 partial、不放宽 identity（§4.8.2）** | 同上 |
 | **M6** | Naming of the carrier. §9 Hub Boundary is where fact_key is defined; M1 cannot be closed before that, so §8 extension and §9 must be sequenced. **→ §9 对 Lane A 不适用（无 fact_key）；§8 扩展仍独立待做** | 同上 |
 
-**M1–M6 全文见**：`qa/audit/step_traffic_lane_a_pre/section8_interface.txt`
+**M1–M6 全文见**：`guard/audit/step_traffic_lane_a_pre/section8_interface.txt`
 
 ---
 

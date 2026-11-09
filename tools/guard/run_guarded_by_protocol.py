@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/qa/run_guarded_by_protocol.py —— **单协议链路自检**（2026-11-08 新增）。
+"""tools/guard/run_guarded_by_protocol.py —— **单协议链路自检**（2026-11-08 新增）。
 
 ★★ **实测结论（重要，3 轮实测 / 约 40 分钟）**：本脚本**不能替代全量护栏**
   —— 方案 B 在**当前测试集上结构性不可行**。
@@ -48,8 +48,8 @@
   （它们读当前中枢 ⇒ 必须每组都验证）。
 
 用法：
-    python tools/qa/run_guarded_by_protocol.py --out-dir qa/byproto
-    python tools/qa/run_guarded_by_protocol.py --protocol rtsp --out-dir qa/byproto
+    python tools/guard/run_guarded_by_protocol.py --out-dir guard/byproto
+    python tools/guard/run_guarded_by_protocol.py --protocol rtsp --out-dir guard/byproto
 """
 from __future__ import annotations
 
@@ -62,8 +62,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 TESTS = ROOT / "tests"
-EXPECTED = ROOT / "tools" / "qa" / "baseline" / "expected_b_class_failed_ids.txt"
-NARROW_EXEMPT = ROOT / "tools" / "qa" / "baseline" / "narrow_hub_failed_ids.txt"
+EXPECTED = ROOT / "tools" / "guard" / "baseline" / "expected_b_class_failed_ids.txt"
+NARROW_EXEMPT = ROOT / "tools" / "guard" / "baseline" / "narrow_hub_failed_ids.txt"
 
 #: 已知协议（**从 kb 推导** ⇒ 只有真正有知识源的协议才参与）
 def known_protocols() -> list[str]:

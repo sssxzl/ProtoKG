@@ -1,7 +1,7 @@
 # docs/设计/各源设计/source源语料能力档位.md — Source 语料能力档案
 
 > 状态：**ACTIVE**（2026-10-05 新建）
-> 来源：`qa/audit/step_source_recon/`（只读勘察）、`step_source_a/`、`step_source_a2/`
+> 来源：`guard/audit/step_source_recon/`（只读勘察）、`step_source_a/`、`step_source_a2/`
 > 范围：**current source corpus empirical capability**
 > **非** Hub Contract capability（Hub 侧能力见 `fused_hub/docs/`）
 > 参照：`docs/设计/各源设计/traffic源语料能力档位.md`（结构类比，内容不复制）

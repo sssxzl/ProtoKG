@@ -10,7 +10,7 @@
 本文件专门用**仓库内真实 profile**（``fused_hub/targets/<协议>/profile.json``）
 锁住这些真实场景 —— 尤其是「SIP URI 必须逐字节不变」这条锁，没有它同类回归会再犯。
 
-覆盖的缺陷（对应 QA-4 报告 `qa/rtsp_url_pollution_verify.md` §9）：
+覆盖的缺陷（对应 QA-4 报告 `guard/rtsp_url_pollution_verify.md` §9）：
   P0-1  SIP 被端点归一化误改
   P1-1  资源归一化丢弃路径后缀（track / 尾斜杠）
   P1-2  相对路径被整体丢弃

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/qa/verify_aspect_layout.py —— 批次 1.6 步 1 的**分布校验**。
+"""tools/guard/verify_aspect_layout.py —— 批次 1.6 步 1 的**分布校验**。
 
 判据（方案 §3.1.10.6 步 1）：
   ① 中枢文件**按 aspect 组织**；
@@ -10,7 +10,7 @@
 
 用法::
 
-    E:/app/Anaconda3/python.exe tools/qa/verify_aspect_layout.py \
+    E:/app/Anaconda3/python.exe tools/guard/verify_aspect_layout.py \
         --protocol rtsp --protocol sip --protocol smtp
 
 本脚本**只读**中枢，不修改任何文件：它在 tmp 目录里用现有「按源分目录」

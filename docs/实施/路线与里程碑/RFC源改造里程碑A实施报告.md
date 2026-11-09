@@ -306,7 +306,7 @@ python -m pytest tests/fused/test_single_protocol_single_source.py -q  # 13 pass
 
 ### 10.2 处置
 
-**删除**（不可逆，配置已备份至 `qa/backup_targets_scope_trim/`）：
+**删除**（不可逆，配置已备份至 `guard/backup_targets_scope_trim/`）：
 
 | 位置 | 理由 |
 |---|---|

@@ -150,7 +150,7 @@ def test_source_manifest_records_source_set_and_skeleton(tmp_path, monkeypatch):
 
 def test_narrow_hub_state_detects_narrowed_hub(tmp_path, monkeypatch):
     """★ 中枢 source_set 非五源 ⇒ 判为窄化态。"""
-    import tools.qa.run_guarded_pytest as guard
+    import tools.guard.run_guarded_pytest as guard
     # ★ 中枢**共用一套**（新布局）⇒ 根是 derived/model/hub/，
     #   sources.json 是**多协议结构**（protocols 段）。
     root = tmp_path / "derived" / "model" / "hub"
@@ -167,7 +167,7 @@ def test_narrow_hub_state_detects_narrowed_hub(tmp_path, monkeypatch):
 
 def test_narrow_hub_state_full_hub_is_not_narrowed(tmp_path, monkeypatch):
     """★ 五源齐备 ⇒ **不**判为窄化 ⇒ 窄化豁免**不生效**（常态护栏不被削弱）。"""
-    import tools.qa.run_guarded_pytest as guard
+    import tools.guard.run_guarded_pytest as guard
     # ★ 中枢**共用一套**（新布局）⇒ 根是 derived/model/hub/，
     #   sources.json 是**多协议结构**（protocols 段）。
     root = tmp_path / "derived" / "model" / "hub"

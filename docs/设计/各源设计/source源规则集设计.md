@@ -69,7 +69,7 @@
 
 ## 2. 源语料形态
 
-> 勘察确认（`qa/audit/step_source_recon/corpus_shape.txt`）
+> 勘察确认（`guard/audit/step_source_recon/corpus_shape.txt`）
 
 ```
 kb/协议实现源码/       9 文件 / 271 KB / 6287 行

@@ -160,10 +160,10 @@ Lane B = **no materialization**，不伪造 complete Claim。
   936/60/2/2 的 3-variant 切分。原数字来源不明，不臆造。
 
 推翻依据：见
-`qa/audit/step_traffic_pre_design_closure/stage_a_overturn_sweep/`
+`guard/audit/step_traffic_pre_design_closure/stage_a_overturn_sweep/`
 （`report.txt` / `hit_list.txt` / `classification.txt` / `detail.txt`），
 以及上一轮实证
-`qa/audit/step_traffic_pre_candidateization/stage_a_rtsp_variants/`
+`guard/audit/step_traffic_pre_candidateization/stage_a_rtsp_variants/`
 与 `.../stage_b_frame_number/`。
 
 **本轮未授权、未改写的陈旧点**（已登记，待你裁定）：

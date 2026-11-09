@@ -15,7 +15,7 @@
   ② **上游原生混合编码**（不是我们的缺陷，不可臆测替换）
      kamailio 是 2000 年代老代码库，源码/测试/文档大量 latin-1 注释与作者名。
      ⇒ 「无法确定原文」⇒ **登记豁免、只报告不改**（见
-     ``tools/qa/baseline/encoding_known_issues.txt``）。
+     ``tools/guard/baseline/encoding_known_issues.txt``）。
 
 ★ 本测试锁四条不变式
   E1 无 mojibake      —— 仓库文本不得含**可还原**的乱码残留
@@ -25,7 +25,7 @@
                         （Windows 默认走 locale 编码 cp936 ⇒ 换机器就炸）
 
 ★ 与护栏的关系
-  实际检查逻辑在 ``tools/qa/verify_encoding.py``（可独立跑、可 ``--fix``）；
+  实际检查逻辑在 ``tools/guard/verify_encoding.py``（可独立跑、可 ``--fix``）；
   本测试是它的**pytest 封装**⇒ 进 ``run_guarded_pytest.py`` 的失败集合比对
   ⇒ 任何新增乱码都会让护栏变红。
 """
@@ -36,7 +36,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-VERIFIER = ROOT / "tools" / "qa" / "verify_encoding.py"
+VERIFIER = ROOT / "tools" / "guard" / "verify_encoding.py"
 
 
 def _run_verifier() -> dict:
@@ -61,7 +61,7 @@ def _run_verifier() -> dict:
 def test_encoding_hygiene_no_violations():
     """★ 仓库无编码违规（E1 mojibake / E2 非法 UTF-8 / E3 混合行尾 / E4 缺 encoding）。
 
-    ★ 上游原生 latin-1 文件已在 ``tools/qa/baseline/encoding_known_issues.txt``
+    ★ 上游原生 latin-1 文件已在 ``tools/guard/baseline/encoding_known_issues.txt``
       登记豁免（可审计）⇒ 不算违规，但会被护栏**列出**。
     """
     data = _run_verifier()
@@ -70,7 +70,7 @@ def test_encoding_hygiene_no_violations():
         f"编码违规 {len(real)} 项：\n"
         + "\n".join(f"  [{v['code']}] {v['path']} — {v['detail']}" for v in real[:20])
         + f"\n（完整清单见 {ROOT / 'local' / 'encoding_guard_result.json'}）\n"
-        + "修复命令：python tools/qa/verify_encoding.py --fix"
+        + "修复命令：python tools/guard/verify_encoding.py --fix"
     )
 
 
@@ -80,7 +80,7 @@ def test_encoding_guard_covers_kb_third_party():
     ⇒ 校验「可还原的 mojibake」在 kb/ 里为 0：那是我们拷贝时弄坏的，必须修。
     ⇒ 「上游原生 latin-1」允许存在，但必须**登记**在豁免清单里。
     """
-    known = (ROOT / "tools" / "qa" / "baseline" / "encoding_known_issues.txt")
+    known = (ROOT / "tools" / "guard" / "baseline" / "encoding_known_issues.txt")
     assert known.is_file(), f"豁免清单缺失: {known}"
     listed = set()
     for line in known.read_text(encoding="utf-8").splitlines():
@@ -101,7 +101,7 @@ def test_encoding_guard_covers_kb_third_party():
     for v in kb_e2:
         assert v["path"] in listed, (
             f"kb/ 的上游原生非 UTF-8 文件未登记豁免: {v['path']}\n"
-            f"（要么修复，要么在 tools/qa/baseline/encoding_known_issues.txt 登记原因）")
+            f"（要么修复，要么在 tools/guard/baseline/encoding_known_issues.txt 登记原因）")
 
 
 def test_own_code_uses_explicit_utf8():

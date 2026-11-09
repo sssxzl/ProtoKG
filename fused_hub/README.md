@@ -59,13 +59,13 @@ fused_hub/
 
 ## 四、与项目其他目录的关系
 
-| 上游 | 下游 |
-|------|------|
-| `kb/<协议>/<源>/`（read-only 五源）| `derived/model/per_source/<协议>/<源>/facts/<源>.jsonl`（v2 单源事实）|
-| `derived/model/per_source/` | `core/fused/downstream/` 三层检索 → `scripts/seedgen.py` |
-| `derived/model/hub/`（v1 遗留融合产物）| `core/fused/compat.py` 双轨映射（fact → Fact）|
-| `fused_hub/targets/<协议>/profile.json` | `scripts/seedgen.py`（per-protocol 参数与字典）|
-| `derived/model/spec/<协议>/norms/norms.jsonl` | `core/fused/norm.py`（v1 norm → Fact）|
+| 上游                                          | 下游                                                           |
+| ------------------------------------------- | ------------------------------------------------------------ |
+| `kb/<协议>/<源>/`（read-only 五源）                | `derived/model/per_source/<协议>/<源>/facts/<源>.jsonl`（v2 单源事实） |
+| `derived/model/per_source/`                 | `core/fused/downstream/` 三层检索 → `scripts/seedgen.py`         |
+| `derived/model/hub/`（v1 遗留融合产物）             | `core/fused/compat.py` 双轨映射（fact → Fact）                     |
+| `fused_hub/targets/<协议>/profile.json`       | `scripts/seedgen.py`（per-protocol 参数与字典）                     |
+| `derived/model/spec/<协议>/norms/norms.jsonl` | `core/fused/norm.py`（v1 norm → Fact）                         |
 
 ## 五、当前状态（2026-10-30）
 

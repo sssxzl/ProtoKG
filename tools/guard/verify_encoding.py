@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/qa/verify_encoding.py —— **编码卫生护栏**（UTF-8 统一 / 防乱码复发）。
+"""tools/guard/verify_encoding.py —— **编码卫生护栏**（UTF-8 统一 / 防乱码复发）。
 
 ★ 为什么需要它
   批次 2.5 收尾时发现：**部分 UTF-8 文本在读写或解码环节被按错误字符集解析**，
@@ -18,12 +18,12 @@
                      （在 Windows 上默认走 locale 编码 cp936 ⇒ 换机器就炸）
 
 ★ 用法
-  python tools/qa/verify_encoding.py                # 只检查，退出码 0=干净 1=有违规
-  python tools/qa/verify_encoding.py --json out.json # 机器可读结果
-  python tools/qa/verify_encoding.py --fix          # 修复可逆 mojibake + 混合行尾
+  python tools/guard/verify_encoding.py                # 只检查，退出码 0=干净 1=有违规
+  python tools/guard/verify_encoding.py --json out.json # 机器可读结果
+  python tools/guard/verify_encoding.py --fix          # 修复可逆 mojibake + 混合行尾
                                                        （★ 不动 E2 的上游原生文件）
 
-★ 豁免清单：``tools/qa/baseline/encoding_known_issues.txt``
+★ 豁免清单：``tools/guard/baseline/encoding_known_issues.txt``
   每行 ``<相对路径>\\t<原因>``（``#`` 开头为注释）⇒ 这些路径的 E2 不算违规。
 """
 from __future__ import annotations
@@ -40,11 +40,11 @@ ROOT = Path(__file__).resolve().parents[2]
 #: 不扫描的目录（构建产物 / 缓存 / 生成物 / VCS）
 SKIP_DIRS = {
     ".git", "__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache",
-    "out", "qa", "derived", "node_modules", "local/encoding_backup",
-    "local/qa_out",
+    "out", "guard", "derived", "node_modules", "local/encoding_backup",
+    "local/guard_out",
 }
 #: 不扫描的路径前缀（相对仓库根）
-SKIP_PREFIX = ("out/", "qa/", "derived/", ".ruff_cache/", "local/encoding_backup/")
+SKIP_PREFIX = ("out/", "guard/", "derived/", ".ruff_cache/", "local/encoding_backup/")
 
 #: 按文本处理的扩展名（``""`` 表示无扩展名的 README 等）
 TEXT_EXT = {
@@ -198,7 +198,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="编码卫生护栏（UTF-8 统一 / 防乱码复发）")
     ap.add_argument("--root", default=str(ROOT), help="仓库根目录")
     ap.add_argument("--known-issues",
-                    default=str(ROOT / "tools" / "qa" / "baseline"
+                    default=str(ROOT / "tools" / "guard" / "baseline"
                                 / "encoding_known_issues.txt"),
                     help="豁免清单（E2 上游原生非 UTF-8 文件）")
     ap.add_argument("--json", dest="json_out", help="机器可读结果输出路径")

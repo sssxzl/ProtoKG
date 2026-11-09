@@ -22,7 +22,7 @@
       ↓ ③' 视图层  core/fused/hub_view.py         读中枢 ⇒ 组装视图（16 桶 + 分类视图 + 实体视图）
       ↓ ④ 知识图层 core/fused/graph_*.py          实体图 + 社区 + 社区报告
       ↓ ⑤ 消费层   core/fused/downstream/ + scripts/seedgen.py   → 种子
-⑥ 护栏层      tools/qa/ + tests/                期望集比对 / 编码卫生 / 分布校验
+⑥ 护栏层      tools/guard/ + tests/                期望集比对 / 编码卫生 / 分布校验
 ```
 
 ★ **④⑤ 并列依赖 ③'**（互不依赖）⇒ 层次无倒置。

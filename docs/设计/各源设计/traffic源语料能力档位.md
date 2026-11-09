@@ -202,7 +202,7 @@ Corpus 扩充或 Q1 有新结论后 append / amend。
 
 ---
 
-*§8 依据：`qa/audit/step_traffic_post_recon/`（Metadata Recon + Q1 Recon）*
+*§8 依据：`guard/audit/step_traffic_post_recon/`（Metadata Recon + Q1 Recon）*
 
 ---
 
@@ -348,9 +348,9 @@ CSV 的 gap（13,15,17 + RTP 段）就是被丢弃的帧。
 
 ### 10.6 登记来源
 
-- `qa/audit/step_traffic_pre_candidateization/stage_a_rtsp_variants/`
-- `qa/audit/step_traffic_pre_candidateization/stage_b_frame_number/`
-- `qa/audit/step_traffic_pre_design_closure/stage_a_overturn_sweep/`
+- `guard/audit/step_traffic_pre_candidateization/stage_a_rtsp_variants/`
+- `guard/audit/step_traffic_pre_candidateization/stage_b_frame_number/`
+- `guard/audit/step_traffic_pre_design_closure/stage_a_overturn_sweep/`
 - `docs/设计/各源设计/traffic源候选项化预设计.md` §4.2 / §4.5
 
 ---

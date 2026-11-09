@@ -3,7 +3,7 @@
 定位：本文件是 agent 长期有效的固定约束。任何 session 开始工作前必须先读本文件。
 
 > ★ 2026-11-09：路径已随仓库结构调整更新（`local/` 已移除 ⇒ audit 改写到
-> `qa/audit/step_<N>/`；设计文档在 `docs/设计/`）。
+> `guard/audit/step_<N>/`；设计文档在 `docs/设计/`）。
 
 一、kb 权限
 kb/ 默认 read-only。任何写 kb/ 的操作必须先停下，汇报，等用户明确授权。授权只对当次指定动作有效，用完立即恢复 read-only。不得因授权过一次就默认长期有效。
@@ -15,7 +15,7 @@ kb/ 默认 read-only。任何写 kb/ 的操作必须先停下，汇报，等用�
 契约未写明、语义不明、两种实现都合理时，停下问用户，不自行选择。不得默认选第一个、不得默认选推荐选项、不得默认选最小改动。
 
 四、越界审计
-每个 Step 结束，写 audit 文件到 qa/audit/step_<N>/audit.txt。audit 内容固定四项：
+每个 Step 结束，写 audit 文件到 guard/audit/step_<N>/audit.txt。audit 内容固定四项：
 改动文件清单，每个文件改了什么、为什么。
 是否超出本 Step 指令范围。超出的话列出超出项、你当时的判断依据、实际结果。
 是否遇到未授权自动转换。例如 Step 3.1.3 落盘时把 83 处「加」自动转成「→」。
@@ -58,7 +58,7 @@ docs/工具/验收与规范/agent长期工作约束.md（本文件）。
 docs/实施/路线与里程碑/项目任务手册.md。
 docs/工具/决策记录/待决事项.md。
 docs/工具/决策记录/已决事项.md。
-最近一个 qa/audit/step_<N>/audit.txt。
+最近一个 guard/audit/step_<N>/audit.txt。
 相关契约文档（fused_hub/docs/ 下的对应文档）。
 不读完这些，不开始执行。
 
@@ -204,7 +204,7 @@ cp new.sh /home/zxy/profuzzbench/scripts/.tmp.sh \
 
 
 九、路径与命名
-所有备份到 qa/audit/step_<N>/。N 与 Step 编号一致。
+所有备份到 guard/audit/step_<N>/。N 与 Step 编号一致。
 每个 Step 目录下有 before/ 子目录放改动前快照。
 fingerprint 文件命名 kb_fingerprint_before.txt 与 kb_fingerprint_after.txt。
 

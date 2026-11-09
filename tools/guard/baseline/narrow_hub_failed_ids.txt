@@ -1,4 +1,4 @@
-# tools/qa/baseline/narrow_hub_failed_ids.txt
+# tools/guard/baseline/narrow_hub_failed_ids.txt
 # 窄化数据态豁免清单 —— 护栏6（批次 1.6，2026-11-02）
 #
 # ★ 语义（与护栏5 的 env_variant **无条件豁免不同**）：

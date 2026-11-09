@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/qa/verify_consumer_wiring.py —— 批次 1.6 **步 5** 的**分布校验**。
+"""tools/guard/verify_consumer_wiring.py —— 批次 1.6 **步 5** 的**分布校验**。
 
 判据（方案 §3.1.10.6 步 5）：
   ① 不带参数**产物逐字节不变**（单源态下过滤是 no-op）；
@@ -9,7 +9,7 @@
 
 用法::
 
-    E:/app/Anaconda3/python.exe tools/qa/verify_consumer_wiring.py \
+    E:/app/Anaconda3/python.exe tools/guard/verify_consumer_wiring.py \
         --protocol rtsp --protocol sip --protocol smtp
 """
 from __future__ import annotations

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/qa/verify_source_filter.py —— 批次 1.6 **步 2** 的**分布校验**。
+"""tools/guard/verify_source_filter.py —— 批次 1.6 **步 2** 的**分布校验**。
 
 判据（方案 §3.1.10.6 步 2）：
   ① 单源 bundle 的 ``available_sources`` **只含该源**（``profile`` 骨架单独标注）；
@@ -9,7 +9,7 @@
 
 用法::
 
-    E:/app/Anaconda3/python.exe tools/qa/verify_source_filter.py \
+    E:/app/Anaconda3/python.exe tools/guard/verify_source_filter.py \
         --protocol rtsp --protocol sip --protocol smtp
 
 本脚本**只读**真实中枢；「多源场景」通过**给真实事实重新贴 authority 标签**

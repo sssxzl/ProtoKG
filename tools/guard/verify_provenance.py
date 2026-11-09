@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/qa/verify_provenance.py —— 批次 1.6 **步 3** 的**分布校验**。
+"""tools/guard/verify_provenance.py —— 批次 1.6 **步 3** 的**分布校验**。
 
 判据（方案 §3.1.10.6 步 3）：
   ① 旧字段**逐字节等价** —— 剔除步 3 新增的 4 个顶层键后，bundle 与
@@ -10,7 +10,7 @@
 
 用法::
 
-    E:/app/Anaconda3/python.exe tools/qa/verify_provenance.py \
+    E:/app/Anaconda3/python.exe tools/guard/verify_provenance.py \
         --protocol rtsp --protocol sip --protocol smtp
 """
 from __future__ import annotations

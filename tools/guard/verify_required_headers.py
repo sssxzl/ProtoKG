@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/qa/verify_required_headers.py —— 批次 1.6 **步 4** 的**分布校验**。
+"""tools/guard/verify_required_headers.py —— 批次 1.6 **步 4** 的**分布校验**。
 
 判据（方案 §3.1.10.6 步 4）：
   ① bundle 的 ``required_headers`` 与 profile.json 的**等价**（物化前后不变）；
@@ -8,7 +8,7 @@
 
 用法::
 
-    E:/app/Anaconda3/python.exe tools/qa/verify_required_headers.py \
+    E:/app/Anaconda3/python.exe tools/guard/verify_required_headers.py \
         --protocol rtsp --protocol sip --protocol smtp
 """
 from __future__ import annotations

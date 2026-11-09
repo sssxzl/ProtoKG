@@ -568,7 +568,7 @@ Step 4.8h、Step 4.8i 与 Classification Semantic Release Finalization 共同属
 
 Step 4.8h 开始前，记录 Classification Semantic Release 的 release-start baseline。
 
-**报告落**：`qa/audit/step_4.8h/`
+**报告落**：`guard/audit/step_4.8h/`
 
 **至少记录**：
 - `fused_hub/schema/claim_classification_rules.json` path + fingerprint
@@ -818,7 +818,7 @@ Finalization 后需验证：
   = `sha256:50361c1b446cc5999927709abb04ca9d73dbb76b95bf0a145a2a435f0a8e6826`
   （9-rule 状态，Finalization 后实测）
 
-两者在 `qa/audit/step_4.8i_finalization/release_record.txt` 中均已保留。
+两者在 `guard/audit/step_4.8i_finalization/release_record.txt` 中均已保留。
 
 **后续所有「Registry fingerprint」引用须显式区分**：
 

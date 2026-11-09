@@ -81,7 +81,7 @@ rag-chatafl/
 │       ├── hub/               # ★ 结构化知识中枢（按知识分类 A~F + 索引）
 │       ├── graph/             # ★ GraphRAG 整理层（实体图 + 社区）
 │       └── seeds/<协议>/      # 生成的种子
-├── tools/qa/                  # 护栏（编码卫生 / 期望集比对 / 分布校验）
+├── tools/guard/                  # 护栏（编码卫生 / 期望集比对 / 分布校验）
 ├── tests/                     # 全量测试
 └── docs/                      # 文档（设计/实施/工具/图）
 ```
@@ -129,14 +129,14 @@ python scripts/seedgen.py --protocol rtsp --focus-group B
 
 ## 协议 fuzzing 完整架构
 
-| 层 | 负责 | 关键文件 |
-|---|---|---|
-| LLM | 协议 prompt + JSON 输出 | `core/llm.py` + Stub/DeepSeek |
-| 协议层 | per-protocol Profile 配置 | `fused_hub/targets/<协议>/profile.json` |
-| 抽取层 | 五源 → Fact（六元组）| `core/fused/norm.py` + `expert_note.py` + `vuln.py` + `source.py` + `traffic.py` |
-| 校验层 | fail-closed 校验 + 注册表治理 | `core/fused/validation.py` + `core/fused/registry.py` |
-| 生成层 | 三层检索 + LLM 写 + 落盘 | `core/fused/downstream/selector.py` + `rag_seedgen.py` + `scripts/seedgen.py` |
-| 导出层 | LLM 安全接口（P10）| `core/fused/export.py` |
+| 层   | 负责                      | 关键文件                                                                             |
+| --- | ----------------------- | -------------------------------------------------------------------------------- |
+| LLM | 协议 prompt + JSON 输出     | `core/llm.py` + Stub/DeepSeek                                                    |
+| 协议层 | per-protocol Profile 配置 | `fused_hub/targets/<协议>/profile.json`                                            |
+| 抽取层 | 五源 → Fact（六元组）          | `core/fused/norm.py` + `expert_note.py` + `vuln.py` + `source.py` + `traffic.py` |
+| 校验层 | fail-closed 校验 + 注册表治理  | `core/fused/validation.py` + `core/fused/registry.py`                            |
+| 生成层 | 三层检索 + LLM 写 + 落盘       | `core/fused/downstream/selector.py` + `rag_seedgen.py` + `scripts/seedgen.py`    |
+| 导出层 | LLM 安全接口（P10）           | `core/fused/export.py`                                                           |
 
 ## License
 

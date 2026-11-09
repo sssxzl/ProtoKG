@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/qa/verify_rfc_field_values.py —— 批次 2.0（P0）的**分布校验**。
+"""tools/guard/verify_rfc_field_values.py —— 批次 2.0（P0）的**分布校验**。
 
 判据：
   ① RFC 源确实产出了「字段取值」知识（norm 层 + fact 层）；
@@ -11,7 +11,7 @@
 
 用法::
 
-    E:/app/Anaconda3/python.exe tools/qa/verify_rfc_field_values.py \
+    E:/app/Anaconda3/python.exe tools/guard/verify_rfc_field_values.py \
         --protocol rtsp --protocol sip --protocol smtp
 """
 from __future__ import annotations

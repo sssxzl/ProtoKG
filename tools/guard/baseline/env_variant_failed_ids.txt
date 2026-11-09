@@ -1,4 +1,4 @@
-# tools/qa/baseline/env_variant_failed_ids.txt
+# tools/guard/baseline/env_variant_failed_ids.txt
 # 环境/数据相关失败项 —— 护栏5（run_guarded_pytest.py 的 --env-variant 清单）
 #
 # ★ 语义：清单内的 test id **成败取决于本机环境/数据态**，不是代码回归
