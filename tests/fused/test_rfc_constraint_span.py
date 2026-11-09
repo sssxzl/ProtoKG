@@ -1,6 +1,6 @@
 """tests/fused/test_rfc_constraint_span.py —— B-3（约束候选带 span）+ B-4（norm_id 冲突修复）。
 
-B-3 验收（对应 docs/RFC源里程碑BCD路线图.md §3.8 任务表）：
+B-3 验收（对应 docs/实施/RFC源里程碑BCD路线图.md §3.8 任务表）：
   ① 候选含 `span_start` / `span_end` / `section_path` / `spec_version`；
   ② **span 覆盖率 100%**，且每个 span 能在源文件里**逐字定位**
      （`raw[span_start:span_end] == candidate["text"]`）；

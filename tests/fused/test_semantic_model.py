@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """tests/fused/test_semantic_model.py —— B-1（两层语义模型 + `rule_id` 派生）。
 
-对应 docs/RFC源里程碑BCD路线图.md §3.8 任务表 **B-1** 行（:669）的验收标准：
+对应 docs/实施/RFC源里程碑BCD路线图.md §3.8 任务表 **B-1** 行（:669）的验收标准：
 
   ① 四个 dataclass 定义齐全，字段与 §3.1 **逐项一致**；
   ② `ExecutableConstraint.__post_init__` 的 **6 条校验各有 1 个正例 + 1 个反例**

@@ -22,7 +22,7 @@
 > **⑩ §13.6 新增：可复现性陈述的准确措辞**（语料快照仍在仓库且可校验，**不可从当前代码重建**）。
 >
 > 权威依据：VM `192.168.37.130` 上 `/home/zxy/profuzzbench` 源码（git HEAD `8573ec8`）+ `rq2-*` 镜像内实际 `run` 脚本（逐字核对）+ VM `/home/zxy/rq4/rq4_summary.csv` 实测数据
-> 图示：[`图/RQ4编排图.mermaid`](./RQ4编排图.mermaid) · [`图/RQ4时序图.mermaid`](./RQ4时序图.mermaid) · [`图/RQ4类图.mermaid`](./RQ4类图.mermaid)
+> 图示：[`图/RQ4编排图.mermaid`](../图/RQ4编排图.mermaid) · [`图/RQ4时序图.mermaid`](../图/RQ4时序图.mermaid) · [`图/RQ4类图.mermaid`](../图/RQ4类图.mermaid)
 
 ---
 

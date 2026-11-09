@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """tests/fused/test_semantic_try_convert.py —— B-2（转换判定：证据层 → 可执行层）。
 
-对应 docs/RFC源里程碑BCD路线图.md §3.8 任务表 **B-2** 行（:670）的验收标准：
+对应 docs/实施/RFC源里程碑BCD路线图.md §3.8 任务表 **B-2** 行（:670）的验收标准：
 
   ① `try_convert` 实现 C1~C7 七步，**顺序为「先验证区间（C2）后判显式
      性（C3）」**；

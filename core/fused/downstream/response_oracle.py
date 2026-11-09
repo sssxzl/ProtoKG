@@ -13,7 +13,7 @@
     而且 ``exited`` 还要进一步区分「异常退出」与「正常收尾退出」（如收到 QUIT 后退出）。
 
 **本模块内容**（C 阶段 C-1~C-4）：
-  · C-1：三个 ``str, Enum`` 的取值集合与 ``docs/RFC源知识抽取改造方案.md`` §3.5
+  · C-1：三个 ``str, Enum`` 的取值集合与 ``docs/实施/RFC源知识抽取改造方案.md`` §3.5
     （:646-666）**逐项相等**，由 ``tests/fused/test_response_oracle.py`` 断言防漂移。
   · C-2/C-3/C-4：``close_loop()`` 的**判定顺序**（UNKNOWN+TIMEOUT 最先 → crash →
     reset/close → 语义偏离）。

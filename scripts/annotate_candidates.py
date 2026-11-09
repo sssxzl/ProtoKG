@@ -19,7 +19,7 @@
     ③ operator                  : str      eq/ne/lt/gt/le/ge/in/present/absent/range / "不可"
     ④ expected_response_class   : str|null success/protocol_error/application_error/silence / null
 
-★ 判定标准全部写在 ``docs/人工标注指南.md``。本脚本**只做机械校验**，
+★ 判定标准全部写在 ``docs/工具/人工标注指南.md``。本脚本**只做机械校验**，
   **不做任何语义判断**、**不代填答案** —— 语义判断只能由人（或明确署名的模型轮次）做。
 
 校验规则（validate）
@@ -71,7 +71,7 @@ _RE_PAGE_MARK = re.compile(r"\[Page\s+\d+\]")
 _RE_RFC_TITLE = re.compile(r"^RFC\s+\d+")
 _RE_EMPTY_OR_DOTS = re.compile(r"^\s*(\.+\s*)*$")
 
-#: 可执行算子全集。**与 docs/RFC源里程碑BCD路线图.md §3.1 的 OPERATORS 逐项相等**
+#: 可执行算子全集。**与 docs/实施/RFC源里程碑BCD路线图.md §3.1 的 OPERATORS 逐项相等**
 #: （新增算子必须同步改 core/fused/semantic.py 的 OPERATORS）。
 OPERATORS: frozenset[str] = frozenset({
     "eq", "ne", "lt", "gt", "le", "ge", "in", "present", "absent", "range",
@@ -95,7 +95,7 @@ REQUIRED_FIELDS: tuple[str, ...] = (
 )
 
 DEFAULT_FROZEN = Path("derived/exp_semantic/candidates_frozen.jsonl")
-DEFAULT_GUIDE = Path("docs/人工标注指南.md")
+DEFAULT_GUIDE = Path("docs/工具/人工标注指南.md")
 
 
 # ---------------------------------------------------------------------------
@@ -596,8 +596,8 @@ def cmd_template(args: argparse.Namespace) -> int:
                 "protocol": proto,
                 "split": args.split,
                 "count": len(items),
-                "guide": "docs/人工标注指南.md",
-                "note": "四个标注字段待填；判定标准见 docs/人工标注指南.md",
+                "guide": "docs/工具/人工标注指南.md",
+                "note": "四个标注字段待填；判定标准见 docs/工具/人工标注指南.md",
             },
             "annotations": items,
         })

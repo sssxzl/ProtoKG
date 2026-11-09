@@ -9,7 +9,7 @@
     export  truth/*.json  ──►  xlsx（人填）
     import  xlsx（人填完） ──►  truth_b/<proto>.{annotated,holdout}.json
 
-★ 纪律（与 `docs/人工标注指南.md` §8 一致）：
+★ 纪律（与 `docs/工具/人工标注指南.md` §8 一致）：
   - 表里**只给题面 + 空答案格**，不预填任何判定，避免引导标注者；
   - `candidate_id` / `text` 由冻结集原样抄出，**不做任何清洗**（半句也照抄）；
   - 导出是可复现的：同一份 frozen + truth ⇒ 同一行序、同一内容。
@@ -253,7 +253,7 @@ def build_workbook(rows: list[dict]) -> Workbook:
 
 
 def _add_guide_sheet(wb: Workbook) -> None:
-    """判定规则速查（摘自 docs/人工标注指南.md，**不含任何候选的答案**）。"""
+    """判定规则速查（摘自 docs/工具/人工标注指南.md，**不含任何候选的答案**）。"""
     ws = wb.create_sheet("填写须知")
     ws.column_dimensions["A"].width = 22
     ws.column_dimensions["B"].width = 60
@@ -261,7 +261,7 @@ def _add_guide_sheet(wb: Workbook) -> None:
 
     ws.merge_cells("A1:C1")
     c = ws.cell(row=1, column=1, value="填写须知 · 四字段判定速查"
-                                      "（完整版见 docs/人工标注指南.md）")
+                                      "（完整版见 docs/工具/人工标注指南.md）")
     c.font = Font(bold=True, size=12, color="1F3864")
     c.fill = _FILL_TITLE
     ws.row_dimensions[1].height = 24

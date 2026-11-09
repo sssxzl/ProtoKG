@@ -5086,7 +5086,7 @@ def extract_constraint_candidates(protocol: str, max_per_rfc: int = 80) -> list[
 # B-9　语义规则质量闸（强制机制 4）+ `rules_only` 产出
 # ===========================================================================
 #
-# ★ 本节的三个闸（对齐 `docs/RFC源里程碑BCD路线图.md` §强制机制 4）：
+# ★ 本节的三个闸（对齐 `docs/实施/RFC源里程碑BCD路线图.md` §强制机制 4）：
 #   ① 报告新增度量：**语义规则总数** / **可执行率** / **候选拒绝原因直方图**
 #      / **`constraint is None` 计数**；
 #   ② `constraint is None` 计数 > 0 ⇒ **阻断构建**；
@@ -5101,7 +5101,7 @@ def extract_constraint_candidates(protocol: str, max_per_rfc: int = 80) -> list[
 #: 用途：把构建 / 测试产物隔离到临时目录，避免污染仓库 `derived/`。
 SEMANTIC_ROOT_ENV_KEY = "PROTORAG_SEMANTIC_ROOT"
 
-#: 期望响应词表（与 `docs/语义规则覆盖矩阵.md` §2 实测口径一致）。
+#: 期望响应词表（与 `docs/工具/语义规则覆盖矩阵.md` §2 实测口径一致）。
 EXPECTED_VOCAB = ("success", "protocol_error", "application_error", "silence")
 
 #: 语义四库的文件名（与 `core/fused/downstream/rule_store.py` 的 LIBRARY_FILES 一致）。
@@ -5199,7 +5199,7 @@ def derive_abnf_field_names(protocol: str) -> set[str]:
 def known_field_set(protocol: str) -> list[str]:
     """协议已知字段集（章节/ABNF 字段抽取 + **ABNF 派生补充**）。
 
-    ★ 口径与 `docs/语义规则覆盖矩阵.md` §2 实测一致
+    ★ 口径与 `docs/工具/语义规则覆盖矩阵.md` §2 实测一致
       （rtsp 45 / sip 46 / smtp 0 —— smtp 的 RFC 5322 字段章节标题是
       「The Origination Date Field」这类**长标题**，抽不出裸字段名）。
     ★ **追加** ABNF 派生字段（:func:`derive_abnf_field_names`）：
