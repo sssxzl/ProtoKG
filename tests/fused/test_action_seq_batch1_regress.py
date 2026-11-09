@@ -84,7 +84,7 @@ def _bundle(headers_bucket: dict | None = None) -> dict:
 
 
 def _sip_profile() -> dict:
-    return json.loads((ROOT / "fused_hub" / "targets" / "sip" / "profile.json")
+    return json.loads((ROOT / "profiles" / "sip" / "profile.json")
                       .read_text(encoding="utf-8"))
 
 

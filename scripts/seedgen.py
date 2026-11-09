@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """scripts/seedgen.py —— 统一种子生成入口（协议 × 源二维解耦的下游层）。
 
-按 protocol 读 fused_hub/targets/<protocol>/profile.json 的 seedgen 配置，走统一的
+按 protocol 读 profiles/<protocol>/profile.json 的 seedgen 配置，走统一的
 「规则种子生成」工厂：
   ① 结构覆盖（edge_cover，永远，协议无关）
   ② 通用危险（generic_danger，profile.seedgen.danger 或 --danger）
@@ -115,7 +115,7 @@ GRAPH_PATH_LAYER_NAME = "graph_path"
 #: ★ C 与 D 的种子集合完全相同，仅「顺序 + 字典」不同 → D→C 是纯净单变量。
 #:
 #: ★★ **本表只是兜底**：协议级标定的**唯一权威**在
-#:   ``fused_hub/targets/<协议>/profile.json`` 的 ``seedgen.focus_group``
+#:   ``profiles/<协议>/profile.json`` 的 ``seedgen.focus_group``
 #:   （指定 ``--target-env`` 时则用 ``seedgen.environments.<env>.focus_group``）
 #:   ⇒ 见 `main()` 里读 `seedgen_cfg.get("focus_group")` 的那段。
 #:   ★ 2026-11-03 两次按实测**重新标定**：
@@ -150,7 +150,7 @@ def _fail(msg: str) -> int:
 
 
 def _load_profile(protocol: str) -> dict:
-    """读 fused_hub/targets/<protocol>/profile.json（协议维度配置）。"""
+    """读 profiles/<protocol>/profile.json（协议维度配置）。"""
     p = paths.target_profile(protocol)
     if not p.exists():
         return {}
@@ -176,8 +176,8 @@ def _load_resources(profile: dict, protocol: str,
     res_file = profile.get("resources_file")
     if not res_file:
         return []
-    # 先试协议子目录（fused_hub/targets/<protocol>/<res_file>），再兜底 targets 根目录
-    # （历史遗留：rtsp_streams.json 曾放在 fused_hub/targets/ 根目录，带协议前缀）。
+    # 先试协议子目录（profiles/<protocol>/<res_file>），再兜底 targets 根目录
+    # （历史遗留：rtsp_streams.json 曾放在 profiles/ 根目录，带协议前缀）。
     candidates = [paths.targets_root() / protocol / res_file,
                   paths.targets_root() / res_file]
     data = None

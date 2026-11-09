@@ -4,7 +4,7 @@
 ★ 背景（`打通缺口清单-20261106.md` §P1-2）：smtp 的 `statuses` 抽成 **0** 条，
   两个缺陷叠加：
 
-    ① `fused_hub/targets/smtp/rfc_config.json` 的 `4.2` **同时**列在
+    ① `profiles/smtp/rfc_config.json` 的 `4.2` **同时**列在
        `method_sections` 与 `status_sections`，而 `_section_kind` 旧实现是
        **固定类别优先**（method 赢）⇒ 整章「SMTP Replies」被判成 method；
     ② 状态码通道只认**章节标题**（`^\\d{3}\\s+title`），

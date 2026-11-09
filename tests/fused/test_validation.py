@@ -16,7 +16,7 @@ from core.fused.hub.validation import (
 
 
 def _empty_registry():
-    return Registry(base_dir=__import__("pathlib").Path("fused_hub") / "schema" / "v2")
+    return Registry(base_dir=__import__("pathlib").Path("core") / "fused" / "hub" / "registry")
 
 
 def test_validate_value_type_mismatch_raises():

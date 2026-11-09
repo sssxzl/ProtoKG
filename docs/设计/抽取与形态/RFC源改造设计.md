@@ -65,7 +65,7 @@ SemFuzz 把 RFC 规范形式化为 **SR = (协议 p, 消息 m, 字段 f, 构造�
 
 ### 阶段 1：新增 aspect（数据结构层）
 
-在 `fused_hub/schema/aspect_registry.json` 新增/扩展两个 aspect：
+在 `core/fused/hub/registry/aspect_registry.json` 新增/扩展两个 aspect：
 
 ```json
 // ① 扩展 legal_boundary 的 applicable，加入 header（字段级边界）
@@ -131,7 +131,7 @@ rfc 源抽取的 legal_boundary（构造约束）
 |---|---|
 | `core/fused/rfc_extractor.py` | 新增 `_extract_constraints`（rule + LLM 三元组抽取）|
 | `core/fused/norm.py` | 新增 `constraint_norm_to_facts`（C/P → fact）|
-| `fused_hub/schema/aspect_registry.json` | 扩展 legal_boundary + 新增 response_expectation |
+| `core/fused/hub/registry/aspect_registry.json` | 扩展 legal_boundary + 新增 response_expectation |
 | `core/fused/downstream/rag_seedgen.py` | assemble_bundle 新增 `constraints` 分桶 |
 | `core/fused/downstream/edge_cover.py` 或 generic_danger | 消费约束做「故意违反」种子 |
 | 边界探针 | 消费 legal_boundary 作候选来源 |

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """真 LLM 端到端验证：知识中枢 → RAG → DeepSeek → 初始种子 → .raw 落盘。
 
-支持目标资源清单（实例级知识）：从 fused_hub/targets/<protocol>_streams.json
+支持目标资源清单（实例级知识）：从 profiles/<protocol>_streams.json
 读流名清单，让 LLM 生成的每个种子用不同流名，覆盖所有媒体格式。
 
 支持漏洞导向（P0）：从 kb/历史漏洞/*.json 读结构化 trigger，经 classify_vuln
@@ -33,7 +33,7 @@ from core.fused.extraction.vuln_pattern import crash_streams  # noqa: E402
 from core.fused.downstream.selector import select_seeds  # noqa: E402
 from core.llm import DeepSeekClient  # noqa: E402
 
-TARGETS_DIR = ROOT / "fused_hub" / "targets"
+TARGETS_DIR = ROOT / "profiles"
 
 
 def load_resources(protocol: str) -> list[dict]:

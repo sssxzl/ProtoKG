@@ -3,12 +3,12 @@
 > **通用定位（2026-10-08 用户确认）**：本文档是「协议 Profile」机制的**第一份实例**，
 > 以 rtsp 为样例。Profile 机制本身协议无关——Layer 0 核心（models/canonical/registry/
 > validation/export）与注册表加载、fail-closed 校验均为通用。
-> ⚠ 但当前 `fused_hub/schema/` 为**单协议平铺**结构：`core/fused/registry.py:28-33` 按固定文件名加载三个注册表，新增协议需先改造为 per-protocol 目录约定（如 `fused_hub/schema/<协议>/`）并让 `load_registry` 支持 `base_dir` 切换（`Registry.__init__` 已接受 `base_dir` 参数），**不改任何核心代码**这一条目前不成立。
+> ⚠ 但当前 `core/fused/hub/registry/` 为**单协议平铺**结构：`core/fused/registry.py:28-33` 按固定文件名加载三个注册表，新增协议需先改造为 per-protocol 目录约定（如 `core/fused/hub/registry/<协议>/`）并让 `load_registry` 支持 `base_dir` 切换（`Registry.__init__` 已接受 `base_dir` 参数），**不改任何核心代码**这一条目前不成立。
 > 本草案为甲方案（最小可用）：只注册 131 条 facts **映射后实测出现**的项（映射后 118 facts），不预设未出现的项。
 
-- **依据**: `fused_hub/docs/fused_knowledge_hub_design.md` §3 / §6
+- **依据**: `docs/设计/顶层设计/知识中枢设计总纲.md` §3 / §6
 - **范围**: Layer 1（rtsp Profile），甲方案（最小可用）
-- **状态**: 已落地（草案内容已进 `fused_hub/schema/` 三个注册表 JSON，`core_version: 1.0`；后续修订以本文档为准）
+- **状态**: 已落地（草案内容已进 `core/fused/hub/registry/` 三个注册表 JSON，`core_version: 1.0`；后续修订以本文档为准）
 - **数据来源**: `derived/hub/facts/*.jsonl` 经 `core/fused/compat.py` 映射为 Fact
   （Step C1 探针：131 → 118 facts，0 errors；v2 映射结果未落盘，产物在 `derived/per_source/<协议>/<源>/facts/`）
 
@@ -89,7 +89,7 @@
 | `target_state` | `text` | `relation` | `consensus` | `one` | 状态转移的目标状态名 |
 | `value_type` | `enum` | `status` | `consensus` | `one` | 状态码类别（1xx/2xx/3xx/4xx/5xx） |
 
-> 本表 7 项为 Step C1 登记快照；当前 `fused_hub/schema/aspect_registry.json` 实际 19 项，
+> 本表 7 项为 Step C1 登记快照；当前 `core/fused/hub/registry/aspect_registry.json` 实际 19 项，
 > `occurrence` 的 `applicable_subject_types` 亦已扩至 `header` / `method` / `status`。
 
 **逐项说明**：
@@ -173,4 +173,4 @@
 | `actor` | 协议参与者（如 rtsp_server 的监听端口观测） | traffic 源 |
 
 新增 12 个 aspect（在原 7 项之上）：`method_sequence` / `syntax` / `definition` / `state_changing` / `value_enum` 等，
-完整清单见 `fused_hub/schema/aspect_registry.json`（19 项）。
+完整清单见 `core/fused/hub/registry/aspect_registry.json`（19 项）。

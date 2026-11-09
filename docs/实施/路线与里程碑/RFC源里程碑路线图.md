@@ -653,7 +653,7 @@ semantic_rules[i]  ──project──►  legal_boundary[subject_name] += {dim,
 | `core/fused/downstream/boundary_probe.py` | **修改** | 探测回写路径（`:419-437`）改为写 `rule_state="feedback"` 库，**不再直接改权威 fact**（问题⑤ 的代码级等价物） | `rule_store.py` |
 | `scripts/build_hub.py` | **修改** | `--semantic` 开关（默认关，保持 `rules_only` 确定性）；构建期加 §3.3 强制机制 4 的阻断检查 | `semantic.py` |
 | `core/fused/rfc_extractor.py`（质量闸） | **修改** | `rfc_quality_report` 增加：语义规则条数、可执行率、候选拒绝原因分布、`rules.jsonl` 中 `constraint is None` 计数（必须为 0，阻断） | `semantic.py` |
-| `fused_hub/targets/<协议>/rfc_config.json` | **修改** | `expected_response_classes` **已存在**（实测三协议齐备），无需新增；仅需确认词表不含 timeout/crash | — |
+| `profiles/<协议>/rfc_config.json` | **修改** | `expected_response_classes` **已存在**（实测三协议齐备），无需新增；仅需确认词表不含 timeout/crash | — |
 | `tests/fused/test_semantic.py` | **新增** | 两层模型 + 转换判定 + rule_id 幂等 + 强制机制的单测 | — |
 | `tests/fused/test_semantic_patterns.py` | **新增** | 模式表逐条的可执行样例测试 | — |
 
@@ -969,7 +969,7 @@ B 阶段要验证的核心命题必须**窄且可证伪**：
 | 三协议事实库 | `derived/per_source/{rtsp,sip,smtp}/rfc/facts/rfc.jsonl` | C0 组基线 | ✅ rtsp 116 / sip 148 / smtp 10 行 |
 | 约束候选生成器 | `core/fused/rfc_extractor.py:1660` | 候选来源（B-3 后会带 span） | ⚠️ 需先过 B-3 |
 | LLM 客户端 | `core/llm.py` `DeepSeekClient.chat_json` | E1/E2 的 LLM 兜底 | ✅ 有 API key（`.env`） |
-| 期望响应词表 | `fused_hub/targets/<p>/rfc_config.json` 的 `expected_response_classes` | C7 校验 | ✅ 三协议齐备 |
+| 期望响应词表 | `profiles/<p>/rfc_config.json` 的 `expected_response_classes` | C7 校验 | ✅ 三协议齐备 |
 | 质量闸 | `core/fused/rfc_extractor.py:1362 rfc_quality_report` | 构建阻断 + 指标来源 | ✅ 可扩展 |
 | 构建入口 | `scripts/build_hub.py --sources rfc --protocol X [--semantic]` | 产物生成 | ✅ |
 | 语料闸 | `scripts/corpus_gate.py` G1/G2/G5 | 种子层校验（仅在需要时） | ⚠️ G5 有已知漂移（见 §4.6） |
@@ -1141,7 +1141,7 @@ derived/experiments/annotation/<实验ID>/
 | **C-2** | **判定顺序：UNKNOWN+TIMEOUT 最先** | 同上 | 无 | 实现 `close_loop(seed, result) -> Feedback \| None`，**第一条分支**为 `if health is UNKNOWN and trans is TIMEOUT: return Feedback(kind="inconclusive", ...)` | 单测：`health=UNKNOWN, trans=TIMEOUT, proto≠expected` → 返回 **`inconclusive`**（当前逻辑会返回 `semantic_deviation`） |
 | **C-3** | **`EXITED` 需判别** | 同上 | 无 | `health is EXITED` 时调 `_is_abnormal_exit(result)`（退出码非 0 / 有 sanitizer 报告 / 非请求收尾导致）→ 异常才进 crash；否则返回 `kind="target_exited_normally"` | 单测两条：退出码 0 + 正常收尾 → `target_exited_normally`；退出码非 0 → `crash` |
 | **C-4** | **reset/close 不进 crash** | 同上 | 无 | `trans ∈ {RESET, CLOSE}` → `Feedback(kind="connection_aborted")`（**不是** crash） | 单测：`trans=RESET, health=ALIVE` → `connection_aborted`，**不是** `crash` |
-| **C-5** | **timeout/crash 不作协议响应期望** | `fused_hub/targets/<p>/rfc_config.json` | 已满足 | `expected_response_classes` 保持 4 类（实测三协议已是 `success/protocol_error/application_error/silence`）→ **无需改动**，只需**加一条断言**防止将来被加进 timeout/crash | 单测：读取三协议 `rfc_config.json`，断言 `set(classes) == {success, protocol_error, application_error, silence}` 且**不含** timeout/crash |
+| **C-5** | **timeout/crash 不作协议响应期望** | `profiles/<p>/rfc_config.json` | 已满足 | `expected_response_classes` 保持 4 类（实测三协议已是 `success/protocol_error/application_error/silence`）→ **无需改动**，只需**加一条断言**防止将来被加进 timeout/crash | 单测：读取三协议 `rfc_config.json`，断言 `set(classes) == {success, protocol_error, application_error, silence}` 且**不含** timeout/crash |
 | **C-6** | **`scripts/seed_oracle_filter.py` 定位澄清** | 同文件 | `:94-110 _filter_seed` | **不改其行为**（它服务 SIP 种子过滤，是另一职责）。仅在模块 docstring 加一句「本脚本是**种子有效性过滤器**；执行结果三轴判定在 `core/fused/downstream/response_oracle.py`」 | 文档检查项（非自动）；`pytest tests/fused/test_seedgen.py` 保持通过 |
 | **C-7** | **落地表冲突修正** | `docs/实施/路线与里程碑/RFC源知识抽取改造方案.md` §3.6 `:758` | — | 把「扩展 `scripts/seed_oracle_filter.py`」改为「新建 `core/fused/downstream/response_oracle.py`」 | 与 §2.0 C5 `:267` 一致（审计 I-4） |
 
@@ -1285,7 +1285,7 @@ derived/experiments/annotation/<实验ID>/
      # Windows Git Bash
      cd "E:/科研/想法idea/rag-chatafl"
      tar czf ../rag-chatafl_snapshot_$(date +%Y%m%d_%H%M%S).tar.gz \
-         core/ scripts/ fused_hub/schema/ tests/ docs/实施/路线与里程碑/RFC源知识抽取改造方案.md
+         core/ scripts/ core/fused/hub/registry/ tests/ docs/实施/路线与里程碑/RFC源知识抽取改造方案.md
      ```
    - 每个任务（T01~T05）**独立一个快照**，出问题时按任务回滚。
    - **强烈建议同时执行 `git init`**：B 阶段要新增 5+ 文件、改 7+ 文件，没有版本控制风险太高。`git init && git add -A && git commit -m "baseline before milestone B"` 一步就能消除这个风险（`.gitignore` 已就位，会自动排除 `derived/`、`.env`、`__pycache__`）。

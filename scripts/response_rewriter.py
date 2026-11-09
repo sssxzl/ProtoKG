@@ -33,7 +33,7 @@ RTSP_METHODS = (
     "GET_PARAMETER", "SET_PARAMETER", "ANNOUNCE", "RECORD", "REDIRECT",
 )
 
-# FTP 命令全集（RFC 959 + 扩展，与 fused_hub/targets/ftp/profile.json 的
+# FTP 命令全集（RFC 959 + 扩展，与 profiles/ftp/profile.json 的
 # allowed_methods 对齐；42 个）。顺序不影响正确性。
 FTP_METHODS = (
     "USER", "PASS", "ACCT", "CWD", "CDUP", "QUIT", "REIN", "PORT", "PASV",
@@ -43,7 +43,7 @@ FTP_METHODS = (
     "PBSZ", "PROT", "MDTM", "SIZE", "MLSD", "MLST",
 )
 
-# SIP 方法全集（RFC 3261 标准化 14 方法，与 fused_hub/targets/sip/profile.json 的
+# SIP 方法全集（RFC 3261 标准化 14 方法，与 profiles/sip/profile.json 的
 # allowed_methods 对齐）。kamailio/pjproject 通用，无 FTP 式「多实现并集」污染。
 SIP_METHODS = (
     "INVITE", "ACK", "BYE", "CANCEL", "OPTIONS", "REGISTER", "SUBSCRIBE",

@@ -33,7 +33,7 @@ def test_all_registered_aspects_have_a_location():
     from core.fused.hub.knowledge_slots import aspect_map, load_slots
     from core import paths
     reg = json.loads(
-        (paths.PROJECT_ROOT / "fused_hub" / "schema" / "aspect_registry.json")
+        (paths.PROJECT_ROOT / "core" / "fused" / "hub" / "registry" / "aspect_registry.json")
         .read_text(encoding="utf-8"))
     am = aspect_map()
     missing = [str(a.get("name")) for a in (reg.get("registered_aspects") or [])

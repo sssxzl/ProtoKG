@@ -1,6 +1,6 @@
 """core/fused/canonical.py —— Layer 0 中枢核心：canonical 序列化 + 确定性 ID。
 
-规范见 fused_hub/docs/fused_canonical_spec.md（运行时报错时由本模块生成）。
+规范见 docs/设计/顶层设计/规范化序列化规范.md（运行时报错时由本模块生成）。
 
 本模块是 canonical 序列化的唯一实现。
 """

@@ -26,9 +26,10 @@ SLOTS_FILENAME = "knowledge_slots.json"
 
 
 def slots_path() -> Path:
-    """``fused_hub/schema/knowledge_slots.json`` 的绝对路径。"""
+    """``core/fused/hub/knowledge_slots.json`` 的绝对路径。"""
     from core import paths
-    return paths.PROJECT_ROOT / "fused_hub" / "schema" / SLOTS_FILENAME
+    # ★ 包内绝对路径（不依赖 cwd）
+    return Path(__file__).resolve().parent / SLOTS_FILENAME
 
 
 @lru_cache(maxsize=1)
@@ -133,7 +134,7 @@ def validate_slots() -> list[str]:
     known_aspects: set[str] = set()
     try:
         from core import paths
-        reg = paths.PROJECT_ROOT / "fused_hub" / "schema" / "aspect_registry.json"
+        reg = Path(__file__).resolve().parent / "registry" / "aspect_registry.json"
         if reg.is_file():
             data = json.loads(reg.read_text(encoding="utf-8"))
             for a in (data.get("registered_aspects") or []):

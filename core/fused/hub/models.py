@@ -2,7 +2,7 @@
 
 本模块是 Layer 0 中枢核心数据结构的唯一实现（架构已于 2026-10-09 退役）。
 
-设计真源: fused_hub/docs/fused_knowledge_hub_design.md 第三部分。
+设计真源: docs/设计/顶层设计/知识中枢设计总纲.md 第三部分。
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from typing import Any
 
 ValueType = str   # 12 种之一: scalar/enum/set/sequence/range/pattern/struct/
                   # ref/observation/binary/union/text
-                  # 12 种（见 fused_hub/docs/fused_knowledge_hub_design.md §Value 表）
+                  # 12 种（见 docs/设计/顶层设计/知识中枢设计总纲.md §Value 表）
 
 
 @dataclass(frozen=True)

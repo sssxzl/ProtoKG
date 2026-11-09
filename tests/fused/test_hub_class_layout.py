@@ -6,7 +6,7 @@
     旧（批次 1.6）：derived/hub/facts/<aspect>.jsonl（16 个 aspect 文件）
     新（阶段 C）  ：derived/hub/<分类>/<文件>.jsonl（A~F 六个知识分类）
 
-★ 落位依据 = ``fused_hub/schema/knowledge_slots.json`` 的 ``aspect_map``
+★ 落位依据 = ``core/fused/hub/knowledge_slots.json`` 的 ``aspect_map``
   ⇒ **不改抽取器**，只重排已有事实。
 
 ★ 关键回归：
@@ -278,7 +278,7 @@ def test_epistemic_registry_values_covered():
     import json as _json
     from core import paths
     reg = _json.loads(
-        (paths.PROJECT_ROOT / "fused_hub" / "schema"
+        (paths.PROJECT_ROOT / "core" / "fused" / "hub" / "registry"
          / "epistemic_type_registry.json").read_text(encoding="utf-8"))
     for t in (reg.get("registered_types") or []):
         name = str(t.get("name") or "")
@@ -352,7 +352,7 @@ def test_epistemic_registry_values_covered():
     import json as _json
     from core import paths
     reg = _json.loads(
-        (paths.PROJECT_ROOT / "fused_hub" / "schema"
+        (paths.PROJECT_ROOT / "core" / "fused" / "hub" / "registry"
          / "epistemic_type_registry.json").read_text(encoding="utf-8"))
     for t in (reg.get("registered_types") or []):
         name = str(t.get("name") or "")

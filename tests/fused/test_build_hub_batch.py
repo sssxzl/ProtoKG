@@ -82,7 +82,7 @@ def test_purge_keeps_semantic_when_disabled(tmp_path, monkeypatch):
 
 def test_materialize_skeleton_writes_profile_facts(tmp_path, monkeypatch):
     """★ 骨架物化：写进中枢的 ``profile/`` 源，authority 改标 profile。"""
-    skel = tmp_path / "fused_hub" / "targets" / "rtsp" / "skeleton.json"
+    skel = tmp_path / "profiles" / "rtsp" / "skeleton.json"
     skel.parent.mkdir(parents=True, exist_ok=True)
     skel.write_text(json.dumps({
         "protocol": "rtsp",
@@ -100,7 +100,7 @@ def test_materialize_skeleton_writes_profile_facts(tmp_path, monkeypatch):
     #   build_hub 内拼 REPO_ROOT）⇒ 同步 patch 该解析入口。
     monkeypatch.setattr(
         paths_mod, "target_skeleton",
-        lambda p: tmp_path / "fused_hub" / "targets" / p.lower()
+        lambda p: tmp_path / "profiles" / p.lower()
         / "skeleton.json")
     monkeypatch.setattr(paths_mod, "per_source_facts_dir",
                         lambda p, s: tmp_path / "derived" / "per_source" / p / s
@@ -122,7 +122,7 @@ def test_missing_skeleton_is_reported_not_silent(tmp_path, monkeypatch, capsys):
     # ★ 同上：骨架路径统一走 core.paths.target_skeleton。
     monkeypatch.setattr(
         paths_mod, "target_skeleton",
-        lambda p: tmp_path / "fused_hub" / "targets" / p.lower()
+        lambda p: tmp_path / "profiles" / p.lower()
         / "skeleton.json")
     assert build_hub._materialize_skeleton("rtsp") == 0
     assert "skeleton.json" in capsys.readouterr().out

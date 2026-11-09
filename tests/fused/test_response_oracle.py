@@ -19,13 +19,13 @@
   · **C-4 reset/close 不进 crash** —— ``trans=RESET/CLOSE`` 且进程健康 ⇒
     ``connection_aborted``，**不是** ``crash``。
 
-  · **C-5 timeout/crash 不作协议响应期望** —— ``fused_hub/targets/<协议>/rfc_config.json``
+  · **C-5 timeout/crash 不作协议响应期望** —— ``profiles/<协议>/rfc_config.json``
     的 ``expected_response_classes`` 必须**恰好**是 4 类协议语义结果，
     **不得**混入 ``timeout`` / ``crash``（它们分别属于传输层与进程层，不是协议响应期望）。
     断言**真的读取三个协议的真实配置**并逐项比对，不 mock、不读 ``derived/`` 下的
     实验产物（那些会随实验重生成而变）。
 
-★ 本文件**只读**：不改任何生产代码、不改 ``fused_hub/`` 下的配置。
+★ 本文件**只读**：不改任何生产代码、不改 ```` 下的配置。
 """
 from __future__ import annotations
 
@@ -113,7 +113,7 @@ EXPECTED_PROCESS_HEALTH_MEMBERS = {
 PROTOCOLS = ("rtsp", "sip", "smtp")
 
 #: ``rfc_config.json`` 相对项目根的路径模板。
-RFC_CONFIG_TEMPLATE = "fused_hub/targets/{protocol}/rfc_config.json"
+RFC_CONFIG_TEMPLATE = "profiles/{protocol}/rfc_config.json"
 
 #: 绝不允许出现在 ``expected_response_classes`` 里的词（传输层/进程层，不是协议响应）。
 FORBIDDEN_RESPONSE_CLASSES = {"timeout", "crash"}
@@ -238,8 +238,8 @@ def test_three_protocols_share_the_same_vocabulary() -> None:
 
 
 def test_no_rfc_config_contains_timeout_or_crash_in_response_classes() -> None:
-    """全仓扫一遍 ``fused_hub/targets/*/rfc_config.json``，防止将来新增协议时引入。"""
-    targets_dir = ROOT / "fused_hub" / "targets"
+    """全仓扫一遍 ``profiles/*/rfc_config.json``，防止将来新增协议时引入。"""
+    targets_dir = ROOT / "profiles"
     assert targets_dir.is_dir(), f"缺少 {targets_dir}"
     checked = 0
     for config_path in sorted(targets_dir.glob("*/rfc_config.json")):

@@ -59,7 +59,7 @@ docs/实施/路线与里程碑/项目任务手册.md。
 docs/工具/决策记录/待决事项.md。
 docs/工具/决策记录/已决事项.md。
 最近一个 guard/audit/step_<N>/audit.txt。
-相关契约文档（fused_hub/docs/ 下的对应文档）。
+相关契约文档（docs/设计/顶层设计/ 下的对应文档）。
 不读完这些，不开始执行。
 
 七、共享产物的恢复纪律（源自脚本回退事故）
@@ -168,14 +168,14 @@ cp new.sh /home/zxy/profuzzbench/scripts/.tmp.sh \
 
 以下变更**必须**包含至少相关测试（不能只跑文档步骤）：
 
-1. 修改 `fused_hub/schema/` 下任何 JSON 后，
+1. 修改 `core/fused/hub/registry/` 下任何 JSON 后，
    必须跑 `tests/fused/.../test_registry_*.py` 相关测试
    （至少 `test_candidate_layer.py` + `test_registry_loader.py`）
 
 2. 修改 `core/fused/` 下任何文件后，
    必须跑相关单元测试（与该文件直接相关的 `test_*`）
 
-3. 修改 `fused_hub/docs/` 下任何冻结文档后，
+3. 修改 `docs/设计/顶层设计/` 下任何冻结文档后，
    必须跑 `test_final_contract_consistency.py` 与
    `test_runtime_contract_consistency.py`
 
@@ -194,7 +194,7 @@ cp new.sh /home/zxy/profuzzbench/scripts/.tmp.sh \
 
 **不应针对**：
 
-- 任何 `fused_hub/` 下 JSON 变更
+- 任何 `` 下 JSON 变更
 - 任何 `core/` 下代码变更
 - 任何 `tests/` 变更
 
@@ -263,7 +263,7 @@ derived/spec/rtsp/ 下与本次操作无关的文件
 
 - **Layer 级设计裁定**（如 Layer 1 范围甲乙、落盘方案）
 - **任何写 `kb/`、`derived/` 的操作**（除明确授权的 Step）
-- **改冻结文档**（`fused_hub/docs/` 下 `fused_*`）
+- **改冻结文档**（`docs/设计/顶层设计/` 下 `fused_*`）
 - **改 `core/fused/` 下 v1 模块**
 - **前序 Step 发现未登记的越界或未决项**
 - **实测与预期严重不符（差 > 1 或结论相反）**

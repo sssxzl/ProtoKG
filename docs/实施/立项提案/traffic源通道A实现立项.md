@@ -165,7 +165,7 @@ Hub protocol Fact，**不产生任何 Hub Candidate / Claim / Fact**。
 
 #### 3.1.3 格式校验 — 独立于 Hub validator 的 Lane A schema
 
-**裁定**：新增 `fused_hub/schema/` 之外的 Lane A schema
+**裁定**：新增 `core/fused/hub/registry/` 之外的 Lane A schema
 （位置随 3.1.1 定为 `derived/lane_a/` 同级的 schema 定义），
 校验 `设计/traffic_lane_a_provenance_interface.md` §2 的记录形状。
 

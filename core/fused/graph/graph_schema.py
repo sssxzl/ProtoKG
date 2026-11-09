@@ -16,14 +16,15 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Optional
 
-#: 图模式的默认文件名（放在 fused_hub/schema/ 下，与 aspect_registry 同级）
+#: 图模式的默认文件名（放在 core/fused/hub/registry/ 下，与 aspect_registry 同级）
 SCHEMA_FILENAME = "graph_schema.json"
 
 
 def schema_path() -> Path:
-    """``fused_hub/schema/graph_schema.json`` 的绝对路径。"""
+    """``core/fused/graph/graph_schema.json`` 的绝对路径。"""
     from core import paths
-    return paths.PROJECT_ROOT / "fused_hub" / "schema" / SCHEMA_FILENAME
+    # ★ 包内绝对路径（不依赖 cwd）
+    return Path(__file__).resolve().parent / SCHEMA_FILENAME
 
 
 @lru_cache(maxsize=1)

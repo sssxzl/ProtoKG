@@ -26,7 +26,7 @@
 ```
 
 ★ **④⑤ 并列依赖 ③'**（互不依赖）⇒ 层次无倒置。
-★ **协议无关主程序**：协议特定配置全在 `fused_hub/targets/<协议>/profile.json`。
+★ **协议无关主程序**：协议特定配置全在 `profiles/<协议>/profile.json`。
 
 ---
 
@@ -70,8 +70,8 @@
 
 | 内容 | 真源 |
 |---|---|
-| 中枢契约（分类/槽位/属性/图/判据） | `fused_hub/schema/*.json` |
-| 协议档案 | `fused_hub/targets/<协议>/profile.json` |
+| 中枢契约（分类/槽位/属性/图/判据） | `core/fused/hub/registry/*.json` |
+| 协议档案 | `profiles/<协议>/profile.json` |
 | 项目结构逐文件说明 | `docs/工具/项目结构说明.md` |
 | 中枢重设计实施总纲 + 进度 | `docs/设计/顶层设计/顶层设计/中枢重设计改造方案.md` |
 | agent 长期约束 | `docs/工具/验收与规范/agent长期工作约束.md` |

@@ -3,8 +3,8 @@
 > 状态：**Final Frozen**（阶段 4，2026-10-04；依 D14–D19 填实）
 > 上游：`docs/设计/各源设计/traffic源规则集设计.md` §4.8
 > 　　　`docs/设计/各源设计/traffic源观测独立性设计.md`（Final Frozen）
-> 　　　`fused_hub/docs/fused_canonical_spec.md`
-> 　　　`fused_hub/docs/fused_canonical_spec.md`
+> 　　　`docs/设计/顶层设计/规范化序列化规范.md`
+> 　　　`docs/设计/顶层设计/规范化序列化规范.md`
 > 本文件为 Lane A → Hub provenance 接口设计真源。
 > 本文件为 standalone 设计真源。
 

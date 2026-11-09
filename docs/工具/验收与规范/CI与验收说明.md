@@ -206,7 +206,7 @@ test_rq3_focus_group.py:330  rtsp/rq2-live555/A: 种子数不符: 期望 27，�
 test_rq3_manifest.py:207      种子数不符: 期望 50，实际 65
 ```
 
-即：`fused_hub/targets/<proto>/profile.json` 里 `seedgen.focus_group.<组>.seeds`
+即：`profiles/<proto>/profile.json` 里 `seedgen.focus_group.<组>.seeds`
 声明的条数，与 `scripts/seedgen.py` 实际生成的条数对不上。
 这是**实验契约与实现之间的漂移** —— 要么改 profile 声明、要么改生成逻辑，
 **两者都会改变研究语料的语义**（分组大小直接影响 RQ3 的对比实验设计）。
@@ -324,7 +324,7 @@ sys.exit(1 if bad else 0)
 "
 
 # 字节契约（工作区字节 == 入库 blob 字节）
-for f in fused_hub/targets/rtsp/rtsp_base.dict fused_hub/targets/ftp/ftp_base.dict; do
+for f in profiles/rtsp/rtsp_base.dict profiles/ftp/ftp_base.dict; do
   echo "$f $(git cat-file blob HEAD:$f | md5sum) $(md5sum $f)"
 done
 

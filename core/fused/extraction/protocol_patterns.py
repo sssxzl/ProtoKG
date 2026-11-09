@@ -7,7 +7,7 @@ core/fused/protocol_patterns.py —— 协议状态机信号 pattern（协议 Pr
 用于从协议实现源码中定位状态机相关文件、消息处理函数、状态变量。
 
 ⚠️ 分层原则（重要）：
-  - 本文件属于「协议 Profile 配置层」，与 fused_hub/schema、fused_hub/targets 同类；
+  - 本文件属于「协议 Profile 配置层」，与 core/fused/hub/registry、targets 同类；
   - 本文件【不属于】结构化知识中枢（derived/per_source、derived/spec/rtsp/norms）；
   - 因此「清空结构化知识中枢」时，本文件不受影响，不会被清理。
 
@@ -16,7 +16,7 @@ core/fused/protocol_patterns.py —— 协议状态机信号 pattern（协议 Pr
   已下线协议（dns / dtls / ftp / ssh / tls）的条目一并移除 ——
   它们对应的 kb 源、目标环境与语料都已删除，pattern 留着就是**无人消费的僵尸知识**，
   还会让读者误以为这些协议仍受支持（本项目的协议范围权威声明在 `kb/` 与
-  `fused_hub/targets/` 两处，不在本文件）。
+  `profiles/` 两处，不在本文件）。
   ★ 移除是**安全的**：`get_pattern()` 用 `.get(key, DEFAULT_PATTERN)` 兜底，
     传入已下线协议只会拿到通用兜底 pattern（**不抛异常**）；唯一 import 者
     `source_fsm.py` 只取 `get_pattern` 函数（不依赖具体条目）→ import 不受影响；

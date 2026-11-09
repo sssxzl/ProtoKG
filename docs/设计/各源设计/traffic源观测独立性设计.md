@@ -5,7 +5,7 @@
 > §6.5: BLOCKED（等 M3 外部输入）
 > §6.6-C1.x: PENDING（依赖 Metadata Recon）
 > 上游：docs/工具/交接与工作流/项目交接说明.md、docs/设计/各源设计/vuln源收口设计.md（分层原则）
-> 契约依据：fused_hub/docs/fused_canonical_spec.md、fused_hub/docs/fused_canonical_spec.md、fused_hub/docs/fused_canonical_spec.md、fused_hub/docs/fused_canonical_spec.md
+> 契约依据：docs/设计/顶层设计/规范化序列化规范.md、docs/设计/顶层设计/规范化序列化规范.md、docs/设计/顶层设计/规范化序列化规范.md、docs/设计/顶层设计/规范化序列化规范.md
 > 本文件为 traffic D9 阶段设计真源。
 > 本文件为 standalone 设计真源，不依赖任何 superseded draft。
 

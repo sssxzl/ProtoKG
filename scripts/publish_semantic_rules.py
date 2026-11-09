@@ -55,12 +55,12 @@ def _read_rows(path: Path) -> list[dict]:
 
 
 def _protocol_spec_versions(protocol: str) -> list[str] | None:
-    """本协议的规范号（来自 ``fused_hub/targets/<协议>/rfc_config.json``）。
+    """本协议的规范号（来自 ``profiles/<协议>/rfc_config.json``）。
 
     ★ 批次 2.5（F1）：语义规则必须按协议过滤 —— B-10 的实验产物是
       **多协议混合**的（实测 RFC 2326:11 / RFC 3261:9 / RFC 5321:1）。
     """
-    cfg = REPO_ROOT / "fused_hub" / "targets" / protocol / "rfc_config.json"
+    cfg = REPO_ROOT / "profiles" / protocol / "rfc_config.json"
     if not cfg.is_file():
         return None
     try:
@@ -83,7 +83,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dry-run", action="store_true",
                     help="只跑质量闸并打印报告，**不写盘**")
     ap.add_argument("--all-specs", action="store_true",
-                    help="**不按协议过滤**（默认按 fused_hub/targets/<协议>/"
+                    help="**不按协议过滤**（默认按 profiles/<协议>/"
                          "rfc_config.json 的 spec_version 过滤）—— "
                          "批次 2.5 F1：跨协议规则必须过滤，否则 SIP 的 "
                          "RFC 3261 规则会进 RTSP 库")

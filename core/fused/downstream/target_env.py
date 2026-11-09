@@ -7,10 +7,10 @@
 「**协议/源码级知识**」与「**目标部署环境级事实**」被混为一谈。
 
 缺陷 1 · RTSP 引用目标环境不存在的会话（47.9% 的状态变更请求打空）
-    `fused_hub/targets/rtsp_streams.json` 里的 18 个会话名是从
+    `profiles/rtsp_streams.json` 里的 18 个会话名是从
     `testOnDemandRTSPServer.cpp` 源码里提取的 **streamName 定义**——这是**源码级**
     事实（目标程序"认识"这些名字）。但 AFLNet 镜像 `rq2-live555:latest` 的
-    `live/testProgs/` 目录下仅 7 个媒体文件（清单见 fused_hub/targets/rtsp/rtsp_playable_streams.json 的 media_files），
+    `live/testProgs/` 目录下仅 7 个媒体文件（清单见 profiles/rtsp/rtsp_playable_streams.json 的 media_files），
     其余 11 个会话服务端一律返 404。→「源码认识」≠「该环境能播」。
 
 缺陷 2 · SIP 39.4% 的消息起点不被 AFLNet 识别
@@ -181,7 +181,7 @@ def _resource_file_candidates(protocol: str, filename: str) -> list[Path]:
     """资源清单文件的候选路径：协议子目录优先，再兜底 targets 根目录。
 
     与 `scripts/seedgen.py::_load_resources` 的历史查找顺序保持一致
-    （`fused_hub/targets/rtsp_streams.json` 是历史遗留的协议前缀命名）。
+    （`profiles/rtsp_streams.json` 是历史遗留的协议前缀命名）。
     """
     return [
         paths.targets_root() / protocol.lower() / filename,
@@ -636,7 +636,7 @@ def normalize_target_endpoint(url: str, profile: dict) -> str:
 def _resource_path_shape(path: str, segments: list[str]) -> str:
     """取原 URL 的**路径形态尾巴**（RTSP 的 URL 模板形态，协议无关）。
 
-    RTSP 的 URL 模板只有三种形态（见 `fused_hub/targets/rtsp_request_templates.json`
+    RTSP 的 URL 模板只有三种形态（见 `profiles/rtsp_request_templates.json`
     与 `profile.seedgen.url_template`）：
       · ``/{stream}``            —— OPTIONS / DESCRIBE
       · ``/{stream}/track{N}``   —— SETUP

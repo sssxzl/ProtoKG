@@ -101,7 +101,7 @@ def test_entity_headers_rendered_before_body():
 def test_command_protocol_has_no_command_headers():
     """★ 命令协议的命令本身**没有头**（`header_line=""`）⇒ 头只出现在实体内容里。"""
     prof = json.loads(
-        (ROOT / "fused_hub" / "targets" / "smtp" / "profile.json")
+        (ROOT / "profiles" / "smtp" / "profile.json")
         .read_text(encoding="utf-8"))
     rf = prof["raw_format"]
     assert rf["header_line"] == "", "命令协议的 header_line 应为空"

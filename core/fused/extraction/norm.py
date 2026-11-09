@@ -2,8 +2,8 @@
 
 rfc 源的 5 种 kind 映射已全部实现（transition / field / outcome / method / constraint，见 RFC_KIND_MAP）。
 
-设计依据: fused_hub/docs/fused_knowledge_hub_design.md +
-           fused_hub/docs/RTSP协议档案草案.md +
+设计依据: docs/设计/顶层设计/知识中枢设计总纲.md +
+           profiles/rtsp/RTSP协议档案草案.md +
            docs/设计/抽取与形态/抽取层方法借鉴.md（LLM 增强部分留 -m llm 钩子）。
 """
 from __future__ import annotations
@@ -233,7 +233,7 @@ def parse_field_value_content(content: str) -> tuple[str, list[str]]:
 def field_value_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
     """rfc field_value norm → [value_enum fact]（字段的取值样本集合）。
 
-    ★ 批次 2.0（P0）：aspect 契约见 ``fused_hub/schema/aspect_registry.json`` ——
+    ★ 批次 2.0（P0）：aspect 契约见 ``core/fused/hub/registry/aspect_registry.json`` ——
       ``value_enum`` 的 ``value_type = "set"``、适用主体 = header/protocol/actor
       ⇒ 这里用 ``header`` + ``Value(type="set", data=[...])``。
     """
@@ -251,7 +251,7 @@ def binary_layout_norm_to_fact(norm: dict[str, Any]) -> list[Fact]:
     """rfc ``binary_layout`` norm → [binary_layout fact]（二进制**字段布局**）。
 
     ★ 2026-11-07（B 二进制协议）：aspect 契约见
-      ``fused_hub/schema/aspect_registry.json``。
+      ``core/fused/hub/registry/aspect_registry.json``。
       语义 = 该字段在报文里的**字节布局**（offset / length / order / encoding），
       来自 RFC 的**位域图**或**定长字段表**。
 

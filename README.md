@@ -9,7 +9,7 @@
 ## 设计原则
 
 1. **协议级隔离,跨协议共享** — `kb/<协议>/<源>/` 在各协议间共享（源维度 5 档：`spec` / `协议实现源码` / `数据流量` / `历史漏洞` / `expert_note`）
-2. **协议无关主程序 + per-protocol Profile** — 协议特定配置集中在 `fused_hub/targets/<协议>/profile.json`（`allowed_methods` / `transport` / `message_schema`），主程序 `core/fused/` 不含协议分支
+2. **协议无关主程序 + per-protocol Profile** — 协议特定配置集中在 `profiles/<协议>/profile.json`（`allowed_methods` / `transport` / `message_schema`），主程序 `core/fused/` 不含协议分支
 3. **五源解耦 + 中枢 + 知识图** — 五源（spec / 协议实现源码 / 数据流量 / 历史漏洞 / expert_note）各自抽取为独立 Fact，汇聚进**按知识分类的中枢**（A~F 六分类），再投影成**实体关系图 + 社区**，供检索与种子生成
 4. **fail-closed 校验** — LLM 写出的种子必须通过 `core/fused/validation.py` 七级校验，未注册引用（subject.type / aspect / epistemic_type）直接硬错误
 5. **流程到"生成高价值初始种子"结束** — 种子产出 `.raw` + `<协议>.dict` 定向字典，由 `scripts/seedgen.py` 落盘
@@ -20,7 +20,7 @@
 |---|---|
 | 中枢核心 | `core/fused/`（Layer 0）|
 | 知识原子 | `Fact`（六元组 fact_key + claims + resolution）|
-| 协议 Profile | `fused_hub/targets/<协议>/profile.json` |
+| 协议 Profile | `profiles/<协议>/profile.json` |
 | 注册表 | `subject_type_registry` / `aspect_registry` / `epistemic_type_registry` |
 | 规范化序列化 | `canonical_serialize` + 确定性 ID（`compute_fact_id` / `compute_claim_id` / `compute_evidence_id`）|
 | 语料选择器 | `core/fused/downstream/selector.py`（`select_seeds` / `prioritize_seeds` / `vuln_proximity_score`）|
@@ -71,7 +71,7 @@ rag-chatafl/
 │   └── seed_oracle_filter.py  # SIP 响应码 oracle 过滤
 ├── kb/<协议>/<源>/             # 五源知识库（read-only）
 │   └── spec/协议实现源码/数据流量/历史漏洞/expert_note
-├── fused_hub/                 # 中枢文档与配置（**人工资产**，进 git）
+├──                  # 中枢文档与配置（**人工资产**，进 git）
 │   ├── schema/                # 5 个契约 JSON（知识分类/属性/图/实体/判据）
 │   ├── docs/                  # 融合中枢规范与设计
 │   └── targets/<协议>/        # 4 协议 profile.json + rfc_config + skeleton + 字典
@@ -88,12 +88,12 @@ rag-chatafl/
 
 ## 协议无关架构
 
-中枢核心（`core/fused/`）协议无关，**所有协议特定配置放 `fused_hub/targets/<协议>/profile.json`**。
+中枢核心（`core/fused/`）协议无关，**所有协议特定配置放 `profiles/<协议>/profile.json`**。
 
 新加协议只需：
 
 1. 准备 kb 数据：`kb/<新协议>/{spec,协议实现源码,数据流量,历史漏洞,expert_note}/`
-2. 建 Profile：`fused_hub/targets/<新协议>/profile.json`（含 `allowed_methods` / `transport` / `message_schema`）
+2. 建 Profile：`profiles/<新协议>/profile.json`（含 `allowed_methods` / `transport` / `message_schema`）
 3. 抽取 + 生成：
 
 ```bash
@@ -132,7 +132,7 @@ python scripts/seedgen.py --protocol rtsp --focus-group B
 | 层   | 负责                      | 关键文件                                                                             |
 | --- | ----------------------- | -------------------------------------------------------------------------------- |
 | LLM | 协议 prompt + JSON 输出     | `core/llm.py` + Stub/DeepSeek                                                    |
-| 协议层 | per-protocol Profile 配置 | `fused_hub/targets/<协议>/profile.json`                                            |
+| 协议层 | per-protocol Profile 配置 | `profiles/<协议>/profile.json`                                            |
 | 抽取层 | 五源 → Fact（六元组）          | `core/fused/norm.py` + `expert_note.py` + `vuln.py` + `source.py` + `traffic.py` |
 | 校验层 | fail-closed 校验 + 注册表治理  | `core/fused/validation.py` + `core/fused/registry.py`                            |
 | 生成层 | 三层检索 + LLM 写 + 落盘       | `core/fused/downstream/selector.py` + `rag_seedgen.py` + `scripts/seedgen.py`    |

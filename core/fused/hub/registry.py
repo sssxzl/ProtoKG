@@ -1,4 +1,4 @@
-"""core/fused/registry.py —— 从 fused_hub/schema/ 加载 3 个注册表。
+"""core/fused/registry.py —— 从 core/fused/hub/registry/ 加载 3 个注册表。
 
 fail-closed: 未注册引用 → UnregisteredReferenceError。
 """
@@ -10,7 +10,8 @@ from pathlib import Path
 from core.fused.hub.exceptions import FusedSchemaError  # 同包异常基类
 
 
-SCHEMA_DIR = Path("fused_hub") / "schema"
+#: ★ 契约目录（**包内绝对路径**）⇒ 不依赖进程 cwd
+SCHEMA_DIR = Path(__file__).resolve().parent / "registry"
 
 
 class UnregisteredReferenceError(FusedSchemaError):

@@ -12,7 +12,7 @@
       E_observation/observation.jsonl  实际什么样
       F_security/security.jsonl        哪里可能出错
 
-★ **落位依据** = ``fused_hub/schema/knowledge_slots.json`` 的 ``aspect_map``
+★ **落位依据** = ``core/fused/hub/knowledge_slots.json`` 的 ``aspect_map``
   （aspect → (category, slot)）⇒ **不改抽取器**，只重排已有事实。
 
 ★★ **顺序契约（本模块能保持「种子逐字节不变」的关键）**：

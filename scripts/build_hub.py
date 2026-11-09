@@ -186,7 +186,7 @@ def _clean_per_source(protocol: str, sources: list[str] | None = None) -> None:
 
     只删五源子目录（build_hub 自产的再生数据），**保留** boundary_probe 等
     运行时回写（oracle 探测回写的 legal_boundary 等非五源知识，属宝贵
-    富化，不应被清空），不动 kb/ 与 fused_hub/targets/。
+    富化，不应被清空），不动 kb/ 与 profiles/。
 
     ★ A0.5：保留各源的 `facts/snapshots/`（历史幂等快照），使回滚能力可用。
     """
@@ -560,7 +560,7 @@ def _skeleton_aspect_origin(doc: dict) -> dict:
 
 
 def _materialize_skeleton(protocol: str, *, exclude_dims: tuple = ()) -> int:
-    """把 ``fused_hub/targets/<协议>/skeleton.json`` 物化进中枢的 ``profile/`` 源。
+    """把 ``profiles/<协议>/skeleton.json`` 物化进中枢的 ``profile/`` 源。
 
     ★ 为什么必须有：种子生成本质是「**状态机边的遍历**」
       ⇒ 骨架提供「跨实验复用的协议结构」，保证**任何单源构建**时

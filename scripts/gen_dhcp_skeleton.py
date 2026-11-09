@@ -1,7 +1,7 @@
 """生成 DHCPv4 的 ``skeleton.json``（协议骨架资产）。
 
 ★ **不改任何生产代码** —— 本脚本只**生成资产文件**
-  （``fused_hub/targets/dhcpv4/skeleton.json``），build_hub 会照常把它物化进中枢。
+  （``profiles/dhcpv4/skeleton.json``），build_hub 会照常把它物化进中枢。
 
 ★ 骨架内容全部**来自 RFC 2131 §3.1 的 ASCII 时序图**（kb/dhcpv4/spec/rfc2131.txt
   第 788–830 行），逐条对应：
@@ -298,7 +298,7 @@ def build() -> dict:
 
 def main() -> int:
     sk = build()
-    out = ROOT / "fused_hub" / "targets" / PROTO / "skeleton.json"
+    out = ROOT / "profiles" / PROTO / "skeleton.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     io.open(out, "w", encoding="utf-8", newline="").write(
         json.dumps(sk, ensure_ascii=False, indent=2) + "\n")

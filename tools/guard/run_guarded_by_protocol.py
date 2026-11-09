@@ -78,7 +78,7 @@ def known_protocols() -> list[str]:
     for _p in sorted(kb.iterdir()):
         if not _p.is_dir() or not (_p / "spec").is_dir():
             continue
-        _t = ROOT / "fused_hub" / "targets" / _p.name.lower()
+        _t = ROOT / "profiles" / _p.name.lower()
         if (_t / "profile.json").is_file():
             out.append(_p.name.lower())
     return out

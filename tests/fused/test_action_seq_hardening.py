@@ -59,7 +59,7 @@ def _seed() -> SeedCorpus:
 
 
 def _profile(proto: str = "rtsp") -> dict:
-    p = ROOT / "fused_hub" / "targets" / proto / "profile.json"
+    p = ROOT / "profiles" / proto / "profile.json"
     return json.loads(p.read_text(encoding="utf-8"))
 
 

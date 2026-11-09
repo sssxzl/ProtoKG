@@ -724,7 +724,7 @@ def _section_kind(window: dict, cfg: dict,
 
       ① 同一章节号同时列在两个清单里时**静默判错**。实测 smtp：``4.2``
          同时在 ``method_sections`` 与 ``status_sections``
-         （``fused_hub/targets/smtp/rfc_config.json``）⇒ 整章
+         （``profiles/smtp/rfc_config.json``）⇒ 整章
          「SMTP Replies」被判成 method ⇒ 状态码抽成 **0** 条（应为 24）。
       ② **短前缀盖住长子节**：smtp 的 ``method_sections`` 含 ``"3"``
          （覆盖 rfc4954/rfc3207 的扩展命令章），而 ``field_sections`` 含
@@ -914,7 +914,7 @@ def _load_rfc_config(protocol: str) -> dict:
     """加载 rfc 源的协议专属配置，返回统一结构的 cfg 字典。
 
     配置来源（优先级从高到低）：
-      ① **fused_hub/targets/<protocol>/rfc_config.json**（推荐路径，A0.2 新增）
+      ① **profiles/<protocol>/rfc_config.json**（推荐路径，A0.2 新增）
          —— 协议专属的 rfc 抽取配置独立成文件，与 profile.json 分层，避免
          profile 段膨胀（方案文档风险点 R3）。结构：
            {

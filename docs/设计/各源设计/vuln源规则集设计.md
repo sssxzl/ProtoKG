@@ -1,7 +1,7 @@
 # docs/设计/各源设计/vuln源规则集设计.md — vuln 源 Candidateization 规则集设计
 
 > Step 4.8g · vuln 源收尾 · 设计真源
-> 契约: `fused_hub/docs/fused_canonical_spec.md` 第二章 §2.1–§2.3（Rule Contract 8 字段）
+> 契约: `docs/设计/顶层设计/规范化序列化规范.md` 第二章 §2.1–§2.3（Rule Contract 8 字段）
 > 参照实现: `core/fused/pipeline/rules/candidateization.py`（4.8b 的 CR-1..CR-5）
 > 上游: `docs/设计/种子生成/规则集设计.md` §3（4.8b 四类规则集设计）
 
@@ -396,13 +396,13 @@ document=kb/vuln/RTSP-001.json  source_type=['vuln']
    HIT cc.fallback.unknown   family=fallback  -> unknown
 ```
 
-`fused_hub/schema/claim_classification_rules.json` 的 8 条 rule 里
+`core/fused/hub/registry/claim_classification_rules.json` 的 8 条 rule 里
 **没有任何一条覆盖 `vuln` 源**（`cc.security_notes.security_hint` 的 hint 是
 `kb/expert_note/security_notes.json`；`cc.expert_note.default_interpretive` 的 hint 是
 `kb/expert_note/`；`cc.rfc.*` 按 `source_type == "rfc"`；`cc.traffic.observational` 按
 `source_type ∈ {traffic_pcap, traffic_raw}`；`cc.implementation.*` 按 `source_type == "source"`）。
 
-于是全部 14 个 Claim 都是 `claim_class=unknown`。而 `fused_hub/docs/fused_canonical_spec.md`
+于是全部 14 个 Claim 都是 `claim_class=unknown`。而 `docs/设计/顶层设计/规范化序列化规范.md`
 **条款 11**：
 
 > `claim_class` 为 `unknown` 的 claim **不得进入 Phase A eligible set**。
@@ -435,7 +435,7 @@ lineage / audit 完整，meta 正常写。丢的只是 **resolved assertion**：
 `unresolved(insufficient_evidence)`，即「知道有这个 subject 的这条安全陈述，但无法判定其
 resolution」。这与「知识没进中枢」有本质区别。
 
-**要修需要改 `fused_hub/schema/claim_classification_rules.json`（冻结 JSON），
+**要修需要改 `core/fused/hub/registry/claim_classification_rules.json`（冻结 JSON），
 且 `claim_class` 取值有两种都合理的答案**：
 
 | 候选 | `security_condition` 优先级 | 后果 | 风险 |

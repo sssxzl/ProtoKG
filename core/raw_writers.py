@@ -286,11 +286,11 @@ def _generic_to_raw(seed: SeedCorpus, request_format: dict) -> bytes:
 
 
 # ============================================================================
-# 协议 Profile 驱动（换协议只换 fused_hub/targets/<protocol>/profile.json）
+# 协议 Profile 驱动（换协议只换 profiles/<protocol>/profile.json）
 # ============================================================================
 
 def _targets_root() -> Path:
-    """fused_hub/targets 目录（协议 Profile 数据根）。统一复用 paths 避免双路径解析。"""
+    """targets 目录（协议 Profile 数据根）。统一复用 paths 避免双路径解析。"""
     from core import paths
     return paths.targets_root()
 

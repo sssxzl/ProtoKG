@@ -212,7 +212,7 @@ def publish_rules(protocol: str, rows: Iterable[Any], *,
     #   **SIP 的 RFC 3261 规则会进 RTSP 的库** ⇒ 投影出「Supported/Via 必须
     #   存在」这类与 RTSP 无关的约束（RTSP 库实测 5 条里 3 条是 SIP 的）。
     #   判据：``rule.evidence.spec_version`` ∈ 允许集合
-    #   （允许集合来自 ``fused_hub/targets/<协议>/rfc_config.json`` 的
+    #   （允许集合来自 ``profiles/<协议>/rfc_config.json`` 的
     #   ``spec_version``；缺省 = **不过滤**，保持旧行为）。
     _allowed_specs: Optional[set[str]] = None
     if spec_versions is not None:

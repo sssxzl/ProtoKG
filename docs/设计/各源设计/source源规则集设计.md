@@ -6,7 +6,7 @@
 > 上游：`docs/设计/各源设计/第五源设计.md`（Final Frozen Candidate）
 > 　　　`docs/设计/各源设计/source源语料能力档位.md`（**ACTIVE**）
 > 参照：`docs/设计/各源设计/traffic源规则集设计.md`（**结构类比，内容不复制**）
-> 契约：`fused_hub/docs/fused_canonical_spec.md`、`fused_hub/schema/*.json`
+> 契约：`docs/设计/顶层设计/规范化序列化规范.md`、`core/fused/hub/registry/*.json`
 > 裁定：`docs/工具/决策记录/已决事项.md` **D24 – D34**
 
 ---

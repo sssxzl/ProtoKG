@@ -35,7 +35,7 @@ _PROFILE_CACHE: dict[str, dict] = {}
 
 
 def _load_profile_cached(protocol: str) -> dict:
-    """读 ``fused_hub/targets/<protocol>/profile.json``（缓存；缺失 ⇒ 空 dict）。"""
+    """读 ``profiles/<protocol>/profile.json``（缓存；缺失 ⇒ 空 dict）。"""
     key = str(protocol or "").strip().lower()
     if key in _PROFILE_CACHE:
         return _PROFILE_CACHE[key]

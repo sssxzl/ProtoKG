@@ -264,7 +264,7 @@ def extract_session_candidates(protocol: str = "rtsp",
             return []
     # ③ 回退：读真实流量模板（traffic 侧）
     root = Path(__file__).resolve().parents[3]
-    path = root / "fused_hub" / "targets" / f"{protocol}_request_templates.json"
+    path = root / "profiles" / f"{protocol}_request_templates.json"
     if not path.exists():
         return []
     try:
@@ -1059,7 +1059,7 @@ def _profile_transport_tokens(protocol: str) -> set:
     """从 profile 读取协议特有的 Transport 组合串（方案 α：差异下沉到 profile）。
 
     协议差异（如 RTSP 的 "RTP/AVP;unicast;client_port=50000-50001"）不写死在
-    本模块，而是放在 `fused_hub/targets/<proto>/profile.json` 的
+    本模块，而是放在 `profiles/<proto>/profile.json` 的
     `boundary_probe.transport_tokens` 字段 —— 换协议 = 加一份 profile.json。
     profile 未声明时返回空集合（此时仅用协议无关派生部分）。
     """
@@ -1088,7 +1088,7 @@ def generate_targeted_dict(bundle: dict,
 
     与 generate_protocol_dict 的关系：本函数是它的**超集构造**，不是替代。
 
-    · base_tokens：基础字典 token 集合（默认从 fused_hub/targets/<proto>/
+    · base_tokens：基础字典 token 集合（默认从 profiles/<proto>/
       <proto>_base.dict 读取；仓库内副本与镜像内 rtsp.dict 逐字节相同，
       MD5 由编排预检锁定）。为 None 时自动读取。
     · include_trigger_fields：是否并入 vuln_pattern 的 trigger_field
@@ -1167,7 +1167,7 @@ def _compact_targeted_tokens(tokens: set, base_tokens: set, sessions: list,
 
 
 def load_base_dict_tokens(protocol: str = "rtsp") -> set:
-    """读取仓库内的基础字典副本 `fused_hub/targets/<proto>/<proto>_base.dict`。
+    """读取仓库内的基础字典副本 `profiles/<proto>/<proto>_base.dict`。
 
     该文件是镜像内基础字典（/home/ubuntu/experiments/rtsp.dict）的逐字节副本，
     MD5 由编排预检与 DICT_FROZEN.json 锁定。文件缺失时返回空集合

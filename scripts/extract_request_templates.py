@@ -9,7 +9,7 @@
   1. 遍历 kb/数据流量/*/capture.pcapng（fallback clean.pcapng）
   2. 从二进制中提取明文 RTSP 请求（METHOD url RTSP/1.0 + headers）
   3. 按 method 聚合「请求模板」：URL 结构、完整 header 集合、典型取值
-  4. 产出 fused_hub/targets/rtsp_request_templates.json
+  4. 产出 profiles/rtsp_request_templates.json
 
 产出供 rag_seedgen.render_seed_prompt 注入，引导 LLM 生成贴近真实报文的种子。
 """
@@ -22,7 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TRAFFIC_DIR = ROOT / "kb" / "数据流量"
-OUT = ROOT / "fused_hub" / "targets" / "rtsp_request_templates.json"
+OUT = ROOT / "profiles" / "rtsp_request_templates.json"
 
 # 请求行 + headers 提取
 REQ_RE = re.compile(r"([A-Z]+) (rtsp://[^\r\n]+) RTSP/1\.0")

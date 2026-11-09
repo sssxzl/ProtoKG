@@ -7,7 +7,7 @@
 **真实 SIP profile** 也生效，把 ``sip:bob@127.0.0.1`` 改成 ``sip:127.0.0.1:5060``
 （user part 丢失、凭空加端口），破坏已发表 RQ4 SIP 语料的逐字节不变性。
 
-本文件专门用**仓库内真实 profile**（``fused_hub/targets/<协议>/profile.json``）
+本文件专门用**仓库内真实 profile**（``profiles/<协议>/profile.json``）
 锁住这些真实场景 —— 尤其是「SIP URI 必须逐字节不变」这条锁，没有它同类回归会再犯。
 
 覆盖的缺陷（对应 QA-4 报告 `guard/rtsp_url_pollution_verify.md` §9）：
@@ -34,7 +34,7 @@ from core.fused.downstream.target_env import (  # noqa: E402
     target_endpoint,
 )
 
-TARGETS = ROOT / "fused_hub" / "targets"
+TARGETS = ROOT / "profiles"
 
 
 def _load(protocol: str) -> dict:

@@ -226,7 +226,7 @@ def test_guard_does_not_report_methods_not_in_transitions(bh, monkeypatch):
 def test_rtsp_record_has_required_headers():
     """★ rtsp 的 RECORD 必须有必填头（RFC 2326 §10.11 示例：CSeq + Session）。"""
     prof = json.loads(
-        (ROOT / "fused_hub" / "targets" / "rtsp" / "profile.json")
+        (ROOT / "profiles" / "rtsp" / "profile.json")
         .read_text(encoding="utf-8"))
     rh = (prof.get("seedgen") or {}).get("required_headers") or {}
     assert "RECORD" in rh, "RECORD 的必填头又被删掉了"

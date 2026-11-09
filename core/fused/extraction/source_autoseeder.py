@@ -126,7 +126,7 @@ _MESSAGE_HINT_DEFAULT = "请根据源码自行归纳该协议消息的字段结�
 
 
 def _load_profile_data(protocol: str) -> Optional[dict]:
-    """读 fused_hub/targets/<protocol>/profile.json（协议维度配置）。"""
+    """读 profiles/<protocol>/profile.json（协议维度配置）。"""
     if not protocol:
         return None
     path = paths.target_profile(protocol)

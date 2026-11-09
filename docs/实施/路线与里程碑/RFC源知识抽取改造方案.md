@@ -201,8 +201,8 @@
 
 | 任务 | 涉及文件 | 接口 | 依赖 | 验收标准 |
 |---|---|---|---|---|
-| A0.1 补 4 个缺失协议 Profile | `fused_hub/targets/{dns,dtls,ssh,tls}/profile.json` | `allowed_methods` / `canonical_flow` / `transport` / `message_schema` | 无 | 4 个 profile 存在且被 `paths.target_profile` 解析成功 |
-| A0.2 Profile 拆分（评审 R3）| 新建 `fused_hub/targets/<协议>/rfc_config.json` | `method_sections` / `field_sections` / `status_sections` / `method_excludes` | A0.1 | **不动现有 `profile.json` 结构**；`_load_rfc_config` 在缺失时**显式警告**（不再静默返回空默认）|
+| A0.1 补 4 个缺失协议 Profile | `profiles/{dns,dtls,ssh,tls}/profile.json` | `allowed_methods` / `canonical_flow` / `transport` / `message_schema` | 无 | 4 个 profile 存在且被 `paths.target_profile` 解析成功 |
+| A0.2 Profile 拆分（评审 R3）| 新建 `profiles/<协议>/rfc_config.json` | `method_sections` / `field_sections` / `status_sections` / `method_excludes` | A0.1 | **不动现有 `profile.json` 结构**；`_load_rfc_config` 在缺失时**显式警告**（不再静默返回空默认）|
 | A0.3 **消除重复抽取**（评审 T5 的真解）| `core/fused/rfc_extractor.py` | 同 fact_key 多次命中时：**正文 claim 进入正式 Fact**；**TOC claim 只进审计/诊断信息，不进 `all_claims` 有效证据集合** | A1.2 | SIP 冲突数 **68 → 0**；且**TOC 内容不污染规范证据**（改进.md 问题②：否则只是「重复 ID 归零」，知识污染仍在）|
 | A0.4 rfc 源质量闸（**拆成两类**，改进.md 问题③）| `scripts/build_hub.py` | 新增 `rfc_quality_report(facts, profile)` | A0.1 | ① **构建质量闸**（**阻断构建**）：schema 合法 / 重复 fact_id / TOC 残留 / 结构完整性 —— **不依赖人工真值集**，新增协议也能构建<br>② **离线评测**（**发布准入**，不阻断构建）：P/R/F1 / 章节层级准确率 / 人工真值对比 —— 需要真值集，缺失时**跳过而非失败** |
 | A0.5 幂等与快照（评审 M2/F5）| `scripts/build_hub.py` | `build_id = hash(输入+配置版本+模型版本)`；产物写**独立快照**后原子切换 | 无 | 同输入两次 build 产出字节一致；并发 build 不互相覆盖 |
@@ -244,7 +244,7 @@
 |---|---|---|---|---|
 | B1 **两层语义模型重设计**（评审 T2）| `core/fused/models.py` | `SemanticRule` 拆为**证据层**（原文 span / 章节 / 规范版本 / source_anchor）+ **可执行层**（target_field / operator / operand / precondition / expected_behavior）；新增唯一 `rule_id` | A1 | **不可转换为可执行规则的内容只作知识候选，不进自动生成链路** |
 | B2 证据有效性校验 | 同上 | 在来源窗口中**验证引用的字符区间真实存在**（评审 T6）| B1 | 引用不存在 → 规则被拒；`MUST`/`SHOULD`/`MAY`/ABNF **区分约束强度** |
-| B3 期望响应词表 | `fused_hub/targets/<协议>/rfc_config.json` | `expected_response_classes`；提示词内固化该词表，**禁止 LLM 自由生成** | B1 | 抽出的期望值只允许取词表内值；词表由配置提供而非硬编码 |
+| B3 期望响应词表 | `profiles/<协议>/rfc_config.json` | `expected_response_classes`；提示词内固化该词表，**禁止 LLM 自由生成** | B1 | 抽出的期望值只允许取词表内值；词表由配置提供而非硬编码 |
 | B4 规范版本与冲突模型（评审 M1）| `core/fused/models.py` + registry | 区分**规范证据 / 实际观察 / 模型推断 / 人工确认**四类来源；支持规则撤销、替代、版本隔离 | B1 | `normative > observed` **不足以**完成消解；同字段多版本约束可共存 |
 | B5 **四库分离**（评审 T9）| `core/fused/downstream/rule_store.py` | 权威规则 / 候选规则 / 已撤销规则 / 实验反馈**分库存储** | B1 | 覆盖率**只调选择优先级**，不修改规则内容；错误规则可撤回 |
 | B6 置信度判定重写（评审 T6）| `core/fused/rfc_extractor.py` | 见 §3.2 末段（修 `replace()` 不写回、类型契约矛盾、`and` 漏标）| B2 | 显式程度 / 证据有效性 / 模型置信度**三者分开记录** |
@@ -314,7 +314,7 @@
 | 规则可执行率 | — | 里程碑 B 目标 | 评审新增：能转成可执行规则的比例 |
 | 逐字节确定性 | ✅ 8/8 | 保持 | ⚠️ 仅作**回归护栏**，**不做投票验收**（不同模型子集本就该不同）|
 
-> **⚠️ 关于 `allowed_methods` 的信息泄漏（评审 M6）**：该字段是 `fused_hub/targets/<协议>/profile.json` 里
+> **⚠️ 关于 `allowed_methods` 的信息泄漏（评审 M6）**：该字段是 `profiles/<协议>/profile.json` 里
 > **人工撰写**的配置。若用它同时（a）配置抽取、(b) 判定 method 召回，就是**人工知识既当输入又当标准**。
 > 实测已显示这个风险真实存在：RTSP 的 `allowed_methods` 有 8 个，而 rfc 实抽到 11 个，
 > 差集 `ANNOUNCE` / `RECORD` / `REDIRECT` **是真实 RTSP 方法**，只是 profile 没列 ——
@@ -800,7 +800,7 @@ def reflow_rules(rules: list[SemanticRule],
 | `SpecWindow` / 章节树 | `core/fused/rfc_extractor.py`（新增函数）| 复用 `_clean_body`（已能清页眉页脚）|
 | `SemanticRule` | `core/fused/models.py`（新增 dataclass）+ `core/fused/registry.py`（注册 aspect）| 复用 `Subject` / `Fact` / `ConditionAlways` / `ConditionPredicate` |
 | `map_norm_to_facts` 扩展 | `core/fused/norm.py`（`RFC_KIND_MAP` 增 "constraint" / "expectation"）| 复用现有 kind→Fact 分派 |
-| 期望响应词表 | `fused_hub/targets/<协议>/profile.json`（新增段）+ `core/fused/rfc_extractor.py` | 复用 `profile.seedgen` 的 per-protocol 配置模式 |
+| 期望响应词表 | `profiles/<协议>/profile.json`（新增段）+ `core/fused/rfc_extractor.py` | 复用 `profile.seedgen` 的 per-protocol 配置模式 |
 | 投票层 | 新建 `core/fused/semantic/llm_ensemble.py` | 复用 `core/llm.py` 的 `chat_json` |
 | 字段路径树 | 新建 `core/fused/downstream/field_mutation.py` | 复用 traffic 源已抽出的真实字段值（P4 成果）|
 | 变异引擎 | 同上 | 复用 `core/fused/downstream/edge_cover.py` 的 `build_message` |

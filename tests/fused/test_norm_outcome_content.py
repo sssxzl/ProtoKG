@@ -142,7 +142,7 @@ def test_real_corpus_total_outcomes_all_parsed():
     防止「某个协议被整体漏检」这类逐协议用例看不出的回归。
 
     ★ 65 → 89（2026-11-06，P1-2）：smtp 由 **0 → 24**。原因是两个缺陷叠加：
-      ① ``fused_hub/targets/smtp/rfc_config.json`` 的 ``4.2`` 同时列在
+      ① ``profiles/smtp/rfc_config.json`` 的 ``4.2`` 同时列在
          ``method_sections`` 与 ``status_sections``，而 ``_section_kind``
          旧实现是**固定 method 优先** ⇒ 整章「SMTP Replies」被判成 method；
       ② 状态码通道只认**章节标题**形态（``^\\d{3}\\s+title``），

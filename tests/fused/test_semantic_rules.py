@@ -43,7 +43,7 @@ from core.fused.semantic.semantic_rules import (
     resolve_evidence_kind,
 )
 
-#: 已知字段集（与 `fused_hub/targets/*/rfc_config.json` 同形）
+#: 已知字段集（与 `profiles/*/rfc_config.json` 同形）
 _KNOWN_FIELDS = (
     "Content-Length",
     "Max-Forwards",

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """core/paths.py —— 统一路径解析：协议 × 源 二维解耦的唯一入口。
 
-把「知识输入（kb）」「抽取中间产物（derived）」「目标配置（fused_hub/targets）」
+把「知识输入（kb）」「抽取中间产物（derived）」「目标配置（targets）」
 的路径全部集中在这里，以 (protocol, source) 两个正交维度解析。
 
 设计动机（对齐 Fuzz4All 的「配置驱动」+ 本项目的「协议×源二维解耦」）：
-  - 协议维度差异 → 全部落在 fused_hub/targets/<protocol>/profile.json + kb/<protocol>/；
+  - 协议维度差异 → 全部落在 profiles/<protocol>/profile.json + kb/<protocol>/；
   - 知识源维度差异 → 落在五源抽取器（core/fused/{source_autoseeder,norm,expert_note,
     traffic,vuln}.py），各自独立；
   - 两者笛卡尔积：任何 (协议, 源) 组合都能解析出合法路径，换协议/换源零代码改动。
@@ -277,20 +277,20 @@ def seeds_dir(protocol: str) -> Path:
 
 
 # ===========================================================================
-# 目标配置（fused_hub/targets/<protocol>/）
+# 目标配置（profiles/<protocol>/）
 # ===========================================================================
 
 def targets_root() -> Path:
-    return PROJECT_ROOT / "fused_hub" / "targets"
+    return PROJECT_ROOT / "profiles"
 
 
 def target_profile(protocol: str) -> Path:
-    """fused_hub/targets/<protocol>/profile.json。"""
+    """profiles/<protocol>/profile.json。"""
     return targets_root() / protocol.lower() / "profile.json"
 
 
 def target_skeleton(protocol: str) -> Path:
-    """fused_hub/targets/<protocol>/skeleton.json（**协议骨架**）。
+    """profiles/<protocol>/skeleton.json（**协议骨架**）。
 
     ★ 批次 1.6 步 0.5 引入：协议骨架是「跨实验复用的协议结构」（消息实例 +
       目标状态 + 方法序列 + 取值枚举），不属于任何单一知识源 ⇒ 固化为
@@ -303,7 +303,7 @@ def target_skeleton(protocol: str) -> Path:
 
 
 def target_rfc_config(protocol: str) -> Path:
-    """fused_hub/targets/<protocol>/rfc_config.json（rfc 源的协议专属抽取配置）。
+    """profiles/<protocol>/rfc_config.json（rfc 源的协议专属抽取配置）。
 
     与 profile.json 分层：profile.json 是协议身份 + 通用段（allowed_methods /
     raw_format / seedgen …），rfc_config.json 只放**rfc 源抽取**需要的协议专属
@@ -313,12 +313,12 @@ def target_rfc_config(protocol: str) -> Path:
 
 
 def target_resources(protocol: str) -> Path:
-    """fused_hub/targets/<protocol>_streams.json（目标资源清单，如 RTSP 流名）。"""
+    """profiles/<protocol>_streams.json（目标资源清单，如 RTSP 流名）。"""
     return targets_root() / f"{protocol.lower()}_streams.json"
 
 
 def target_request_templates(protocol: str) -> Path:
-    """fused_hub/targets/<protocol>_request_templates.json（真实请求模板）。"""
+    """profiles/<protocol>_request_templates.json（真实请求模板）。"""
     return targets_root() / f"{protocol.lower()}_request_templates.json"
 
 

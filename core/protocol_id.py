@@ -13,7 +13,7 @@
   ② **LLM**：规则无法判定时 ⇒ 把候选集 + 输入交给 LLM 判断
      ⇒ 应对「描述性输入」（如「那个用 UDP 做地址分配的协议」）。
 
-★ **协议清单从资产目录推导**（``fused_hub/targets/<协议>/``）
+★ **协议清单从资产目录推导**（``profiles/<协议>/``）
   ⇒ 加协议只加资产，不改本文件。
 """
 from __future__ import annotations
@@ -40,9 +40,9 @@ _ALIASES: dict[str, tuple[str, ...]] = {
 
 
 def known_protocols() -> list[str]:
-    """**已知协议清单**（从资产目录 ``fused_hub/targets/<协议>/`` 推导）。"""
+    """**已知协议清单**（从资产目录 ``profiles/<协议>/`` 推导）。"""
     from core import paths
-    root = paths.PROJECT_ROOT / "fused_hub" / "targets"
+    root = paths.PROJECT_ROOT / "profiles"
     if not root.is_dir():
         return []
     out = []
