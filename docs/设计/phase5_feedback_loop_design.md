@@ -1,0 +1,234 @@
+# docs/设计/phase5_feedback_loop_design.md — 闭环再生成最终版设计（含调试方案）
+
+> 定位：Phase 5「fuzz 结果反馈 → 定向再生成」的最终落地设计。
+> 综合输入：
+>   - 批判性评估 9 条（P0：替换而非追加 / 回退而非加强；P1：状态覆盖为主指标 /
+>     归因带置信度 / 可达性过滤；P2：停止条件 / 归因回写 / 规则优先 / 跨机时序）
+>   - 种子质量指标调研（`local/seed_quality_metrics.md`：状态覆盖 = 主指标，合法性 = 门槛，多样性 = 待补）
+>
+> 落盘日期：2026-10-20
+
+---
+
+## 一、核心设计决策（9 条批判 → 落地方式）
+
+| # | 批判点 | 落地决策 |
+|---|---|---|
+| P0-1 | 追加种子摊薄变异预算 | **替换而非追加**：`replace_seeds` 用新种子淘汰等量低贡献旧种子，总数恒定 |
+| P0-2 | 加强已触发会 dry-run 崩 | **回退而非加强**：`rollback_triggered` 用 `probe_boundary` 二分定位「再差一次变异就崩」的合法边界 |
+| P1-3 | 代码覆盖率停滞选错指标 | **主信号 = ChatAFL 响应码状态机覆盖（n_edges）停滞 + 新响应码边**；语义状态缺口做不了（状态空间不对齐，见 §七）|
+| P1-4 | 崩溃归因不准确 | 归因**带置信度** + 崩溃**多次重放取多数** + 低置信度交人工 |
+| P1-5 | 不可达边误导补缺口 | 补缺口前**从 Init BFS 可达性过滤**，只补可达未覆盖边 |
+| P2-6 | 无停止条件死循环 | **三重停止条件**：状态覆盖 N 轮无变化 / 归因集合稳定 / 预算耗尽 |
+| P2-7 | 归因不回写丢了卖点 | 归因结果**回写 vuln_pattern**（标记已触发/未触发 + 置信度） |
+| P2-8 | 每轮 LLM 成本高 | **规则优先、LLM 兜底**：补缺口/回退/替换全规则版，仅「调整」用 LLM |
+| P2-9 | 跨机时序/故障 | 固定时间片「跑完再拉」+ ssh 重试 + 空反馈降级 |
+
+---
+
+## 二、模块划分与函数签名
+
+闭环拆成 6 个可独立调试的模块，全部纯函数优先（可单测、不依赖虚拟机）。
+
+```
+collect → parse → decide → regenerate → replace → deploy → (循环)
+```
+
+### 模块 1：采集（ssh 胶水，最后调）
+
+```python
+def collect_feedback(vm_workdir: str, local_tmp: Path, retries: int = 3) -> dict:
+    """ssh 拉 fuzzer_stats + crashes/ → {"fuzzer_stats": dict, "crash_stacks": list[str]}
+    ssh 失败重试；拉不到返回空 dict（调用方降级跳过本轮）。"""
+```
+
+### 模块 2：解析（纯函数，最先调、单测覆盖）
+
+```python
+def parse_state_coverage_gap(transitions: list[tuple], covered_edges: set,
+                             init: str = "Init") -> list[tuple]:
+    """状态机边 vs fuzzer 实际覆盖 → 「可达但未覆盖」的边。
+    含可达性过滤：从 init BFS，只保留可达边，过滤 Registering 等孤立自环。"""
+
+def attribute_crashes(crash_stacks: list[str], vuln_patterns: dict,
+                      replay_majority: int = 3) -> list[dict]:
+    """崩溃栈 → 漏洞模式归因。返回 [{pattern_action, case_id, confidence, trigger}]
+    对每个 crash 多次重放取多数（概率性 UAF 时序抖动的防护）；低置信度交人工。"""
+
+def seed_diversity(seeds: list) -> float:
+    """种子字段取值香农熵（多样性，辅助判据）。熵长期偏低 → 触发多样性生成。"""
+```
+
+### 模块 3：决策（纯函数）
+
+```python
+def decide_action(gap: list, attribution: list, history: dict) -> str:
+    """→ "补缺口" | "回退" | "调整" | "停止"
+    停止条件：① 状态覆盖连续 N 轮无变化 ② 归因集合稳定 ③ 预算耗尽。"""
+```
+
+### 模块 4：再生成（规则版优先，LLM 兜底）
+
+```python
+def regenerate_missing_edges(bundle, missing_edges) -> list[SeedCorpus]:
+    """补缺口：edge_cover 只生成「可达未覆盖」边的种子（不是全量）。"""
+
+def rollback_triggered(triggered_patterns, oracle, bundle) -> list[SeedCorpus]:
+    """回退：对「已触发」模式用 probe_boundary 二分，定位「再差一次变异就崩」的合法边界点。"""
+
+def regenerate_adjust(untriggered_patterns, bundle, llm) -> list[SeedCorpus]:
+    """调整：对「未触发」模式用 mutation_hint 引导 LLM 生成更接近触发点的合法种子。"""
+```
+
+### 模块 5：替换（纯函数，关键）
+
+```python
+def replace_seeds(old_seeds: list, new_seeds: list, max_seeds: int) -> list:
+    """新种子替换等量「低贡献」旧种子，总数 ≤ max_seeds。
+    低贡献排序依据：从未被 fuzzer 选中变异 / 未贡献覆盖率增长 / 多样性冗余。"""
+```
+
+### 模块 6：部署
+
+```python
+def deploy_seeds(seeds: list, vm_workdir: str) -> None:
+    """scp 新种子回虚拟机（覆盖旧种子目录），带重试。"""
+```
+
+---
+
+## 三、闭环主流程（伪代码）
+
+```python
+def feedback_loop(bundle, vm_workdir, max_rounds=10, max_seeds=30, llm=None):
+    seeds = cold_start_seeds(bundle)          # 冷启动：先过 oracle + validate，确保合法
+    history = {"state_cover": [], "attribution": set()}
+    for rnd in range(max_rounds):
+        fb = collect_feedback(vm_workdir)      # ① 采集
+        if not fb:
+            continue                            # 拉不到数据 → 跳过本轮（P2-9）
+
+        gap = parse_state_coverage_gap(bundle["transitions"], fb["covered_edges"])   # ② 解析
+        attr = attribute_crashes(fb["crash_stacks"], bundle["vuln_pattern"])          # ② 归因
+        history["attribution"] |= {a["case_id"] for a in attr if a["confidence"] >= 0.6}
+
+        action = decide_action(gap, attr, history)   # ③ 决策
+        if action == "停止":
+            break
+
+        new = []
+        if "补缺口" in action:
+            new += regenerate_missing_edges(bundle, gap)          # 规则版
+        if "回退" in action:
+            new += rollback_triggered(attr, oracle, bundle)        # probe_boundary 二分
+        if "调整" in action and llm:
+            new += regenerate_adjust(attr_untriggered, bundle, llm)  # LLM 兜底
+
+        # 合法性硬门槛：新种子全过 oracle dry-run（P0-2、指标①合法性）
+        new = [s for s in new if oracle_legal(s)]
+
+        seeds = replace_seeds(seeds, new, max_seeds)   # ④ 替换而非追加（P0-1）
+        deploy_seeds(seeds, vm_workdir)                # ⑤ 部署
+    return seeds
+```
+
+---
+
+## 四、具体代码调试方案（5 阶段，逐步推进）
+
+按「依赖关系 → 纯函数优先 → ssh 胶水最后」排序，每阶段有明确验证方式。
+
+### 阶段 1：解析模块（零依赖，mock 数据单测）
+
+**调 `parse_state_coverage_gap`**：
+- 单测：构造状态机（含一条不可达孤立边 Registering）+ 覆盖集 → 断言只返回「可达未覆盖」边，过滤孤立边。
+- 验证：可达性 BFS 正确、`init="Init"` 起点正确。
+
+**调 `attribute_crashes`**：
+- 单测：构造崩溃栈（含 `clientSessionId=8888`）+ vuln_pattern → 断言归因到 `double_setup`、置信度正确、多次重放取多数。
+- 验证：低置信度归因被标记「交人工」，不自动进决策。
+
+**调 `seed_diversity`**（辅助）：
+- 单测：构造「单一取值」vs「多样取值」种子 → 断言熵前者低后者高。
+
+### 阶段 2：再生成 + 替换（规则版，零 LLM）
+
+**调 `regenerate_missing_edges`**：
+- 单测：给「可达未覆盖」边 → 断言生成的种子能走到这些边。
+
+**调 `rollback_triggered`**：
+- 单测：给「已触发」模式 + mock oracle → 断言用二分定位到「合法边界点」（不是复现已触发）。
+
+**调 `replace_seeds`**：
+- 单测：old 30 + new 10 → 断言输出总数 ≤ 30，且被淘汰的是「低贡献」种子（P0-1 核心验证）。
+
+### 阶段 3：采集 + 部署（ssh 胶水，需虚拟机集成测试）
+
+- 调 `collect_feedback`：连真实虚拟机，验证能拉 fuzzer_stats + crashes；断网/关机时重试 + 降级返回空。
+- 调 `deploy_seeds`：验证 scp 覆盖旧种子目录成功。
+
+### 阶段 4：LLM 版「调整」（StubLLM 单测 + 真 LLM 验证）
+
+- 调 `regenerate_adjust`：StubLLM 单测（返回固定种子，验证 validate_seed 通过）；真 LLM 验证 mutation_hint 引导效果。
+
+### 阶段 5：闭环编排 + 停止条件（端到端）
+
+- 串起 `feedback_loop`，跑一次真实迭代（生成本地 → 传 VM → fuzz 一个时间片 → 拉回 → 解析 → 决策 → 再生成）。
+- 验证三重停止条件触发：人为构造「覆盖率 N 轮不变」→ 断言触发「停止」。
+
+---
+
+## 五、关键实现细节
+
+1. **可达性过滤**（P1-5）：从 `init` BFS 遍历状态机边，标记可达状态；`missing_edges` 只保留两端都可达的边。
+2. **回退二分**（P0-2）：复用 `binary_search_boundary`，对「已触发」的漏洞维度做二分，找「最大合法值」。
+3. **替换排序**（P0-1）：`replace_seeds` 淘汰优先级 = 未选中变异次数 > 未贡献覆盖率 > 多样性冗余（香农熵贡献最小者）。
+4. **归因回写**（P2-7）：`attribute_crashes` 结果回写 `vuln_pattern` fact（新增 aspect 或 value 加 `triggered: bool` 字段），形成「崩溃→知识」闭环。
+5. **多样性判据**（指标②）：`seed_diversity` 熵长期低于阈值（如 3.0 bits，参考 MALF 4.45）→ 在 `decide_action` 里追加「增加多样性」动作。
+
+---
+
+## 六、风险与边界（剩余未决）
+
+| 风险 | 现状 | 处理 |
+|---|---|---|
+| 崩溃归因的置信度阈值（0.6） | 拍脑袋 | 阶段 2 用真实崩溃栈标定 |
+| 香农熵阈值 | 参考 MALF 4.45 | 阶段 1 用自己种子语料实测标定 |
+| 冷启动种子质量 | 依赖第一轮 | 冷启动先过 oracle + validate，确保合法 |
+| 概率性 UAF 多次重放成本 | 每 crash ×3 次重放 | 阶段 2 验证归因稳定性后再定重放次数 |
+
+---
+
+## 七、三工具反馈信号实探结论（2026-10-20 已查实，替代原「未确认」项）
+
+实测对象：VM `/home/zxy/aflnet`、`/home/zxy/fuzz4all`、ChatAFL（`/home/zxy/对比测试数据/chatafl/.../out-rtsp-my/1`）。
+
+### 7.1 三工具反馈信号对比
+
+| 工具 | 反馈信号 | 数据源 | 状态维度 |
+|---|---|---|---|
+| **AFLNet** | ① `bitmap_cvg` 代码覆盖 ② `unique_crashes` 崩溃 ③ 响应码状态序列（散在调试文件） | `fuzzer_stats` + `regions/` | 响应码序列（**无汇总统计**）|
+| **ChatAFL**（AFLNet 扩展）| ① `bitmap_cvg` ② `unique_crashes` ③ **`n_nodes`/`n_edges` 状态机汇总** ④ `ipsm.dot` 状态机明细 ⑤ 响应码路径序列 | `fuzzer_stats` + `plot_data` + `ipsm.dot` + `replayable-new-ipsm-paths/` | 响应码状态机（**有汇总+明细**）|
+| **Fuzz4All** | ① oracle 判定（crash → `bugs/*.csv`）② 代码覆盖率（autoprompting 迭代） | `bugs/*.csv` + fuzz loop | **无状态概念**（编译器/求解器场景）|
+
+### 7.2 关键结论
+
+1. **AFLNet 本体没有「状态覆盖汇总」**（`n_nodes`/`n_edges` 是 ChatAFL 加的）：`afl-fuzz.c` 的 `write_stats_file` 只有标准 AFL 字段 + `bitmap_cvg`，状态机制 `region_t.state_sequence`（响应码序列，经 `extract_response_codes_<protocol>()` 提取）只散在 `out_dir/regions/` **调试文件**里（源码注释 "for debugging purpose"），无汇总指标。
+   → **状态覆盖信号 ChatAFL 比 AFLNet 强**：ChatAFL 把状态机汇总成 `n_nodes`/`n_edges` + `ipsm.dot` 明细。
+
+2. **Fuzz4All 非协议 fuzzer，但「autoprompting」机制正是 Phase 5 要抄的范本**：Fuzz4All（ICSE'24）是 LLM 驱动的编译器/求解器 fuzzer，反馈是 oracle 崩溃 + 代码覆盖；其核心「autoprompting + LLM-powered fuzzing loop」= 根据反馈迭代更新 prompt 生成新输入，正是「反馈 → 调整 prompt → 再生成」的现成机制参考（虽无协议状态）。
+
+### 7.3 核心认知差异
+
+ChatAFL 的「状态」= **响应码**（0/200/400/404/405/454），与我们知识中枢的「协议语义状态」（Init/Ready/Playing）**是两个不同的状态空间**。之前实验的 `n_edges`（98.4 vs 83.2）实际是「响应码状态机边数」，不是语义状态机覆盖。`ipsm.dot` 的边**不含方法标注**，纯响应码转移。
+
+### 7.4 降级决策（不改 fuzzer）
+
+- 「语义状态覆盖缺口」（对比知识中枢状态机 vs fuzzer 状态）**做不了** → 降级。
+- **降级后的主反馈信号** = ChatAFL 自己的「响应码状态机」：
+  1. `n_edges`（plot_data）→ 响应码状态机覆盖是否停滞；
+  2. `ipsm.dot` 红边（`new_edge`）→ 是否发现新响应码转移；
+  3. `bitmap_cvg`（fuzzer_stats）→ 代码覆盖停滞（辅助）；
+  4. `replayable-new-ipsm-paths/` → 哪些响应码路径被走到。
+- **「自动 prompt 工程」借鉴 Fuzz4All 的 autoprompting**：反馈 → 更新 prompt → 再生成（本方案「调整」策略的机制参考）。
+- 闭环骨架（采集→解析→决策→再生成→替换）不变，仅「解析」信号源换成「响应码状态机停滞/增量」。

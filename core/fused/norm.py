@@ -4,7 +4,7 @@ rfc 源的 5 种 kind 映射已全部实现（transition / field / outcome / met
 
 设计依据: fused_hub/docs/fused_knowledge_hub_design.md +
            fused_hub/docs/rtsp_profile_v1_draft.md +
-           local/layer2_extraction_methods.md（LLM 增强部分留 -m llm 钩子）。
+           docs/设计/layer2_extraction_methods.md（LLM 增强部分留 -m llm 钩子）。
 """
 from __future__ import annotations
 

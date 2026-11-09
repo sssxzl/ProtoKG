@@ -1,6 +1,6 @@
 Current project resume/status authority:
 `fused_hub/README.md`（中枢资产与契约的当前真源）
-`local/project_handoff.md`（实验侧交接，2026-10-08）
+`docs/工具/project_handoff.md`（实验侧交接，2026-10-08）
 
 This file is retained as:
 milestone / historical status log.
@@ -194,7 +194,7 @@ v2 结构化知识中枢的实验化与下游深化：
    - 作用：只回答"做到哪、资产在哪、下一步是什么"，不回答"规则是什么"
 2. `fused_hub/README.md`（中枢资产与契约的当前真源）
    - 作用：目录结构 / 资产分布 / 当前状态的权威索引
-3. `local/project_handoff.md`（实验侧状态入口）
+3. `docs/工具/project_handoff.md`（实验侧状态入口）
    - 作用：RQ1/RQ2/RQ3 实验状态与教训
 4. `fused_hub/docs/fused_knowledge_hub_design.md`（v2 Layer 0 结构真源）
    - 作用：数据模型与设计原则依据

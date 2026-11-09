@@ -1,0 +1,482 @@
+# docs/设计/source_source_design.md — 第五源 source 设计框架
+
+> 状态：**Final Frozen**（2026-10-05；§4 全部填实，§6 剩余项已由下游 Rule Set 关闭）
+> 上游：`docs/设计/traffic_d9_design.md`、`docs/设计/traffic_corpus_capability_profile.md`
+> 　　　`docs/设计/traffic_lane_a_rule_set_design.md`、`docs/设计/traffic_lane_a_provenance_interface.md`
+> **下游**：`docs/设计/source_lane_a_rule_set_design.md`（**Final Frozen**）
+> 　　　`docs/设计/source_corpus_capability_profile.md`（ACTIVE）
+> 勘察：`local/backup/step_source_recon/`（只读勘察，8 份产物）
+> 测量：`step_source_a/` ~ `step_source_a4/`
+> 裁定：`docs/工具/decisions_resolved.md` **D24 – D38**
+> 本文件是**设计框架**，不是设计真源。§4 起全部未填实。
+
+---
+
+## 0. 范围
+
+### 0.1 本设计要解决什么
+
+定义第五源 `source`（协议实现源码）的知识抽取、归类与落盘口径。
+
+### 0.2 本设计不解决什么
+
+- 不重新裁定 traffic 侧的任何问题（D24–D26 已裁定，与本文件并列）
+- 不定义 Hub Storage Model 的新结构（若需要，属 Hub Contract 变更）
+- 不启动 source 源的代码实现
+
+### 0.3 前置已冻结（不在本文件重新讨论）
+
+| 项 | 来源 | 结论 |
+|---|---|---|
+| source 定位 = 混合双轨 | D24 | 能归 rfc fact 的 → provenance-only；不能归的 → 独立 Hub fact |
+| 不需要独立 D9 | D25 | 实现数 = 1，无变体，无「多次观测」概念 |
+| 代码双包 | D26 | `core/source_a/`（provenance 轨）+ `core/source_hub/`（独立 fact 轨） |
+| source/traffic 同源 | D27 + traffic D9 §4.5 P8-1 | 非独立证人；source 的增量在「实现行为边界」 |
+
+---
+
+## 1. 硬边界
+
+1. source observation **不得**把实现选择表述为协议要求
+2. source 独立 fact **必须**标记来源实现（liveMedia），不得冒充协议事实
+3. source 轨**不得**污染 rfc fact 的 canonical assertion
+4. 两侧轨**不得**互相作为 validation oracle（同源，D27）
+5. 分流判据（D24 的 9:2 划分）**必须**在 Rule Set 阶段冻结，
+   不得在实现期逐条重裁
+
+---
+
+## 2. 语料形态
+
+> 已由勘察确认，见 `local/backup/step_source_recon/corpus_shape.txt`
+
+```
+kb/协议实现源码/
+  9 文件 / 271 KB / 6287 行
+  .cpp 5 / .hh 4，扁平结构，0 子目录
+  无 manifest / 无索引 / 无 README / 无 LICENSE 文件
+  无测试用例（0 个测试框架命中）
+```
+
+来源：**LIVE555 liveMedia 库**（LGPL，Live Networks，1996-2026）
+⟹ 与 traffic 语料**同源**（traffic 的 `client.log` 内含
+`openRTSP (LIVE555 Streaming Media v2026.04.01)`）
+
+语料是 liveMedia 的**子集**：基类 `Medium` / `GenericMediaServer` /
+`FrameSink` 不在 9 文件内 ⟹ **不是完整可编译工程**。
+
+### 2.1 Hub 侧现状
+
+- `derived/per_source/source/`：**空目录**（已接入目录，未产出）
+- `derived/fused/facts` 中 `source_type=source`：**0 条**
+- `scripts/build_hub.py` 的 `KNOWN_SOURCES` **已含** `"source"`
+- `core/extractor_dispatcher.py:400` **已含** `"source"` 在允许集合
+
+⟹ 调度路径已预留，缺 extractor 实现。
+**「0 facts」≠「语义上不存在」** —— 这是未接入，不是无知识。
+
+---
+
+## 3. 知识形态
+
+> 已由步骤 A3 测量，见 `step_a_measurement.txt`
+
+**判定：规范性（normative）**
+
+依据：
+1. 6 个错误路径中 5 个是**单行常量字符串**
+   （`setRTSPResponse("404 Stream Not Found")` 等），
+   无分支、无条件、无输入依赖 ⟹ 不含「观察到什么」
+2. OPTIONS 的 `Public:` 回填 `allowedCommandNames()`
+   是**实现自身声明的允许集**，不是观测结果
+3. 语料 0 个测试用例 ⟹ 无 `expected vs actual` 对照结构
+
+**已知限定**：A3 抽样集中在**错误路径**（实现最规整的部分）。
+方法处理主体（DESCRIBE / SETUP 等，含 SDP 构造、session 查表）
+**未抽样**，形态可能更复杂。
+
+### 3.1 与 traffic 的形态对比
+
+| | traffic | source |
+|---|---|---|
+| 知识 | **观察性**（客户端实际行为记录，含时间戳/实际 CSeq） | **规范性**（实现规定返回什么） |
+| 结构 | 半结构化（pcap/csv/ndjson） | 结构化（C++ AST 可完全解析） |
+| oracle | 有（client.log） | **无**（0 测试） |
+
+---
+
+## 4. 设计方向
+
+> 填实于 2026-10-05（步骤 C）。依据：
+> `local/backup/step_source_a2/a3_resample.txt`（形态补样）、
+> `local/backup/step_source_b2/judge_probe.txt`（判据探针）、
+> `docs/工具/decisions_resolved.md` D28。
+
+### 4.0 代码形态三档（A3 补样的直接结论）
+
+A3 初版只抽样了错误路径，得出「全部单行常量」的结论。
+补样 6 个主体方法后**该结论被推翻**，形态实为三档：
+
+| 档 | 特征 | 实测样本 |
+|---|---|---|
+| **第 1 档** 常量响应 | 单行字面量，无输入依赖 | 6 个错误路径中 5 个 |
+| **第 2 档** 静态协议逻辑 | 分支 3–5，条件来自请求参数 | OPTIONS / SETUP / PAUSE / TEARDOWN |
+| **第 3 档** 运行时状态依赖 | 读 `fStreamStates[]` / `getCurrentNPT()` | PLAY（216 行 / 50 分支） |
+
+最锐利的分界：**常量响应 6/6 → 0/6**。主体方法没有一个返回字面常量。
+
+⚠ **第 3 档的「观察性」不是 observation。**
+第 3 档观察的是**本进程自己的流状态**，不是协议交互 ——
+与 traffic 观测「客户端实际发了什么」是**不同的东西**，
+不得按 traffic 的 StructuralObservation 处理。
+
+### 4.1 分流判据（两级，机械规则）
+
+D24 裁定为混合，但「能否归到 rfc fact」这条分流判据原**未机械化**。
+现经 B5 判定（D28），判据为**两级，函数级粒度**
+（A3 证明方法级不够：SETUP 有 3 个函数、DESCRIBE 有 2 个）。
+
+**L1 — 方法类样本**
+
+```
+输入：函数名（handleCmd_<BASE>[_afterLookupN]）
+规则：
+  BASE = 剥掉 "handleCmd_" 前缀
+       → 再按【已知后缀模式】切 _afterLookup / _afterLookup1 / _afterLookup2
+  禁止：任何形式的通用 split("_")。RTSP 方法名本身含下划线
+        （GET_PARAMETER / SET_PARAMETER），通用切分会截断。
+  若 BASE ∈ Hub 的 rfc method existence fact 池  → provenance
+  否则                                          → hub_fact
+```
+
+**L2 — 错误响应类样本（6 个 handleCmd 错误路径）**
+
+L1 不适用于错误响应。理由：400/404/405/461 都是 RFC 2326 定义的标准码，
+若按 L1「不在 Hub 池 → hub_fact」会把它们全判成 Hub fact，
+与 D24「独立实现选择 = 2」矛盾（6 个里只有 454 是 RFC 外的）。
+
+```
+L2 判据（独立于 L1）：
+  解析函数体的 setRTSPResponse("<code> <reason>") 常量
+  若 <code> ∈ RFC 2326 定义的状态码集 → provenance
+  否则（如 454）                        → hub_fact
+```
+
+**L2 的机械化前提**：需要一份「RFC 2326 状态码集」作为基准。
+该集合**不硬编码**，应从 `kb/spec/rfc2326.txt` 解析或冻结为常量表 ——
+当前尚未落地，**是 L2 的实现前置**。
+
+### 4.2 L2 基准表：RFC 2326 状态码集
+
+> 2026-10-05 填实。**从 `kb/spec/rfc2326.txt` §11 原文抽取，不凭记忆。**
+> 抽取记录：`local/backup/step_source_b3/rfc_status_codes.txt`
+
+**§11 章节构成**（原文 L2262-2400）
+
+§11 开篇明写：「Where applicable, HTTP status [H10] codes are reused.
+Status codes that have the same meaning are not repeated here.」
+⟹ **2xx / 3xx / 4xx / 5xx 基线码复用 HTTP**，不重复定义但**有效**。
+
+**§11.3.x RTSP 特有码（14 条）+ §11.1.1（1 条）= 15 条**
+
+| 节号 | 码 | 名称 | 行号 |
+|---|---|---|---|
+| 11.1.1 | 250 | Low on Storage Space | L2272 |
+| 11.3.1 | 405 | Method Not Allowed | L2305 |
+| 11.3.2 | 451 | Parameter Not Understood | L2315 |
+| 11.3.3 | 452 | Conference Not Found | L2320 |
+| 11.3.4 | 453 | Not Enough Bandwidth | L2325 |
+| 11.3.5 | **454** | **Session Not Found** | **L2331** |
+| 11.3.6 | 455 | Method Not Valid in This State | L2336 |
+| 11.3.7 | 456 | Header Field Not Valid for Resource | L2342 |
+| 11.3.8 | 457 | Invalid Range | L2359 |
+| 11.3.9 | 458 | Parameter Is Read-Only | L2364 |
+| 11.3.10 | 459 | Aggregate Operation Not Allowed | L2369 |
+| 11.3.11 | 460 | Only Aggregate Operation Allowed | L2375 |
+| 11.3.12 | 461 | Unsupported Transport | L2381 |
+| 11.3.13 | 462 | Destination Unreachable | L2386 |
+| 11.3.14 | 551 | Option not supported | L2393 |
+
+**HTTP 复用码（§11 明写复用 [H10]）**
+
+1xx: 100 Continue / 101 Switching Protocols
+2xx: 200 OK / 201 Created / 202 Accepted
+3xx: 300 Multiple Choices / 301 Moved Permanently / 302 Found /
+     303 See Other / 304 Not Modified / 305 Use Proxy
+4xx: 400 Bad Request / 401 Unauthorized / 403 Forbidden / 404 Not Found /
+     405（见 §11.3.1）/ 406 Not Acceptable / 407 Proxy Auth Required /
+     408 Request Timeout / 410 Gone / 411 Length Required /
+     412 Precondition Failed / 413 Request Entity Too Large /
+     414 Request-URI Too Long / 415 Unsupported Media Type /
+     416 Requested range Not Satisfiable
+5xx: 500 Internal Server Error / 501 Not Implemented / 502 Bad Gateway /
+     503 Service Unavailable / 504 Gateway Timeout /
+     505 HTTP Version Not Supported
+
+⟹ **L2 判定基准 = HTTP 复用码 ∪ 上表 15 条 RTSP 特有码**
+
+**liveMedia 实测对比（6 个码，全部合规）**
+
+| 码 | liveMedia | RFC 出处 | 判定 |
+|---|---|---|---|
+| 200 | OK | HTTP 复用 | ✅ |
+| 401 | Unauthorized | HTTP 复用 | ✅ |
+| 404 | Not Found | HTTP 复用 | ✅ |
+| 451 | Parameter Not Understood | §11.3.2 | ✅ |
+| **454** | **Session Not Found** | **§11.3.5** | ✅ |
+| 461 | Unsupported Transport | §11.3.12 | ✅ |
+
+**「liveMedia 有而 RFC 无」= 0 个。**
+
+> ⚠ **重大更正**（2026-10-05）：上一批（`step_source_a`）称
+> 「454 是 RFC 2326 未定义的独立实现选择」——**该结论错误**。
+> RFC 2326 §11.3.5（L2331）明确定义 454 Session Not Found，
+> liveMedia 的用法**完全遵循规范**。
+> 错误来源：上一批的「RFC 定义集」是**凭记忆写的常量**，
+> 未从原文抽取，违反「RFC 基准从原文抽取，不凭记忆」原则。
+> 更正见 `工具/decisions_resolved.md` D30。
+
+### 4.2b 第 3 档形态的抽取规则
+
+> 2026-10-05 填实（关闭 §6 问题 7）。依据：
+> `local/backup/step_source_c3/tier3_extraction_rules.txt`
+> （PLAY 24 条分支抽 10 条采样）
+
+**判定原则**：状态机能力边界（协议知识）vs 状态值（运行实例数据）严格区分。
+
+| 类别 | 处置 |
+|---|---|
+| 协议处理逻辑 | **产出** |
+| 内部状态值 | **不产出** |
+| 混合 | 拆分（条件按 R-3，循环体按 R-2） |
+| 判不出 | `NEEDS_REVIEW`，**不臆造** |
+
+**R-1** 看**分支条件**，不看分支体。
+条件表达「实现如何响应某种输入」= 协议能力边界；分支体常只是执行细节。
+
+**R-2** 条件若引用 `fStreamStates` / `curNPT` / `streamToken` /
+`getCurrentNPT()` 等**运行时状态** → 判**内部状态值**，不产出。
+
+**R-3** 条件若引用**请求头解析结果 / HTTP 方法 / URI 形态 / 聚合标记** →
+判**协议处理逻辑**，产出。
+
+**R-4** 混合分支：条件按 R-3、循环体按 R-2，**拆成两条**。
+不因一条混合而放弃整条。
+
+**R-5** 判不出 → `NEEDS_REVIEW`。本批 10 条中 0 条落入此情况。
+
+**10 条采样结果**：协议处理逻辑 8 / 内部状态值 1 / 混合 1。
+
+**与 traffic observation 的根本区别**
+
+- traffic 记录**协议交互实际发生**的内容（观察性）
+- source 记录**实现如何响应某种输入**（规范性）
+
+⟹ 二者虽都用「非投票 provenance」形式，但 `observed` 字段语义
+**完全不同**，schema 必须分开定义。
+**禁止**把 source 的 branch/body 文本当成「实现做了什么」记录 ——
+那是「实现规定做什么」，不是「实际做了什么」。
+
+### 4.3 分流结果记录格式
+
+分流结论必须落盘，**避免实现期重裁**。每个被分流的代码单元产出一条：
+
+```
+{
+  "unit_kind":        "handleCmd",       // handleCmd / setRTSPResponse
+  "symbol":           "handleCmd_PLAY",
+  "base":             "PLAY",
+  "locator":          "RTSPServer.cpp:1772",
+  "judgement_rule":   "L1",              // L1 / L2 / L1+manual / L2+manual
+  "lane":             "provenance",      // provenance / hub_fact
+  "target_fact_id":   "f1_xxx",          // provenance 轨必填；hub_fact 为 null
+  "rfc_pool_version": "<build_fingerprint>",   // 判定时的 Hub build
+  "judged_at":        "2026-10-05"
+}
+```
+
+`rfc_pool_version` 借鉴 traffic 侧的 R3 经验：
+**Hub 重建后 fact_id 可能变**，分流结论须能检出是否基于过期的 fact 池。
+分流是**代码单元级**，不是 observation 级。
+
+### 4.4 双轨落点定义
+
+| 轨 | 判据结果 | 落点 | 产出类型 | 是否进 Hub |
+|---|---|---|---|---|
+| provenance 轨 | L1 → provenance | `derived/source_a/<unit>/` | StructuralObservation（source 语义） | **否** |
+| hub_fact 轨 | L1/L2 → hub_fact | `derived/per_source/source/` | ProtocolNorm | **是** |
+
+⚠ `derived/per_source/source/` 目录**已存在但为空**（勘察确认）。
+这不是「无 source 知识」，是「尚未接入」。
+
+**隔离方向**：traffic 侧 `derived/lane_a/` 与 Hub 的 `derived/fused/`
+物理隔离；source 侧同理，`derived/source_a/` 不得混入 `derived/fused/`。
+
+### 4.4b 与 `core/source_a/` / `core/source_hub/` 的接口
+
+```
+core/source_hub/          core/source_a/
+  （Hub fact 轨）             （provenance 轨）
+       │                          │
+       ▼                          ▼
+core/extractors/          独立 reader
+  → ProtocolNorm               （纯读 derived/source_a/）
+       │                          │
+       ▼                          ▼
+candidateization          attachment
+       │                    （单向引用 fact_id）
+       ▼                          │
+derived/per_source/source/         │
+       │                          │
+       ▼                          ▼
+  Hub fusion              derived/source_a/provenance/
+  （写 derived/fused/）    （不写 Hub）
+```
+
+**接口约定**：
+
+1. 两轨**共享 §4.1 的分流判据实现**，不得各写一套
+2. provenance 轨**不 import** `core.fused.*`（同 traffic 侧约束）
+3. 两轨的分流结论落在**同一份记录**（§4.3 格式），
+   便于对账「多少代码进了哪条轨」
+
+### 4.6 与 traffic 的关系
+
+- **同源**（D27）：两者**不得**互为 validation oracle
+- 独立增量：实现的行为边界（允许集 / 拒绝行为 / 扩展方法 REGISTER / 非标状态码 454）
+- 两轨在 source 内部共享同一份分流判据文档，避免逻辑分叉
+
+---
+
+## 5. 与 traffic 的关系（同源已知事实）
+
+> 详见 `工具/decisions_resolved.md` D27
+
+| 项 | 结论 |
+|---|---|
+| 是否同源 | **是**（liveMedia / openRTSP） |
+| 能否互为独立证人 | **否**（traffic D9 §4.5 P8-1 已冻结） |
+| source 的独立增量 | **不在报文内容**，在**实现的行为边界** |
+| 五源独立性主轴 | 应以 **rfc ↔ source/traffic** 为交叉验证对，而非五源两两交叉 |
+
+---
+
+## 6. Open Questions
+
+> 2026-10-05 更新：原问题 1（分流判据机械化）**已解决**，
+> 判据见 §4.1，判定记录见 D28。以下为剩余项与新登记项。
+
+| # | 问题 | 状态 |
+|---|---|---|
+| ~~1~~ | ~~分流判据如何机械化~~ | **✅ 已解决**（§4.1 两级判据 L1/L2，D28） |
+| ~~2~~ | ~~REGISTER / 454 的 Hub 侧 subject 需新增~~ | **✅ 已关闭**。454 排除（D30，RFC §11.3.5 合法码）；REGISTER 裁定见问题 9 |
+| 3 | `core/source_a/` 与 `core/lane_a/` 的框架重复如何治理 | D26 已承担代价，待观察。**工程约束**，不阻塞 |
+| ~~4~~ | ~~方法处理主体的知识形态未抽样~~ | **✅ 已补样**（A3 三档形态，见 §4.0） |
+| 5 | source 是否有资格进入五源融合的 conflict detection | 依赖问题 9 的落地（`method.REGISTER` 进 Hub） |
+| ~~6~~ | ~~L2 的 RFC 2326 状态码集基准~~ | **✅ 已解决**（§4.2，从原文抽取；并纠正 454 误判，D30） |
+| ~~7~~ | ~~第 3 档形态的抽取语义~~ | **✅ 已解决**（§4.2b 规则 R-1~R-5；10 条采样全部可分类） |
+| 8 | 归一化规则须写入实现约束 | **仍未决**。D28 记录了两次同类缺陷。「禁止通用 `split("_")`」目前只是文档备注，**尚未成为代码级约束**。**工程约束**，不阻塞 |
+| ~~9~~ | ~~REGISTER 沿用 method kind 还是新 kind~~ | **✅ 已裁定（D32）**：沿用 method kind，只加 subject `method.REGISTER`。契约 `fused_registry_v1.md` L48 明文「类别不 hard-code，做成可扩展 registry」 |
+| **10** | 新增 subject 时 `data_sources` 字段是否需同步更新 | **✅ 已裁定（D39）**：**保持不动**。该字段记录的是 initial_subjects 的来源，REGISTER 并非 derived 自 step_2.5.1 快照，加进去反而不准确 |
+| ~~11~~ | ~~Rule Set 的 §9 问题 3/4（S-SM / S-PH 能否从语料抽取）~~ | **✅ 已关闭**。S-SM 剔除（D33）/ S-PH 收窄；Rule Set §9 问题 3/4 已答 |
+
+### 6.1 依赖关系（2026-10-05 更新）
+
+问题 1 / 2 / 6 / 7 / 9 已关闭。
+
+**剩余设计问题**：10（新增 subject 的 data_sources 约定）、
+Rule Set 的 §9 五项（见 `设计/source_lane_a_rule_set_design.md`）。
+
+**工程约束**（不阻塞设计）：3、8。
+
+⟹ **建议裁定顺序**：
+Rule Set §9 问题 3/4（勘察 S-SM / S-PH）→ Rule Set 其余逐组 →
+本文件问题 10 → Rule Set 填实。
+
+---
+
+## 7. 下一步
+
+1. 裁定 §6 问题 9：REGISTER 沿用现有 `method` kind 还是新 kind（契约级选择）
+2. 据此关闭 §6 问题 2（REGISTER 的 Hub 侧表示）
+3. 上述完成后方可写 Rule Set（结构参照 `设计/traffic_lane_a_rule_set_design.md`）
+
+**工程约束**（不阻塞设计，可并行）：
+- §6 问题 8：把「禁止通用 `split("_")`」固化为代码级测试
+- §6 问题 3：`core/source_a/` 与 `core/lane_a/` 的框架重复治理
+
+---
+
+*本文件为 Draft Framework，2026-10-05 新建。*
+*§4.1 分流判据（D28）、§4.2 RFC 状态码基准（D30）、§4.2b 第 3 档抽取规则 已填实。*
+*§6 剩 2 项设计问题 + 2 项工程约束。Rule Set 尚未开始。*
+*框架先行，规则待逐组讨论，与 traffic 侧的多轮 closure 流程一致。*
+
+---
+
+## 实现状态更新（2026-10-06）
+
+**分流判据 L1 / L2 已实现并首次落盘。**
+
+| 项 | 状态 |
+|---|---|
+| 4 组遍历入口 | **全部补齐**（S-M / S-E / S-PH / S-EX），函数单元 **22** |
+| provenance 轨落盘 | **已完成** —— `derived/source_a/`，**43 条** observation |
+| Hub fact 产出 | **0 条**（D40：REGISTER 为 implementation extension，非 protocol-semantic） |
+| `per_source/source/` | **保持 0 文件** —— 不得注入 REGISTER norm 凑数 |
+| relation 词表 | §6.1.1 四值已实现；正交校验已按契约放宽（D42） |
+| C-3（无帧字段） | **0 违例**，独立回读验证 |
+| C-2 / I-6 | AST 级强制测试已固化 |
+| provenance 挂载 | **✅ 已补齐**（2026-10-06）：`core/source_a/attachment.py` |
+| attachment 产物 | `derived/source_a/provenance/` —— **7 条** → **5 个** Hub fact |
+| **待补** | §9 问题 14：S-EX **客户端调用侧**符号表缺失（D44） |
+
+落盘入口：`python -m core.source_a.build`（可加 `--dry-run`）。
+幂等性已验证：连续两次执行 **19/19 文件逐字节一致**。
+
+⚠ 本批**只读** `kb/`，未改动语料；`derived/fused/` / `derived/lane_a/` /
+`derived/per_source/` 全部**逐字节不变**。
+
+---
+
+## provenance attachment 补齐（2026-10-06，G-1）
+
+此前本轨只落 observation，**无处挂载** —— traffic 侧有 attachment 路径，
+source 侧没有。后果：7 条 `conforms_to_spec` 观察是全部五源中唯一
+「正指向 RFC 语义」的观察，却无法挂到任何 Hub fact。
+
+### 实现
+
+`core/source_a/attachment.py`（**不 import** `core.lane_a`，结构类比、语义不同）：
+
+| | traffic | source |
+|---|---|---|
+| 溯源引用 | `ProvenanceRef`（帧区间） | `CodeRef`（**代码位置**） |
+| 可挂 fact | header 3 个 | `constraint` / `status.NNN` **5 个** |
+| relation | traffic 侧自有词表 | §6.1.1 的 `conforms_to_spec` |
+
+### 挂载结果
+
+```
+扫描 observation : 43
+attachment      : 7  ->  5 distinct fact
+按码            : status.200 x2 / status.404 x2 / status.401 / status.454 / status.461
+无 target        : 36（no_target 34 + unspecified 2，D40 禁挂）
+```
+
+**C-3 复核**：溯源引用是 `{locator, branch_ord, symbol, source_unit}`，
+**0 个帧字段**。
+
+**幂等**：连续两次执行产物逐字节一致。
+**Hub 零变化**：`derived/fused/` 13 文件逐字节不变。
+
+### 硬边界（代码级）
+
+1. **只写** `derived/source_a/provenance/`
+2. **不 import** `core.fused.*` / `core.lane_a.*`
+3. 不产生任何 Hub fact（C-1 / D40）
+4. 无帧字段（C-3）
+5. `detect_stale` 比对 `build_fingerprint` —— Hub 重建后可检出失效
+
+⚠ `unspecified`（S-EX 的 REGISTER）**不参与挂载**：
+D40 已裁定 REGISTER 非 protocol-semantic，无标准语义可对。

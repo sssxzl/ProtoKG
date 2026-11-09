@@ -1,6 +1,6 @@
 """core/fused/downstream/strategy.py —— 多导向自适应种子生成（漏洞导向 P0）。
 
-对齐 local/multi_strategy_seedgen_design.md §六 + 论文 4.4/4.5。
+对齐 docs/设计/multi_strategy_seedgen_design.md §六 + 论文 4.4/4.5。
 
 核心原则（隐患 2/3/6，用户反复强调）：
     初始种子必须**绝对合法**，不是畸形触发种子。

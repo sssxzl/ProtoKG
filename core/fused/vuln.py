@@ -10,7 +10,7 @@ not_trigger_vulnerability 等）均不相关 —— 判定只比较 scope == "se
       trigger.field.value（str 或数组）→ header+security_property；
       value = description_raw（漏洞描述），epistemic = descriptive。
 
-设计依据: local/layer2_extraction_methods.md §三 vuln 行
+设计依据: docs/设计/layer2_extraction_methods.md §三 vuln 行
            （rule 抽固定字段，LLM 抽后果语义归入 security_property）。
 """
 from __future__ import annotations

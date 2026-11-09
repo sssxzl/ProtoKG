@@ -13,7 +13,7 @@ kind → 映射（epistemic 一律 observed）:
   protocol     transport distribution / methods    → protocol + value_enum（set）
   actor        RTSP server observed on ports [...] → actor   + value_enum（set）
 
-设计依据: local/layer2_extraction_methods.md §三 traffic 行（LLM-Boofuzz 借鉴，
+设计依据: docs/设计/layer2_extraction_methods.md §三 traffic 行（LLM-Boofuzz 借鉴，
            rule 做统计/边界，LLM 增强字段语义 —— 本模块只做 rule 部分）。
 """
 from __future__ import annotations

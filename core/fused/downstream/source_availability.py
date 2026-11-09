@@ -4,7 +4,7 @@
 统一回答「当前哪些源可用、该消费点用哪个策略」，实现优雅降级（有源则用、无源则退化）。
 所有消费点（方法白名单 / 冲突消解 / 拓扑序）都问它，不自己判断，避免降级逻辑散落。
 
-设计依据: local/source_fusion_design.md（五源融合传导方案 v16）。
+设计依据: docs/设计/source_fusion_design.md（五源融合传导方案 v16）。
 协议无关：优先级表、白名单降级链均声明式，换协议零代码（未来下沉 profile）。
 """
 from __future__ import annotations

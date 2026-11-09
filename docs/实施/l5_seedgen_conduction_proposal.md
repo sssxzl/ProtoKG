@@ -1,0 +1,459 @@
+# L5 Seedgen Conduction 立项
+
+> **状态：Proposal（未冻结）**
+> 日期：2026-10-06
+> 来源：`docs/设计/five_source_fusion_framework.md` §4 L5 判据 FAIL
+> **本文件只出框架，不实现任何代码。**
+
+---
+
+## 0. 背景
+
+五源融合框架把「融合」拆成三种含义（F-1 事实并集 / F-2 provenance 挂载 /
+F-3 驱动 seedgen）。其中：
+
+- **F-1 已完成** —— 3 源 65 facts 落 `derived/fused/`，layout 0 violation
+- **F-2 部分完成** —— traffic 11000 条 attachment；source 7 条（G-1 已补）
+- **F-3 未达成** —— **本文件立项对象**
+
+L5 判据原文：**「中枢知识改变下游产出」**。
+
+---
+
+## 1. 反证（2026-09-30 实测）
+
+`local/pipeline_progress.log` Step 4.8d 动作 4 记录了一次内容级对比：
+
+| 对照组 | Hub | seedgen 产出 |
+|---|---|---|
+| 甲 rfc 单源 | 11 facts | 26 个 `.raw` |
+| 乙 rfc + expert_note 双源 | 60 facts | 26 个 `.raw` |
+
+**26 / 26 字节级完全相同。**
+
+中枢侧的变化全部**未传导**：
+
+| 中枢量 | 单源 → 双源 | 是否改变产物 |
+|---|---|---|
+| `fact_count` | 11 → 60 | ❌ |
+| `headers` | `[]` → 4 项 | ❌ |
+| `security_flagged_methods` | `[]` → `[SETUP]` | ❌ |
+| 方法集合 | 均为 11 个 RFC 方法 | （本就没变） |
+
+**根因**：`core/fused/downstream/seedgen_bridge.py` 只消费
+`inventory.methods` **一个通道**。Hub 的其余知识没有出口。
+
+---
+
+## 2. 战略含义
+
+> **在现有单通道桥接下，增加任何新源都不会改变 seedgen 输出。**
+
+因为 RFC 的 11 个方法在 rfc 单源时已**全部到位** ——
+后续任何源（expert_note / vuln / traffic / source）都不可能再往方法词表里
+新增方法。
+
+⟹ **融合的边际收益在下游当前为零。**
+
+### 2.1 对「五源融合」战略的直接后果
+
+| 情形 | 后果 |
+|---|---|
+| 继续投入第五源（source） | 产出留在 `derived/source_a/`，**不改变 seedgen** |
+| 继续接入更多 provenance | 同上 |
+| 期望「源越多 fuzz 越强」 | **在通道扩展前不成立** |
+
+### 2.2 但这不否定 F-1 / F-2 的价值
+
+- F-1 是 F-3 的必要前置（无统一事实库则下游无从消费）
+- F-2 提供的 provenance 是 fact 的观察支撑，且**可能**在通道扩展后成为输入
+- source 侧的 7 条 `conforms_to_spec` 恰恰是「实现符合 RFC」的证据 ——
+  它对下游**本可以有价值**，只是当前无出口
+
+⚠ **不得**据此裁定「五源融合无价值」。准确表述是：
+**融合已完成的部分未产生下游可观测增量**。
+
+---
+
+## 3. 与 G-2 的关系
+
+| 项 | 内容 |
+|---|---|
+| **G-2** | `generate_seeds_from_hub` **无生产调用者**（仅 `tests/fused/pipeline/rules/test_real_rfc_e2e.py` 调用；`pipeline/` 与 `scripts/` 零调用） |
+| **L5** | 即使接线，**单通道**也只能消费方法词表 ⟹ 增量仍为零 |
+
+⟹ **G-2 是「接线」问题，L5 是「通道」问题。两者独立，须分别解决。**
+
+即使把 G-2 接上生产路径，只要桥接仍只读 `inventory.methods`，
+L5 依然 FAIL。反之，即使桥接扩了通道，不接线也不会产生运行期效果。
+
+### 3.1 依赖关系
+
+```
+L5-1 扩展桥接通道（多消费几个 property）
+   ↓
+L5-2 接线到生产 seedgen 路径（G-2）
+   ↓
+L5-3 实测中枢增量是否传导到产物
+```
+
+⚠ 三步**顺序不可颠倒**：先扩通道再接线，否则会测出「接线了但零增量」
+的误导性结论（正是 2026-09-30 那次的处境）。
+
+---
+
+## 4. 候选方案
+
+### 4.1 通道扩展候选
+
+| 方案 | 做法 | 可用数据 | 收益 | 风险 |
+|---|---|---|---|---|
+| **甲** | 扩 `security_condition` 通道：flagged method / header 写进 manifest 并驱动定向变异 | vuln 5 条 + expert_note 6 条 | 直接利用现有 fact | 种子多样性可能下降（过度定向） |
+| **乙** | 扩 `header` 通道：Hub header 集合作为 pathgen 头字段词表 | expert_note 4 条 + vuln 3 条 | 利用现有 fact | 与 kb `required_headers.json` **职责重叠**，须先厘清谁权威 |
+| **丙** | 扩 `observed_*` 通道：接 traffic 的 `observed_occurrence_rate` 等 | 🚫 **当前无数据** | 最贴近 fuzz 需求 | traffic 11000 条 attachment **全是 `insufficient`** ⟹ 无可用值 |
+| **丁** | **不扩通道**，改为显式声明「中枢当前只影响方法词表」 | — | 零风险，让 L5 判据可测 | 不提升增量，只把现状写清楚 |
+| **戊** | 扩 `state` 通道：方法有效性随状态变化（需 Q5 先行） | 🚫 **当前无 state fact** | 直击 fuzz 本质 | 依赖 Q5 补规则 + 挂载授权 |
+
+**当前可行性排序**：甲 / 乙 / 丁 **立即可做**；
+丙 / 戊 **须先解前置**（丙等 traffic relation 改善，戊等 Q5）。
+
+⚠ 丙与戊的共同教训：**通道扩展的前提是上游有可用数据**。
+在数据缺位时开通道，等于建一条通向空房间的路。
+
+### 4.2 接线候选
+
+| 方案 | 做法 | 代价 |
+|---|---|---|
+| **甲** | 在 `pipeline/` 的 seedgen 入口直接调用 `generate_seeds_from_hub` | 侵入主路径 |
+| **乙** | 新增 `scripts/seedgen_from_hub.py` 显式入口，与 traffic 侧 `attach_lane_a_provenance.py` 同模式 | 需人工触发 |
+| **丙** | 维持手工调用，仅补文档说明 | L5 仍无法自动验收 |
+
+**建议乙**：与既有 attachment 脚本同构，不侵入主路径，
+且「能不能跑」与「跑出什么」两件事可独立检验。
+
+### 4.3 判据修订候选（★ 本批最重要）
+
+当前 L5 判据「中枢知识改变下游产出」**存在缺陷** ——
+它无法区分「理应不改变」与「应该改变却没改变」。
+
+| 方案 | 判据形式 | 评价 |
+|---|---|---|
+| **甲** | 任何 Hub 变化 ⟹ 产物变化 | ❌ **过严**。加 traffic / source 源时 Hub facts 本就不变，会产生**假 FAIL** |
+| **乙** | **被桥接消费的那些 property** 变化 ⟹ 产物变化 | ✅ **精确**。判据对象明确等于通道对象 |
+| **丙** | 分组对照：只比较「Hub fact 集合确实不同」的对照组 | ⚠ 可行，但需要构造对照，成本高 |
+| **丁** | 判据拆两问：**（a）已消费 property 是否已传导？（b）未消费 property 是否被显式声明？** | ✅ **最完整**。(a) 保证已接通的真生效，(b) 保证未接通的不被遗忘 |
+
+**建议丁**，或退而用 **乙**。
+
+⟹ **判据必须先于实现修订。** 否则实现完成后无法判断是否达标。
+
+---
+
+## 5. L5 判据（2026-10-06 修正并实测）
+
+### 5.1 原判据与它的缺陷
+
+**原判据**：中枢知识改变下游产出（任何 Hub 变化 ⟹ 产物变化）。
+
+**缺陷**：它把「理应不改变」误判为 FAIL。
+加 traffic 源（D17 不产 fact）或 source 源（D40 不产 fact）时，
+Hub facts **本就不变**，产物**理应不变** —— 这是**正确行为**，却判 FAIL。
+
+⟹ 这是本项目**第三次**同型判据错误（D52 的 L2、D49 的 L3、本条）。
+D55 已裁定引入 N/A 第四态；本条进一步**改掉判据本身**。
+
+### 5.2 修正后的判据：通道覆盖度
+
+> **若 Hub 中已存在的语义维度未被通道消费，该维度变化不传导
+> ⟹ 通道缺口，L5 FAIL。
+> 若某 Hub 维度本就不参与生成，其变化理应不传导 ⟹ PASS。**
+
+**关键区别**：判据不再问「产物变了吗」，而问
+「**Hub 里存在但没被通道消费的维度有几个**」。
+
+后者**可枚举、可测量**，不依赖跑对照实验。
+
+### 5.3 判据前提
+
+| 前提 | 状态 |
+|---|---|
+| **P1** Hub 实产 kind 已枚举 | ✅ `derived/fused/facts/` 实测 3 类产出（method / header / constraint），另 2 类空 |
+| **P2** 通道读入维度已枚举 | ✅ `load_hub_inventory` 返回 7 个维度 |
+| **P3** 可构造维度变化并观测传导 | ✅ 用「inventory 字段是否参与生成逻辑」即可判定，无需跑 build |
+
+### 5.4 ★ 实测覆盖度（2026-10-06）
+
+判据：**inventory 的哪个字段真正参与了生成逻辑**。
+
+`core/fused/downstream/seedgen_bridge.py:352` 是唯一的过滤点：
+
+```python
+unknown = [m for m in methods if m not in inventory.methods]
+```
+
+其余 inventory 字段的**唯一去向是 manifest**（lines 399–412）：
+
+| Hub 维度 | 参与过滤/生成 | 仅进 manifest | 覆盖 |
+|---|---|---|---|
+| `methods` | ✅ **是**（line 352 唯一通道） | — | **接通** |
+| `headers` | ❌ | ✅ | 缺口 |
+| `security_flagged_methods` | ❌ | ✅ | 缺口 |
+| `security_flagged_headers` | ❌ | ✅ | 缺口 |
+| `states` | ❌ | ✅ | 缺口（且当前为空） |
+| `constraint`（status.NNN） | ❌ | ❌ **仅 `fact_count`** | 缺口 |
+| `graph_entities` | ❌ | ❌ **完全未用** | 缺口 |
+
+**覆盖度 = 1 / 7** ⟹ **L5 = FAIL**，缺口为 6 个维度。
+
+### 5.4.1 ★ 计数口径修正（D66，2026-10-07）
+
+实测：`inventory.headers` 与 `security_flagged_headers` 是**完全相同的集合**
+（差集为空），且 Hub 全部 7 条 header fact 都带 `security_*` property。
+
+⟹ 上述 7 个字段**不是 7 个独立语义维度**；
+D62 打通 security 两个维度后，真实覆盖为 **3 条独立维度**
+（`methods` / `security_flagged_methods` / `security_flagged_headers`）。
+
+`headers` 被**隐式**消费（与第三项同集），不构成独立通道。
+
+### 5.5 ★ 实测完美解释 2026-09-30 的 26/26
+
+| 中枢变化 | 是否参与生成 | 产物是否变 | 与实测一致 |
+|---|---|---|---|
+| `fact_count` 11 → 60 | ❌ 仅 manifest | 否 | ✅ |
+| `headers` `[]` → 4 | ❌ 仅 manifest | 否 | ✅ |
+| `security_flagged_methods` `[]` → `[SETUP]` | ❌ 仅 manifest | 否 | ✅ |
+| 方法集合（11 个，两 Hub 相同） | ✅ 参与 | 无变化 | ✅ 26/26 相同 |
+
+⟹ **零增量不是偶然，是结构的必然**：
+桥接只有一个通道，而双源实验恰好只在**非通道维度**上产生差异。
+
+### 5.6 种子内容的真实来源
+
+顺带查明：种子的方法路径来自 `derived/spec/<proto>/state_machine/`，
+头部字段来自 **`kb_root`**（`_load_header_templates(kb_root, protocol)`，
+即 `kb/expert_note/required_headers.json` + `value_pool.json`），
+**均不来自 Hub**。
+
+⟹ 即使打通 header 通道，还须先解决「Hub header 与 kb required_headers 谁权威」
+（§4.1 候选乙的风险）。
+
+---
+
+## 6. 通道扩展候选排序（2026-10-06，按实测缺口重排）
+
+排序依据三条：**(a) 上游数据是否可用**（避免通向空房间）、
+**(b) 是否覆盖 §5.4 实测缺口**、**(c) 实现成本**。
+
+| 排名 | 通道 | 数据可用? | 覆盖缺口? | 成本 | 备注 |
+|---|---|---|---|---|---|
+| **1** | `security_condition` | ✅ 有（method 5 + header 3） | ✅ 2 个维度 | **低** | 数据现成，manifest 已写，只是没接到生成 |
+| **2** | `header` | ✅ 有（7 条） | ✅ 1 个维度 | 中 | ⚠ 须先厘清与 `kb required_headers.json` 的权威边界 |
+| **3** | `constraint` / `status` | ✅ 有（43 条） | — | — | **无合法注入点**（D68）：`.raw` 是请求侧格式，`SeedMessage` 无响应字段 ⟹ 登记不硬塞 |
+| **4** | `state` | ✅ **有**（D67 落盘 4 条 state fact + 21 transition） | ✅ 1 个维度 | 中 | 数据已就位，**通道未接**（Q5-G） |
+| **5** | `observed_*`（traffic） | 🚫 **无** | — | 高 | 11000 条 attachment **全 `insufficient`** |
+
+**建议起步顺序**：`security_condition`（✅ 已完成，D62）
+→ `state`（数据已就位，D67 落盘；需接通道）
+→ `observed_*`（待 traffic relation 改善）。
+
+⚠ `header` 已从候选中**撤销**（与 security 同集）；`constraint` 因
+**无合法注入点**降级为待裁定。
+
+⚠ 排名 4 与 5 再次验证「**通道扩展的前提是上游有可用数据**」：
+它们覆盖的维度多，但**一条通道都开不了**。
+
+---
+
+## 6.9 ★ SeedCorpus 扩展勘察（2026-10-07，D70 / D71）
+
+### 假设被推翻
+
+「SeedCorpus 是单请求模型」**不成立**：
+
+| 实测项 | 事实 |
+|---|---|
+| `messages` | `list[SeedMessage]`（多请求） |
+| `.raw` | 逐条拼接的请求序列（探针实证） |
+| `target_state_path` / `target_methods` / `target_vuln_class` | 字段**早已存在** |
+| 下游消费 | `core/constraint.py:320` 读 `target_state_path` |
+| 反向推断 | `raw_writers._infer_state_path(methods)` 可从 method 序列推状态路径 |
+
+⟹ **唯一真正缺失的是「响应表示」。**
+
+### 四候选实测
+
+| 候选 | 状态 | 依据 |
+|---|---|---|
+| 甲 响应消息 | 🚫 **阻塞** | `.raw` 是 ProFuzzBench 兼容格式（AFLNet/AFL 消费）；且 `design-decisions.md:105-110` 明文把响应处理**下放给 AFLNet** |
+| 乙 请求序列 | ✅ **已实现** | `messages` 是 list |
+| 丙 状态上下文 | ✅ **已实现** | 字段存在 + 桥接已写 + manifest 已记 + 可反推 |
+| 丁 响应预期 | 🚫 **阻塞** | 同甲 |
+
+⟹ **没有「待实现」的候选**：二项已实现，二项被外部契约阻塞。
+
+⚠ **STOP 2 触发**：下游 consumer 契约硬约束导致响应方向无扩展空间。
+
+### 为什么不新建 `l5_seedcorpus_extension_proposal.md`
+
+指令 D2 的前提是「若发现多候选」。实测是**候选已穷尽且全部有定论** ——
+两项已实现无需提案，两项被外部契约阻塞无法提案。
+故**不新建**该文档，结论记入本节与 D70/D71。
+
+### ★ 真正的可动杠杆：状态图来源（D72）
+
+`generate_seeds_from_hub` 目前：
+
+```python
+state_machine = _load_state_machine(state_machine_path)   # derived/spec/...
+paths = _plan_paths(state_machine, max_depth)
+```
+
+而 `inventory.states`（Hub 的 4 条 state fact）**读入后从未使用**。
+
+⟹ Q5-G 的实质是：**把路径规划的数据源从 spec 换成 Hub 的 transition fact**。
+
+| 环节 | 现状 |
+|---|---|
+| SeedCorpus 有 `target_state_path` | ✅ |
+| 桥接写入 `target_state_path` | ✅ |
+| manifest 记录 `state_path` | ✅ |
+| 下游消费 | ✅ |
+| `.raw` 不含它 | ✅ 但 **AFL 不需要**（按字节执行） |
+
+⟹ **这是接线级改动，不改模型、不改格式、不改 Hub 产物。**
+
+---
+
+## 7. ★ 新增阻塞：Q5 的 emit cardinality 框架缺口
+
+步骤 C 实测发现 Q5 的真正阻塞**不是挂载点**（挂载本批已获授权），
+而是**规则框架的结构限制**：
+
+- `run_candidateization` 的契约语义（docstring line 250）明写
+  「每条 eligible rule 产生 **0..N** CandidateProposal」
+- 但 `_apply_rule` 的实现**无条件 `return (proposal,)`**（line 240），
+  且 `fact_key_projection` 的返回类型是 `Optional[RawFactKeyCandidate]` —— **单个**
+- `emit_cardinality` 仅在 line 236 用于一个 `pass`，**不影响发出数量**
+
+⟹ **一条规则对一条 norm 最多产 1 个 Candidate。**
+
+而 `state_machine.json` 是**一条** norm，要表达 **4 个 state + N 个 transition**
+⟹ **当前框架无法表达**。
+
+修它需把 `fact_key_projection` 的返回类型改为序列，
+**会波及全部 8 条既有规则**（CR-1..CR-5 / VR-1..VR-3）的签名。
+
+⟹ 这是**框架级重构**，超出本批范围。详见 `docs/实施/q5_candidateization_gap_proposal.md`。
+
+⚠ 这也**推翻了 D54 的判断**（「实现是 `build_candidateization_rules()` 内一处增量」）——
+挂载确实只是一行，但挂载之后仍无法工作。
+
+---
+
+## 8.0 L5-Q8 裁定：header 权威归属（2026-10-06，D63）
+
+### 裁定
+
+> **Hub 权威，但以「归一后的 Hub header」为准。**
+
+### 依据
+
+| 维度 | Hub | kb_root |
+|---|---|---|
+| 角色 | canonical knowledge layer（dedup / validation / resolution） | raw input |
+| 加工 | 已过 identity resolution、conflict 记录、provenance attachment | 未加工 |
+| 可追溯 | 每条 fact 带 lineage → claim → evidence | 单一 JSON 文件 |
+| 一致性 | 由 `fact.schema.json` + `validate_layout` 保证 | 无 |
+
+⟹ seedgen 当前读 `kb_root`（`_load_header_templates(kb_root, protocol)`）
+属 **G-2（未接线到 canonical 层）**，不是「kb 更权威」。
+
+### ★ 但完整裁定包含一个限定
+
+Hub 侧现有 4 条 header fact 是 Title-Case（D49 / U1），
+而 `lexical_normalizer` 属 **Phase 4.4/4.6 尚未实现** ⟹
+**当前 Hub header 处于「未归一状态」**。
+
+⟹ 完整裁定分三段：
+
+1. **权威归属**：Hub 权威（不因当前实现缺陷而改变定位）
+2. **取值口径**：以「**归一后**的 Hub header」为准
+3. **过渡期**：归一落地前，Hub header 视为「**待归一**」，
+   消费侧须**大小写不敏感**匹配（D62 已按此实现，见
+   `seedgen_bridge._canonical_header` / `_probe_targets`）
+4. **缺口可见**：kb 有而 Hub 无的 header ⟹ 记为 **Hub extraction gap**，
+   不在 seedgen 侧补齐（那会让 kb 绕过 canonical 层）
+
+### 实现印证（D62）
+
+`_canonical_header()` 把 Hub 的 `Authorization` / `authorization`
+按大小写不敏感匹配到 `value_pool` 的拼写，`_probe_targets()` 再做
+一次大小写不敏感去重 —— 这正是「过渡期口径」的落地形态。
+
+⚠ 这是**消费侧容错**，不是 Hub 侧归一。Hub 侧归一缺口仍在（L3-A）。
+
+---
+
+## 8. 待裁定问题
+
+| # | 问题 | 优先级 |
+|---|---|---|
+| **L5-Q4** | ~~L5 判据选哪个~~ → **✅ 已修正为「通道覆盖度」并实测（1/7）** | **已解决** |
+| **L5-Q1** | 通道扩展顺序：是否采纳「security_condition → header」起步？ | **P0** |
+| ~~**L5-Q8**~~ | ~~header 通道与 `kb required_headers.json` 谁权威？~~ | **✅ 已裁定（D63）：Hub 权威，以归一后为准；归一落地前按大小写不敏感匹配；kb-only header 记 extraction gap** |
+| **L5-Q2** | 接线选甲 / 乙 / 丙？ | P1 |
+| **L5-Q7** | 扩通道后种子多样性下降，回退还是接受？需预设判据 | P1 |
+| **L5-Q5** | 与 `derived/spec/rtsp/state_machine/` 的职责边界 | P2 |
+| ~~**L5-Q9**~~ | ~~是否先做 emit cardinality 框架修复（0..N）？~~ | **✅ 已完成（D61）**，实测收益 2 → 25 Candidate |
+| **L5-Q12** | **Q5-G 接线**（路径规划改用 Hub transition fact）是否现在做？ | **P0** —— 低风险，不改模型/格式/产物 |
+| **L5-Q13** | 响应方向的扩展是否值得向 AFLNet 侧提议（如扩展 ProFuzzBench 支持 request-response 对）？ | **P2** —— 需外部工具链配合 |
+| **L5-Q6** | traffic `observed_*` 通道是否等其 relation 改善后再开 | P2 |
+| **L5-Q10** | `constraint` / `status` 是否值得扩展 `SeedCorpus` 加响应字段？ | **P2**（输出格式变更，影响下游消费契约） |
+| **L5-Q11** | 是否先补 Hub 的**非安全属性 header fact**（backlog §19.5），让 `headers` 成为独立维度？ | **P1** |
+
+### 8.1 L5-Q9 是本批新增的最高优先级项
+
+`emit_cardinality` 的 0..N 语义是**契约已声明但实现未跟上**的缺口。
+修它有**双重收益**：
+
+1. 让 Q5 的 state/transition 规则可表达
+2. 让未来的多值规则（如 traffic 的 co-occurrence）可表达
+
+⚠ 但它会改 8 条既有规则的签名 ⟹ 须**整批**处理，不宜夹带。
+
+---
+
+## 9. 战略含义与建议路径
+
+### 9.1 战略含义
+
+**（1）零增量已被结构性解释。** 不是实验设计的偶然，是
+「7 个 Hub 维度只有 1 个接了通道」的必然结果。
+
+**（2）当前架构下新增源的边际收益为零。** 且这个结论**不再依赖推断**，
+而是可枚举的事实。
+
+**（3）未打通 L5 前不投入新源。** 顺序约束，不是软建议。
+
+### 9.2 建议路径
+
+```
+第 1 步  裁定 L5-Q9（是否先修 emit cardinality 框架）   ← 新增 P0
+第 2 步  裁定 L5-Q1 / L5-Q8（通道顺序 + header 权威边界）
+第 3 步  实现 security_condition 通道（成本最低、覆盖 2 缺口）
+第 4 步  实测传导，确认判据能观测到变化
+第 5 步  接线（G-2）+ 重复 2026-09-30 的甲/乙对照
+第 6 步  回填 framework §4 的 L5 状态（目标：覆盖度 > 1/7）
+```
+
+### 9.3 建议不做的事
+
+- ❌ 不要先接线后扩通道 —— 接线后仍零增量（G-2 与 L5 独立，§3）
+- ❌ 不要在 rank 4/5（state / observed_*）上先行 —— 无数据可通
+- ❌ 不要夹带修复 emit cardinality —— 会波及 8 条规则，应独立成批
+
+---
+
+*本文件 2026-10-06 新建，同日两度深化（候选排序 + 判据修正与覆盖度实测）。*
+*状态：Proposal，未冻结。判据已从「产物是否变化」改为「通道覆盖度」。*

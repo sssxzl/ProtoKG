@@ -41,7 +41,7 @@ sys.path.insert(0, str(ROOT / "local"))
 import rq3_common as C  # noqa: E402
 
 #: 目标 docx（相对项目根）
-DOCX_REL = "local/实验方案_详细版.docx"
+DOCX_REL = "docs/实验/实验方案_详细版.docx"
 
 #: edsdk 路径（本地 Office 编辑 SDK）
 EDSDK = Path(r"D:\app\WorkBuddy\resources\app.asar.unpacked\resources\plugins"

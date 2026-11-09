@@ -48,7 +48,7 @@
 - **实测 name 全集（68，v2 产物 `derived/per_source/rtsp/rfc/facts/rfc.jsonl` 实测）**: `Accept`, `Accept-Encoding`, `Accept-Language`, `Allow`, `Authorization`, `Bandwidth`, `Blocksize`, `CSeq`, `Cache-Control`, `Conference`, `Connection`, `Content-Base`, `Content-Encoding`, `Content-Language`, `Content-Length`, `Content-Location`, `Content-Type`, `Date`, `Expires`, `From`, `Host`, `If-Match`, `If-Modified-Since`, `Last-Modified`, `Location`, `Proxy-Authenticate`, `Proxy-Require`, `Public`, `RTP-Info`, `RTSP option name`, `RTSP option registration`, `Range`, `Referer`, `Require`, `Retry-After`, `Scale`, `Server`, `Servers`, `Session`, `Session identifier`, `Speed`, `Timestamp`, `Transport`, `URL`, `URL host`, `Unsupported`, `User-Agent`, `Vary`, `Via`, `WWW-Authentica`, `basic features`, `character encoding`, `client`, `conference identifier`, `header field value`, `header fields (Section 12)`, `line terminator`, `message body`, `message body length`, `method`, `npt-range`, `octet sequence`, `presentation description`, `protocol`, `sink`, `smpte-range`, `user interface`, `utc-range`
 - **⚠ 既有遗留（不属本 Profile 处置）**: 在 **v1 遗留数据**（`derived/fused/facts/header.jsonl`
   实测）里 `Authorization` 与 `authorization` 是两条 distinct name（大小写变体）；v2 rfc
-  产物中只出现 `Authorization` 一条。沿用 `local/hub_contract_errata_backlog.md` §10.1 的既有现象。
+  产物中只出现 `Authorization` 一条。沿用 `docs/实施/hub_contract_errata_backlog.md` §10.1 的既有现象。
   ⚠ 但该 backlog §16 已裁定「`Authorization` 与 `authorization` 是同一 header」
   （backlog L755 / L775），与本节「如实登记不合并」的处置存在张力，合并裁定仍挂
   backlog §10.1 待办。
