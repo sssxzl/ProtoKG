@@ -66,11 +66,11 @@ packet_role_pair     packet_role   ⚠ v2 注册表未注册 packet_role
 - 批量入口 `convert_v1_fact_jsonl(path) -> (list[Fact], list[dict])`：错误登记进返回的
   errors 列表，条目形如 `{line, reason}`（解析/单条失败）或
   `{canonical_key, reason, group_size}`（同 canonical key 合并失败）
-- 调用方负责处理错误清单；compat 模块本身只读 `derived/model/hub/facts/`，不写任何文件
+- 调用方负责处理错误清单；compat 模块本身只读 `derived/hub/facts/`，不写任何文件
 
 ## 不动 v1
 
 本文仅定义**映射规则**与**实现入口**。
-旧 fact 的物理格式（derived/model/hub/facts/*.jsonl）**完全不动**；
+旧 fact 的物理格式（derived/hub/facts/*.jsonl）**完全不动**；
 新结构（v2 core/）与 v1 共存；v1 的裁决链 / validation chain 所在的 `core/fused/runtime/`、`reader.py`、`writer.py` 已于 2026-10-09 随 架构退役移除，不存在「不修改 v1 代码链」这一约束。
 切换发生在用户**明确迁移**时（早期 → 当前 的语义化切换由后续决策触发）。

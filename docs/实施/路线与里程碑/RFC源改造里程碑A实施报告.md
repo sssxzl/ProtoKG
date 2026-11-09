@@ -237,7 +237,7 @@ DNS 的字段（QNAME/QTYPE/QCLASS/RDLENGTH）是**表格 + ABNF 形态**，需 
 把约束固化为可自动验证的测试：
 - CLI：多源被拒 / `--protocol` 必填 / 未知协议 exit 2 / 非法源被拒
 - 清理范围：只清指定源，其他源文件**必须仍在**（核心回归）
-- 产物范围：只写 `derived/model/per_source/<protocol>/<source>/`
+- 产物范围：只写 `derived/per_source/<protocol>/<source>/`
 - 工具脚本：默认必须单协议；单协议模式输出里**不得出现**其他协议
 - rfc 抽取隔离：SIP 配置判 RTSP §12 → 不是 field；RTSP 配置判 SIP §20 → 不是 field；两协议 norm_id 集合**不相交**
 
@@ -286,7 +286,7 @@ python scripts/build_hub.py --sources traffic --protocol sip
 
 # 4) 幂等性
 python scripts/build_hub.py --sources rfc --protocol sip
-md5sum derived/model/per_source/sip/rfc/facts/rfc.jsonl   # 两次应一致
+md5sum derived/per_source/sip/rfc/facts/rfc.jsonl   # 两次应一致
 
 # 5) 测试
 python -m pytest tests/ -q      # 37 failed / 646 passed / 20 errors（失败全为预存）
@@ -301,7 +301,7 @@ python -m pytest tests/fused/test_single_protocol_single_source.py -q  # 13 pass
 ### 10.1 背景
 
 用户把 `kb/` 从 8 个协议裁剪到只剩 **rtsp / sip / smtp**（实验只用到这三个）。
-但 `fused_hub/targets/` 与 `derived/model/per_source/` 仍留着另外 5 个协议（dns/dtls/ftp/ssh/tls）
+但 `fused_hub/targets/` 与 `derived/per_source/` 仍留着另外 5 个协议（dns/dtls/ftp/ssh/tls）
 的配置与产物，且测试仍引用它们 → 失败数从裁剪前的 **37 failed** 涨到 **47 failed**。
 
 ### 10.2 处置
@@ -312,7 +312,7 @@ python -m pytest tests/fused/test_single_protocol_single_source.py -q  # 13 pass
 |---|---|
 | `fused_hub/targets/{dns,dtls,ssh,tls}/` | 上一轮 A0.1/A0.2 新建的，kb 已无对应协议 → 纯死配置 |
 | `fused_hub/targets/ftp/rfc_config.json` | 上一轮 A0.2 新建 |
-| `derived/model/per_source/{dns,dtls,ftp,ssh,tls}/` | `derived/` 是再生目录；rq3/rq4 脚本只用 3 个目标协议，无人引用 |
+| `derived/per_source/{dns,dtls,ftp,ssh,tls}/` | `derived/` 是再生目录；rq3/rq4 脚本只用 3 个目标协议，无人引用 |
 
 **保留**（并已实测确认无副作用）：
 
@@ -359,7 +359,7 @@ python -m pytest tests/fused/test_single_protocol_single_source.py -q  # 13 pass
 **虚构状态名**（Init/Ready）→ 状态机层与种子序列全变 → 契约漂移。
 这与 B:state-model 6 个失败、B:seed-count-contract 28 个失败**同源**。
 
-**已发表结果不受影响**：`derived/model/seeds/<协议>/rq4_B/` 的语料（39/25/78）带
+**已发表结果不受影响**：`derived/seeds/<协议>/rq4_B/` 的语料（39/25/78）带
 `MANIFEST.md5` + `manifest.json`，`md5sum -c` **全部 OK、0 失败**。
 
 **两条不可行的回退路径（已实测排除）**：
@@ -367,7 +367,7 @@ python -m pytest tests/fused/test_single_protocol_single_source.py -q  # 13 pass
   （且 `--dict base` 与 `--dict protocol` 条数相同，dict_kind 不是驱动因素），
   差异在**多资源覆盖的消息序列构成**。
 - 「回退 rfc facts 到 10-29 状态」→ **10-29 的快照不存在**；
-  `derived/model/per_source.bak_20261018/rfc/facts/rfc.jsonl` 是 10-18 的**旧格式**
+  `derived/per_source.bak_20261018/rfc/facts/rfc.jsonl` 是 10-18 的**旧格式**
   （597 条含 `all_claims`），与当前格式不可比。
 
 ### 10.5 遗留（待用户决策，未擅自处理）

@@ -340,7 +340,7 @@ def _build_action_seq_seeds(bundle: dict, profile: dict, protocol: str,
     """⑤ 在**真实抓包种子**上做字段级变异，返回 ``(种子列表, 溯源信息)``。
 
     底料来源（优先级，见 ``core/fused/downstream/action_seq.py``）：
-      ① ``derived/model/seeds/<protocol>/<组>/*.raw``（已发表的语料）
+      ① ``derived/seeds/<protocol>/<组>/*.raw``（已发表的语料）
       ② ``kb/<protocol>/数据流量/**`` 里的真实抓包
       ③ 都取不到 ⇒ **本协议不产出 ⑤ 种子**（如实报告，**不造假**）
 
@@ -906,7 +906,7 @@ def main() -> int:
         description="统一种子生成入口（协议 × 源二维解耦）")
     ap.add_argument("--protocol", default="rtsp")
     ap.add_argument("--out", default=None,
-                    help="输出目录（默认 derived/model/seeds/<protocol>/<时间戳>/）")
+                    help="输出目录（默认 derived/seeds/<protocol>/<时间戳>/）")
     ap.add_argument("--danger", action="store_true",
                     help="追加 ② 通用危险层种子")
     ap.add_argument("--focused", action="store_true",

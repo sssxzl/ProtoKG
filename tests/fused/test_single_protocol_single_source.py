@@ -121,7 +121,7 @@ def test_clean_without_sources_clears_all_five(tmp_path, monkeypatch):
 # ===========================================================================
 
 def test_write_goes_to_target_protocol_and_source(tmp_path, monkeypatch):
-    """产物只落在 derived/model/per_source/<protocol>/<source>/ 下。"""
+    """产物只落在 derived/per_source/<protocol>/<source>/ 下。"""
     from core import paths
 
     fake_facts_root = tmp_path / "facts"

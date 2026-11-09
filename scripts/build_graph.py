@@ -6,7 +6,7 @@
     ② B0：把中枢的 16 个桶**投影**成显式图 ⇒ ``core/fused/graph_ops.py``
     ③ B1：分层（精确图 / 社区图）+ 质量度量 ⇒ 落盘
 
-★ 产物（``derived/model/per_source/<协议>/graph/``）：
+★ 产物（``derived/per_source/<协议>/graph/``）：
     ``nodes.jsonl`` / ``edges.jsonl`` / ``graph_meta.json``
 
 ★ **中枢零改动**：图是**派生视图** ⇒ bundle / seedgen / edge_cover 不受影响。

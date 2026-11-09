@@ -1215,20 +1215,20 @@ def _dir_has_action_seq_layer(directory: Path) -> bool:
 
 def _published_group_dirs(protocol: str, group: Optional[str],
                           root: Optional[Path]) -> list[Path]:
-    """列出 ``derived/model/seeds/<protocol>/`` 下与聚焦组匹配的语料目录（按新→旧）。
+    """列出 ``derived/seeds/<protocol>/`` 下与聚焦组匹配的语料目录（按新→旧）。
 
     ★ 指定了 ``group`` 时**只返回匹配的目录**（manifest 记录的 focus_group
       优先，其次目录名以组字母结尾）——**绝不拿别的组的语料冒充**（那会让
       「底料 = 本组的真实语料」这一前提失效）。
 
     ★★ 只承认「**正式发布过**」的**时间戳形态**批次目录：
-      ``derived/model/seeds/<协议>/`` 下混着两类目录——
+      ``derived/seeds/<协议>/`` 下混着两类目录——
         · **时间戳形态**（``^\\d{8}_\\d{6}$``，如 ``20261031_171135`` /
           ``20261021_105316``）= ``scripts/seedgen.py`` **每次生成**一个批次目录
           的**自动产出** ⇒ 正式发布时会写 ``manifest.json``
           ⇒ **无 manifest ⇒ 未正式发布 ⇒ 排除**。
           （未正式发布的时间戳批次里可能混着**已书面废弃、且被外网摄像机 URL
-          污染**的语料：``docs/实验/RQ4_AFLNet实验设计.md:770``：「``derived/model/seeds/
+          污染**的语料：``docs/实验/RQ4_AFLNet实验设计.md:770``：「``derived/seeds/
           rtsp/20261031_171135`` 这份**已被污染**，不应作为任何实验语料使用」；
           同文件 716 行量化：含 ``isapi`` / ``10.11.26.98`` 的文件 **22/37 = 59.5%**。
           本函数按 **mtime 新→旧**排序 ⇒ 未发布的污染目录会排在第一
@@ -1308,10 +1308,10 @@ def _load_published_seeds(protocol: str, profile: dict, *,
                           base_corpus_from: Optional[Path] = None,
                           base_corpus_trusted: bool = False
                           ) -> list[SeedCorpus]:
-    """来源 ①：``derived/model/seeds/<protocol>/<组>/*.raw``（已发表的语料）。
+    """来源 ①：``derived/seeds/<protocol>/<组>/*.raw``（已发表的语料）。
 
     ★★ **严格单源模式**（``strict_source_only``）：底料语料本身可能含**其它源**
-      的知识（实测：``derived/model/seeds/rtsp/rq4_B`` 里有 **12 条 ``vuln_boundary``
+      的知识（实测：``derived/seeds/rtsp/rq4_B`` 里有 **12 条 ``vuln_boundary``
       种子** = vuln 源的漏洞模式）⇒ 单源实验必须把它们排除。
       判据：读该目录 ``manifest.json`` 的 ``seeds[].layer_name``
       → ``vuln_boundary`` 层在 ``vuln`` ∉ source_set 时**排除**；
@@ -1518,7 +1518,7 @@ def load_real_base_seeds(protocol: str, profile: dict, *,
 
     优先级：
 
-    ① ``derived/model/seeds/<protocol>/<组>/*.raw``（已发表的语料）
+    ① ``derived/seeds/<protocol>/<组>/*.raw``（已发表的语料）
     ② ``kb/<protocol>/数据流量/**`` 里的真实抓包
     ③ 都取不到 ⇒ 返回 ``([], "")`` —— 调用方**如实报告**，**不得造假**。
 

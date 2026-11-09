@@ -458,7 +458,7 @@ v2 前缀，与历史 `f1_` 产物隔离。）
 2. 双轨：旧 `fact_key` 作为兼容层保留，新知识走新格式
 3. 切换：五源走新格式，旧格式归档
 
-**当前进展（2026-10-30）**：第 1 步已完成（结构落地 + rtsp Profile v1 注册表）；第 2 步双轨已实现 —— v1 产物在 `derived/model/hub/`（131 facts），v2 产物在 `derived/model/per_source/`（4 协议 × 五源），`core/fused/compat.py` 提供 早期 → 当前 映射与 `core/fused/export.py` 的 v1 回退入口。第 3 步（切换）未触发。
+**当前进展（2026-10-30）**：第 1 步已完成（结构落地 + rtsp Profile v1 注册表）；第 2 步双轨已实现 —— v1 产物在 `derived/hub/`（131 facts），v2 产物在 `derived/per_source/`（4 协议 × 五源），`core/fused/compat.py` 提供 早期 → 当前 映射与 `core/fused/export.py` 的 v1 回退入口。第 3 步（切换）未触发。
 
 ---
 

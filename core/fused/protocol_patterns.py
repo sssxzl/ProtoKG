@@ -8,7 +8,7 @@ core/fused/protocol_patterns.py —— 协议状态机信号 pattern（协议 Pr
 
 ⚠️ 分层原则（重要）：
   - 本文件属于「协议 Profile 配置层」，与 fused_hub/schema、fused_hub/targets 同类；
-  - 本文件【不属于】结构化知识中枢（derived/model/per_source、derived/model/spec/rtsp/norms）；
+  - 本文件【不属于】结构化知识中枢（derived/per_source、derived/spec/rtsp/norms）；
   - 因此「清空结构化知识中枢」时，本文件不受影响，不会被清理。
 
 ★ 协议范围（2026-10-31 kb 收敛至 3 协议后同步收敛）

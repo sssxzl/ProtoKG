@@ -2259,7 +2259,7 @@ R11 保持原状。
 Registry fingerprint 因文件变更而改变：
 sha256_full `0c6e5853…` → `5a168877…`
 
-**连带后果**：`derived/model/hub/meta.json` 记录的 Registry fingerprint 与
+**连带后果**：`derived/hub/meta.json` 记录的 Registry fingerprint 与
 `build_fingerprint` **均已陈旧**（实测不一致）。该产物需重跑融合才能恢复
 一致；本步禁止 build experiment，故暂留待后续授权。
 
@@ -2282,7 +2282,7 @@ sha256_full `0c6e5853…` → `5a168877…`
 
 ### E18. Registry 变更后的 canonical 同步
 
-property_registry.json 变更后，derived/model/hub/meta.json 的
+property_registry.json 变更后，derived/hub/meta.json 的
 registry fingerprint 陈旧（磁盘 actual = sha256:5a168877…，
 meta expected = sha256:0c6e5853…）。
 
@@ -2290,7 +2290,7 @@ meta expected = sha256:0c6e5853…）。
 
 **同步结果**（`--sources rfc expert_note vuln --skip-per-source`）:
 
-- derived/model/hub 13 文件: **11 SAME / 2 CHANGED**
+- derived/hub 13 文件: **11 SAME / 2 CHANGED**
   （仅 meta.json / profile.json；facts / audit / graph 全部逐字节不变）
 - registry fingerprint 对齐: `sha256:5a168877…` ✔
 - build_fingerprint: `b0d457b1…` → `e7711ab2…`
@@ -2306,16 +2306,16 @@ property 不改变任何一条绑定项 ⟹ 不触发 bump。
 （对照 §14 E4：`_completeness` 修复改的是 Phase A 判定逻辑本身，故已 bump）
 
 **per_source 同步: 已完成（§6-Pre17 阶段 A）。**
-derived/model/per_source/{rfc, expert_note, vuln}/meta.json **均含 `registries`**
+derived/per_source/{rfc, expert_note, vuln}/meta.json **均含 `registries`**
 字段，其 registry fingerprint 此前同样陈旧。
-重跑范围：`derived/model/hub/` + `derived/model/per_source/{rfc, expert_note, vuln}`。
+重跑范围：`derived/hub/` + `derived/per_source/{rfc, expert_note, vuln}`。
 
 **同步结果**：三源 registry fingerprint 全部对齐 `sha256:5a168877…` ✔
 
 ★ 实际变更范围为**每源 2 个文件**（meta.json + profile.json），
    而非 A2 预期的「仅 meta.json」。原因是 `profile.json` 内嵌
    `build_fingerprint` 字段，Registry 变更必然使其同步改变——
-   与 §6-Pre16 中 `derived/model/hub/profile.json` 的变化**同源同机制**。
+   与 §6-Pre16 中 `derived/hub/profile.json` 的变化**同源同机制**。
    三源 profile.json 文件大小均未变（1721 / 1372 / 3417 B），
    与 build_fingerprint 为定长字符串一致。
    facts / audit / graph 共 11 个文件/source **全部逐字节不变**。
@@ -2764,24 +2764,24 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 | `core/lane_a/` 模块 | 11（pcap / g1 / g2 / g4 / targets / observation / writer / reader / schema / attachment / `__init__`） |
 | `tests/lane_a/` 测试 | 85 项，全部构造数据 + `tmp_path` |
 | `scripts/attach_lane_a_provenance.py` | 独立入口（**未改** `build_hub.py`） |
-| `derived/model/lane_a/` | 500 unit，25000 observation |
-| `derived/model/lane_a/provenance/` | 11000 attachment，覆盖 3 条 distinct Hub fact |
+| `derived/lane_a/` | 500 unit，25000 observation |
+| `derived/lane_a/provenance/` | 11000 attachment，覆盖 3 条 distinct Hub fact |
 
 **四个阶段**
 
 | 阶段 | 内容 | 结果 |
 |---|---|---|
 | I | 只读探针，G1 重建器 | 500/500 与 udp 侧 `client.log` 一致 |
-| II | `derived/model/lane_a/` 落盘 + reader + schema | 5000 条 G1 observation |
+| II | `derived/lane_a/` 落盘 + reader + schema | 5000 条 G1 observation |
 | III | G2 / G3 / G4 / G8 + target 对齐 | 25000 条；11000 条带 target |
-| — | Provenance Attachment（§5.4） | 11000 条；`derived/model/hub/` 零变化 |
+| — | Provenance Attachment（§5.4） | 11000 条；`derived/hub/` 零变化 |
 
 **每步复验的核心不变量**
 
-- `derived/model/hub/` 13 文件**逐字节不变**
+- `derived/hub/` 13 文件**逐字节不变**
 - `core/` 既有 105 个 `.py` 源码**零改动**（只新增 `core/lane_a/`）
 - `kb/` aggregate `sha256:bcc1bd3f…`（6061 files）不变
-- `derived/model/spec/rtsp/` NO DIFF
+- `derived/spec/rtsp/` NO DIFF
 - 全量 pytest **0 failed / 0 errors**
 
 **对本批次前序判定的修正（3 处显式记录）**

@@ -70,7 +70,7 @@ def _isolate_switch(monkeypatch):
 
 @pytest.fixture()
 def isolated_library(tmp_path, monkeypatch):
-    """把权威规则库（`derived/model/per_source/<proto>/rfc/semantic/`）指向 tmp_path。"""
+    """把权威规则库（`derived/per_source/<proto>/rfc/semantic/`）指向 tmp_path。"""
     from core import paths
 
     monkeypatch.setattr(

@@ -259,7 +259,7 @@ def test_value_encoders():
 def test_dhcpv4_hub_has_binary_layout_facts():
     """★ 二进制布局落在中枢里（可溯源到 RFC 行号）。"""
     import glob
-    files = glob.glob(str(ROOT / "derived" / "model" / "per_source" / "dhcpv4" / "facts"
+    files = glob.glob(str(ROOT / "derived" / "per_source" / "dhcpv4" / "facts"
                           / "*.jsonl"))
     if not files:
         pytest.skip("无 dhcpv4 中枢产物")

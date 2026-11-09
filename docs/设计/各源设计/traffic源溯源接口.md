@@ -253,7 +253,7 @@ rule_set §4.8 要防的失效模式。
 > **状态：Final Frozen**（2026-10-04；原 Frozen Candidate，依 ERRATA-1 + ERRATA-3 转正）
 > **转正依据**：§5.4「Lane A 侧独立记录」已由 `core/lane_a/attachment.py`
 > 实现并验证——25000 条 observation 产出 **11000** 条 attachment，
-> 落点 `derived/model/lane_a/provenance/`，运行后 `derived/model/hub/` 13 文件
+> 落点 `derived/lane_a/provenance/`，运行后 `derived/hub/` 13 文件
 > 逐字节不变（§5.4「Hub 侧零改动」得证）。
 > **注意**：本节 §5.5 的「强制（留给实现）」主张已被 ERRATA-1 推翻，
 > 转正的是 §5.1–§5.4 的判定本身，**不是** §5.5。
@@ -325,7 +325,7 @@ invariant 才保证将来不可达。两者都要，第 5.5 节同时记下。
 
 > **状态：Final Frozen**（2026-10-04；原 Frozen Candidate，依 ERRATA-2 + 步骤 C 转正）
 > **转正依据**：§6.1 三条承诺已由实测验证——阶段 II/III 执行后
-> `derived/model/hub/` 13 文件逐字节不变、`core/` 既有 105 个 `.py` 源码零改动、
+> `derived/hub/` 13 文件逐字节不变、`core/` 既有 105 个 `.py` 源码零改动、
 > `kb/` aggregate 指纹 `bcc1bd3f…`（6061 files）一致。
 
 ### 6.1 三条承诺
@@ -437,7 +437,7 @@ validator invariant 才保证将来不可达。**两者都要**」。
 
 | 保障 | 实现 | 守护测试 |
 |---|---|---|
-| 落点与 Hub 物理隔离 | `derived/model/lane_a/<unit_id>/`（`layout.py:124` verify_layout 只校验 `derived/model/hub/` 子树） | `test_no_hub_dir_created` |
+| 落点与 Hub 物理隔离 | `derived/lane_a/<unit_id>/`（`layout.py:124` verify_layout 只校验 `derived/hub/` 子树） | `test_no_hub_dir_created` |
 | 模块不依赖 Hub | `core/lane_a/*` **不 import** `core.fused.*` | `test_does_not_import_hub_modules`（AST 解析真实 import） |
 | 读出口不复用 Hub reader | `core/lane_a/reader.py` 纯读 | `test_reader_does_not_import_hub_reader`、`test_reader_is_pure_read` |
 | 格式校验独立于 Hub validator | `core/lane_a/schema.py` 不 import `core.fused.*` | `test_schema_does_not_import_hub_validator` |
@@ -470,8 +470,8 @@ Mechanism）与 §6（与 Phase A / Phase B 的关系）一并转正。
 
 | 判据 | 实测 |
 |---|---|
-| §5.4「Lane A 侧独立记录」 | 落点 `derived/model/lane_a/provenance/`，非 `derived/model/hub/` |
-| §5.4「Hub 侧零改动」 | 跑 attachment 后 `derived/model/hub/` **13 文件逐字节不变** |
+| §5.4「Lane A 侧独立记录」 | 落点 `derived/lane_a/provenance/`，非 `derived/hub/` |
+| §5.4「Hub 侧零改动」 | 跑 attachment 后 `derived/hub/` **13 文件逐字节不变** |
 | §5.3「可复用 DerivedFrom 的**形状**，不可复用其**落点**」 | attachment 记录含 `fact_id` 引用集，落点在 Lane A 侧 |
 | 产出规模 | 25000 observation → **11000** attachment，覆盖 **3** 条 distinct Hub fact |
 
@@ -480,8 +480,8 @@ Mechanism）与 §6（与 Phase A / Phase B 的关系）一并转正。
 | 承诺 | 验证方式 | 结果 |
 |---|---|---|
 | 不进 Phase A Resolution | `core/lane_a/*` 零 `core.fused.pipeline.*` import（AST 测试） | ✅ |
-| 不进 Phase B 对齐 | 同上 + `derived/model/hub/` 13 文件零变化 | ✅ |
-| 不改 canonical assertion | attachment 只写 `derived/model/lane_a/provenance/`；Hub fact 内容逐字节未变 | ✅ |
+| 不进 Phase B 对齐 | 同上 + `derived/hub/` 13 文件零变化 | ✅ |
+| 不改 canonical assertion | attachment 只写 `derived/lane_a/provenance/`；Hub fact 内容逐字节未变 | ✅ |
 
 **§5.5 未被转正的部分**（重申，避免误读）：§5.5 主张的
 validator invariant 已被 ERRATA-1 判定「不实施」，本次转正的是

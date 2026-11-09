@@ -222,7 +222,7 @@ fingerprint 文件命名 kb_fingerprint_before.txt 与 kb_fingerprint_after.txt�
 
 该源在 norms.jsonl 中的条目
 
-derived/model/per_source/<该源>/ 下的产物
+derived/per_source/<该源>/ 下的产物
 
 禁止改：
 
@@ -230,9 +230,9 @@ derived/model/per_source/<该源>/ 下的产物
 
 其他源在 norms.jsonl 中的条目
 
-derived/model/per_source/<其他源>/ 下的产物
+derived/per_source/<其他源>/ 下的产物
 
-derived/model/spec/rtsp/ 下与本次操作无关的文件
+derived/spec/rtsp/ 下与本次操作无关的文件
 
 若发现其他源的文件被意外修改（例如测试误写、fixture teardown 失败），不自动修。停下汇报，等指令。
 

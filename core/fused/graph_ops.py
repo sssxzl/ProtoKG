@@ -124,7 +124,7 @@ from core.fused.graph_schema import edge_type_names, node_type_names
 def graph_dir(protocol: str = "") -> Path:
 
 
-    """``derived/model/graph/``（**GraphRAG 整理层**，与中枢 ``derived/model/hub/`` **并列**）。
+    """``derived/graph/``（**GraphRAG 整理层**，与中枢 ``derived/hub/`` **并列**）。
 
 
 
@@ -1567,7 +1567,7 @@ def write_graph(protocol: str, nodes: list[dict], edges: list[dict],
                 extra_meta: Optional[dict] = None) -> dict[str, Path]:
 
 
-    """把图落盘到 ``derived/model/per_source/<协议>/graph/``。"""
+    """把图落盘到 ``derived/per_source/<协议>/graph/``。"""
 
 
     d = graph_dir(protocol)

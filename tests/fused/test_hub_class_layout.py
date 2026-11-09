@@ -3,8 +3,8 @@
 
 ★ 阶段 C 的目标：中枢按「**知识分类**」存储，而不是按 aspect 存储。
 
-    旧（批次 1.6）：derived/model/hub/facts/<aspect>.jsonl（16 个 aspect 文件）
-    新（阶段 C）  ：derived/model/hub/<分类>/<文件>.jsonl（A~F 六个知识分类）
+    旧（批次 1.6）：derived/hub/facts/<aspect>.jsonl（16 个 aspect 文件）
+    新（阶段 C）  ：derived/hub/<分类>/<文件>.jsonl（A~F 六个知识分类）
 
 ★ 落位依据 = ``fused_hub/schema/knowledge_slots.json`` 的 ``aspect_map``
   ⇒ **不改抽取器**，只重排已有事实。

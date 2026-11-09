@@ -12,7 +12,7 @@ from core.fused.models import (
     Fact, Claim, Evidence, Resolution, Support, Generalization,
 )
 # ★ 2026-11-08：v1 兼容层（core/fused/compat.py）已删 ⇒ v1 产物
-#   （derived/model/hub/）不再存在 ⇒ 下面只接受 v2 shape。
+#   （derived/hub/）不再存在 ⇒ 下面只接受 v2 shape。
 
 
 # ===========================================================================

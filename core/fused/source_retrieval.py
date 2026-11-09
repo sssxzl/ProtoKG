@@ -13,7 +13,7 @@
 embedding 可插拔 + 缓存：
   - 优先 sentence-transformers（真实语义，如 unixcoder / all-MiniLM，装在 /e/python）；
   - 无 sentence-transformers 时降级字符 n-gram（仅让流程跑通，无语义）；
-  - 检索结果缓存到 derived/model/source_blocks/<protocol>.json，主流程读缓存避免重复检索。
+  - 检索结果缓存到 derived/source_blocks/<protocol>.json，主流程读缓存避免重复检索。
 """
 from __future__ import annotations
 
@@ -193,7 +193,7 @@ def retrieve_state_relevant_code(src_dir: Path, protocol: str,
                                  top_k: int = 8) -> list[dict]:
     """AutoSeeder III-A 完整流程：切片 → 7 query 检索 → 后处理 → 代码块列表。
 
-    优先读缓存 derived/model/source_blocks/<protocol>.json；无缓存则实时检索（真实
+    优先读缓存 derived/source_blocks/<protocol>.json；无缓存则实时检索（真实
     embedding 若不可用则降级 n-gram）。
     """
     cache = CACHE_DIR / f"{protocol}.json"

@@ -123,7 +123,7 @@ def main() -> int:
                     help="种子数（默认=资源清单流名数）")
     ap.add_argument("--protocol", default="rtsp")
     ap.add_argument("--out", default=None,
-                    help="输出目录（默认 derived/model/seeds/rtsp/<时间戳>/，每次自动新建子文件夹避免混批）")
+                    help="输出目录（默认 derived/seeds/rtsp/<时间戳>/，每次自动新建子文件夹避免混批）")
     ap.add_argument("--no-react", action="store_true",
                     help="不用 ReAct，直接 generate_seeds")
     ap.add_argument("--max-rounds", type=int, default=3)
@@ -141,7 +141,7 @@ def main() -> int:
 
     # 默认每次生成自动建带时间戳的子文件夹，避免不同批次种子混在一起
     if args.out is None:
-        _base = ROOT / "derived" / "model" / "seeds" / args.protocol
+        _base = ROOT / "derived" / "seeds" / args.protocol
         args.out = str(_base / datetime.now().strftime("%Y%m%d_%H%M%S"))
 
     print("=" * 64)

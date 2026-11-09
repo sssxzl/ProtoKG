@@ -762,7 +762,7 @@ partial 保留不丢弃（§4.8.2）。
 - G4：7 条 `header` fact（subject 匹配前须先解 §5.2 canonical 问题）
 - G8：`header` / `Session`、`header` / `transport`（2 条，弱）
 
-**G4 的 7 条候选 fact 全清单**（2026-10-04 实测 Hub `derived/model/hub/`）：
+**G4 的 7 条候选 fact 全清单**（2026-10-04 实测 Hub `derived/hub/`）：
 
 | fact_id | subject | property | 来源 |
 |---|---|---|---|
@@ -827,7 +827,7 @@ D9 §6 的 population-level 词表，Lane A 不可用（D19）。
 - G7：RFC 抽取路径里 role 词汇基本不存在
 - 二者共同点：extraction coverage 缺口，修复属 Hub Contract 侧
 
-**解除条件**：`derived/model/hub/facts/` 中出现承载该语义的事实，
+**解除条件**：`derived/hub/facts/` 中出现承载该语义的事实，
 或 Hub 侧提供 instance-level property。二者均非 Lane A 内部可解。
 
 ### 4.13 C17 Packet→Message contribution Primitive Contract

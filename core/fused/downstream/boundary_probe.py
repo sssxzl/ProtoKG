@@ -455,7 +455,7 @@ def emit_boundary_fact(method: str, dim: str, legal_desc: str, illegal_desc: str
       ``*/facts/*.jsonl`` glob 下（``rag_seedgen.load_fact_views`` 会一起读走），
       即「反馈污染权威事实」。
       ⇒ 探测结果的**规范落点**是 **feedback 库**
-        （``derived/model/per_source/<协议>/rfc/semantic/feedback.jsonl``，
+        （``derived/per_source/<协议>/rfc/semantic/feedback.jsonl``，
         见 :mod:`core.fused.downstream.rule_store`），它**只影响规则的调度顺序**
         （``reflow_rules`` 的 ``priority_score``），**不改规则内容**。
 
@@ -503,7 +503,7 @@ def emit_boundary_feedback(method: str, dim: str, legal_desc: str,
 
     Args:
         sink: feedback 库的落盘路径；缺省 ⇒ 该协议的标准 feedback 库
-              （``derived/model/per_source/<协议>/rfc/semantic/feedback.jsonl``）。
+              （``derived/per_source/<协议>/rfc/semantic/feedback.jsonl``）。
     """
     from core.fused.downstream import rule_store
     key = rule_store.probe_feedback_key(protocol, method, dim)

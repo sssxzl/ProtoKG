@@ -9,7 +9,7 @@
 
 > ⚠️ 这句话的范围是**本目录（中枢部件内部）**：指中枢的判定契约与目标配置按协议维度组织
 > ——`schema/` 的三个注册表里**没有** `rfc`/`traffic`/`vuln` 这些源名桶（源在归一过程中被消解为
-> `authority` 溯源字段）。而**知识输入与抽取产物**（`kb/`、`derived/model/per_source/`）本来就是
+> `authority` 溯源字段）。而**知识输入与抽取产物**（`kb/`、`derived/per_source/`）本来就是
 > **协议优先、源在第二层**的两维结构，两者不矛盾。
 
 中枢的核心职责：
@@ -54,18 +54,18 @@ fused_hub/
 |----------|------|----------|
 | 代码 | `core/fused/` | ✅ 已落地（33 个 .py：顶层 22 + `downstream/` 11）|
 | 测试 | `tests/fused/` | ✅ 已落地（37 个测试文件；全量 **560 passed / 0 skipped / 0 failed**）|
-| 构建产物（v2） | `derived/model/per_source/<协议>/<源>/facts/` | ✅ 已落地（4 协议 × 五源）|
-| 构建产物（v1 遗留） | `derived/model/hub/` | ✅ 存在但为 v1 格式（131 facts / 81 entities / 34135 claims）|
+| 构建产物（v2） | `derived/per_source/<协议>/<源>/facts/` | ✅ 已落地（4 协议 × 五源）|
+| 构建产物（v1 遗留） | `derived/hub/` | ✅ 存在但为 v1 格式（131 facts / 81 entities / 34135 claims）|
 
 ## 四、与项目其他目录的关系
 
 | 上游                                          | 下游                                                           |
 | ------------------------------------------- | ------------------------------------------------------------ |
-| `kb/<协议>/<源>/`（read-only 五源）                | `derived/model/per_source/<协议>/<源>/facts/<源>.jsonl`（v2 单源事实） |
-| `derived/model/per_source/`                 | `core/fused/downstream/` 三层检索 → `scripts/seedgen.py`         |
-| `derived/model/hub/`（v1 遗留融合产物）             | `core/fused/compat.py` 双轨映射（fact → Fact）                     |
+| `kb/<协议>/<源>/`（read-only 五源）                | `derived/per_source/<协议>/<源>/facts/<源>.jsonl`（v2 单源事实） |
+| `derived/per_source/`                 | `core/fused/downstream/` 三层检索 → `scripts/seedgen.py`         |
+| `derived/hub/`（v1 遗留融合产物）             | `core/fused/compat.py` 双轨映射（fact → Fact）                     |
 | `fused_hub/targets/<协议>/profile.json`       | `scripts/seedgen.py`（per-protocol 参数与字典）                     |
-| `derived/model/spec/<协议>/norms/norms.jsonl` | `core/fused/norm.py`（v1 norm → Fact）                         |
+| `derived/spec/<协议>/norms/norms.jsonl` | `core/fused/norm.py`（v1 norm → Fact）                         |
 
 ## 五、当前状态（2026-10-30）
 
@@ -84,15 +84,15 @@ fused_hub/
 - ✅ 测试 `tests/`：全量 **560 passed / 0 skipped / 0 failed**
 
 **构建产物（已落地）**
-- ✅ `derived/model/per_source/`：4 协议（ftp / rtsp / sip / smtp）× 五源（rfc / expert_note / traffic / vuln /
+- ✅ `derived/per_source/`：4 协议（ftp / rtsp / sip / smtp）× 五源（rfc / expert_note / traffic / vuln /
   source）共 20 组 v2 事实，fact_key 为 v2 六元组格式（`protocol`/`version`/`subject`/`aspect`/`condition`）
-- ✅ `derived/model/hub/`：v1 时代遗留的融合产物（131 facts / 81 entities / 34135 claims，
+- ✅ `derived/hub/`：v1 时代遗留的融合产物（131 facts / 81 entities / 34135 claims，
   `fusion_version: fusion_v3+rules.sha256:43f7c7fe6`），fact_key 仍是 v1 扁平 `kind`/`property` 格式，
   由 `core/fused/compat.py` 做双轨映射
 - 入口（**一次一个协议 x 一个知识源**）：
   `python scripts/build_hub.py --sources rfc --protocol rtsp`
   （每个源单独跑一次；`--sources` 只接受单个源，`--protocol` 必须显式指定）
-- ⚠️ v2 脚本会真实写入 `derived/model/per_source/`（且默认先清空该协议旧 facts）；`derived/model/hub/` 为 v1 遗留产物，
+- ⚠️ v2 脚本会真实写入 `derived/per_source/`（且默认先清空该协议旧 facts）；`derived/hub/` 为 v1 遗留产物，
   v2 脚本不再更新
 
 **下游**
@@ -107,6 +107,6 @@ fused_hub/
 |------|------|------|
 | `kb/` 知识库 | 8 协议 | dns / dtls / ftp / rtsp / sip / smtp / ssh / tls，每协议 5 源齐全 |
 | `fused_hub/targets/` | 4 协议 | ftp / rtsp / sip / smtp（已建 Profile，可跑种子生成）|
-| `derived/model/per_source/` | 4 协议 | ftp / rtsp / sip / smtp × 五源 |
+| `derived/per_source/` | 4 协议 | ftp / rtsp / sip / smtp × 五源 |
 
 `kb/sip/_bak_pjproject/` 是源码备份目录，非五源之一。

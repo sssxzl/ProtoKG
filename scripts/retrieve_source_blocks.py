@@ -3,7 +3,7 @@
 
 用装有 sentence-transformers 的解释器运行（本机 /e/python/python.exe），
 把 kb/协议实现源码 切片 + 7 条通用 query 语义检索 + 后处理，
-产出 derived/model/source_blocks/<protocol>.json，供主流程 build_hub 读取。
+产出 derived/source_blocks/<protocol>.json，供主流程 build_hub 读取。
 
 用法:
     /e/python/python.exe scripts/retrieve_source_blocks.py --protocol rtsp
@@ -43,7 +43,7 @@ def main() -> int:
     blocks = build_cache(src_dir, args.protocol, top_k=args.top_k,
                          model_name=args.model)
     print(f"完成：{len(blocks)} 个相关代码块 → "
-          f"derived/model/source_blocks/{args.protocol}.json")
+          f"derived/source_blocks/{args.protocol}.json")
     for i, b in enumerate(blocks, 1):
         files = ", ".join(b.get("files", []))
         print(f"  [{i}] {len(b['text'])} 字符  来源: {files}")

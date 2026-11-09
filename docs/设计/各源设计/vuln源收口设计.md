@@ -422,7 +422,7 @@ Pipeline Contract 中 `fusion_version` 绑定 Claim Classification semantics 与
 
 ### 7.2 release timing
 
-- **Step 4.8h**：落 rule + 实现 materialization + tests + dry-run + temp 验证。**不 bump fusion_version。不以新 classification semantics 覆盖正式 canonical `derived/model/hub/`。**
+- **Step 4.8h**：落 rule + 实现 materialization + tests + dry-run + temp 验证。**不 bump fusion_version。不以新 classification semantics 覆盖正式 canonical `derived/hub/`。**
 - **Step 4.8i**：fail-fast 实现 + tests。**不 bump。**
 - **Classification Semantic Release Finalization**（4.8i 之后）：确认两步全部 PASS → **一次性 bump fusion_version** → 更新真实 Registry fingerprint snapshot → 执行 Full Fused Build → seedgen regression → 最终 verification
 - **从此新 fusion_version 唯一对应 4.8h + 4.8i 完成后的语义。**
@@ -457,7 +457,7 @@ Step 4.8h、Step 4.8i 与 Classification Semantic Release Finalization 共同属
 
 1. Step 4.8h / Step 4.8i 的修改均属于 pre-release workspace changes。
 2. 不得将任何中间状态声明为新的 released classification semantics。
-3. Step 4.8h / Step 4.8i 阶段不得使用中间 semantics 覆盖正式 canonical `derived/model/hub/`。
+3. Step 4.8h / Step 4.8i 阶段不得使用中间 semantics 覆盖正式 canonical `derived/hub/`。
 4. 不得将旧 fusion_version 与已经变化的 classification semantics 作为合法 released state 使用。
 5. 不得在仅完成 Step 4.8h、尚未完成 Step 4.8i 时，将该状态 merge / release 为正式 semantic release。
 6. 只有 Step 4.8h PASS + Step 4.8i PASS 后，才允许进入 Classification Semantic Release Finalization。
@@ -467,7 +467,7 @@ Step 4.8h、Step 4.8i 与 Classification Semantic Release Finalization 共同属
    - 若 fusion_version 尚未 bump：保持旧 fusion_version
    - 若 Finalization 已经临时 bump fusion_version：该状态仍属于 unreleased workspace state，不得作为正式 release 使用
    - 若尚未执行 canonical Full Fused Build：不得执行该 build
-   - 若 canonical Full Fused Build 已经开始或完成，但后续 verification / regression 失败：当前 `derived/model/hub/` 属于 failed-release workspace output，不得视为合法 released Fused Dataset
+   - 若 canonical Full Fused Build 已经开始或完成，但后续 verification / regression 失败：当前 `derived/hub/` 属于 failed-release workspace output，不得视为合法 released Fused Dataset
    - 不得记录 `Classification Semantic Release = COMMITTED`
    - 不得更新正式 release status / project status 为本轮新 semantic release
    - 根据 release-start baseline 明确判断当前 workspace 是否发生变化，并按执行计划选择：A. 恢复到 release-start baseline；或 B. 保持为明确的 uncommitted / unreleased workspace state
@@ -524,7 +524,7 @@ Step 4.8h、Step 4.8i 与 Classification Semantic Release Finalization 共同属
 7. 允许使用 temp output 验证：14 vuln unknown → 14 observational、3 resolved + 2 peer_conflict
 8. 记录 prospective registry fingerprint
 9. **不得 bump fusion_version**
-10. **不得以新 classification semantics 覆盖正式 canonical `derived/model/hub/`**
+10. **不得以新 classification semantics 覆盖正式 canonical `derived/hub/`**
 
 **expert_note 回归断言（防退化）**：
 
@@ -555,7 +555,7 @@ Step 4.8h、Step 4.8i 与 Classification Semantic Release Finalization 共同属
 5. 一次性 bump fusion_version（`fusion_v1 → fusion_v2`）
 6. 计算 / 更新最终 Registry fingerprint snapshot
 7. 执行 Full Fused Build
-8. 执行 derived/model/hub verification
+8. 执行 derived/hub verification
 9. 执行 seedgen regression
 10. 执行全量 regression
 11. 记录：old / new fusion_version、old / new registry fingerprint、classification delta、4.8h result、4.8i result、Full Fused Build verification result、seedgen regression result、full regression result、release verification result
@@ -579,7 +579,7 @@ Step 4.8h 开始前，记录 Classification Semantic Release 的 release-start b
 - fusion_version 实际承载位置
 - 当前 Registry fingerprint
 - Registry fingerprint snapshot 实际承载位置
-- current derived/model/hub aggregate fingerprint
+- current derived/hub aggregate fingerprint
 - 当前 classification rule effective state 所需的其他既有 release metadata
 
 **Baseline 性质**：
@@ -620,7 +620,7 @@ Step 4.8h-Pre（已完成）
 | U4 | `risk_level` 受控 token 集合硬编码 | 治理缺口 | 应升格进 registry |
 | U5 | `EMIT_MANY` 未真正扇出 | 框架级缺口 | 将来有规则要真扇出时单独一步做 fan-out |
 | U6 | `build_fingerprint` 是输入侧指纹 | 口径澄清 | 已写入 fused_status.txt |
-| U7 | `derived/model/hub/status.txt` 与契约 §3.2 冲突 | 契约一致性 | 需授权 |
+| U7 | `derived/hub/status.txt` 与契约 §3.2 冲突 | 契约一致性 | 需授权 |
 | U8 | `tests/` 下 10 项既有 ruff | 代码卫生 | 未授权未动 |
 | U9 | `tests/conftest.py` 顶部 docstring 过时 | 文档过时 | 未授权未动 |
 | U10 | 4.8f 记录的 2 个 order-dependent 串行失败未复现 | 观察 | 无复现路径 |
@@ -630,7 +630,7 @@ Step 4.8h-Pre（已完成）
 | U14 | LLM 裁决通道 | 新立项 | pipeline 全通后 |
 | U15 | `cc.traffic.observational` 与条款 8 抵触 | 契约一致性 | 未来治理 |
 | U16 | Markdown artifact 清理 | 文档卫生 | 本文档正式冻结时处理 |
-| U17 | `tests/fixtures/derived/model/graph/entities.jsonl` 非确定性 | ❌ **撤销** | entities.jsonl 从未改变；该判断源于 Pre 阶段错误外推 |
+| U17 | `tests/fixtures/derived/graph/entities.jsonl` 非确定性 | ❌ **撤销** | entities.jsonl 从未改变；该判断源于 Pre 阶段错误外推 |
 | U18 | 候选 rule 隔离依赖 expert_note document 前缀 | 脆弱性 | Step 4.8h 加回归断言（§9.3） |
 | U19 | fallback_flags 为 fallback-path only | ✅ **已裁定** | Step 4.8h 实现并测试（§3.3） |
 | U20 | legacy writer append 模式确定性依赖 overwrite=True | 潜在风险 | 当前四条 seedgen 路径均 True，未触发；若未来出现 overwrite=False 路径会追加重复 entity |
@@ -639,7 +639,7 @@ Step 4.8h-Pre（已完成）
 
 **CORRECTION**
 
-此前关于 `tests/fixtures/derived/model/graph/entities.jsonl` 存在非确定性变化的表述不成立。
+此前关于 `tests/fixtures/derived/graph/entities.jsonl` 存在非确定性变化的表述不成立。
 
 U17 Probe 已验证：
 - 三份 entities.jsonl snapshot SHA-256 完全一致
@@ -669,7 +669,7 @@ Finalization 后需验证：
 
 **检查点 1：Repository Semantic Cleanliness Gate**
 
-`kb/`、`derived/model/spec/`、`fused_hub/`、`core/`、正式 tests source files、Registry、Schema 不存在非预期 diff。
+`kb/`、`derived/spec/`、`fused_hub/`、`core/`、正式 tests source files、Registry、Schema 不存在非预期 diff。
 
 **检查点 2：Generated Fixture Output Gate**
 
@@ -692,9 +692,9 @@ Finalization 后需验证：
 
 1. 全量 `pytest -n auto`：基线 2589 passed / 8 skipped / 0 failed，0 回归
 2. `kb/`：6061 files，SHA256 `A86C71E0…DEDE24` UNCHANGED
-3. `derived/model/spec/rtsp/`：6 文件 size+mtime_ticks+sha256 NO DIFF
-4. `derived/model/per_source/rfc/` 与 `derived/model/per_source/expert_note/`：各 13 文件 size+sha256 全等（跨源隔离）
-5. `derived/model/hub/`：13 文件重跑后与预期一致
+3. `derived/spec/rtsp/`：6 文件 size+mtime_ticks+sha256 NO DIFF
+4. `derived/per_source/rfc/` 与 `derived/per_source/expert_note/`：各 13 文件 size+sha256 全等（跨源隔离）
+5. `derived/hub/`：13 文件重跑后与预期一致
 6. `verify_layout(.)` = 0 violation
 7. `ruff core/fused/ + tests/fused/` 全清
 8. registry fingerprint 新旧对比记录
@@ -776,7 +776,7 @@ Finalization 后需验证：
   即在合法 registry 下**不可达**
 - **真正缺口是 L288-291 无 flags 槽位** —— 三元组返回里没有位置放 `fallback_flags`
 
-旁证（Finalization 前的 derived/model/hub 全量 claim 扫描）:
+旁证（Finalization 前的 derived/hub 全量 claim 扫描）:
 
     unknown  method=rule  rule_id=cc.fallback.unknown  n=14
 

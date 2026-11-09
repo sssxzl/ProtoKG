@@ -51,20 +51,27 @@ def kb_source_dir(protocol: str, source: str) -> Path:
 # 抽取中间产物（derived/...）
 # ===========================================================================
 
-#: ★★ 模型链路产物的根（derived/model/）
-#:   下辖四层（并列）：per_source（抽取）/ hub（中枢）/ graph（GraphRAG）/ seeds（消费）
+#: ★★ 模型链路各阶段的产物目录（**在 derived/ 顶层并列**）
+#:   per_source（抽取）/ hub（中枢）/ graph（知识图）/ seeds（生成）
 #:   + 中间产物：spec / source / vuln / vuln_pattern_vectors / lane_a / source_blocks
-MODEL_DIRNAME = "model"
+#: ★ **只有一个维度**（流水线阶段）⇒ 目录结构 = 数据流结构
+#: ★ 论文实验产物另置 ``derived/experiments/``（与模型产物分开）
+MODEL_STAGE_DIRS = (
+    "per_source", "hub", "graph", "seeds",
+    "spec", "source", "vuln", "vuln_pattern_vectors", "lane_a", "source_blocks",
+)
 
 #: ★★ 论文实验产物的根（derived/experiments/）
-#:   rq3 / rq4 / semantic_gain / annotation / chatafl_analysis
-#:   ★ 与「模型产物」**分开** ⇒ 一眼区分「模型」与「论文证据」
 EXPERIMENTS_DIRNAME = "experiments"
 
 
 def model_root() -> Path:
-    """模型链路产物根 ``derived/model/``（四层 + 中间产物）。"""
-    return derived_root() / MODEL_DIRNAME
+    """模型链路产物根 ``derived/``（各阶段目录在其下**并列**）。
+
+    ★ **兼容别名**：``derived/`` 顶层即模型产物根 ⇒ 本函数保留是为了
+      让既有调用点（``paths.model_root() / "per_source"`` 等）**零改动**。
+    """
+    return derived_root()
 
 
 def experiments_root() -> Path:
@@ -77,19 +84,19 @@ def derived_root() -> Path:
 
 
 def norms_path(protocol: str) -> Path:
-    """v1 norms 产物 derived/model/spec/<protocol>/norms/norms.jsonl（rfc/traffic 源）。"""
+    """v1 norms 产物 derived/spec/<protocol>/norms/norms.jsonl（rfc/traffic 源）。"""
     return model_root() / "spec" / protocol.lower() / "norms" / "norms.jsonl"
 
 
 def source_blocks_cache(protocol: str) -> Path:
-    """source 源检索缓存 derived/model/source_blocks/<protocol>.json。"""
+    """source 源检索缓存 derived/source_blocks/<protocol>.json。"""
     return model_root() / "source_blocks" / f"{protocol.lower()}.json"
 
 
 #: ★★ 中枢根目录（2026-11-08 中枢重设计）
-#:   derived/model/hub/<protocol>/  —— 结构化知识中枢（**独立角色**）
+#:   derived/hub/<protocol>/  —— 结构化知识中枢（**独立角色**）
 #:
-#: ★ 为什么独立出来（诊断 P7）：``derived/model/per_source/`` 的语义是「**按源**分」
+#: ★ 为什么独立出来（诊断 P7）：``derived/per_source/`` 的语义是「**按源**分」
 #:   （每源一个子目录：rfc/ traffic/ profile/ …），
 #:   但批次 1.6 起中枢改成「按 aspect 统一存放」⇒ **跨源汇聚**的产物
 #:   被放进了名为 per_source 的目录 ⇒ **目录名与内容语义相反**。
@@ -98,7 +105,7 @@ HUB_DIRNAME = "hub"
 
 
 def hub_root(protocol: str = "") -> Path:
-    """中枢根 ``derived/model/hub/``（结构化知识中枢，**共用一套**）。
+    """中枢根 ``derived/hub/``（结构化知识中枢，**共用一套**）。
 
     ★ ★ **物理路径无协议层**（2026-11-08 中枢重设计，用户要求：
       「不要给每一个协议单独建立文件夹，共用一套机制」）。
@@ -106,7 +113,7 @@ def hub_root(protocol: str = "") -> Path:
         monkeypatch（``lambda p: ...``）**继续可用** ⇒ 零改动兼容。
       ★ 协议隔离靠**记录内的 ``fact_key.protocol``**（读取端按它过滤）。
     """
-    """中枢根 ``derived/model/hub/``（结构化知识中枢，**共用一套**）。
+    """中枢根 ``derived/hub/``（结构化知识中枢，**共用一套**）。
 
     ★ ★ **不按协议分目录**（2026-11-08 中枢重设计，用户要求）：
       中枢是「**按目标协议的知识分类**存储」的**通用机制** ⇒
@@ -120,12 +127,12 @@ def hub_root(protocol: str = "") -> Path:
 
 
 def hub_index_dir() -> Path:
-    """中枢的跨分类索引目录 ``derived/model/hub/index/``。"""
+    """中枢的跨分类索引目录 ``derived/hub/index/``。"""
     return hub_root() / "index"
 
 
 def hub_class_dir(category: str) -> Path:
-    """中枢的**分类目录** ``derived/model/hub/<category>/``。
+    """中枢的**分类目录** ``derived/hub/<category>/``。
 
     ★ ``category`` 取自 ``knowledge_slots.json`` 的分类 id
       （A_structure / B_interaction / …）。
@@ -134,17 +141,17 @@ def hub_class_dir(category: str) -> Path:
 
 
 #: ★★ GraphRAG **知识整理层**的根目录（与中枢**并列**，2026-11-08 重设计）
-#:   derived/model/graph/  —— 结构化知识中枢的**上一层**：
-#:   中枢（derived/model/hub/）= 知识**按分类**存储；
-#:   图（derived/model/graph/）= 知识**按关系**整理（实体图 + 社区 + 报告）。
+#:   derived/graph/  —— 结构化知识中枢的**上一层**：
+#:   中枢（derived/hub/）= 知识**按分类**存储；
+#:   图（derived/graph/）= 知识**按关系**整理（实体图 + 社区 + 报告）。
 #:   ★ 两者**并列**（不是中枢的子目录）⇒ 层次清晰：
-#:     derived/model/hub/      知识本体（分类存储）
-#:     derived/model/graph/    关系视图（GraphRAG 整理层）
+#:     derived/hub/      知识本体（分类存储）
+#:     derived/graph/    关系视图（GraphRAG 整理层）
 GRAPH_DIRNAME = "graph"
 
 
 def graph_root(protocol: str = "") -> Path:
-    """GraphRAG 整理层根 ``derived/model/graph/``（与中枢 ``derived/model/hub/`` **并列**）。
+    """GraphRAG 整理层根 ``derived/graph/``（与中枢 ``derived/hub/`` **并列**）。
 
     ★ **无协议层**（与中枢一致）⇒ 图的记录带 ``protocol`` 字段，
       读写两端按它过滤 ⇒ 多协议可共存（护栏需要），生产单协议亦成立。
@@ -157,7 +164,7 @@ def hub_facts_dir() -> Path:
 
 
 def purge_graph() -> list[str]:
-    """**清空 GraphRAG 整理层**（``derived/model/graph/``）。
+    """**清空 GraphRAG 整理层**（``derived/graph/``）。
 
     ★ 与 ``purge_hub`` 配套：中枢重置时，图也要重置
     （否则图里留着上一个协议的知识 ⇒ 检索会串）。
@@ -210,17 +217,17 @@ def purge_hub() -> list[str]:
 
 
 def per_source_root(protocol: str) -> Path:
-    """各源**中间产物**根 derived/model/per_source/<protocol>/（每源一个子目录）。
+    """各源**中间产物**根 derived/per_source/<protocol>/（每源一个子目录）。
 
     ★ 2026-11-08（中枢重设计）：本目录**回归本义** —— 只放**各源自己的**
       中间产物（``rfc/facts/`` ``traffic/facts/`` ``profile/facts/`` …）。
-      ⇒ 中枢本体（跨源汇聚）已迁到 ``derived/model/hub/<protocol>/``（见 ``hub_root``）。
+      ⇒ 中枢本体（跨源汇聚）已迁到 ``derived/hub/<protocol>/``（见 ``hub_root``）。
     """
     return model_root() / "per_source" / protocol.lower()
 
 
 def per_source_facts_dir(protocol: str, source: str) -> Path:
-    """**某源**的中间产物 derived/model/per_source/<protocol>/<source>/facts/。
+    """**某源**的中间产物 derived/per_source/<protocol>/<source>/facts/。
 
     ★ 中枢重设计后**位置不变**（它本来就是「各源」的东西）。
     """
@@ -230,7 +237,7 @@ def per_source_facts_dir(protocol: str, source: str) -> Path:
 def per_source_aspect_facts_dir(protocol: str) -> Path:
     """★ **中枢本体**的 fact 目录（按知识分类落盘的**过渡布局**）。
 
-    2026-11-08（中枢重设计）：中枢已迁到 ``derived/model/hub/<protocol>/``；
+    2026-11-08（中枢重设计）：中枢已迁到 ``derived/hub/<protocol>/``；
     本函数保留为**过渡期**的 aspect 布局读写点（阶段 C 会换成按分类落盘）。
 
     ★ 批次 1.6 的布局意图（「统一按中枢结构存放」= 按 aspect 落盘；「源」退化为
@@ -241,7 +248,7 @@ def per_source_aspect_facts_dir(protocol: str) -> Path:
 
 
 def seeds_dir(protocol: str) -> Path:
-    """种子输出 derived/model/seeds/<protocol>/。"""
+    """种子输出 derived/seeds/<protocol>/。"""
     return model_root() / "seeds" / protocol.lower()
 
 

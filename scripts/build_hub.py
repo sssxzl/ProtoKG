@@ -9,13 +9,13 @@
 
 产出::
 
-    derived/model/per_source/<protocol>/<source>/facts/<source>.jsonl   Fact (六元组, 单源)
-    derived/model/per_source/<protocol>/facts/<aspect>.jsonl            ★ 批次 1.6 步 1：
+    derived/per_source/<protocol>/<source>/facts/<source>.jsonl   Fact (六元组, 单源)
+    derived/per_source/<protocol>/facts/<aspect>.jsonl            ★ 批次 1.6 步 1：
         **新中枢布局** —— 按 aspect（知识维度）统一存放；「源」退化为事实内部的
         ``all_claims[].authority`` 字段，不再是目录层级。旧布局**保留**（回退保险），
         读取端优先读新布局、缺失时自动降级读旧布局。
 
-★ 每次构建默认【清空】该协议上次实验的 facts（derived/model/per_source/<protocol>/），
+★ 每次构建默认【清空】该协议上次实验的 facts（derived/per_source/<protocol>/），
   避免旧 facts 残留污染本次抽取/种子生成；用 --no-clean 可保留旧数据做增量抽取。
 
   ★★ 清理时机（2026-11-01 修复 P2-1）：清理发生在**质量闸通过之后**，
@@ -24,7 +24,7 @@
      （质量闸阻断构建变成「破坏知识库」）。现在闸不通过 = 保持原状并拒绝写入。
 
 ★ 幂等快照（A0.5）：产物按 build_id 写独立快照
-  `derived/model/per_source/<protocol>/<source>/facts/snapshots/<build_id>/<source>.jsonl`，
+  `derived/per_source/<protocol>/<source>/facts/snapshots/<build_id>/<source>.jsonl`，
   再原子切换到正式路径；清理时**保留** snapshots/ 目录，历史快照可回滚。
 
 ★ 与 v1 scripts/build_hub.py 的区别:
@@ -32,8 +32,8 @@
   - 本脚本走 core.fused.norm (原生 norm → Fact 映射, 基于 Layer 1 Profile)。
 
 ★ 只读保证:
-  kb/ 全程只读; 仅读 derived/model/spec/<protocol>/norms/norms.jsonl (v1 extractor 产物);
-  只写 derived/model/per_source/<protocol>/<source>/ (用户 2026-10-08 授权落盘)。
+  kb/ 全程只读; 仅读 derived/spec/<protocol>/norms/norms.jsonl (v1 extractor 产物);
+  只写 derived/per_source/<protocol>/<source>/ (用户 2026-10-08 授权落盘)。
 """
 from __future__ import annotations
 
@@ -67,7 +67,7 @@ from core.fused.llm_ensemble import (                          # noqa: E402
 )
 from core import paths                                          # noqa: E402
 
-#: v1 norms 产物路径（协议 × 源二维解耦：derived/model/spec/<protocol>/norms/norms.jsonl）
+#: v1 norms 产物路径（协议 × 源二维解耦：derived/spec/<protocol>/norms/norms.jsonl）
 def _norms_path(protocol: str) -> Path:
     return paths.norms_path(protocol)
 
@@ -150,7 +150,7 @@ def _clean_source_dir(source_dir: Path) -> None:
       一并列为**保护区**。
 
     Args:
-        source_dir: `derived/model/per_source/<protocol>/<source>/` 目录。
+        source_dir: `derived/per_source/<protocol>/<source>/` 目录。
     """
     snap_dir = source_dir / "facts" / "snapshots"
     protected = {"facts", "semantic"}
@@ -225,7 +225,7 @@ RUNTIME_ENRICH_DIRS: tuple[str, ...] = ("boundary_probe",)
 #: ★ 批次 1.6（步 0）：语义四库在清空前的**仓库外备份目录**。
 #:   规则库由 LLM 从 RFC 源产出 ⇒ **不能从 kb 重建**（需 120 次 LLM 调用）
 #:   ⇒ 清空前必须留一份**可恢复**副本（这不是「归档到 derived/」，
-#:   而是**备份**——用户明确否掉了 `derived/model/per_source_archive/<ts>/` 那种归档）。
+#:   而是**备份**——用户明确否掉了 `derived/per_source_archive/<ts>/` 那种归档）。
 #: 语义四库（不可再生资产）的**仓库外**备份根。
 #: ★ 可用环境变量 ``PROTORAG_SEMANTIC_BACKUP`` 覆盖 ⇒ **副本**跑构建时
 #:   备份落到自己的目录，不会污染主仓库的备份（副本自测时踩到）。
@@ -318,7 +318,7 @@ def _purge_hub_for_batch(protocol: str, *, purge_semantic: bool = True
         + 语义四库 ``semantic/``（D-7 选项 A：中枢里的一切都是本次的）
       · **保留** :data:`RUNTIME_ENRICH_DIRS`（运行时回写的富化知识）
       · **直接清，不归档**（用户 2026-11-02 明确：清空不破坏多源复现，
-        反而避免历史抽取记录影响本次；不必归档到 ``derived/model/per_source_archive/``）
+        反而避免历史抽取记录影响本次；不必归档到 ``derived/per_source_archive/``）
 
     Returns:
         被清空的源名列表。
@@ -883,8 +883,8 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
     """★ 批次 1.6 步 1：把中枢里的事实按 **aspect** 统一落盘（新布局）。
 
     布局变化（方案 §3.1.10.2「统一按中枢结构存放」）：
-        旧：derived/model/per_source/<p>/<source>/facts/<source>.jsonl   （按源分目录）
-        新：derived/model/per_source/<p>/facts/<aspect>.jsonl             （按知识维度）
+        旧：derived/per_source/<p>/<source>/facts/<source>.jsonl   （按源分目录）
+        新：derived/per_source/<p>/facts/<aspect>.jsonl             （按知识维度）
             ＋ facts/_index/order.jsonl                            （顺序索引）
 
     ★ 「源」退化为**事实内部的一个字段**（``all_claims[].authority``），
@@ -990,8 +990,8 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
             _jf.unlink(missing_ok=True)      # ★ 空壳 ⇒ 删
 
     # ★ ★ **阶段 C：按知识分类落盘**（2026-11-09）
-    #   旧：derived/model/hub/facts/<aspect>.jsonl（按 aspect）
-    #   新：derived/model/hub/<分类>/<文件>.jsonl（A~F 六个知识分类）
+    #   旧：derived/hub/facts/<aspect>.jsonl（按 aspect）
+    #   新：derived/hub/<分类>/<文件>.jsonl（A~F 六个知识分类）
     #   ★ 落位依据 = knowledge_slots.json 的 aspect_map（**不改抽取器**）
     #   ★ 顺序契约：index/order.jsonl 记**全局下标** ⇒ 读取端排序后
     #     遍历序与旧布局逐字节一致 ⇒ 种子编号不漂移。
@@ -1015,7 +1015,7 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
         print(f"[语义] ★ {protocol}: {len(_lifted)} 条 authoritative 规则"
               f"已提升进中枢 C_constraints/semantic_rules.jsonl")
 
-    # ★ 顺序索引**已由 write_classified 写入** `derived/model/hub/index/order.jsonl`
+    # ★ 顺序索引**已由 write_classified 写入** `derived/hub/index/order.jsonl`
     #   （分类布局的全局下标）⇒ 读端排序后遍历序与旧布局一致。
 
     total = sum(written.values())
@@ -1024,12 +1024,12 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
     except ValueError:
         shown = aspect_dir
     print(f"[布局] 已按**知识分类**落盘 {total} facts → {len(written)} 个分类文件 "
-          f"（+顺序索引 → derived/model/hub/index/order.jsonl）→ {shown}")
+          f"（+顺序索引 → derived/hub/index/order.jsonl）→ {shown}")
     return written
 
 
 def _load_norms(protocol: str) -> list[dict]:
-    """读 derived/model/spec/<protocol>/norms/norms.jsonl（v1 norms 产物）。
+    """读 derived/spec/<protocol>/norms/norms.jsonl（v1 norms 产物）。
 
     容错：norms.jsonl 不存在时返回空列表（不 fail）。因为 source 源走 AutoSeeder、
     expert_note/vuln 源直接读 kb，都不依赖 norms；只有 rfc/traffic 源需要 norms，
@@ -1366,7 +1366,7 @@ def main(argv=None) -> int:
                         help="严格模式：必填头覆盖不完整时阻断构建（默认只告警）")
     parser.add_argument("--semantic-root", default=None,
                         help="语义四库根目录覆盖（默认 "
-                             "derived/model/per_source/<协议>/rfc/semantic/）。"
+                             "derived/per_source/<协议>/rfc/semantic/）。"
                              "用于把构建产物隔离到临时目录，避免污染 derived/")
     args = parser.parse_args(argv)
 

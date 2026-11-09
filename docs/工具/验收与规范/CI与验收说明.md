@@ -118,8 +118,8 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 `scripts/corpus_gate.py` 此前**零调用方** —— 它是本项目最重要的质量红线之一
 （G1 客户端 host 污染 / G2 不可播会话 / G5 契约一致性），却没有自动化在跑它。
 
-真实语料在 `derived/model/seeds/`（gitignored），且
-`derived/model/seeds/rtsp/live555_20261024_110155` 是**真实抓包语料**、无法在 CI 重建，
+真实语料在 `derived/seeds/`（gitignored），且
+`derived/seeds/rtsp/live555_20261024_110155` 是**真实抓包语料**、无法在 CI 重建，
 所以 workflow **现场生成一份最小 RTSP 语料**（39 个 `.raw`，端点 `127.0.0.1:8554`、
 会话 `mp3AudioTest`、聚焦组 B —— 恰好命中 rtsp profile 的 G1/G2/G5 三条判据），
 然后断言两件事：
@@ -167,9 +167,9 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 
 差的 31 条**全部**源于 `derived/` 是 gitignored 的中间产物
 （`.gitignore` 明写「derived/* … 可由 kb/ 重建」），**不是代码缺陷**。
-典型例子：`test_compat.py::test_at_least_120_succeed` 读 `derived/model/hub/facts/`（早期遗留 131 facts），
+典型例子：`test_compat.py::test_at_least_120_succeed` 读 `derived/hub/facts/`（早期遗留 131 facts），
 `test_rq3_focus_group.py::test_focus_group_c_matches_rq12_corpus` 读
-`derived/model/seeds/rtsp/live555_20261024_110155`（**真实抓包语料**，无法重建）。
+`derived/seeds/rtsp/live555_20261024_110155`（**真实抓包语料**，无法重建）。
 
 **ERROR 集合在两种环境下完全相同（20 条，漂移 0）** —— ERROR 侧与环境无关。
 
@@ -330,7 +330,7 @@ done
 
 # corpus_gate 冒烟
 python scripts/corpus_gate.py --help
-python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/model/seeds/rtsp/rq4_B
+python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/seeds/rtsp/rq4_B
 ```
 
 ---
@@ -395,7 +395,7 @@ E:/app/Anaconda3/python.exe tools/guard/run_guarded_pytest.py
 | 1 | **37 个预存失败仍在** | CI 长期处于「带已知失败运行」状态 | 已用基线锁住，见 §4 |
 | 2 | **CI 基线（68）与本机基线（37）不同** | 换环境必须换基线 | 已分文件存放并文档化，见 §3.2 |
 | 3 | **`derived/` 中间产物不入库** | 31 条测试在 CI 上因缺产物而失败 | 已确认为环境差异而非回归；`kb/` 已入库，`build_hub.py` 可重建大部分（`source` 源需 `DEEPSEEK_API_KEY`） |
-| 4 | **`derived/model/hub/facts/`（早期遗留 40MB）与 `live555_20261024_110155`（真实抓包语料）无法重建** | 这部分测试在 CI 上必然失败 | 已计入 CI 基线 |
+| 4 | **`derived/hub/facts/`（早期遗留 40MB）与 `live555_20261024_110155`（真实抓包语料）无法重建** | 这部分测试在 CI 上必然失败 | 已计入 CI 基线 |
 | 5 | **Ubuntu 真机未实测** | 「Ubuntu 等价」结论基于「干净 LF checkout + 最小 venv」的 Windows 实测 | 本机 Docker Desktop 需 WSL2，被环境安全策略拦截，无法起容器 |
 | 6 | **ruff 只查 `tools/`** | `core/` `scripts/` `tests/` 的 114 个既存 lint 告警不被 CI 拦 | 那些文件不在本次改动范围，动它们会污染 diff |
 | 7 | **`corpus_gate` 冒烟用合成 fixture** | 不覆盖真实语料的全部形态 | 真实语料是真实抓包、无法在 CI 重建；冒烟的职责是证明「闸门可执行且有牙齿」 |
