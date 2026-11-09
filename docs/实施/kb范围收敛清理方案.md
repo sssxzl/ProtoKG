@@ -1,7 +1,7 @@
 # kb 收敛到 3 协议（rtsp/sip/smtp）—— 清理方案与验收报告
 
 > **调研性质：只读调研 + 方案设计。**本文档产出过程中**未修改任何项目文件**
-> （唯一写入是本文件 `docs/kb范围收敛清理方案.md`）。
+> （唯一写入是本文件 `docs/实施/kb范围收敛清理方案.md`）。
 >
 > **执行者注意**：方案主体（测试收敛 + 目录裁剪）已由 `software-engineer` 在
 > 2026-10-31 18:07–18:22 期间落地，本文因此**同时充当「已执行状态的验收报告」**。
@@ -17,7 +17,7 @@
 > |---|---|
 > | **项目现在是 git 仓库** | `git status` / `git log` / `git reflog` 均可用。首次入库提交 `c9295b4`（2026-11-01 13:31），随后 `493874c` merge `origin/main`（13:59） |
 > | **曾发生破坏性 git 操作** | `git reflog` 显示 13:31 有 `reset: moving to HEAD~1` → 重新 commit → 大提交 → `merge origin/main`（`software-engineer-12` 报告其文档改动被清空并已重放恢复） |
-> | **我的交付物安全** | `docs/kb范围收敛清理方案.md` 已入 `c9295b4`，`git status` 干净 |
+> | **我的交付物安全** | `docs/实施/kb范围收敛清理方案.md` 已入 `c9295b4`，`git status` 干净 |
 > | **6 个清理测试文件安全** | 全部已入 `c9295b4`，`git status` 无 `M` 标记 → 收敛成果**未被破坏** |
 > | **`derived/per_source/` 裁剪安全** | kb/derived/targets 三处现状仍为 3 协议目标（见下表） |
 > | **但 `protocol_patterns.py` 的 P0 被回滚** | 当前文件**又变回 8 个条目**（dns/dtls/ssh/tls/ftp 全回来了），且工程师补的文件头「协议范围」说明也一并丢失。`git log --all` 显示**没有任何提交含 3 条目版本** → P0 **未被提交**，故被 `reset` 抹掉且**无法从 git 恢复** |
@@ -477,7 +477,7 @@ implicit_constraints 挂 header subject。
 
 ```
 阶段 0（前置，只读）：固化基线快照
-    ├─ 跑 pytest 存 37 failed 的完整清单到 docs/kb范围收敛清理方案.md §1.1
+    ├─ 跑 pytest 存 37 failed 的完整清单到 docs/实施/kb范围收敛清理方案.md §1.1
     └─ 跑 rfc_baseline_probe × 3 存指标（§1.3 表）
        ↓
 阶段 1（可并行，互不依赖）：

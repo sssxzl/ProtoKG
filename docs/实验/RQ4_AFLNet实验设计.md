@@ -22,7 +22,7 @@
 > **⑩ §13.6 新增：可复现性陈述的准确措辞**（语料快照仍在仓库且可校验，**不可从当前代码重建**）。
 >
 > 权威依据：VM `192.168.37.130` 上 `/home/zxy/profuzzbench` 源码（git HEAD `8573ec8`）+ `rq2-*` 镜像内实际 `run` 脚本（逐字核对）+ VM `/home/zxy/rq4/rq4_summary.csv` 实测数据
-> 图示：[`RQ4编排图.mermaid`](./RQ4编排图.mermaid) · [`RQ4时序图.mermaid`](./RQ4时序图.mermaid) · [`RQ4类图.mermaid`](./RQ4类图.mermaid)
+> 图示：[`图/RQ4编排图.mermaid`](./RQ4编排图.mermaid) · [`图/RQ4时序图.mermaid`](./RQ4时序图.mermaid) · [`图/RQ4类图.mermaid`](./RQ4类图.mermaid)
 
 ---
 
@@ -451,8 +451,8 @@ Usage: rq4_dryrun.sh [--protocol rtsp|sip|smtp] [--duration SEC] [--group protor
 | `scripts/rq4_sync_seeds.ps1`（或 `.py`） | 本机 → VM 种子同步 + md5/CRLF/条数校验 |
 | `scripts/rq4_verify_seeds.py` | 种子结构自检：CRLF、AFLNet 分区数（复刻 `extract_requests_*`）、RTSP 会话可播性、SIP 方法可识别性 |
 | `scripts/rq4_analyze.py` | 结果对比与作图（bitmap_cvg 时序曲线、execs_done 对齐曲线、组间对比表） |
-| `docs/RQ4_AFLNet实验设计.md` | 本设计文档 |
-| `docs/RQ4编排图.mermaid` / `RQ4时序图.mermaid` / `RQ4类图.mermaid` | 图示 |
+| `docs/实验/RQ4_AFLNet实验设计.md` | 本设计文档 |
+| `docs/图/RQ4编排图.mermaid` / `图/RQ4时序图.mermaid` / `图/RQ4类图.mermaid` | 图示 |
 
 ---
 
@@ -780,7 +780,7 @@ traffic facts(含摄像机 uri) → SeedMessage.url (core/models.py:35, from_dic
 
 #### 12.4.4 建议的「发布准入闸」
 
-> **★ 完整规格书已出：`docs/RQ4_S4语料发布准入闸规格.md`**（v1，249 行）——
+> **★ 完整规格书已出：`docs/实验/RQ4_S4语料发布准入闸规格.md`**（v1，249 行）——
 > 含三条红线（G1 目标端点正确率 / G2 不可播会话占比 / G5 契约一致性）的判据与阈值、
 > **三协议各自的合法端点集合**（RTSP `127.0.0.1:8554`；SIP `5060`+`5061` 双端口；SMTP **不适用**）、
 > JSON 输出契约、**退出码 0/1/2 语义**、8 条验收用例（已用真实语料预跑通）、
