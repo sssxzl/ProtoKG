@@ -152,7 +152,7 @@ def run_group(files: list[str], out_dir: Path, tag: str) -> tuple[list[str], lis
     cmd = [sys.executable, "-m", "pytest", "-rfE", "--tb=no", "-q",
            "-p", "no:cacheprovider"] + files
     with raw.open("w", encoding="utf-8", newline="") as fh:
-        r = subprocess.run(cmd, cwd=str(ROOT), stdout=fh, stderr=subprocess.STDOUT)
+        subprocess.run(cmd, cwd=str(ROOT), stdout=fh, stderr=subprocess.STDOUT)
     failed: list[str] = []
     errored: list[str] = []
     for ln in raw.read_text(encoding="utf-8", errors="ignore").splitlines():
