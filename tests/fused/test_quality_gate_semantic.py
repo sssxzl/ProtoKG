@@ -338,8 +338,14 @@ def test_build_hub_rules_only_cli_does_not_flip_d6(tmp_path, monkeypatch):
     set_semantic_rules_enabled(None)
 
 
-def test_clean_source_dir_preserves_semantic_library(tmp_path):
-    """★ facts 清理**不得**删掉语义四库（否则规则库会静默消失）。"""
+def test_clean_source_dir_clears_semantic_library(tmp_path):
+    """★ 清理**会**删掉语义四库（每次从头开始 ⇒ 不留历史）。
+
+    ★ 契约变更（用户 2026-11-10）：「每次实验都从头开始，上一次的数据重置清空，
+      防止历史数据的污染」⇒ 语义四库不再受保护。
+    ★ 语义规则已提升为**人工资产**（``profiles/<协议>/semantic_rules.jsonl``）
+      ⇒ 清空后由 ``_auto_republish_rules`` 自动恢复 ⇒ 不会静默消失。
+    """
     from scripts import build_hub
     src = tmp_path / "rtsp" / "rfc"
     (src / "semantic").mkdir(parents=True)
@@ -348,7 +354,7 @@ def test_clean_source_dir_preserves_semantic_library(tmp_path):
     (src / "facts" / "rfc.jsonl").write_text("{}\n", encoding="utf-8")
 
     build_hub._clean_source_dir(src)
-    assert (src / "semantic" / rx._RULES_FILE).is_file(), \
+    assert not (src / "semantic" / rx._RULES_FILE).is_file(), \
         "语义四库必须被清理逻辑**保护**"
     assert not (src / "facts" / "rfc.jsonl").exists()
 

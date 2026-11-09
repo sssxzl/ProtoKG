@@ -153,7 +153,10 @@ def _clean_source_dir(source_dir: Path) -> None:
         source_dir: `derived/per_source/<protocol>/<source>/` 目录。
     """
     snap_dir = source_dir / "facts" / "snapshots"
-    protected = {"facts", "semantic"}
+    # ★ semantic/ **不再保护** ⇒ 每次清空都从零（用户 2026-11-10：
+    #   「每次实验都从头开始，上一次的数据重置清空，防止历史数据污染」）
+    #   ⇒ 语义规则由 _auto_republish_rules 从**人工资产**自动恢复。
+    protected = {"facts"}
     if not snap_dir.is_dir() and not (source_dir / "semantic").is_dir():
         shutil.rmtree(source_dir)
         return
@@ -222,54 +225,6 @@ def _clean_per_source(protocol: str, sources: list[str] | None = None) -> None:
 #:   ⇒ 「清空整个中枢」的对象 = **五源抽取产物（facts）+ 语义四库（semantic）**。
 RUNTIME_ENRICH_DIRS: tuple[str, ...] = ("boundary_probe",)
 
-#: ★ 批次 1.6（步 0）：语义四库在清空前的**仓库外备份目录**。
-#:   规则库由 LLM 从 RFC 源产出 ⇒ **不能从 kb 重建**（需 120 次 LLM 调用）
-#:   ⇒ 清空前必须留一份**可恢复**副本（这不是「归档到 derived/」，
-#:   而是**备份**——用户明确否掉了 `derived/per_source_archive/<ts>/` 那种归档）。
-#: 语义四库（不可再生资产）的**仓库外**备份根。
-#: ★ 可用环境变量 ``PROTORAG_SEMANTIC_BACKUP`` 覆盖 ⇒ **副本**跑构建时
-#:   备份落到自己的目录，不会污染主仓库的备份（副本自测时踩到）。
-SEMANTIC_BACKUP_ROOT = Path(os.environ.get(
-    "PROTORAG_SEMANTIC_BACKUP",
-    r"E:\科研\想法idea\ProtoKG_快照_20261102\semantic_backup"))
-
-
-def _backup_semantic_before_purge(protocol: str) -> str:
-    """清空前把语义四库备份到**仓库外**。
-
-    ★ 批次 2.5（D20-丁）的重要区分 —— 语义四库**不是铁板一块**：
-
-      · **可再生**（``rules.jsonl`` / ``candidates.jsonl``）：
-        可从**冻结入库**的 B-10 源产物经「质量闸 + 分流」重建
-        （**不需 LLM**；实测删除后重发布**逐字节一致**）
-        ⇒ 清空后**自动重发布**即可 ⇒ 不必依赖这份备份。
-      · **不可再生**（``feedback.jsonl`` / ``revoked.jsonl``）：
-        是实验反馈与撤销记录的**累积** ⇒ 无源可重建
-        ⇒ **必须**备份（它们不参与消费端，但会丢实验痕迹）。
-    """
-    root = paths.per_source_root(protocol)
-    backups: list[str] = []
-    irreproducible: list[str] = []
-    for source_dir in sorted(root.glob("*/semantic")):
-        if not source_dir.is_dir():
-            continue
-        dst = SEMANTIC_BACKUP_ROOT / protocol / source_dir.parent.name
-        dst.mkdir(parents=True, exist_ok=True)
-        for f in source_dir.glob("*.jsonl"):
-            shutil.copy2(f, dst / f.name)
-            # ★ 备份在**仓库外** ⇒ 不能用 relative_to(REPO_ROOT)
-            backups.append(f"{protocol}/{source_dir.parent.name}/{f.name}")
-            if f.name in ("feedback.jsonl", "revoked.jsonl"):
-                irreproducible.append(f"{protocol}/{source_dir.parent.name}/{f.name}")
-    if backups:
-        print(f"[清空] 语义四库已备份到仓库外（可恢复）: "
-              f"{SEMANTIC_BACKUP_ROOT / protocol}  ({len(backups)} 个文件)")
-    if irreproducible:
-        print(f"[清空] ★ 其中 **{len(irreproducible)} 个文件不可再生**"
-              f"（feedback / revoked：实验反馈累积，无源可重建）：{irreproducible}")
-    return SEMANTIC_BACKUP_ROOT / protocol and str(SEMANTIC_BACKUP_ROOT / protocol)
-
-
 def _auto_republish_rules(protocol: str) -> bool:
     """★ 批次 2.5（D20-丁）：清空后**自动重发布**语义规则 ⇒ 语义四库变成
     **可再生的派生资产**。
@@ -294,7 +249,8 @@ def _auto_republish_rules(protocol: str) -> bool:
     Returns:
         是否成功重发布。
     """
-    if not any((REPO_ROOT / rel).is_file() for rel in SEMANTIC_RULE_SOURCES):
+    if not any((REPO_ROOT / rel.replace("{protocol}", protocol.lower())).is_file()
+               for rel in SEMANTIC_RULE_SOURCES):
         print("[规则] ★ 无可重发布的源产物（B-10 实验目录不存在）"
               "⇒ 本次中枢**不含**语义规则")
         return False
@@ -326,8 +282,11 @@ def _purge_hub_for_batch(protocol: str, *, purge_semantic: bool = True
     root = paths.per_source_root(protocol)
     if not root.is_dir():
         return []
-    if purge_semantic:
-        _backup_semantic_before_purge(protocol)
+    # ★ 不再备份到仓库外（用户 2026-11-10 明确）：
+    #   「直接清空，因为本次使用者也不清楚上一次的信息是什么协议等等，
+    #     只要确保本次实验能正常生成数据、走通整个流程就行」
+    # ⇒ 语义规则已提升为**人工资产**（profiles/<协议>/semantic_rules.jsonl）
+    #   ⇒ 清空后由 _auto_republish_rules 自动恢复 ⇒ 无需备份。
     purged: list[str] = []
     # ★ 骨架的物化产物也清（每次构建会重新物化 ⇒ 中枢里不留旧骨架）
     skel_dir = root / SKELETON_SOURCE_NAME
@@ -446,15 +405,14 @@ def _write_source_manifest(protocol: str, sources: list[str],
     return path
 
 
-#: ★ 批次 1.6：语义规则的来源候选（B-10 实验产物；发布进中枢的语义四库）。
-#: ★ 批次 2.5（D20-丁+）：**可用环境变量覆盖** ⇒ 能从「重抽后的新批次」发布，
-#:   而不必改代码。分隔符 = ``;``（路径本身不含分号）。
-#:   例：``PROTORAG_RULE_SOURCES="derived/experiments/semantic_gain/group_E3/rules.jsonl"``
+#: ★★ 语义规则的来源（**人工资产**，进 git ⇒ 清空后可自动恢复）
+#:   默认：``profiles/<协议>/semantic_rules.jsonl``（协议接入档案的一部分）
+#:   ⇒ 语义规则**不再依赖已移除的论文实验层** ⇒ 「清空 + 重发布」始终可用。
+#:   仍可用环境变量覆盖（``;`` 分隔）⇒ 能从「重抽后的新批次」发布。
 SEMANTIC_RULE_SOURCES: tuple[str, ...] = tuple(
     p.strip() for p in os.environ.get(
         "PROTORAG_RULE_SOURCES",
-        "derived/experiments/semantic_gain/group_E1/rules.jsonl;"
-        "derived/experiments/semantic_gain/group_E2/rules.jsonl",
+        "profiles/{protocol}/semantic_rules.jsonl",
     ).split(";") if p.strip())
 
 
@@ -500,7 +458,7 @@ def _republish_rules(protocol: str) -> None:
     from core.fused.downstream.rule_store import publish_rules
     rows: list[dict] = []
     for rel in SEMANTIC_RULE_SOURCES:
-        p = REPO_ROOT / rel
+        p = REPO_ROOT / rel.replace("{protocol}", protocol.lower())
         if not p.is_file():
             continue
         for line in p.read_text(encoding="utf-8").splitlines():
@@ -1007,15 +965,6 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
             except json.JSONDecodeError:
                 continue
     written = write_classified(paths.hub_root(), _records, protocol)
-    # ★ **语义四库提升进中枢**（阶段 C4）⇒ 消解「两套体系」
-    #   （四库原本**故意**在 */facts/ 之外 ⇒ 中枢读不到 ⇒ 两套体系）
-    from core.fused.semantic.semantic_lift import lift_library, write_lifted
-    _lifted = lift_library(protocol)
-    _n_lift = write_lifted(paths.hub_root(), protocol, _lifted)
-    if _n_lift:
-        print(f"[语义] ★ {protocol}: {len(_lifted)} 条 authoritative 规则"
-              f"已提升进中枢 C_constraints/semantic_rules.jsonl")
-
     # ★ 顺序索引**已由 write_classified 写入** `derived/hub/index/order.jsonl`
     #   （分类布局的全局下标）⇒ 读端排序后遍历序与旧布局一致。
 
@@ -1574,6 +1523,16 @@ def main(argv=None) -> int:
         print("[规则] ★ 自动重发布（语义四库可从**冻结入库**的 B-10 源产物重建，"
               "**无需 LLM**；实测删除后重发布逐字节一致）")
         _auto_republish_rules(protocol)
+
+    # ★ **语义四库提升进中枢**（阶段 C4）⇒ 消解「两套体系」
+    #   （四库原本**故意**在 */facts/ 之外 ⇒ 中枢读不到 ⇒ 两套体系）
+    #   ★★ 必须在**清空 + 重发布之后**做 ⇒ 否则刚提升的规则会被清空逻辑删掉
+    from core.fused.semantic.semantic_lift import lift_library, write_lifted
+    _lifted = lift_library(protocol)
+    _n_lift = write_lifted(paths.hub_root(), protocol, _lifted)
+    if _n_lift:
+        print(f"[语义] ★ {protocol}: {len(_lifted)} 条 authoritative 规则"
+              f"已提升进中枢 C_constraints/semantic_rules.jsonl")
 
     # ---- ⑤ 各源的状态机贡献统计（★ 批次 2.3）-----------------------------
     #   ★ 各源的状态机知识**全部保留**进中枢；消解/择一留给后期 LLM 判别

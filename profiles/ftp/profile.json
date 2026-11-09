@@ -1,4 +1,27 @@
 {
+  "_字段分组": {
+    "接入参数": [
+      "protocol",
+      "transport",
+      "encoding",
+      "raw_format",
+      "message_schema",
+      "allowed_methods",
+      "rfc",
+      "traffic_schema",
+      "vuln",
+      "knowledge_channels"
+    ],
+    "投放配置": [
+      "default_url",
+      "url_placeholders",
+      "resources_file",
+      "templates_file",
+      "boundary_probe",
+      "seedgen"
+    ],
+    "说明": "★ 「接入参数」可由 scripts/onboard_protocol.py 从 kb/<协议>/spec/ 自动生成；「投放配置」必须人工（目标服务的地址/资源/黑盒行为）。"
+  },
   "protocol": "ftp",
   "transport": "tcp",
   "encoding": "text",
@@ -128,10 +151,26 @@
     },
     "required_headers": {},
     "focus_group": {
-      "A": {"dict": "base", "seeds": 29, "dict_tokens": 32},
-      "B": {"dict": "base", "seeds": 29, "dict_tokens": 32},
-      "C": {"dict": "targeted", "seeds": 29, "dict_tokens": 49},
-      "D": {"dict": "base", "seeds": 29, "dict_tokens": 32}
+      "A": {
+        "dict": "base",
+        "seeds": 29,
+        "dict_tokens": 32
+      },
+      "B": {
+        "dict": "base",
+        "seeds": 29,
+        "dict_tokens": 32
+      },
+      "C": {
+        "dict": "targeted",
+        "seeds": 29,
+        "dict_tokens": 49
+      },
+      "D": {
+        "dict": "base",
+        "seeds": 29,
+        "dict_tokens": 32
+      }
     }
   },
   "note": "FTP 协议 Profile（RFC 959 + RFC 2389/2428/3659 扩展）：行命令协议（命令+参数，无 URL/版本/头部）。raw_format.request_line=\"{method} {argument}\"（argument 空时自动去尾空格）；header_line 为空串表示协议无头部行；trailing_blank_line=false 表示命令间不分隔空行。seedgen.canonical_flow 定义匿名登录+列目录黄金路径。seedgen.state_changing=会改变会话状态的方法（USER 进入 need-password、PASS 登录、CWD/CDUP 改目录、TYPE 改传输模式、PORT/PASV 建数据连接）。seedgen.precondition=前置方法依赖（几乎所有操作都要求先 USER+PASS 登录，这是 FTP 的核心会话语义）。FTP 无 session header（会话状态靠控制连接维护，数据连接靠 PORT/PASV 临时建立）。",

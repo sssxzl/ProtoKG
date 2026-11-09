@@ -1,4 +1,27 @@
 {
+  "_字段分组": {
+    "接入参数": [
+      "protocol",
+      "transport",
+      "encoding",
+      "raw_format",
+      "message_schema",
+      "allowed_methods",
+      "rfc",
+      "traffic_schema",
+      "vuln",
+      "knowledge_channels"
+    ],
+    "投放配置": [
+      "default_url",
+      "url_placeholders",
+      "resources_file",
+      "templates_file",
+      "boundary_probe",
+      "seedgen"
+    ],
+    "说明": "★ 「接入参数」可由 scripts/onboard_protocol.py 从 kb/<协议>/spec/ 自动生成；「投放配置」必须人工（目标服务的地址/资源/黑盒行为）。"
+  },
   "protocol": "dhcpv4",
   "transport": "udp",
   "encoding": "binary",

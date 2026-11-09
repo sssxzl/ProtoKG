@@ -39,8 +39,10 @@ def _msg(method: str, url: str, headers: dict) -> SeedMessage:
 def _url_base(protocol: str) -> str:
     """从 profile.json 的 default_url 读 URL base（协议特定），缺省回退 RTSP。
 
-    避免硬编码 `rtsp://127.0.0.1:8554`——换协议（如 SIP 的 sip:127.0.0.1:5060）
-    时由 profile 提供，通用层零协议内置。
+    ★ **协议无关**：换协议（如 SIP 的 sip:127.0.0.1:5060）时由 profile 提供，
+    通用层零协议内置。
+    ★ **档案缺失时返回占位符** ``<url>``（而不是硬编码某个协议的地址）
+    ⇒ 种子内容仍合法，但**明确表示「端点未知」**，不会误导成「可以投放到 8554」。
     """
     from core import paths
     import json
@@ -53,17 +55,18 @@ def _url_base(protocol: str) -> str:
                 return du
         except (json.JSONDecodeError, OSError):
             pass
-    return "rtsp://127.0.0.1:8554"
+    # ★ 档案缺失 ⇒ 占位符（明确「端点未知」⇒ 不误导投放）
+    return "<url>"
 
 
-def _describe_msg(stream: str, cseq: int, url_base: str = "rtsp://127.0.0.1:8554") -> SeedMessage:
+def _describe_msg(stream: str, cseq: int, url_base: str = "") -> SeedMessage:
     return _msg("DESCRIBE", f"{url_base}/{stream}",
                 {"CSeq": str(cseq), "Accept": "application/sdp"})
 
 
 def _setup_msg(stream: str, track: int, cseq: int, with_session: bool,
                session: str = "{{session_id}}",
-               url_base: str = "rtsp://127.0.0.1:8554") -> SeedMessage:
+               url_base: str = "") -> SeedMessage:
     h = {"CSeq": str(cseq),
          "Transport": "RTP/AVP;unicast;client_port=50000-50001"}
     if with_session:
@@ -163,6 +166,7 @@ def generate_candidates(req, stream: str = "",
 # ===========================================================================
 
 def derive_semantic_candidates(bundle: dict, stream: str = "",
+                               protocol: str = "",
                                methods: tuple = ("SETUP",)) -> list[tuple[str, SeedCorpus]]:
     """源 A：从协议语义（状态机自环/生命周期）推导边界候选，不依赖漏洞库。
 
@@ -174,6 +178,7 @@ def derive_semantic_candidates(bundle: dict, stream: str = "",
     Returns:
         list[(label, seed)]，label ∈ {"legal", "illegal"}。
     """
+    ub = _url_base(protocol)
     transitions = bundle.get("transitions", []) or []
     candidates: list = []
 
@@ -213,14 +218,14 @@ def derive_semantic_candidates(bundle: dict, stream: str = "",
                     description=f"semantic-boundary lifecycle {a}->{b} legal(不重建)",
                     target_methods=["DESCRIBE", m_in, m_out], generated_by="rule-based:boundary-probe-semantic",
                     messages=[_describe_msg(stream, 1), _setup_msg(stream, 1, 2, False),
-                              _msg("TEARDOWN", f"rtsp://127.0.0.1:8554/{stream}/",
+                              _msg("TEARDOWN", f"{ub}/{stream}/",
                                    {"CSeq": "3", "Session": "{{session_id}}"})],
                 )
                 illegal = SeedCorpus(
                     description=f"semantic-boundary lifecycle {a}->{b} illegal(重建)",
                     target_methods=["DESCRIBE", m_in, m_out, m_in], generated_by="rule-based:boundary-probe-semantic",
                     messages=[_describe_msg(stream, 1), _setup_msg(stream, 1, 2, False, session=_TRIGGER_SESSION),
-                              _msg("TEARDOWN", f"rtsp://127.0.0.1:8554/{stream}/",
+                              _msg("TEARDOWN", f"{ub}/{stream}/",
                                    {"CSeq": "3", "Session": _TRIGGER_SESSION}),
                               _setup_msg(stream, 1, 4, True, session=_TRIGGER_SESSION)],
                 )
@@ -317,12 +322,14 @@ def binary_search_boundary(gen_seed, lo: int, hi: int, oracle):
     return best
 
 
-def derive_field_candidates(bundle: dict, stream: str = "") -> list:
+def derive_field_candidates(bundle: dict, stream: str = "",
+                           protocol: str = "") -> list:
     """源 A 第三类：字段取值域边界候选（数值字段的合法值 vs 边界值）。
 
     注意：字段边界值（0/-1/MAX/空）多为「覆盖边界」（覆盖更多取值，不崩溃），
     而非「崩溃边界」。oracle 判定后自然区分：判 ILLEGAL 的才是崩溃边界。
     """
+    ub = _url_base(protocol)
     headers = bundle.get("headers") or {}
     candidates: list = []
     numeric_names = {"cseq", "content-length", "bandwidth", "blocksize",
@@ -339,7 +346,7 @@ def derive_field_candidates(bundle: dict, stream: str = "") -> list:
         illegal = SeedCorpus(
             description=f"semantic-boundary field {name} illegal(边界值 MAX)",
             target_methods=["DESCRIBE"], generated_by="rule-based:boundary-probe-semantic",
-            messages=[_msg("DESCRIBE", f"rtsp://127.0.0.1:8554/{stream}",
+            messages=[_msg("DESCRIBE", f"{ub}/{stream}",
                            {"CSeq": "2147483647", "Accept": "application/sdp"})],
         )
         candidates.append(("legal", legal))
@@ -347,11 +354,12 @@ def derive_field_candidates(bundle: dict, stream: str = "") -> list:
     return candidates
 
 
-def _build_baseline(stream: str = "") -> SeedCorpus:
+def _build_baseline(stream: str = "", protocol: str = "") -> SeedCorpus:
     """构造合法基线：完整多轨会话（DESCRIBE + SETUP track1 + SETUP track2 + PLAY + TEARDOWN）。
 
     基线是「确定合法」的完整会话，字段空间探测从它出发做变异。
     """
+    ub = _url_base(protocol)
     return SeedCorpus(
         description="baseline full multi-track session",
         target_methods=["DESCRIBE", "SETUP", "SETUP", "PLAY", "TEARDOWN"],
@@ -360,9 +368,9 @@ def _build_baseline(stream: str = "") -> SeedCorpus:
             _describe_msg(stream, 1),
             _setup_msg(stream, 1, 2, False),
             _setup_msg(stream, 2, 3, True),
-            _msg("PLAY", f"rtsp://127.0.0.1:8554/{stream}/",
+            _msg("PLAY", f"{ub}/{stream}/",
                  {"CSeq": "4", "Session": "{{session_id}}", "Range": "npt=0.000-"}),
-            _msg("TEARDOWN", f"rtsp://127.0.0.1:8554/{stream}/",
+            _msg("TEARDOWN", f"{ub}/{stream}/",
                  {"CSeq": "5", "Session": "{{session_id}}"}),
         ],
     )

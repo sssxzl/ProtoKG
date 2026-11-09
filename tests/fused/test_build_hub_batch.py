@@ -45,7 +45,6 @@ def test_purge_clears_all_five_sources_but_keeps_runtime_enrich(tmp_path,
 
     monkeypatch.setattr(paths_mod, "per_source_root",
                         lambda p: tmp_path / "per_source" / p.lower())
-    monkeypatch.setattr(build_hub, "SEMANTIC_BACKUP_ROOT", tmp_path / "bak")
 
     purged = build_hub._purge_hub_for_batch("rtsp", purge_semantic=True)
 
@@ -59,8 +58,9 @@ def test_purge_clears_all_five_sources_but_keeps_runtime_enrich(tmp_path,
     assert (bp / "boundary_probe.jsonl").is_file(), "运行时富化被误清"
     # 语义四库清空
     assert not (sem / "rules.jsonl").exists(), "语义四库未清空（D-7 选项 A）"
-    # 备份落在仓库外
-    assert (tmp_path / "bak" / "rtsp").is_dir()
+    # ★ 不再备份到仓库外（用户 2026-11-10 明确：直接清空即可）
+    #   ⇒ 语义规则已提升为**人工资产**（profiles/<协议>/semantic_rules.jsonl）
+    #   ⇒ 清空后由 _auto_republish_rules 自动恢复
 
 
 def test_purge_keeps_semantic_when_disabled(tmp_path, monkeypatch):
@@ -71,7 +71,6 @@ def test_purge_keeps_semantic_when_disabled(tmp_path, monkeypatch):
     (sem / "rules.jsonl").write_text("{}\n", encoding="utf-8")
     monkeypatch.setattr(paths_mod, "per_source_root",
                         lambda p: tmp_path / "per_source" / p.lower())
-    monkeypatch.setattr(build_hub, "SEMANTIC_BACKUP_ROOT", tmp_path / "bak")
     build_hub._purge_hub_for_batch("rtsp", purge_semantic=False)
     assert (sem / "rules.jsonl").is_file(), "purge_semantic=False 时不该清规则库"
 

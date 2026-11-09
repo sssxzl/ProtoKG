@@ -319,8 +319,6 @@ def test_purge_clears_aspect_layout(hub, monkeypatch):
     aspect_dir.mkdir(parents=True, exist_ok=True)
     (aspect_dir / "definition.jsonl").write_text("{}\n", encoding="utf-8")
     (aspect_dir / "value_enum.jsonl").write_text("{}\n", encoding="utf-8")
-    monkeypatch.setattr(build_hub, "SEMANTIC_BACKUP_ROOT",
-                        hub.parent.parent / "bak")
 
     build_hub._purge_hub_for_batch(PROTOCOL, purge_semantic=True)
 
