@@ -21,8 +21,9 @@ from typing import Any
 #: 阶段 C2 新增的字段（顶层）
 C2_TOP_FIELDS = ("entity", "epistemic", "entity_id")
 
-#: 阶段 D1 新增的 bundle 键
-D1_VIEW_KEYS = ("by_category", "entities")
+#: 阶段 D1/D2 新增的 bundle 键
+#: （``by_category`` 分类视图 / ``entities`` 实体索引 / ``entity_by_name`` 名称索引）
+D1_VIEW_KEYS = ("by_category", "entities", "entity_by_name")
 
 
 def strip_c2(fact: dict[str, Any]) -> dict[str, Any]:

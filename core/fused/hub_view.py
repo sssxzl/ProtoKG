@@ -1112,8 +1112,19 @@ def build_view(views: list[dict], protocol: str = "rtsp",
                 _e["name"] = _nm2
                 _e["type"] = str((_fk2.get("subject") or {}).get("type") or "")
         bundle["entities"] = _ents
+        # ★★ **name → entity_id 索引**（阶段 D2：图与中枢对齐用）
+        #   图节点的 ``name`` 与中枢实体的 ``name`` 同名 ⇒ 同一实体
+        #   （类型名不同：图用 entity/message/state，中枢用 method/header/…）
+        #   ⇒ **按名字对齐**（类型只作辅助）。
+        _byname: dict = {}
+        for _eid, _e in _ents.items():
+            _nm3 = str(_e.get("name") or "")
+            if _nm3 and _nm3 not in _byname:
+                _byname[_nm3] = _eid
+        bundle["entity_by_name"] = _byname
     except Exception:                                   # noqa: BLE001
         bundle["entities"] = {}
+        bundle["entity_by_name"] = {}
     return bundle
 
 def _entity_headers_from_profile(protocol: str) -> dict:

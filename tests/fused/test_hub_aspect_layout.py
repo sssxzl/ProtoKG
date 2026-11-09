@@ -300,7 +300,7 @@ def test_bundle_key_insertion_order_identical(hub):
     new_bundle = rag_seedgen.assemble_bundle(list(new_views), PROTOCOL)
     # ★ 阶段 D1：视图层新增 ``by_category`` / ``entities``（**追加在末尾**
     #   ⇒ 不影响旧键的插入序）⇒ 本断言只关心**旧契约**。
-    for _k in ("by_category", "entities"):
+    for _k in ("by_category", "entities", "entity_by_name"):
         legacy_bundle.pop(_k, None)
         new_bundle.pop(_k, None)
     for key in legacy_bundle:

@@ -62,8 +62,17 @@ def build_one(protocol: str, use_llm: bool = False) -> dict:
 
     # ---- 合并（Phase A 的节点/边 + 投影的节点/边）----
     nodes: dict[str, dict] = {}
+    # ★★ 阶段 D2：Phase A 节点也补 ``entity_id``（与中枢对齐）
+    _eid_by_name = {}
+    try:
+        _eid_by_name = dict(bundle.get("entity_by_name") or {})
+    except Exception:                                   # noqa: BLE001
+        _eid_by_name = {}
     for n in phase_a_nodes:
-        nodes[n.node_id] = n.as_dict()
+        _d = n.as_dict()
+        if not _d.get("entity_id"):
+            _d["entity_id"] = _eid_by_name.get(str(_d.get("name") or ""), "")
+        nodes[n.node_id] = _d
     for n in proj_nodes:
         nodes.setdefault(n["node_id"], n)
     edges: dict[str, dict] = {}
