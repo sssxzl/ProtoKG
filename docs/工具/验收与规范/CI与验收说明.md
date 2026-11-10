@@ -74,7 +74,7 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 
 | # | job | 平台 | 验什么 | 闸门语义 |
 |---|---|---|---|---|
-| 1 | `static-checks` | Ubuntu | `tools/` 的 ruff lint + **全仓语法可解析**（`core/` `scripts/` `tests/` `tools/`） | 任一检查失败 ⇒ 红 |
+| 1 | `static-checks` | Ubuntu | `guard/` 的 ruff lint + **全仓语法可解析**（`core/` `scripts/` `tests/` `guard/`） | 任一检查失败 ⇒ 红 |
 | 2 | `byte-contract` | Windows | **字节契约**：`.gitattributes` 里 `-text` 保护的 `*.dict` / `*.raw` / `*.sip`，工作区字节必须 == 入库 blob 字节 | 任一文件字节不一致 ⇒ 红 |
 | 3 | `guarded-pytest` | Ubuntu | 全量 pytest 的**失败集合相对 CI 基线不漂移**（主闸门） | 漂移 ⇒ 红 |
 | 4 | `guarded-pytest-windows` | Windows | 同上，但在 Windows 上跑（**先归一化 LF**），验证两个平台结论一致 | 漂移 ⇒ 红 |
@@ -303,8 +303,8 @@ E:/app/Anaconda3/python.exe -m pytest tests/ -q -p no:cacheprovider --tb=no -rfE
 ### 5.4 其他检查
 
 ```bash
-# ruff（只查本次新增的 tools/；全仓有 114 个既存告警，不在本次改动范围）
-E:/app/Anaconda3/python.exe -m ruff check tools/
+# ruff（只查闸门工具 guard/；全仓有 114 个既存告警，不在本次改动范围）
+E:/app/Anaconda3/python.exe -m ruff check guard/
 
 # 语法扫描（范围限定 core/scripts/tests/tools —— 见下方「为什么必须限定」）
 E:/app/Anaconda3/python.exe -c "
@@ -397,7 +397,7 @@ E:/app/Anaconda3/python.exe guard/run_guarded_pytest.py
 | 3 | **`derived/` 中间产物不入库** | 31 条测试在 CI 上因缺产物而失败 | 已确认为环境差异而非回归；`kb/` 已入库，`build_hub.py` 可重建大部分（`source` 源需 `DEEPSEEK_API_KEY`） |
 | 4 | **`derived/hub/facts/`（早期遗留 40MB）与 `live555_20261024_110155`（真实抓包语料）无法重建** | 这部分测试在 CI 上必然失败 | 已计入 CI 基线 |
 | 5 | **Ubuntu 真机未实测** | 「Ubuntu 等价」结论基于「干净 LF checkout + 最小 venv」的 Windows 实测 | 本机 Docker Desktop 需 WSL2，被环境安全策略拦截，无法起容器 |
-| 6 | **ruff 只查 `tools/`** | `core/` `scripts/` `tests/` 的 114 个既存 lint 告警不被 CI 拦 | 那些文件不在本次改动范围，动它们会污染 diff |
+| 6 | **ruff 只查 `guard/`** | `core/` `scripts/` `tests/` 的 114 个既存 lint 告警不被 CI 拦 | 那些文件不在本次改动范围，动它们会污染 diff |
 | 7 | **`corpus_gate` 冒烟用合成 fixture** | 不覆盖真实语料的全部形态 | 真实语料是真实抓包、无法在 CI 重建；冒烟的职责是证明「闸门可执行且有牙齿」 |
 | 8 | **`kb/*/数据流量/*/client.log` 未入库**（被 `*.log` 规则排除） | traffic 源的 LLM 兜底测试在 CI 上失败 | 已计入 CI 基线 |
 | 9 | **全仓 `ast.parse` 语法扫描不可能通过** | 用户原命令 `pathlib.Path('.').rglob('*.py')` 会扫到两个硬障碍 | 已改为限定范围，见下 |
@@ -419,7 +419,7 @@ E:/app/Anaconda3/python.exe -c "import ast,pathlib; [ast.parse(p.read_text(encod
 2. **vendored 素材**：`kb/` 下有研究素材（kamailio 的 Python 2 示例源码），
    用 Python 3 的 `ast.parse` 解析必然失败
    （`print res` ⇒ `SyntaxError: Missing parentheses in call to 'print'`）。
-   ⇒ 扫描范围必须限定在 `core/` `scripts/` `tests/` `tools/`
+   ⇒ 扫描范围必须限定在 `core/` `scripts/` `tests/` `guard/`
    —— 即**本仓自己的代码**，研究素材不纳入语法门。
 
 限定版实测：`scanned 153 python files under core/scripts/tests/tools` → **0 错误，退出码 0**。
