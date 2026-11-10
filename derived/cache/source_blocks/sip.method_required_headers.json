@@ -1,0 +1,41 @@
+{
+  "block_hash": "f09f3772db0f7ae697bb9ba2eb88bf3385f29bf3a6da29724dd49904187a963a",
+  "rows": [
+    {
+      "method": "INVITE",
+      "name": "Contact",
+      "evidence": "When a UAC sends a request that can establish a dialog (such as an INVITE) it MUST provide a SIP or SIPS URI with global scope ... in the Contact header field of the request.",
+      "source": "rfc:rfc3261.txt"
+    },
+    {
+      "method": "ACK",
+      "name": "Call-ID",
+      "evidence": "The ACK request constructed by the client transaction MUST contain values for the Call-ID, From, and Request-URI that are equal to the values of those header fields in the request passed to the transport by the client transaction",
+      "source": "rfc:rfc3261.txt"
+    },
+    {
+      "method": "ACK",
+      "name": "From",
+      "evidence": "The ACK request constructed by the client transaction MUST contain values for the Call-ID, From, and Request-URI that are equal to the values of those header fields in the request passed to the transport by the client transaction",
+      "source": "rfc:rfc3261.txt"
+    },
+    {
+      "method": "ACK",
+      "name": "To",
+      "evidence": "The To header field in the ACK MUST equal the To header field in the response being acknowledged",
+      "source": "rfc:rfc3261.txt"
+    },
+    {
+      "method": "ACK",
+      "name": "Via",
+      "evidence": "The ACK MUST contain a single Via header field, and this MUST be equal to the top Via header field of the original request.",
+      "source": "rfc:rfc3261.txt"
+    },
+    {
+      "method": "ACK",
+      "name": "CSeq",
+      "evidence": "The CSeq header field in the ACK MUST contain the same value for the sequence number as was present in the original request, but the method parameter MUST be equal to \"ACK\".",
+      "source": "rfc:rfc3261.txt"
+    }
+  ]
+}

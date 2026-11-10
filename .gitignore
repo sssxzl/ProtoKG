@@ -47,6 +47,8 @@ seeds/rtsp/test cases/
 # ★ 用 `derived/*` 而非 `derived/` —— git **不会进入被排除的目录**，
 #   写 `derived/` 的话下面的 `!` 例外对里面的文件无效。
 derived/*
+# ★ LLM 抽取缓存（261K）**入库** ⇒ 构建可复现（否则每次重建重抽 ⇒ 基线漂移）
+!derived/cache/
 #   例外：B 阶段的人工标注集**进版本库**（见下）。
 !derived/exp_semantic/
 #   标注集内部只放行「人工判断产物」；中间产物（模型缓存等）仍排除。
@@ -116,7 +118,8 @@ guard/encoding_guard_result.json
 /derived/analysis/
 /derived/exp_semantic/
 /derived/exp_semantic_gain/
-/guard/
+# ★ 2026-11-10：旧的 `/guard/` 规则已移除 —— 它会连**入库的护栏工具**
+#   一起排除（新克隆时 guard/ 整个目录检不出来）⇒ 只保留 `/guard/_out/`。
 /out/
 compare/out/
 # 临时探针（CRLF 检测的副产品）

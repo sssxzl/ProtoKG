@@ -1,0 +1,135 @@
+{
+  "block_hash": "94418108df98e50fa73739571dfd5206a59a2118c392658672226ea0ea30edfa",
+  "transitions": [
+    {
+      "from": "INIT",
+      "method": "DHCPOFFER",
+      "to": "SELECTING"
+    },
+    {
+      "from": "SELECTING",
+      "method": "DHCPOFFER",
+      "to": "SELECTING"
+    },
+    {
+      "from": "SELECTING",
+      "method": "DHCPNAK",
+      "to": "INIT"
+    },
+    {
+      "from": "SELECTING",
+      "method": "DHCPACK",
+      "to": "REQUESTING"
+    },
+    {
+      "from": "REQUESTING",
+      "method": "DHCPACK",
+      "to": "BOUND"
+    },
+    {
+      "from": "REQUESTING",
+      "method": "DHCPOFFER",
+      "to": "REQUESTING"
+    },
+    {
+      "from": "REQUESTING",
+      "method": "DHCPNAK",
+      "to": "INIT"
+    },
+    {
+      "from": "INIT-REBOOT",
+      "method": "DHCPNAK",
+      "to": "INIT"
+    },
+    {
+      "from": "INIT-REBOOT",
+      "method": "DHCPACK",
+      "to": "REBOOTING"
+    },
+    {
+      "from": "REBOOTING",
+      "method": "DHCPACK",
+      "to": "BOUND"
+    },
+    {
+      "from": "REBOOTING",
+      "method": "DHCPNAK",
+      "to": "INIT"
+    },
+    {
+      "from": "BOUND",
+      "method": "DHCPOFFER",
+      "to": "BOUND"
+    },
+    {
+      "from": "BOUND",
+      "method": "DHCPACK",
+      "to": "BOUND"
+    },
+    {
+      "from": "BOUND",
+      "method": "DHCPNAK",
+      "to": "BOUND"
+    },
+    {
+      "from": "RENEWING",
+      "method": "DHCPACK",
+      "to": "BOUND"
+    },
+    {
+      "from": "RENEWING",
+      "method": "DHCPNAK",
+      "to": "REBINDING"
+    },
+    {
+      "from": "REBINDING",
+      "method": "DHCPACK",
+      "to": "BOUND"
+    },
+    {
+      "from": "REBINDING",
+      "method": "DHCPNAK",
+      "to": "INIT"
+    },
+    {
+      "from": "INIT-REBOOT",
+      "method": "DHCPACK",
+      "to": "BOUND"
+    },
+    {
+      "from": "RENEWING",
+      "method": "DHCPREQUEST",
+      "to": "REBINDING"
+    },
+    {
+      "from": "REBINDING",
+      "method": "DHCPREQUEST",
+      "to": "INIT"
+    },
+    {
+      "from": "INIT",
+      "method": "DHCPACK",
+      "to": "INIT"
+    },
+    {
+      "from": "Selecting",
+      "method": "DHCPOFFER",
+      "to": "Requesting"
+    },
+    {
+      "from": "Reboot",
+      "method": "DHCPOFFER",
+      "to": "Requesting"
+    },
+    {
+      "from": "Requesting",
+      "method": "DHCPACK",
+      "to": "Bound"
+    },
+    {
+      "from": "Reboot",
+      "method": "DHCPACK",
+      "to": "Bound"
+    }
+  ]
+}

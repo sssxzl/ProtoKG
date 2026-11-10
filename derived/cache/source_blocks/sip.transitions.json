@@ -1,0 +1,65 @@
+{
+  "block_hash": "e69d6a04032acf00b438bcb6dac8b6a0339e1694fd8e9284c15a54d69de2dd56",
+  "transitions": [
+    {
+      "from": "Calling",
+      "method": "INVITE",
+      "to": "Proceeding"
+    },
+    {
+      "from": "Calling",
+      "method": "ACK",
+      "to": "Completed"
+    },
+    {
+      "from": "Proceeding",
+      "method": "ACK",
+      "to": "Completed"
+    },
+    {
+      "from": "Completed",
+      "method": "ACK",
+      "to": "Completed"
+    },
+    {
+      "from": "Completed",
+      "method": "INVITE",
+      "to": "Completed"
+    },
+    {
+      "from": "Trying",
+      "method": "INVITE",
+      "to": "Proceeding"
+    },
+    {
+      "from": "Proceeding",
+      "method": "INVITE",
+      "to": "Completed"
+    },
+    {
+      "from": "Completed",
+      "method": "ACK",
+      "to": "Confirmed"
+    },
+    {
+      "from": "Confirmed",
+      "method": "ACK",
+      "to": "Terminated"
+    },
+    {
+      "from": "Trying",
+      "method": "BYE",
+      "to": "Proceeding"
+    },
+    {
+      "from": "Proceeding",
+      "method": "BYE",
+      "to": "Completed"
+    },
+    {
+      "from": "Completed",
+      "method": "BYE",
+      "to": "Terminated"
+    }
+  ]
+}

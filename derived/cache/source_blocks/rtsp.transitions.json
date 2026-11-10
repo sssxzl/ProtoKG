@@ -1,0 +1,75 @@
+{
+  "block_hash": "d9a565ec1beaed96fa217382e925ab50fa51e30c3b0e7e515fc5a56a219ade42",
+  "transitions": [
+    {
+      "from": "Init",
+      "method": "SETUP",
+      "to": "Ready"
+    },
+    {
+      "from": "Init",
+      "method": "TEARDOWN",
+      "to": "Init"
+    },
+    {
+      "from": "Ready",
+      "method": "PLAY",
+      "to": "Playing"
+    },
+    {
+      "from": "Ready",
+      "method": "RECORD",
+      "to": "Recording"
+    },
+    {
+      "from": "Ready",
+      "method": "TEARDOWN",
+      "to": "Init"
+    },
+    {
+      "from": "Ready",
+      "method": "SETUP",
+      "to": "Ready"
+    },
+    {
+      "from": "Playing",
+      "method": "PAUSE",
+      "to": "Ready"
+    },
+    {
+      "from": "Playing",
+      "method": "TEARDOWN",
+      "to": "Init"
+    },
+    {
+      "from": "Playing",
+      "method": "PLAY",
+      "to": "Playing"
+    },
+    {
+      "from": "Playing",
+      "method": "SETUP",
+      "to": "Playing"
+    },
+    {
+      "from": "Recording",
+      "method": "PAUSE",
+      "to": "Ready"
+    },
+    {
+      "from": "Recording",
+      "method": "TEARDOWN",
+      "to": "Init"
+    },
+    {
+      "from": "Recording",
+      "method": "RECORD",
+      "to": "Recording"
+    },
+    {
+      "from": "Recording",
+      "method": "SETUP",
+      "to": "Recording"
+    }
+  ]
+}
