@@ -108,7 +108,7 @@ def test_field_occurrence_and_samples():
     assert occ.fact_key.aspect == "occurrence"
     assert occ.claims[0].value.data == 10
     samp = traffic_norm_to_facts(FIELD_SAMPLE_NORM)[0]
-    assert samp.fact_key.aspect == "value_enum"
+    assert samp.fact_key.aspect == "value_enum_observed"   # ★ 阶段 E4：traffic 侧=实测样本
     assert samp.claims[0].value.data == ["rtsp://a/x", "rtsp://a/y"]
 
 

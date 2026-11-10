@@ -711,7 +711,7 @@ def build_view(views: list[dict], protocol: str = "rtsp",
                 headers.setdefault(sname, {})["syntax"] = val
             elif aspect == "definition":
                 headers.setdefault(sname, {})["definition"] = val
-            elif aspect == "value_enum":
+            elif aspect in ("value_enum", "value_enum_spec", "value_enum_observed"):
                 info = headers.setdefault(sname, {})
                 # P2a：取值池做 union（多源互补不冲突，并集合并而非覆盖）
                 existing = set(info.get("values") or [])
@@ -782,10 +782,10 @@ def build_view(views: list[dict], protocol: str = "rtsp",
             if aspect == "definition":
                 statuses[sname] = val or ""
         elif stype == "protocol":
-            if aspect == "value_enum":
+            if aspect in ("value_enum", "value_enum_spec", "value_enum_observed"):
                 protocol.setdefault(sname, []).extend(list(val or []))
         elif stype == "actor":
-            if aspect == "value_enum":
+            if aspect in ("value_enum", "value_enum_spec", "value_enum_observed"):
                 actors.setdefault(sname, []).extend(list(val or []))
 
     # ★ 批次 1.6 步 4：`required_headers` 的**兼容期回退**。
@@ -1366,6 +1366,8 @@ _BUCKET_BY_KIND: dict[tuple[str, str], str] = {
     ("header", "option_layout"): "headers",
     ("header", "definition"): "headers",
     ("header", "value_enum"): "headers",
+    ("header", "value_enum_spec"): "headers",
+    ("header", "value_enum_observed"): "headers",
     ("header", "occurrence"): "headers",
     ("header", "security_property"): "security",
     ("header", "legal_boundary"): "legal_boundary",
@@ -1388,7 +1390,11 @@ _BUCKET_BY_KIND: dict[tuple[str, str], str] = {
     #   本步**不改**这个行为（改了会动 bundle 内容 ⇒ 种子漂移）⇒ 只如实记录。
     # ── protocol / actor 主体 ──
     ("protocol", "value_enum"): "protocol",
+    ("protocol", "value_enum_spec"): "protocol",
+    ("protocol", "value_enum_observed"): "protocol",
     ("actor", "value_enum"): "actors",
+    ("actor", "value_enum_spec"): "actors",
+    ("actor", "value_enum_observed"): "actors",
 }
 
 _EXPECTED_BEHAVIOR_CODES: dict[str, str] = {

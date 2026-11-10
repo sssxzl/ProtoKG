@@ -40,7 +40,12 @@ _ASPECT_SEMANTICS: dict[str, str] = {
     "existence": "precedence",
     "state_changing": "precedence",
     "target_state": "precedence",
+    # ★ 阶段 E4：value_enum 拆成「规范值」与「实测样本」⇒ 两者都是**取值池**（union）
+    #   · value_enum_spec      —— 来自 RFC 规范文本（落 D_construction）
+    #   · value_enum_observed  —— 来自抓包观测（落 E_observation）
     "value_enum": "union",
+    "value_enum_spec": "union",
+    "value_enum_observed": "union",
     "occurrence": "union",
     "case_sensitivity": "precedence",
     "value_type": "precedence",

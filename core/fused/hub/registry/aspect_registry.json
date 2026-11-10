@@ -241,6 +241,30 @@
       "resolution_semantics": "consensus",
       "cardinality": "many",
       "description": "结构化漏洞模式（借鉴 GLMFuzz：{action, trigger_sequence, trigger_field, boundary{legal,illegal,dim}, cwe, streams, mutation_hint}，从历史漏洞抽取，供边界种子生成 + 定向变异 + 跨协议漏洞知识迁移）"
+    },
+    {
+      "name": "value_enum_spec",
+      "value_type": "set",
+      "applicable_subject_types": [
+        "header",
+        "protocol",
+        "actor"
+      ],
+      "resolution_semantics": "consensus",
+      "cardinality": "one",
+      "description": "字段的**规范取值集合**（来自 RFC 规范文本的取值域声明）"
+    },
+    {
+      "name": "value_enum_observed",
+      "value_type": "set",
+      "applicable_subject_types": [
+        "header",
+        "protocol",
+        "actor"
+      ],
+      "resolution_semantics": "consensus",
+      "cardinality": "one",
+      "description": "字段的**实测取值样本集合**（来自抓包观测到的实际取值）"
     }
   ]
 }

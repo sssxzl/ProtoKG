@@ -14,9 +14,9 @@
   ③ **散文不被抽到**（"Server: A server is a network element…"）
   ④ 值清洗：含空格的散文被拒
   ⑤ 头名**大小写归一**（Content-length / CONTENT / expires 不重复）
-  ⑥ norm → fact：aspect=value_enum、value type=set
+  ⑥ norm → fact：aspect=value_enum_spec（★ 阶段 E4：rfc 侧是**规范取值**）、value type=set
   ⑦ 协议级**跨文件合并**（同名字段的取值合并而非丢弃）
-  ⑧ 中枢里 value_enum 进 ``headers`` 桶（消费端能用）
+  ⑧ 中枢里 value_enum_spec 进 ``headers`` 桶（消费端能用）
 """
 from __future__ import annotations
 
@@ -132,8 +132,8 @@ def test_header_name_case_is_normalized():
 # ⑥ norm → fact
 # ===========================================================================
 
-def test_field_value_norm_maps_to_value_enum_fact():
-    """★ aspect=value_enum、value type=set、subject type=header。"""
+def test_field_value_norm_maps_to_value_enum_spec_fact():
+    """★ aspect=value_enum_spec（rfc 侧=规范取值）、value type=set、subject type=header。"""
     norm = {
         "norm_id": "rtsp.field_value.accept",
         "kind": "field_value",
@@ -146,7 +146,7 @@ def test_field_value_norm_maps_to_value_enum_fact():
     facts = NORM.field_value_norm_to_facts(norm)
     assert len(facts) == 1
     fk = facts[0].fact_key
-    assert fk.aspect == "value_enum"
+    assert fk.aspect == "value_enum_spec"
     assert fk.subject.type == "header"
     assert fk.subject.name == "Accept"
     claim = facts[0].claims[0]
@@ -183,8 +183,8 @@ def test_protocol_level_merge_of_field_values():
 # ⑧ 中枢里 value_enum 进 headers 桶
 # ===========================================================================
 
-def test_value_enum_lands_in_headers_bucket():
-    """★ value_enum fact ⇒ ``headers`` 桶的取值池（消费端能用）。"""
+def test_value_enum_spec_lands_in_headers_bucket():
+    """★ value_enum_spec fact ⇒ ``headers`` 桶的取值池（消费端能用）。"""
     from core.fused.downstream.rag_seedgen import assemble_bundle
 
     view = {

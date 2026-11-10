@@ -231,18 +231,19 @@ def parse_field_value_content(content: str) -> tuple[str, list[str]]:
 
 
 def field_value_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
-    """rfc field_value norm → [value_enum fact]（字段的取值样本集合）。
+    """rfc field_value norm → [value_enum_spec fact]（字段的**规范取值**集合）。
 
     ★ 批次 2.0（P0）：aspect 契约见 ``core/fused/hub/registry/aspect_registry.json`` ——
-      ``value_enum`` 的 ``value_type = "set"``、适用主体 = header/protocol/actor
+      ``value_enum_spec`` 的 ``value_type = "set"``、适用主体 = header/protocol/actor
       ⇒ 这里用 ``header`` + ``Value(type="set", data=[...])``。
     """
     name, values = parse_field_value_content(norm.get("content", ""))
     if not name or not values:
         return []
     subject = _qualified_subject("header", name, norm)
+    # ★ 阶段 E4：rfc 侧产的是**规范取值** ⇒ aspect = value_enum_spec（落 D_construction）
     return [_make_fact(
-        subject, "value_enum",
+        subject, "value_enum_spec",
         Value(type="set", data=sorted(set(values))),
         "normative_unspecified", norm)]
 

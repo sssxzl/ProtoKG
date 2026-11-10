@@ -7,10 +7,10 @@ traffic 源现走确定性抽取（core/fused/traffic_extractor.py 从数据流�
 kind → 映射（epistemic 一律 observed）:
   message      method=DESCRIBE occurrences=1       → method  + existence（bool）
   field        CSeq header occurrences=10          → header  + occurrence（int）
-  field        unique URLs=2 samples=[...]         → header  + value_enum（set）
+  field        unique URLs=2 samples=[...]         → header  + value_enum_observed（set）
   state_machine observed transitions: A → B → C    → relation + method_sequence（相邻对）
   outcome      status code distribution: {...}     → status  + occurrence（int）
-  protocol     transport distribution / methods    → protocol + value_enum（set）
+  protocol     transport distribution / methods    → protocol + value_enum_observed（set）
   actor        RTSP server observed on ports [...] → actor   + value_enum（set）
 
 设计依据: docs/设计/抽取与形态/抽取层方法借鉴.md §三 traffic 行（LLM-Boofuzz 借鉴，
@@ -196,7 +196,7 @@ def _field_facts(norm: dict[str, Any], quote: str) -> list[Fact]:
     samples = parse_field_samples(content)
     if samples:
         name = norm.get("name", "") or "field"
-        return [_make_fact(Subject(type="header", name=name), "value_enum",
+        return [_make_fact(Subject(type="header", name=name), "value_enum_observed",
                            Value(type="set", data=samples), norm, quote)]
     definition = parse_field_definition(content)
     if definition:
@@ -241,7 +241,7 @@ def _protocol_facts(norm: dict[str, Any], quote: str) -> list[Fact]:
     if not keys:
         return []
     name = norm.get("name", "") or "protocol"
-    return [_make_fact(Subject(type="protocol", name=name), "value_enum",
+    return [_make_fact(Subject(type="protocol", name=name), "value_enum_observed",
                        Value(type="set", data=keys), norm, quote)]
 
 
@@ -250,7 +250,7 @@ def _actor_facts(norm: dict[str, Any], quote: str) -> list[Fact]:
     if not ports:
         return []
     name = norm.get("name", "") or "actor"
-    return [_make_fact(Subject(type="actor", name=name), "value_enum",
+    return [_make_fact(Subject(type="actor", name=name), "value_enum_observed",
                        Value(type="set", data=ports), norm, quote)]
 
 
