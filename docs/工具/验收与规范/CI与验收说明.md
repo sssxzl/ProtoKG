@@ -257,7 +257,7 @@ manifest 是语料的溯源凭证，多出的 3 条记录需要人工判断是�
 那是 WorkBuddy 自带的 3.13，与项目依赖不一致）：
 
 ```bash
-cd "E:/科研/想法idea/rag-chatafl"
+cd "E:/科研/想法idea/ProtoKG"
 E:/app/Anaconda3/python.exe guard/run_guarded_pytest.py
 ```
 
@@ -271,7 +271,7 @@ E:/app/Anaconda3/python.exe guard/run_guarded_pytest.py
 
 ```bash
 # 1) 干净 checkout（模拟 CI 的全新环境）
-git -c core.autocrlf=false clone "E:/科研/想法idea/rag-chatafl" /tmp/ci_local
+git -c core.autocrlf=false clone "E:/科研/想法idea/ProtoKG" /tmp/ci_local
 cd /tmp/ci_local
 
 # 2) 最小依赖（实测 pytest + numpy 即足够）

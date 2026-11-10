@@ -532,7 +532,7 @@ implicit_constraints 挂 header subject。
 ### 6.1 主验收：失败数回到 37 且集合逐条一致
 
 ```bash
-cd "E:/科研/想法idea/rag-chatafl"
+cd "E:/科研/想法idea/ProtoKG"
 E:/app/Anaconda3/python.exe -m pytest tests/ -q --tb=no -p no:cacheprovider
 # 期望：failed == 37，errors == 20（passed 不固定，随并发新增测试文件变动，勿作判据）
 ```

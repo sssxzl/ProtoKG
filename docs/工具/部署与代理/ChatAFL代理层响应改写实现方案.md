@@ -304,9 +304,9 @@ LLM endpoint = http://192.168.37.1:18080/chat/completions
 
 | 文件（绝对路径） | 职责 | 依赖 |
 |------------------|------|------|
-| `E:\科研\想法idea\rag-chatafl\scripts\response_rewriter.py` | 纯函数：路径判别 + 抽取器 + 响应改写入口 | 仅标准库 `json` / `re` |
-| `E:\科研\想法idea\rag-chatafl\scripts\llm_proxy.py` | HTTP 转发 + 请求改写(model 覆盖) + 调用改写层 + 日志 | 标准库 + `response_rewriter` |
-| `E:\科研\想法idea\rag-chatafl\tests\test_response_rewriter.py` | 抽取器/判别/改写入口的单元测试（脱离网络） | `unittest` + `response_rewriter` |
+| `E:\科研\想法idea\ProtoKG\scripts\response_rewriter.py` | 纯函数：路径判别 + 抽取器 + 响应改写入口 | 仅标准库 `json` / `re` |
+| `E:\科研\想法idea\ProtoKG\scripts\llm_proxy.py` | HTTP 转发 + 请求改写(model 覆盖) + 调用改写层 + 日志 | 标准库 + `response_rewriter` |
+| `E:\科研\想法idea\ProtoKG\tests\test_response_rewriter.py` | 抽取器/判别/改写入口的单元测试（脱离网络） | `unittest` + `response_rewriter` |
 
 ### 5.2 公开函数签名（`response_rewriter.py`）
 
@@ -372,7 +372,7 @@ if REWRITE_ENABLED and status == 200 and req_obj is not None:
 ### 7.1 本机单元测试（脱离网络，先验证纯函数）
 
 ```bash
-cd /e/科研/想法idea/rag-chatafl
+cd /e/科研/想法idea/ProtoKG
 E:/app/Anaconda3/python.exe tests/test_response_rewriter.py
 # 期望：Ran 23 tests ... OK
 ```
@@ -382,14 +382,14 @@ E:/app/Anaconda3/python.exe tests/test_response_rewriter.py
 ### 7.2 语法/导入自检
 
 ```bash
-cd /e/科研/想法idea/rag-chatafl
+cd /e/科研/想法idea/ProtoKG
 E:/app/Anaconda3/python.exe -c "import sys; sys.path.insert(0,'scripts'); import llm_proxy, response_rewriter; print('imports OK')"
 ```
 
 ### 7.3 启动代理（宿主）
 
 ```bash
-cd /e/科研/想法idea/rag-chatafl
+cd /e/科研/想法idea/ProtoKG
 E:/app/Anaconda3/python.exe scripts/llm_proxy.py
 # 期望日志：LLM 转发代理已启动: http://192.168.37.1:18080 -> ... (改写=ON)
 ```
@@ -985,7 +985,7 @@ if __name__ == "__main__":
 
 ### A.3 `tests/test_response_rewriter.py`
 
-> 完整代码见落盘文件 `E:\科研\想法idea\rag-chatafl\tests\test_response_rewriter.py`（23 个用例，均已通过）。覆盖：增强散文响应、stall 响应、语法抽取 COMMAND 响应（原样透传）、无合法报文（置空）、空 content、多请求序列、含代码围栏、折叠续行、REDIRECT、大小写不敏感、CRLF 规范化、非 JSON 响应、缺 choices、请求不可解析、未知路径透传。
+> 完整代码见落盘文件 `E:\科研\想法idea\ProtoKG\tests\test_response_rewriter.py`（23 个用例，均已通过）。覆盖：增强散文响应、stall 响应、语法抽取 COMMAND 响应（原样透传）、无合法报文（置空）、空 content、多请求序列、含代码围栏、折叠续行、REDIRECT、大小写不敏感、CRLF 规范化、非 JSON 响应、缺 choices、请求不可解析、未知路径透传。
 
 ---
 

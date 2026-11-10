@@ -1,7 +1,7 @@
 # RFC 源里程碑 B～D 实施路线与任务分解
 
 > 生成时间：2026-11-01
-> 适用代码库：`E:\科研\想法idea\rag-chatafl`
+> 适用代码库：`E:\科研\想法idea\ProtoKG`
 > 上游输入：`docs/实施/路线与里程碑/RFC源知识抽取改造方案.md`（当前版，951 行）、`改进.md`（8 个问题）、`ProtoKG RFC 源知识抽取改造方案——技术评审报告.md`
 > 本文档性质：**只读调研 + 设计规划**。撰写过程中未修改仓库任何文件（唯一写入为本文件）。
 > 运行环境：Python `C:/Users/13594/.workbuddy/binaries/python/versions/3.13.12/python.exe`（无 pytest）；pytest 用 `E:/app/Anaconda3/python.exe`。
@@ -1283,8 +1283,8 @@ derived/experiments/annotation/<实验ID>/
    - **强制要求**：B 阶段动工前，先做一次**手工快照**：
      ```bash
      # Windows Git Bash
-     cd "E:/科研/想法idea/rag-chatafl"
-     tar czf ../rag-chatafl_snapshot_$(date +%Y%m%d_%H%M%S).tar.gz \
+     cd "E:/科研/想法idea/ProtoKG"
+     tar czf ../ProtoKG_snapshot_$(date +%Y%m%d_%H%M%S).tar.gz \
          core/ scripts/ core/fused/hub/registry/ tests/ docs/实施/路线与里程碑/RFC源知识抽取改造方案.md
      ```
    - 每个任务（T01~T05）**独立一个快照**，出问题时按任务回滚。

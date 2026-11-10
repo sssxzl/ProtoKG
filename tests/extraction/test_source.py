@@ -13,7 +13,7 @@ SOURCE_NORM = {
     "protocol": "rtsp",
     "kind": "method",
     "name": "OPTIONS",
-    "content": "liveMedia 服务端实现接收并处理 OPTIONS 方法（定义处 E:\\科研\\想法idea\\rag-chatafl\\kb\\协议实现源码\\RTSPServer.cpp:354）",
+    "content": "liveMedia 服务端实现接收并处理 OPTIONS 方法（定义处 E:\\科研\\想法idea\\ProtoKG\\kb\\协议实现源码\\RTSPServer.cpp:354）",
     "source": "file:RTSPServer.cpp",
     "kb_source_type": "source",
 }
@@ -36,7 +36,7 @@ def test_source_norm_to_fact_structure():
 def test_source_locator_extracted():
     f = source_norm_to_facts(SOURCE_NORM)[0]
     ev = f.claims[0].evidence[0]
-    assert ev.locator == "E:\\科研\\想法idea\\rag-chatafl\\kb\\协议实现源码\\RTSPServer.cpp:354"
+    assert ev.locator == "E:\\科研\\想法idea\\ProtoKG\\kb\\协议实现源码\\RTSPServer.cpp:354"
     assert ev.document == "file:RTSPServer.cpp"
     assert ev.source_type == "source"
 

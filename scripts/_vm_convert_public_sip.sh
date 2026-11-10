@@ -1,5 +1,5 @@
 #!/bin/bash
-# 把公开 pcap 转成 rag-chatafl 数据流量 6 文件结构。
+# 把公开 pcap 转成 ProtoKG 数据流量 6 文件结构。
 # 用法: /tmp/convert_public_sip.sh <src.pcap> <run_id>
 #   例: /tmp/convert_public_sip.sh /tmp/sip_public/aaa.pcap public_aaa_0001
 

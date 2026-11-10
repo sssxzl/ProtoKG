@@ -6,7 +6,7 @@
 import json
 from pathlib import Path
 
-OUT = Path(r"E:\科研\想法idea\rag-chatafl\kb\历史漏洞")
+OUT = Path(r"E:\科研\想法idea\ProtoKG\kb\历史漏洞")
 
 
 def vuln(case_id, cve, title, desc, risk, cwe, method, field, condition):

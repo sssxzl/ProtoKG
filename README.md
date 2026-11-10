@@ -78,7 +78,7 @@ ProtoKG 的做法**不是**把它们压平成一种表示，而是：
 ## 代码结构（按功能编排）
 
 ```
-rag-chatafl/
+ProtoKG/
 ├── core/                      # 协议无关核心
 │   ├── llm.py                 # LLM 客户端（DeepSeek + Stub）+ 传输层
 │   ├── models.py              # 数据模型（SeedMessage / SeedCorpus / ...）
@@ -144,7 +144,7 @@ python scripts/seedgen.py --protocol <新协议>
 ## 快速开始
 
 ```bash
-cd E:\科研\想法idea\rag-chatafl
+cd E:\科研\想法idea\ProtoKG
 
 # 1. 查看 kb 中实际存在的知识源
 python scripts/build_hub.py --list-sources

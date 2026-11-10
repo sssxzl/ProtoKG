@@ -1,7 +1,7 @@
 # 项目状态
 
 > 生成时间：2026-11-09（**只保留当前状态**；历史过程见 git 提交记录）
-> 项目根目录：`E:\科研\想法idea\rag-chatafl`
+> 项目根目录：`E:\科研\想法idea\ProtoKG`
 > 项目名：**ProtoKG**（Protocol Knowledge Graph for Fuzzing Seed Generation）
 
 ---
