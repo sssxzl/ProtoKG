@@ -52,7 +52,7 @@ def _make_fact(subject: Subject, value: Value, norm: dict[str, Any],
     # protocol 正确。本模块虽已被 source_autoseeder 替代（孤儿代码），但 source_fsm
     # 仍 import 此 _make_fact，保留参数化避免未来复用踩 protocol 坑。source_fsm 与
     # protocol_patterns 均已 DEPRECATED，三者构成孤岛（生产链路无调用方），仅
-    # tests/fused/test_source.py 覆盖 source.py。
+    # tests/test_source.py 覆盖 source.py。
     fact_key = FactKey(protocol=norm.get("protocol", protocol), version="1.0",
                        subject=subject, aspect=aspect,
                        condition=ConditionAlways())

@@ -169,7 +169,7 @@ cp new.sh /home/zxy/profuzzbench/scripts/.tmp.sh \
 以下变更**必须**包含至少相关测试（不能只跑文档步骤）：
 
 1. 修改 `core/fused/hub/registry/` 下任何 JSON 后，
-   必须跑 `tests/fused/.../test_registry_*.py` 相关测试
+   必须跑 `tests/.../test_registry_*.py` 相关测试
    （至少 `test_candidate_layer.py` + `test_registry_loader.py`）
 
 2. 修改 `core/fused/` 下任何文件后，

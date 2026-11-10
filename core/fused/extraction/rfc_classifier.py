@@ -104,7 +104,7 @@ def _classify_by_form(window: dict[str, Any]) -> Optional[str]:
     has_diagram = "diagram" in kinds
     # ★ **不消费 example 形态**（2026-11-08，遵守项目铁律）：
     #   `example` 判据一旦收紧，抽取产物就会变 ⇒ 任何新消费方都必须
-    #   同步补产物回归（tests/fused/test_example_form_tightened.py 的守卫
+    #   同步补产物回归（tests/test_example_form_tightened.py 的守卫
     #   会强制报红）。
     #   ⇒ 本通道**不需要**区分示例块（示例块本来就不该产出知识类别），
     #     直接交给 L-B/L-C 判；判不出就是 None。

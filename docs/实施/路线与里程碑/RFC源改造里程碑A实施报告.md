@@ -69,7 +69,7 @@
 | `profiles/rtsp/rfc_config.json` | `field_sections` 加 `"7.1"`（Status-Line） | A1.3 |
 | `scripts/rfc_baseline_probe.py` | **新建** —— 基线/回归测量工具 | 验收 |
 | `scripts/rfc_config_verify.py` | **新建** —— rfc_config 章节号真实性校验 | A0.2 验证 |
-| `tests/fused/test_rfc_extractor_a1.py` | **新建** —— 36 个用例 | 验收 |
+| `tests/test_rfc_extractor_a1.py` | **新建** —— 36 个用例 | 验收 |
 
 ### 3.2 rfc_extractor 新增/重写的函数
 
@@ -166,7 +166,7 @@
 
 ## 六、rq3 契约脱节的归因（重要：避免误判为回归）
 
-`tests/fused/test_rq3_dict.py::test_protocol_dict_unchanged_102` 断言字典为 102 token，实测 114。
+`tests/test_rq3_dict.py::test_protocol_dict_unchanged_102` 断言字典为 102 token，实测 114。
 
 **归因过程与结论**：
 1. rfc 侧新旧抽取结果精确对比：field 仅差 1 个（`Recording`），method/outcome 完全一致
@@ -290,7 +290,7 @@ md5sum derived/per_source/sip/rfc/facts/rfc.jsonl   # 两次应一致
 
 # 5) 测试
 python -m pytest tests/ -q      # 37 failed / 646 passed / 20 errors（失败全为预存）
-python -m pytest tests/fused/test_rfc_extractor_a1.py -q            # 36 passed
+python -m pytest tests/test_rfc_extractor_a1.py -q            # 36 passed
 python -m pytest tests/hub/test_single_protocol_single_source.py -q  # 13 passed
 ```
 
@@ -323,7 +323,7 @@ python -m pytest tests/hub/test_single_protocol_single_source.py -q  # 13 passed
 | `core/fused/source_probe.py` / `scripts/run_boundary_probe.py` 的 `SSH = ["ssh","-i",...]` | 那是**连接虚拟机的 SSH 客户端命令**，不是协议知识 |
 | `kb/sip/_bak_pjproject`（51MB） | 用户自留的 pjproject 备份；所有扫描锚定 `kb/<协议>/<源目录>/`，**不参与抽取、不污染结果** |
 
-**测试收敛**（11 处引用 → 收敛到 3 个目标协议）：详见 `tests/fused/` 下 5 个文件的改动。
+**测试收敛**（11 处引用 → 收敛到 3 个目标协议）：详见 `tests/<层>/` 下 5 个文件的改动。
 
 ### 10.3 终态验收
 

@@ -149,7 +149,7 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 
 这是**刻意**的，不是笔误：
 
-- pytest 的 FAILED 摘要行是 `FAILED tests/fused/test_x.py::test_y` ⇒ 抽取时**带完整路径**；
+- pytest 的 FAILED 摘要行是 `FAILED tests/test_x.py::test_y` ⇒ 抽取时**带完整路径**；
 - ERROR 在 `--tb=no` 下只有短摘要形态 `ERROR tests/...::test_y - msg`，
   而本仓的 ERROR 清单按**函数名**记录（`test_build_succeeds`）⇒ **不带路径**。
 
@@ -185,12 +185,12 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 | 文件 | 条数 |
 |---|---|
 | `（该批 RQ3 语料契约测试已随论文实验层移除）` | 22 |
-| `tests/fused/test_rq3_manifest.py` | 6 |
-| `tests/fused/test_rq3_dict.py` | 3 |
-| `tests/fused/test_rag_seedgen.py` | 2 |
-| `tests/fused/test_rag_seedgen_step2.py` | 2 |
-| `tests/fused/test_edge_cover.py` | 1 |
-| `tests/fused/test_strategy.py` | 1 |
+| `tests/test_rq3_manifest.py` | 6 |
+| `tests/test_rq3_dict.py` | 3 |
+| `tests/test_rag_seedgen.py` | 2 |
+| `tests/test_rag_seedgen_step2.py` | 2 |
+| `tests/downstream/test_edge_cover.py` | 1 |
+| `tests/test_strategy.py` | 1 |
 | **合计** | **37** |
 
 **31 / 37 集中在 RQ3 语料契约**（focus_group + manifest + dict）。
@@ -433,7 +433,7 @@ CI 的 `static-checks` job 用的就是这个版本。
 
 | 验证 | 方法 | 结果 |
 |---|---|---|
-| **注入回归必被检出** | 在干净 checkout 的 `tests/fused/test_edge_cover.py` 追加一条必然失败的测试 | 护栏脚本报出「新增 1 / 消失 0」⇒ **退出码 1** ⇒ job 红 |
+| **注入回归必被检出** | 在干净 checkout 的 `tests/downstream/test_edge_cover.py` 追加一条必然失败的测试 | 护栏脚本报出「新增 1 / 消失 0」⇒ **退出码 1** ⇒ job 红 |
 | **基线不匹配必被检出** | 用本机基线（37）去比 CI 环境（实测 68） | 报出大量新增/消失 ⇒ **退出码 1** |
 | **字节契约破裂必被检出** | `.dict` 的工作区字节被改成与 blob 不同 | 报 `BYTE CONTRACT VIOLATED` ⇒ job 红 |
 | **corpus_gate 污染语料必被阻断** | 把 fixture 的 host 换成 `10.11.26.98:554` | G1 报出 39 处违规 ⇒ **退出码 1** |

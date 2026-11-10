@@ -289,7 +289,7 @@ classify_claim(...)
 - CASE 2：needs_review 来源 → registry L93 + L94 notes，挂在具名 rule `cc.fallback.unknown` 上
 - CASE 3：未来普通 rule 加 flags → 不支持，静默忽略
 
-**约束**：`tests/fused/pipeline/test_audit_lineage.py:334-336` 断言 `needs_review` 不在 `REASON_CODE_OUTCOME` 与 `LINEAGE_OUTCOME_DOMAIN`（`docs/设计/顶层设计/规范化序列化规范.md` §7.11 L482）。不得违反。
+**约束**：`（该测试已随论文实验层移除）:334-336` 断言 `needs_review` 不在 `REASON_CODE_OUTCOME` 与 `LINEAGE_OUTCOME_DOMAIN`（`docs/设计/顶层设计/规范化序列化规范.md` §7.11 L482）。不得违反。
 
 ### 3.4 验证（修正验证矛盾）
 
@@ -696,7 +696,7 @@ Finalization 后需验证：
 4. `derived/per_source/rfc/` 与 `derived/per_source/expert_note/`：各 13 文件 size+sha256 全等（跨源隔离）
 5. `derived/hub/`：13 文件重跑后与预期一致
 6. `verify_layout(.)` = 0 violation
-7. `ruff core/fused/ + tests/fused/` 全清
+7. `ruff core/fused/ + tests/` 全清
 8. registry fingerprint 新旧对比记录
 9. fusion_version 新旧对比记录
 10. seedgen 复测：`sec_flagged_headers` raw 4 → 6，`sec_flagged_methods` 不变
@@ -715,7 +715,7 @@ Finalization 后需验证：
 - `core/fused/pipeline/evidence_claim.py`：2 处改动（needs_review materialization + `_eval_match` fail-closed）
 - `core/fused/registry_loader.py`：1 处改动（加载期语义校验）
 - `fusion_version`：Finalization 时 bump `fusion_v1 → fusion_v2`（见 §7）
-- `tests/fused/pipeline/rules/test_vuln_rules.py`：断言更新（预期变更）
+- `tests/extraction/test_vuln_rules.py`：断言更新（预期变更）
 
 ---
 
@@ -784,7 +784,7 @@ Finalization 后需验证：
 具名值，从未被置空。
 
 §3.3 的核心 invariant（Registry-driven，不硬编码 `unknown → needs_review`）**不受影响**，
-已在 4.8h 实现并由 `tests/fused/pipeline/test_needs_review_materialization.py` 强制。
+已在 4.8h 实现并由 `tests/pipeline/test_needs_review_materialization.py` 强制。
 
 ### E2. §7.3 `build_inputs.py` 路径错误
 
@@ -803,7 +803,7 @@ Finalization 后需验证：
 本轮 Finalization 已一并 bump（`fusion_v1` → `fusion_v2`）。
 
 理由：synthetic 路径用于**镜像生产**；若真实 build 产出 `fusion_v2` 而 synthetic 仍产
-`fusion_v1`，则 `tests/fused/pipeline/test_pipeline_e2e_synthetic.py` 验证的是一个
+`fusion_v1`，则 `（该测试已随论文实验层移除）` 验证的是一个
 生产环境永不产出的 version 字符串。已实测无测试断言该常量的值，bump 零风险。
 
 ### E4. §7.3 Registry fingerprint 口径错误
@@ -851,7 +851,7 @@ Finalization 后需验证：
 
 ### E6. §12 改动面清单漏项
 
-原文 §12 列「需改」时漏了 `tests/fused/pipeline/test_fact_assembly.py`。
+原文 §12 列「需改」时漏了 `tests/pipeline/test_fact_assembly.py`。
 
 实测更正：`classify_claim` 改为四元组返回后，该文件 L163 / L173 / L182 / L191
 四处三值解包需同步改为四值。4.8h 已将该文件加入授权清单并同步修改

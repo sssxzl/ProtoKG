@@ -330,7 +330,7 @@ TLS 的 ContentType）全部指向**已不存在的 kb 源**。保留一个自�
 
 ## 3. 测试收敛方案（逐文件逐行）
 
-### 3.1 `tests/fused/test_expert_note.py` —— 5 处
+### 3.1 `tests/test_expert_note.py` —— 5 处
 
 | 行 | 原 | 新 | 说明 |
 |---|---|---|---|
@@ -357,7 +357,7 @@ TLS 的 ContentType）全部指向**已不存在的 kb 源**。保留一个自�
 `target_type=method→method` 映射、design_weaknesses 挂 protocol subject、
 implicit_constraints 挂 header subject。
 
-### 3.2 `tests/fused/test_rfc_extractor.py` —— 2 处
+### 3.2 `tests/test_rfc_extractor.py` —— 2 处
 
 | 行 | 原 | 新 |
 |---|---|---|
@@ -372,7 +372,7 @@ implicit_constraints 挂 header subject。
 行 104/135 的 `"norm_id": "dns.constraint.qname"` / `"protocol": "dns"` 是
 **纯内联 dict 字面量**（不读 kb），保留即可，不影响。
 
-### 3.3 `tests/fused/test_rfc_extractor_a1.py` —— 3 处（含主理人点名的那条）
+### 3.3 `tests/test_rfc_extractor_a1.py` —— 3 处（含主理人点名的那条）
 
 | 行 | 原 | 新 | 说明 |
 |---|---|---|---|
@@ -410,7 +410,7 @@ implicit_constraints 挂 header subject。
 #   数据类型字段，ssh 的 kb/spec 已不存在，该断言已无从校验）
 ```
 
-### 3.4 `tests/fused/test_boundary_probe.py` —— 1 处
+### 3.4 `tests/test_boundary_probe.py` —— 1 处
 
 | 行 | 原 | 新 |
 |---|---|---|
@@ -424,7 +424,7 @@ implicit_constraints 挂 header subject。
 **缺 `RETR` / `STOR` / `SITE CPFR`** → 上述 ftp 断言**必然失败**。
 **只删 derived 不改测试 = 从 37 failed 变 38 failed。**
 
-### 3.5 `tests/fused/test_vuln.py` —— 1 处（**已由 QA 复核确认修好，本节仅留档**）
+### 3.5 `tests/test_vuln.py` —— 1 处（**已由 QA 复核确认修好，本节仅留档**）
 
 | 行 | 原 | 现（已落地并验证） |
 |---|---|---|
@@ -438,7 +438,7 @@ implicit_constraints 挂 header subject。
 > （历史留档：原代码的 `if facts:` 确实是真 bug —— kb/ftp 删除后 `facts=[]` 会让整个断言块
 > 被跳过。**好在它已被修掉。**）
 
-### 3.6 `tests/fused/test_source_retrieval.py` —— 1 处（**保留原样，仅加注释**）
+### 3.6 `tests/test_source_retrieval.py` —— 1 处（**保留原样，仅加注释**）
 
 | 行 | 原 | 处置 |
 |---|---|---|
@@ -664,7 +664,7 @@ grep "^FAILED" "$TEMP/pt.txt" | sort > "$TEMP/failed_now.txt"
 ### 增强② 「语法闸」挡不住**语法合法的半成品**（QA 实测漂移到 43）
 
 QA 复现到 **43 failed**（比我的 38 更大），多出的 6 条全落在
-`tests/fused/test_rq4_target_url_normalization.py`（19:05 新建）——
+`tests/test_rq4_target_url_normalization.py`（19:05 新建）——
 **该文件在被写半成品的状态下被 collect**。**语法合法，但内容不完整**。
 
 **⇒ 语法闸不够，要加「mtime 快照闸」**：
@@ -685,7 +685,7 @@ diff "$TEMP/tests_before.txt" "$TEMP/tests_after.txt" \
 > 我复现了这个漂移（单跑该文件 81 passed ✅，并发跑两个进程 → 各 1 failed + 1 error ❌）：
 >
 > ```python
-> # tests/fused/test_annotation_tools.py:651-662
+> # tests/test_annotation_tools.py:651-662
 > @pytest.fixture(scope="class")
 > def repo_crlf_probe(self, tmp_path_factory):
 >     probe = ROOT / "_crlf_probe_tmp"     # ← 仓根下的【固定路径】，不是 tmp_path！

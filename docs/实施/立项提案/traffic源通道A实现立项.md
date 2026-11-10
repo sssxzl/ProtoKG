@@ -195,7 +195,7 @@ Hub protocol Fact，**不产生任何 Hub Candidate / Claim / Fact**。
    **永久禁止 traffic 通过任何路径成为 Hub Claim**。而本项目路线图
    （handoff §10）明确包含「Traffic Single-source Hub Build」一步。
 
-2. **会打破既有测试。** `tests/fused/pipeline/test_pipeline_e2e_synthetic.py:64`
+2. **会打破既有测试。** `（该测试已随论文实验层移除）:64`
    定义 `PCAP = ("traffic_pcap:capture/run-0001.pcap", "traffic_pcap")`
    并用它造 claim，而同文件第 779 行 `test_validate_build_passes_for_real_run`
    断言真实 run 的 `validate_build` 零 violations。

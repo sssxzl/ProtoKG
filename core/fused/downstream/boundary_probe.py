@@ -468,7 +468,7 @@ def emit_boundary_fact(method: str, dim: str, legal_desc: str, illegal_desc: str
         （``reflow_rules`` 的 ``priority_score``），**不改规则内容**。
 
     ⚠ **本函数保持签名与返回结构不变**（既有调用方 ``scripts/run_boundary_probe.py``
-      与既有测试 ``tests/fused/test_boundary_probe.py`` 都依赖它）：
+      与既有测试 ``tests/test_boundary_probe.py`` 都依赖它）：
       - 返回值仍是同构的 legal_boundary fact dict（**向后兼容**）；
       - 新增 keyword-only ``feedback_sink``：**给出**时把探测结果并入
         feedback 库；**不给**（默认）⇒ 纯函数、不落盘（行为与改道前一致）。

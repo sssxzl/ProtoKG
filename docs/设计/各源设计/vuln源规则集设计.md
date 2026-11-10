@@ -446,7 +446,7 @@ resolution」。这与「知识没进中枢」有本质区别。
 
 → **属真决策点**（改冻结 JSON + 两种设计都合理），本步停下等裁定。
 裁定后的预期效果：5 个 Fact 从 `unresolved(insufficient_evidence)` 转为 `resolved`，
-而不是从 0 变成 N。`tests/fused/pipeline/rules/test_vuln_rules.py::TestVulnSourceEndToEnd`
+而不是从 0 变成 N。`tests/extraction/test_vuln_rules.py::TestVulnSourceEndToEnd`
 里对该状态有精确断言，裁定生效时会失败并提醒更新。
 
 ### 7.2 附带发现：vuln 的 evidence document 无法解析到物理文件

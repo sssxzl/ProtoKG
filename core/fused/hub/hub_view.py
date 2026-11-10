@@ -293,7 +293,7 @@ def _align_message_instances(transitions: list, message_instances: dict,
         # ★ 没有状态机转移可对齐 ⇒ **原样保留**。
         #   否则「单独组装一条 message_instance 事实」时（transitions 桶为空）
         #   会被清空 ⇒ 破坏「每个 fact 组合只落到它该落的桶」的不变量
-        #   （tests/fused/test_bundle_provenance.py::test_each_kind_lands_only_in_its_bucket）。
+        #   （tests/test_bundle_provenance.py::test_each_kind_lands_only_in_its_bucket）。
         for key in sorted(message_instances):
             _mark(key, key, "exact", None)
         return dict(message_instances)

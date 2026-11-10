@@ -398,7 +398,7 @@ validator invariant 才保证将来不可达。**两者都要**」。
    「Traffic Single-source Hub Build」（见 `工具/交接与工作流/项目交接说明.md` §10）。
    本条的净效果是**用 validator 阻断路线图的下一步**。
 
-2. **会打破既有测试。** `tests/fused/pipeline/test_pipeline_e2e_synthetic.py`
+2. **会打破既有测试。** `（该测试已随论文实验层移除）`
    以 `PCAP = ("traffic_pcap:...", "traffic_pcap")` 源造 claim，
    同文件 `test_validate_build_passes_for_real_run` 断言真实 run 的
    `validate_build` 零 violations。基线实测（2026-10-04）该三文件

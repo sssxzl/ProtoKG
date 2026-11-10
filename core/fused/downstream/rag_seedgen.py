@@ -488,7 +488,7 @@ def required_headers_for(headers_map: dict, method: str) -> list[str]:
 
 #: ★ 批次 1.6 步 3：``(subject_type, aspect)`` → **中枢桶名**。
 #:   用于「桶级溯源统计」（`bundle["by_source"]`）。
-#:   ★ 由 `tests/fused/test_bundle_provenance.py` **逐组合验证**
+#:   ★ 由 `tests/test_bundle_provenance.py` **逐组合验证**
 #:     （每个组合单独组装 ⇒ 落在且只落在指定桶）⇒ 映射表错了测试就红。
 
 #: ★ 批次 1.6 步 3：这些桶有 **profile.json 兜底**来源（facts 再叠加/覆盖）

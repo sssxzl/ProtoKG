@@ -242,7 +242,7 @@ def _clean_per_source(protocol: str, sources: list[str] | None = None) -> None:
 #: ★ 批次 1.6（步 0）：中枢「运行时回写目录」——**不清空**。
 #:   `boundary_probe/` 是 oracle 探测回写的 **legal_boundary 等富化知识**，
 #:   属**积累资产**而非「上次运行的抽取残留」
-#:   （`tests/fused/test_build_hub_clean.py` 明确断言它必须保留）。
+#:   （`tests/test_build_hub_clean.py` 明确断言它必须保留）。
 #:   ⇒ 「清空整个中枢」的对象 = **五源抽取产物（facts）+ 语义四库（semantic）**。
 RUNTIME_ENRICH_DIRS: tuple[str, ...] = ("boundary_probe",)
 
