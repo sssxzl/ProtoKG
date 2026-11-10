@@ -122,17 +122,34 @@ CMD_PATTERNS = (
 #: 文档里引用这些路径时，**允许**指向「已随论文实验层移除」的测试
 D3_GONE_ALLOWED = ("tests/fused/", "tests/pipeline/")
 
-#: D3 白名单：**历史记录类**文档（过程快照 ⇒ 命令是当时的事实，不是当前指引）
+#: D3 白名单：**历史记录类**文档（过程快照 ⇒ 命令/路径是当时的事实，不是当前指引）
 D3_ALLOW_FILES = (
     "docs/实施/路线与里程碑/RFC源改造里程碑A实施报告.md",
     "docs/实施/路线与里程碑/RFC源里程碑路线图.md",
     "docs/工具/上游工作调研.md",
 )
 
+#: ★ D3 采用**白名单策略**：只查「**当前有效指引**」类文档
+#:   ⇒ 历史记录类（立项/路线图/勘误/交接快照）里引用已删的旧契约是**如实记录**
+#:   ⇒ 若用黑名单，误报会淹没真问题（实测 1647 项里绝大多数是历史引用）
+#:   ⇒ 白名单更小、更准、更好维护。
+D3_SCOPE_FILES = (
+    "README.md",
+    "docs/README.md",
+)
+D3_SCOPE_DIRS = (
+    "docs/工具/验收与规范/",     # 验收与规范（当前生效）
+    "docs/设计/顶层设计/",       # 顶层设计（当前生效）
+)
+
 
 def _iter_text_files(roots: tuple[str, ...], exts: tuple[str, ...]):
     for root in roots:
         base = ROOT / root
+        if base.is_file():            # ★ 根目录的单个文件（如 README.md）
+            if base.suffix in exts:
+                yield base, base.relative_to(ROOT).as_posix()
+            continue
         if not base.exists():
             continue
         for p in sorted(base.rglob("*")):
@@ -234,19 +251,42 @@ def check_d2() -> list[dict]:
     return problems
 
 
+#: 文档里**路径引用**的识别（`` `core/xxx.py` `` 这类 ⇒ 会被人照抄/点开）
+#: ★ 只认「带目录分隔符且有已知后缀」的 ⇒ 避免把普通词误判成路径
+#: ★ 必须含「/」⇒ 排除**裸文件名**（如 ``expected_b_class_failed_ids.txt``
+#:   —— 它在 ``guard/baseline/`` 下，文档里常只写文件名 ⇒ 不宜按仓库根解析）
+PATH_REF = re.compile(r"`([A-Za-z_][\w./-]*/[\w./-]*\.(?:py|json|jsonl|md|sh|txt|example|dict))`")
+#: 文档里常见的**目录**引用（同样会被点开 ⇒ 也要真实存在）
+#: ★ 只认**仓库内顶层目录**开头的 ⇒ 避免把「裸文件名」（历史契约名，如
+#:   ``fused_canonical_spec.md``）误判成路径引用。
+DIR_REF = re.compile(r"`((?:kb|core|scripts|guard|tests|docs|profiles|derived)/[\w./*<>-]+)`")
+#: 这些前缀不是仓库内的路径（外部资料 / 其它机器）
+PATH_REF_SKIP = ("E:/", "E:////", "http", "~/")
+
+
 def check_d3() -> list[dict]:
-    """D3 文档命令里的路径真实存在。"""
+    """D3 文档**命令与路径引用**里的目标必须真实存在。
+
+    ★ 2026-11-10 扩展：原先只查**命令行**里的路径（``pytest tests/x.py``）
+      ⇒ 漏掉了**表格/正文里的路径引用** ⇒ 实测 README 的架构表里 9 个路径
+      有 **8 个已不存在**（今天目录重组后没跟上）⇒ 现在连行内代码里的路径也查。
+    """
     problems: list[dict] = []
     for p, rel in _iter_text_files(("docs", "README.md"), (".md",)):
+        # ★ 只查「当前有效指引」范围（白名单策略 ⇒ 避免历史引用噪声）
+        if rel not in D3_SCOPE_FILES and not any(
+                rel.startswith(d) for d in D3_SCOPE_DIRS):
+            continue
+        if rel in D3_ALLOW_FILES:
+            continue
         try:
             text = p.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             continue
-        if rel in D3_ALLOW_FILES:
-            continue
         for i, ln in enumerate(text.splitlines(), 1):
             if ln.strip().startswith(">"):        # 引用的旧命令（已在正文说明）⇒ 跳过
                 continue
+            # ① 命令里的路径
             for pat in CMD_PATTERNS:
                 for m in pat.finditer(ln):
                     target = m.group(1)
@@ -258,6 +298,28 @@ def check_d3() -> list[dict]:
                         problems.append({
                             "code": "D3", "path": rel, "line": i,
                             "detail": f"命令引用的文件不存在：{target}",
+                        })
+            # ② 行内代码里的路径引用（文件 / 目录）
+            #   ★ 同一行若已诚实标注「已移除 / 已随…移除」⇒ 跳过
+            #     （文档已说明该路径不存在 ⇒ 不该再判红）
+            if "已移除" in ln or "已随" in ln and "移除" in ln:
+                continue
+            for pat, kind in ((PATH_REF, "文件"), (DIR_REF, "目录")):
+                for m in pat.finditer(ln):
+                    ref = m.group(1)
+                    if any(ref.startswith(s) for s in PATH_REF_SKIP):
+                        continue
+                    if "<" in ref or ">" in ref or "*" in ref:
+                        continue          # 占位符（如 tests/<层>/）
+                    if ref.startswith(("derived/", "guard/_out/")):
+                        continue          # ★ 产物目录（随构建变化 ⇒ 不做静态校验）
+                    cand = ROOT / ref
+                    # ★ 文件或目录**任一存在**即通过（文档里同一串可能指文件也可能指目录）
+                    ok = cand.is_file() or cand.is_dir()
+                    if not ok:
+                        problems.append({
+                            "code": "D3", "path": rel, "line": i,
+                            "detail": f"文档引用的路径不存在：{ref}",
                         })
     return problems
 

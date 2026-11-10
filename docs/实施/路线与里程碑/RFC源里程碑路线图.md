@@ -972,7 +972,7 @@ B 阶段要验证的核心命题必须**窄且可证伪**：
 | 期望响应词表 | `profiles/<p>/rfc_config.json` 的 `expected_response_classes` | C7 校验 | ✅ 三协议齐备 |
 | 质量闸 | `core/fused/rfc_extractor.py:1362 rfc_quality_report` | 构建阻断 + 指标来源 | ✅ 可扩展 |
 | 构建入口 | `scripts/build_hub.py --sources rfc --protocol X [--semantic]` | 产物生成 | ✅ |
-| 语料闸 | `scripts/corpus_gate.py` G1/G2/G5 | 种子层校验（仅在需要时） | ⚠️ G5 有已知漂移（见 §4.6） |
+| 语料闸 | `scripts/corpus_gate.py`（★ 2026-11 已随论文实验层移除） G1/G2/G5 | 种子层校验（仅在需要时） | ⚠️ G5 有已知漂移（见 §4.6） |
 | rq3/rq4 语料与结果 | `derived/experiments/rq3/{A,B,C,D}`、`derived/experiments/rq4/*`、`derived/seeds/<p>/rq4_B/`（39/25/78） | **仅作参考，不作实验输入** | ⚠️ 见 §4.6 |
 
 ### 4.4　需要多久 / 需要多少算力
@@ -1069,7 +1069,7 @@ KNOWN_DRIFT: dict[tuple[str, str], tuple[int, int]] = {
 **规避手段（5 条，全部可执行）**：
 
 1. **★ 实验不产生、不消费任何 focus_group 语料。**
-   B 阶段的实验单元是**规则条目**，不是种子。C0/E1/E2 三组的产物是 `rules.jsonl` / `candidates.jsonl`，**与 `derived/experiments/rq3/*`、`derived/seeds/*` 完全无关**。**不调用 `scripts/seedgen.py`、不调用 `scripts/rq3_build_corpus.py`、不跑 `scripts/corpus_gate.py`。** 这从根上切断了漂移的传播路径。
+   B 阶段的实验单元是**规则条目**，不是种子。C0/E1/E2 三组的产物是 `rules.jsonl` / `candidates.jsonl`，**与 `derived/experiments/rq3/*`、`derived/seeds/*` 完全无关**。**不调用 `scripts/seedgen.py`、不调用 `scripts/rq3_build_corpus.py`（★ 2026-11 已随论文实验层移除）、不跑 `scripts/corpus_gate.py`（★ 2026-11 已随论文实验层移除）。** 这从根上切断了漂移的传播路径。
 
 2. **★ 显式声明「实验不依赖契约条数」，并在报告里写明已知漂移清单。**
    报告开头固定一节：
@@ -1109,7 +1109,7 @@ derived/experiments/annotation/<实验ID>/
     REPORT.md
 ```
 
-`derived/experiments/annotation/` **不被任何现有脚本扫描**（`scripts/rq3_build_corpus.py` 只认 `derived/experiments/rq3/`；`build_hub.py` 只写 `derived/per_source/`），无被误消费的风险。
+`derived/experiments/annotation/` **不被任何现有脚本扫描**（`scripts/rq3_build_corpus.py`（★ 2026-11 已随论文实验层移除） 只认 `derived/experiments/rq3/`；`build_hub.py` 只写 `derived/per_source/`），无被误消费的风险。
 
 ### 4.7　实验的风险与终止条件
 

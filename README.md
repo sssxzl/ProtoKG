@@ -51,7 +51,7 @@ ProtoKG 的做法**不是**把它们压平成一种表示，而是：
 1. **协议级隔离,跨协议共享** — `kb/<协议>/<源>/` 在各协议间共享（源维度 5 档：`spec` / `协议实现源码` / `数据流量` / `历史漏洞` / `expert_note`）
 2. **协议无关主程序 + per-protocol Profile** — 协议特定配置集中在 `profiles/<协议>/profile.json`（`allowed_methods` / `transport` / `message_schema`），主程序 `core/fused/` 不含协议分支
 3. **五源解耦 + 中枢 + 知识图** — 五源（spec / 协议实现源码 / 数据流量 / 历史漏洞 / expert_note）各自抽取为独立 Fact，汇聚进**按知识分类的中枢**（A~F 六分类），再投影成**实体关系图 + 社区**，供检索与种子生成
-4. **fail-closed 校验** — LLM 写出的种子必须通过 `core/fused/validation.py` 七级校验，未注册引用（subject.type / aspect / epistemic_type）直接硬错误
+4. **fail-closed 校验** — LLM 写出的种子必须通过 `core/fused/hub/validation.py` 七级校验，未注册引用（subject.type / aspect / epistemic_type）直接硬错误
 5. **流程到"生成高价值初始种子"结束** — 种子产出 `.raw` + `<协议>.dict` 定向字典，由 `scripts/seedgen.py` 落盘
 
 ## 命名约定
@@ -69,7 +69,7 @@ ProtoKG 的做法**不是**把它们压平成一种表示，而是：
 ## 当前阶段（结构化知识中枢 + 知识图 + 多源种子生成）
 
 - **五源知识抽取**：`kb/<协议>/<源>/` → `derived/per_source/<协议>/<源>/facts/`，覆盖 rtsp / sip / smtp / dhcpv4 四协议 × 五源
-- **知识分类中枢**：`derived/hub/<分类>/`（A~F 六分类）+ `index/entities.jsonl`（实体主表）
+- **知识分类中枢**：`derived/hub/<分类>/`（A~F 六分类）+ `derived/hub/index/entities.jsonl`（实体主表）
 - **知识图整理层**：`derived/graph/`（实体图 + 社区 + 社区报告）
 - **五层种子**：`edge_cover`（结构覆盖）/ `generic_danger`（通用危险）/ `boundary_probe`（漏洞边界）/ `strategy`（目标聚焦）/ `action_seq`（动作序列）
 - **协议无关主程序**：`core/fused/`（中枢核心 + 源映射 + 视图层）+ `core/fused/downstream/`（消费层）
@@ -191,7 +191,7 @@ export LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 本地 ollama / vLLM。
 
 > 提示：`source` 源走 AutoSeeder（LLM 分析源码状态机），首次构建较慢且结果已按 code_blocks hash 缓存到
-> `derived/source_blocks/<协议>.state.json`，后续构建直接命中缓存。
+> `derived/cache/source_blocks/<协议>.state.json`，后续构建直接命中缓存。
 
 ## 测试
 
@@ -203,14 +203,45 @@ export LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 
 ## 协议 fuzzing 完整架构
 
-| 层   | 负责                      | 关键文件                                                                             |
-| --- | ----------------------- | -------------------------------------------------------------------------------- |
-| LLM | 协议 prompt + JSON 输出     | `core/llm.py` + Stub/DeepSeek                                                    |
-| 协议层 | per-protocol Profile 配置 | `profiles/<协议>/profile.json`                                            |
-| 抽取层 | 五源 → Fact（六元组）          | `core/fused/norm.py` + `expert_note.py` + `vuln.py` + `source.py` + `traffic.py` |
-| 校验层 | fail-closed 校验 + 注册表治理  | `core/fused/validation.py` + `core/fused/registry.py`                            |
-| 生成层 | 三层检索 + LLM 写 + 落盘       | `core/fused/downstream/selector.py` + `rag_seedgen.py` + `scripts/seedgen.py`    |
-| 导出层 | LLM 安全接口（P10）           | `core/fused/export.py`                                                           |
+**六个阶段**，每个阶段一个目录、职责单一、产物落盘在 `derived/` 的对应子目录：
+
+| # | 阶段 | 负责 | 代码目录（仓库根 = `E://科研//想法idea//ProtoKG`） | 产物 |
+|---|---|---|---|---|
+| ① | **协议知识源层**<br>`kb/` | 协议知识的**原始底料**：规范 / 实现源码 / 数据流量 / 历史漏洞 / 专家注记（**五源**，按协议隔离） | `kb/<协议>/<源>/` | `kb/`（入库，只读） |
+| ② | **知识抽取层**<br>`extraction/` | 各源**独立抽取** ⇒ 产出统一 Fact（六元组 `fact_key` + claims + 证据）；**源隔离**，互不污染 | `core/fused/extraction/`<br>（`rfc_extractor` · `traffic` · `source` + `source_autoseeder` · `expert_note` · `vuln` · `norm`） | `derived/per_source/<协议>/<源>/facts/` |
+| ②′ | *语义层（横切）* | LLM 语义规则抽取与投影（② 产出 ⇒ ⑤ 消费） | `core/fused/semantic/` | `derived/per_source/<协议>/<源>/semantic/` |
+| ③ | **知识中枢层**<br>`hub/` | **对齐**：五源事实归一到统一事实空间 → claim 级消解（保留「谁说的、谁赢了、为什么」）→ 按知识分类 A~F 落位 | `core/fused/hub/`<br>（`models` · `canonical` · `hub_layout` · `hub_view` · `registry/` · `knowledge_slots.json`） | `derived/hub/`（A~F 六分类 + `index/`） |
+| ④ | **GraphRAG 整理层**<br>`graph/` | 把中枢投影成**实体关系图**（带 `entity_id`）+ 社区 ⇒ 供检索与路径式种子 | `core/fused/graph/`<br>（`graph_ops` · `rfc_graph` · `state_graph` · `graph_query`） | `derived/graph/<协议>/` |
+| ⑤ | **种子生成层**<br>`downstream/` | 由视图 + 图生成**五层种子**（结构覆盖 / 通用危险 / 漏洞边界 / 目标聚焦 / 字段级变异）+ 定向字典 + manifest | `core/fused/downstream/`<br>（`rag_seedgen` · `selector` · `edge_cover` · `generic_danger` · `boundary_probe` · `action_seq` · `resolver` · `seed_manifest`） | `derived/seeds/<协议>/<时间戳>/` |
+| ⑥ | **种子校验层**<br>`guard/` | **fail-closed** 校验：契约一致性 / 溯源完整性 / 编码卫生 / 文档-机器一致性 / 回归（失败集合不漂移） | `guard/`<br>（`run_guarded_pytest` + `verify_*` 共 10 个检查器） | `guard/_out/`（不入库） |
+
+**贯穿全流程的两条横切线**
+
+| 横切 | 位置 | 作用 |
+|---|---|---|
+| **协议档案** | `profiles/<协议>/`（`profile.json` · `rfc_config.json` · `semantic_rules.json`） | 协议级配置与**人工资产**（协议结构声明、语义规则）⇒ **协议无关**主程序靠它适配不同协议 |
+| **编排入口** | `scripts/`（`build_hub` · `build_graph` · `seedgen` · `onboard_protocol` · `check_protocol_ready`） | 每阶段一个命令行入口 ⇒ 全流程可脚本化、可复现 |
+
+**数据流（一次完整构建）**
+
+```
+kb/<协议>/<源>/          ①  知识源（只读，入库）
+        │  build_hub.py（各源独立抽取）
+        ▼
+derived/per_source/…     ②  源隔离事实（每源一份 facts/*.jsonl）
+        │  归一到同一 fact_key + claim 级消解 + 按 A~F 落位
+        ▼
+derived/hub/             ③  中枢（六分类 + 实体主表 + 溯源台账）
+        │  build_graph.py（实体关系图 + 社区）
+        ▼
+derived/graph/<协议>/    ④  知识图
+        │  seedgen.py（视图 + 图 ⇒ 五层种子）
+        ▼
+derived/seeds/<协议>/    ⑤  种子 + 定向字典 + manifest
+        │  guard/run_guarded_pytest.py + verify_*
+        ▼
+        ⑥  校验（新增 0 / 消失 0 ⇒ 可采信）
+```
 
 ## License
 

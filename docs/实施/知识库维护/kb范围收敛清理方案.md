@@ -732,7 +732,7 @@ rtsp=76 / smtp=101 / sip=45 / ftp=0，且该用例 **1 passed**。
 
 | # | 发现 | 影响 | 建议 |
 |---|---|---|---|
-| **①** | **`scripts/rq3_build_corpus.py` 首组失败即 `return 4` 中止** | B/C/D 组**永远不会被重新生成** —— 实测 `derived/experiments/rq3/A/seeds` mtime=11-01 15:05（被 pytest 触发重写），而 B/C/D 仍是 10-31 03:24 的旧产物 | 即使修好 host 归一化，**磁盘上的 B/C/D 旧语料仍带 50 个摄像机 host + 52 个不可播会话名**。建议改成「继续构建其余组 + 汇总失败」 |
+| **①** | **`scripts/rq3_build_corpus.py`（★ 2026-11 已随论文实验层移除） 首组失败即 `return 4` 中止** | B/C/D 组**永远不会被重新生成** —— 实测 `derived/experiments/rq3/A/seeds` mtime=11-01 15:05（被 pytest 触发重写），而 B/C/D 仍是 10-31 03:24 的旧产物 | 即使修好 host 归一化，**磁盘上的 B/C/D 旧语料仍带 50 个摄像机 host + 52 个不可播会话名**。建议改成「继续构建其余组 + 汇总失败」 |
 | **②** | **rq3 是协议级语料（无 `--target-env`）⇒ `allowed_resources` 为空 ⇒ `normalize_seed_resource` 不生效** | 当前污染实测：A 组 bad_sess=226（**100%**）、B/C/D bad_host=139 / bad_sess=100；`derived/seeds/rtsp/rq4_B` 干净（150/150） | 要清会话轴，**协议级语料也必须绑定目标环境**（`--target-env rq2-live555`），否则会话轴永远清不掉 |
 
 > 这两条属于**语料质量**议题，与「kb 收敛清理」正交，但会影响「rq3 语料是否可用」的判断。

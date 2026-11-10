@@ -78,7 +78,7 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 | 2 | `byte-contract` | Windows | **字节契约**：`.gitattributes` 里 `-text` 保护的 `*.dict` / `*.raw` / `*.sip`，工作区字节必须 == 入库 blob 字节 | 任一文件字节不一致 ⇒ 红 |
 | 3 | `guarded-pytest` | Ubuntu | 全量 pytest 的**失败集合相对 CI 基线不漂移**（主闸门） | 漂移 ⇒ 红 |
 | 4 | `guarded-pytest-windows` | Windows | 同上，但在 Windows 上跑（**先归一化 LF**），验证两个平台结论一致 | 漂移 ⇒ 红 |
-| 5 | `corpus-gate-smoke` | Ubuntu | `scripts/corpus_gate.py`（语料发布准入闸）**有调用方且能被 CI 执行**，且**闸门有牙齿** | 见下 |
+| 5 | `corpus-gate-smoke` | Ubuntu | `scripts/corpus_gate.py`（★ 2026-11 已随论文实验层移除）（语料发布准入闸）**有调用方且能被 CI 执行**，且**闸门有牙齿** | 见下 |
 
 ### 2.1 为什么 Windows 与 Ubuntu 都要跑
 
@@ -115,7 +115,7 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 
 ### 2.2 `corpus-gate-smoke` 的两个断言
 
-`scripts/corpus_gate.py` 此前**零调用方** —— 它是本项目最重要的质量红线之一
+`scripts/corpus_gate.py`（★ 2026-11 已随论文实验层移除） 此前**零调用方** —— 它是本项目最重要的质量红线之一
 （G1 客户端 host 污染 / G2 不可播会话 / G5 契约一致性），却没有自动化在跑它。
 
 真实语料在 `derived/seeds/`（gitignored），且
@@ -185,12 +185,12 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 | 文件 | 条数 |
 |---|---|
 | `（该批 RQ3 语料契约测试已随论文实验层移除）` | 22 |
-| `tests/test_rq3_manifest.py` | 6 |
-| `tests/test_rq3_dict.py` | 3 |
-| `tests/test_rag_seedgen.py` | 2 |
-| `tests/test_rag_seedgen_step2.py` | 2 |
+| `tests/test_rq3_manifest.py`（★ 2026-11 已随论文实验层移除） | 6 |
+| `tests/test_rq3_dict.py`（★ 2026-11 已随论文实验层移除） | 3 |
+| `tests/downstream/test_rag_seedgen.py` | 2 |
+| `tests/downstream/test_rag_seedgen_step2.py` | 2 |
 | `tests/downstream/test_edge_cover.py` | 1 |
-| `tests/test_strategy.py` | 1 |
+| `tests/downstream/test_strategy.py` | 1 |
 | **合计** | **37** |
 
 **31 / 37 集中在 RQ3 语料契约**（focus_group + manifest + dict）。
@@ -236,7 +236,7 @@ manifest 是语料的溯源凭证，多出的 3 条记录需要人工判断是�
 ### 4.3 为什么现在不修
 
 1. **改任一侧都会改变研究语料的语义**。分组条数、字典字节、manifest 记录数
-   三者互相咬合（`scripts/rq3_build_corpus.py` 的 A1–A10 断言就是为守住这个咬合关系而写的）。
+   三者互相咬合（`scripts/rq3_build_corpus.py`（★ 2026-11 已随论文实验层移除） 的 A1–A10 断言就是为守住这个咬合关系而写的）。
    单点改动会把「已知且被记录的偏差」变成「未被记录的偏差」—— 那比现在这 37 条更危险。
 2. **论文口径依赖冻结值**。`DICT_FROZEN.json` 的 token 数被论文附录引用，
    改动需要同步论文与实验记录，超出本轮范围。
