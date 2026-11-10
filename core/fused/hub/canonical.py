@@ -1,4 +1,4 @@
-"""core/fused/canonical.py —— Layer 0 中枢核心：canonical 序列化 + 确定性 ID。
+"""core/fused/canonical.py —— ③ 中枢层：canonical 序列化 + 确定性 ID。
 
 规范见 docs/设计/顶层设计/规范化序列化规范.md（运行时报错时由本模块生成）。
 

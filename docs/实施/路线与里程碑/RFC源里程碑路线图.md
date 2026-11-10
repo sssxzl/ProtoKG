@@ -588,7 +588,7 @@ C4/C5 是整个 B 阶段最难的一环（评审 T2 明确指出「缺少真正�
 
 **结论：不修改 `models.py` 的数据结构；新增独立模块 `core/fused/semantic.py`，两者通过「转换器」相连。**
 
-理由：`models.py` 是 中枢的**核心数据模型**（文件头 docstring 自称「Layer 0 中枢核心数据结构的唯一实现」），`Fact`/`Claim`/`Evidence` 有 `canonical.py` 的 `compute_fact_id`/`compute_claim_id`/`compute_evidence_id` 三套哈希依赖，任何改动都会波及**已落盘的 `derived/per_source/*/facts/*.jsonl`**（实测 rtsp 116 / sip 148 / smtp 10 行）与跨源去重。**B 阶段不应该动它。**
+理由：`models.py` 是 中枢的**核心数据模型**（文件头 docstring 自称「③ 中枢层数据结构的唯一实现」），`Fact`/`Claim`/`Evidence` 有 `canonical.py` 的 `compute_fact_id`/`compute_claim_id`/`compute_evidence_id` 三套哈希依赖，任何改动都会波及**已落盘的 `derived/per_source/*/facts/*.jsonl`**（实测 rtsp 116 / sip 148 / smtp 10 行）与跨源去重。**B 阶段不应该动它。**
 
 并存方式：
 
