@@ -421,7 +421,8 @@ def infer_source_facts(protocol: str = "rtsp", llm=None) -> list[Fact]:
     依赖 core.fused.extraction.source_retrieval 检索相关代码块（协议无关通用 query）。
 
     稳定化（P4）：LLM 分析结果按 code_blocks 的 hash 缓存到
-    ``derived/source_blocks/<protocol>.state.json``，后续 build 命中缓存则不再调 LLM，
+          ``derived/cache/source_blocks/<protocol>.state.json``（★ 2026-11-10 迁入
+          ``derived/cache/``，并**入库** ⇒ 构建可复现），后续 build 命中缓存则不再调 LLM，
     消除「每次 build 状态机都不同」的随机性（temperature=0 仍不稳定的兜底）。
     """
     from core.fused.extraction.source_retrieval import retrieve_state_relevant_code, CACHE_DIR

@@ -55,13 +55,13 @@ def kb_source_dir(protocol: str, source: str) -> Path:
 #:   per_source（抽取）/ hub（中枢）/ graph（知识图）/ seeds（生成）
 #:   + 缓存：cache/{source_blocks, vuln_pattern_vectors}
 #: ★ **只有一个维度**（流水线阶段）⇒ 目录结构 = 数据流结构
-#: ★ 论文实验产物另置 ``derived/experiments/``（与模型产物分开）
+      #: ★ 论文实验层已于 2026-11 整体移除 ⇒ 不再有独立的实验产物目录
 MODEL_STAGE_DIRS = (
     "per_source", "hub", "graph", "seeds",
     "per_source", "hub", "graph", "seeds", "cache",
 )
 
-#: ★★ 论文实验产物的根（derived/experiments/）
+#: ★★ 论文实验产物根（★ 2026-11 论文实验层已整体移除 ⇒ 此目录不再使用）
 EXPERIMENTS_DIRNAME = "experiments"
 
 
@@ -75,7 +75,7 @@ def model_root() -> Path:
 
 
 def experiments_root() -> Path:
-    """论文实验产物根 ``derived/experiments/``（RQ3/RQ4/标注/语义增益/对比分析）。"""
+    """论文实验产物根（★ 2026-11 论文实验层已整体移除 ⇒ 仅保留函数以兼容旧调用）。"""
     return derived_root() / EXPERIMENTS_DIRNAME
 
 

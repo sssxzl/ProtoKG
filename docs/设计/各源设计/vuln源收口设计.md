@@ -669,7 +669,7 @@ Finalization 后需验证：
 
 **检查点 1：Repository Semantic Cleanliness Gate**
 
-`kb/`、`derived/spec/`、``、`core/`、正式 tests source files、Registry、Schema 不存在非预期 diff。
+`kb/`、`（已移除）`、``、`core/`、正式 tests source files、Registry、Schema 不存在非预期 diff。
 
 **检查点 2：Generated Fixture Output Gate**
 
@@ -692,7 +692,7 @@ Finalization 后需验证：
 
 1. 全量 `pytest -n auto`：基线 2589 passed / 8 skipped / 0 failed，0 回归
 2. `kb/`：6061 files，SHA256 `A86C71E0…DEDE24` UNCHANGED
-3. `derived/spec/rtsp/`：6 文件 size+mtime_ticks+sha256 NO DIFF
+3. `（已移除）rtsp/`：6 文件 size+mtime_ticks+sha256 NO DIFF
 4. `derived/per_source/rfc/` 与 `derived/per_source/expert_note/`：各 13 文件 size+sha256 全等（跨源隔离）
 5. `derived/hub/`：13 文件重跑后与预期一致
 6. `verify_layout(.)` = 0 violation

@@ -3,7 +3,8 @@
 
 ★ 为什么需要这个脚本（批次 1.5）：
   RFC 源抽出的语义规则此前只落在**实验目录**
-  （``derived/experiments/semantic_gain/group_E*/rules.jsonl``）⇒ 权威库
+        （原语义增益实验目录，★ 2026-11-10 随论文实验层移除 ⇒ 现为人工资产
+        ``profiles/<协议>/semantic_rules.jsonl``）⇒ 权威库
   ``derived/per_source/<协议>/rfc/semantic/rules.jsonl`` **从未落盘**
   ⇒ 知识中枢拿不到规则 ⇒ 投影两桶 ``legal_boundary`` /
   ``response_expectation`` **恒空** ⇒ 「源 A 第四类」约束边界候选**恒为 0**

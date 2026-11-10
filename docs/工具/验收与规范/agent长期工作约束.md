@@ -2,7 +2,7 @@
 
 定位：本文件是 agent 长期有效的固定约束。任何 session 开始工作前必须先读本文件。
 
-> ★ 2026-11-09：路径已随仓库结构调整更新（`local/` 已移除 ⇒ audit 改写到
+> ★ 2026-11-09：路径已随仓库结构调整更新（`guard/` 已移除 ⇒ audit 改写到
 > `guard/audit/step_<N>/`；设计文档在 `docs/设计/`）。
 
 一、kb 权限
@@ -164,31 +164,29 @@ cp new.sh /home/zxy/profuzzbench/scripts/.tmp.sh \
 八、pytest 规范
 一律用 pytest -n auto。基线以最近一次全量结果为准。出现 failed 或 errors 立即停止。
 
-### 何时必须跑测试
+### 何时必须跑测试（H-6 · 2026-11-10 校准）
 
-以下变更**必须**包含至少相关测试（不能只跑文档步骤）：
+> ★ 判据表**可机器检查**的部分由 ``guard/verify_docs_consistency.py`` 辅助；
+> 完整清单见 ``docs/工具/验收与规范/schema变更检查清单.md``（**由工具自动生成**）。
 
-1. 修改 `core/fused/hub/registry/` 下任何 JSON 后，
-   必须跑 `tests/.../test_registry_*.py` 相关测试
-   （至少 `test_candidate_layer.py` + `test_registry_loader.py`）
+| 改动类型 | **必须**跑 | 判据「新增 0 / 消失 0」 |
+|---|---|---|
+| `core/fused/hub/registry/*.json` | `pytest tests/hub/ -q` **+ 全量护栏** | ✔ 契约变了 ⇒ 落位 / 消解 / 桶映射可能失配 |
+| `core/fused/**` 任何文件 | **全量护栏** ``python guard/run_guarded_pytest.py --out-dir guard/_out/<名>`` | ✔ |
+| `core/paths.py` / `scripts/*` 的**入口与路径** | 全量护栏 **+ 一条真实命令**（如 ``python scripts/build_hub.py --list-sources``） | ★ 路径层级算错 ⇒ **运行时才炸**（护栏不一定覆盖） |
+| `tests/**` | 该目录 pytest | ★ 期望集 id **含文件路径** ⇒ 移动文件即漂移 |
+| `.gitignore` / `.gitattributes` | **删一次 `guard/` 与 `tests/guard/` 再克隆验证** | ★ 已跟踪文件不受 ignore 影响，但**新克隆**会受影响（实测踩到） |
+| `docs/**`（含设计文档） | ``python guard/verify_docs_consistency.py``（文档-机器一致性） | ★ 文档引用已删路径 ⇒ 照抄即失败 |
+| **纯注释 / docstring** | 可免（但要跑 ``guard/verify_encoding.py``） | 不改行为 |
 
-2. 修改 `core/fused/` 下任何文件后，
-   必须跑相关单元测试（与该文件直接相关的 `test_*`）
-
-3. 修改 `docs/设计/顶层设计/` 下任何冻结文档后，
-   必须跑 `test_final_contract_consistency.py` 与
-   `test_runtime_contract_consistency.py`
-
-4. 修改 `property_registry.json` / `fact.schema.json` /
-   `condition.schema.json` / 其他 schema JSON 后，
-   除相关单元测试外，**建议额外跑一次全量 pytest**
-   （因 schema 变更影响面可能超过单一模块）
+★ **全量护栏的判据**：``guard/run_guarded_pytest.py`` 的退出码 0 ⇒
+「新增 0 / 消失 0」⇒ 失败集合**漂移**也判红（防偷偷洗基线）。
 
 ### 不跑 pytest 的授权边界
 
 「不跑 pytest」授权**只应针对**：
 
-- 纯文档步骤（仅改 `docs/设计/` 下设计文档）
+- 纯文档步骤（仅改 `docs/` 下文字）
 - 只读勘察
 - baseline 备份
 
@@ -197,10 +195,16 @@ cp new.sh /home/zxy/profuzzbench/scripts/.tmp.sh \
 - 任何 `` 下 JSON 变更
 - 任何 `core/` 下代码变更
 - 任何 `tests/` 变更
+- 任何 **路径 / 入口** 变更（`core/paths.py`、`scripts/*`）★ 运行时才炸，护栏未必覆盖
 
-理由：D9 §6-Pre15 追加 property 后未跑 pytest，
-漂移 7 步未被发现，直到 §6-Pre22 全量 pytest 才抓到。
-纯计数断言过期虽无行为回归，但暴露流程缺陷。
+理由（两个真实事故）：
+
+1. D9 §6-Pre15 追加 property 后未跑 pytest ⇒ 漂移 **7 步**未被发现，
+   直到 §6-Pre22 全量 pytest 才抓到。纯计数断言过期虽无行为回归，但暴露流程缺陷。
+2. 2026-11-10 实测：一次目录重组里**至少 5 处**「不跑测试就会出事」——
+   删 ``core/paths.py`` 的骨架路径函数（运行时崩）· 改桶映射（静默丢数据）·
+   搬移代码误删 import（``NameError``）· ``.gitignore`` 遗留规则（新克隆检不出工具）·
+   台账口径改动。
 
 
 九、路径与命名

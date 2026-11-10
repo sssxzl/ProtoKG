@@ -251,8 +251,8 @@ def _auto_republish_rules(protocol: str) -> bool:
     **可再生的派生资产**。
 
     ★★ 为什么这可行（2026-11-03 实测推翻「需 LLM」的旧判断）：
-      · 语义规则的**源产物** ``derived/experiments/semantic_gain/group_E{1,2}/rules.jsonl``
-        **已冻结入库**（git 跟踪）⇒ 离线可取；
+            · 语义规则的**源产物** 现为**人工资产** ``profiles/<协议>/semantic_rules.jsonl``
+              （git 跟踪 ⇒ 离线可取）★ 2026-11-10：原实验目录随论文实验层移除 ⇒ 规则改由人工资产承载；
       · ``_republish_rules`` **不调 LLM**（只是「质量闸 + 分流」的纯 CPU 操作）
         ⇒ 秒级完成；
       · 实测（3/3 协议 × 2 文件）：**删除 semantic/ 后重发布 ⇒ 逐字节一致**
@@ -514,7 +514,7 @@ PROFILE_AUTHORITY = "profile"
 
 
 #: ★ 阶段 E5（2026-11-10）：协议骨架已消解并物理移除 ⇒ 「来源维度 / 消融」机制
-#:   一并退役（``--exclude-skeleton-dims`` 已删）；profile 现在只承载 required_headers。
+      #:   一并退役（消融开关已删）；profile 现在只承载 required_headers。
 
 
 def _materialize_profile_semantics(protocol: str) -> int:
@@ -1259,7 +1259,7 @@ def main(argv=None) -> int:
                              "⇒ 本次中枢**不含**语义四库"
                              "（legal_boundary / response_expectation 为空）。"
                              "★ 默认**会**自动重发布 —— 语义四库是**可再生的派生资产**"
-                             "（源产物 `derived/experiments/semantic_gain/group_E{1,2}/rules.jsonl` "
+                             "（源产物为**人工资产** `profiles/<协议>/semantic_rules.jsonl`，"
                              "已冻结入库；重发布只是「质量闸 + 分流」的纯 CPU 操作，**无需 LLM**；"
                              "实测删除后重发布**逐字节一致**）⇒ 「中枢里的一切都是本次的」"
                              "不变量成立，语义规则**永不丢失**。")

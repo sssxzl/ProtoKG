@@ -84,6 +84,11 @@ jobs:
       - name: Ruff check (guard/ only)
         run: python -m ruff check guard/
 
+      # ★ 文档-机器一致性（H-5）：文档里引用的路径/符号必须真实存在
+      #   ⇒ 防止「删了/改名了路径，文档还教人照抄」
+      - name: Docs consistency check
+        run: python guard/verify_docs_consistency.py
+
       # ★ 语法扫描范围**必须限定**在 core/ scripts/ tests/ guard/：
       #   `kb/` 下有 vendored 的第三方源码（如 kamailio 的 Python 2 示例），
       #   那些是**研究素材**不是本仓代码，用 Python 3 的 ast.parse 解析它们必然 SyntaxError

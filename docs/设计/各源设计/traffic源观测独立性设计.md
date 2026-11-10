@@ -2111,7 +2111,7 @@ Metadata Recon（3000 captures 可用字段）之前**不决定实际 cluster ke
 
 §6-Pre2 记的「occurrence_frequency / co_occurrence 全仓 0 命中」不准确。
 
-**更正**：六 root（core / fused_hub / tests / scripts / derived / kb）确实是 0，但 `local/` 有 26 / 76 处。其中 `step_2.5.1/property_candidates.txt:79-80` 是真实历史记录——`occurrence_frequency` 是设计期名，含义「traffic_pcap kind=field 出现次数」。
+**更正**：六 root（core / fused_hub / tests / scripts / derived / kb）确实是 0，但 `docs/` 有 26 / 76 处。其中 `step_2.5.1/property_candidates.txt:79-80` 是真实历史记录——`occurrence_frequency` 是设计期名，含义「traffic_pcap kind=field 出现次数」。
 
 准确表述是「机器资产中无同名 key」。
 
@@ -2575,7 +2575,7 @@ Traffic Pre-Design Closure 实测推翻两个前序记录，
 **性质**：corpus 事实澄清，不改变 D9 semantic contract。
 
 **对 §0–§13 的影响**：无。被推翻的两个数字从未进入 D9 正文
-（全量盘查 `local/` 无 actionable 命中），故本条只需 §14 登记，
+（全量盘查 `docs/` 无 actionable 命中），故本条只需 §14 登记，
 **不需要** 对 §0–§13 开 errata。
 
 **Lane 影响**：Lane A 前置条件已清零（见
@@ -2781,7 +2781,7 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 - `derived/hub/` 13 文件**逐字节不变**
 - `core/` 既有 105 个 `.py` 源码**零改动**（只新增 `core/lane_a/`）
 - `kb/` aggregate `sha256:bcc1bd3f…`（6061 files）不变
-- `derived/spec/rtsp/` NO DIFF
+- `（已移除）rtsp/` NO DIFF
 - 全量 pytest **0 failed / 0 errors**
 
 **对本批次前序判定的修正（3 处显式记录）**

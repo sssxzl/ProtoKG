@@ -219,7 +219,7 @@ test_rq3_dict.py:129   assert 136 == 123
 test_rq3_focus_group.py:235  assert 114 == 102
 ```
 
-即 `derived/experiments/rq3/dict/DICT_FROZEN.json` 冻结的 token 数与当前字典内容对不上。
+即 `（已随论文实验层移除）rq3/dict/DICT_FROZEN.json` 冻结的 token 数与当前字典内容对不上。
 **冻结记录是论文附录引用的凭证**，改它需要同步论文；改字典会改变
 所有已生成语料的字节内容（进而让 A1–A10 断言的 md5 基准失效）。
 
@@ -329,8 +329,7 @@ for f in profiles/rtsp/rtsp_base.dict profiles/ftp/ftp_base.dict; do
 done
 
 # corpus_gate 冒烟
-python scripts/corpus_gate.py --help
-python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/seeds/rtsp/rq4_B
+# ★ 2026-11：corpus_gate.py 已随论文实验层整体移除 ⇒ 该冒烟步骤不再适用
 ```
 
 ---

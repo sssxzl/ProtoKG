@@ -59,7 +59,7 @@
 
 | 纪律 | 做法 | 现状 |
 |---|---|---|
-| **① 缓存必须留** | 缓存键 = `sha256(候选句 + prompt版本 + 模型)` ⇒ 同输入只调一次；缓存文件**不含凭据**，可入库 | ✅ `derived/experiments/semantic_gain/llm_cache.jsonl` 已入库 |
+| **① 缓存必须留** | 缓存键 = `sha256(候选句 + prompt版本 + 模型)` ⇒ 同输入只调一次；缓存文件**不含凭据**，可入库 | ✅ `（已随论文实验层移除）semantic_gain/llm_cache.jsonl` 已入库 |
 | **② 冻结产物不动，生产库可演进** | 论文实验的 `group_E{1,2}/rules.jsonl` 是**可审计依据** ⇒ 冻结；生产库 `derived/per_source/<协议>/rfc/semantic/` 随能力演进 | ✅ 已用 `PROTORAG_RULE_SOURCES` 支持从新批次发布 |
 | **③ 换模型/换 prompt ⇒ 缓存失效 ⇒ 结果变** | ⇒ 论文里的模型名、prompt 版本、缓存文件**三者必须一起固定** | ⚠ 论文写作时须显式声明 |
 

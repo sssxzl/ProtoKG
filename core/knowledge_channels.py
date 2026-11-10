@@ -232,8 +232,8 @@ def build_ledger(bucket_sources: dict, protocol: str,
                 owner = str(chans.get(chan, {}).get("owner") or owner)
             ok = owner_allowed(owner, source_set)
             if cls == "MIXED":
-                # ★ 协议骨架是**混合**知识（source 侧 + traffic 侧）
-                #   ⇒ 能否用由 **构建参数** ``--exclude-skeleton-dims`` 控制
+                      # ★ 阶段 E5：协议骨架已消解 ⇒ profile 现在只承载
+                      #   ⇒ 标 allowed=None（待定）并在 protocol_structure 里
                 #   ⇒ 台账**不猜**，标 allowed=None（待定）并在 skeleton_dims 里
                 #     给出实际的排除维度 ⇒ 审计时一眼可判。
                 ok = None
