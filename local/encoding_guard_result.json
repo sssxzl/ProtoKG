@@ -1,0 +1,110 @@
+{
+  "root": "E:\\科研\\想法idea\\rag-chatafl",
+  "stats": {
+    "scanned": 6408,
+    "mojibake_files": 1,
+    "non_utf8_files": 16,
+    "mixed_eol_files": 0,
+    "missing_encoding_calls": 2
+  },
+  "violations": [
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/doc/misc/TODO",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1（作者笔记），非本项目乱码；不参与 RFC 抽取）"
+    },
+    {
+      "code": "E4-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/misc/tools/kemi/python_mock/kemi_mock.py",
+      "detail": "1 处缺 encoding（已登记豁免：第三方测试桩脚本；上游代码 ⇒ 不改）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/src/core/parser/parse_fline.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码；不参与 RFC 抽取）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/src/modules/db_sqlite/doc/db_sqlite.xml",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1；非本项目乱码；不参与 RFC 抽取）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/src/modules/permissions/parse_config.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/src/modules/permissions/parse_config.h",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/src/modules/permissions/rule.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/src/modules/permissions/rule.h",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/test/misc/code/dns_query.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/test/misc/code/gethostbyaddr.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/test/misc/code/gethostbyname.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/test/misc/code/ifls.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/test/misc/code/locking/locking_test.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/test/misc/code/re_test.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/test/misc/code/resolver_test.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/test/misc/code/udp_flood_disc.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E2-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/test/misc/code/udp_test_proxy.c",
+      "detail": "上游原生非 UTF-8（已登记豁免：上游原生 latin-1 注释；非本项目乱码）"
+    },
+    {
+      "code": "E4-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/utils/kamctl/dbtextdb/dbtextdb.py",
+      "detail": "1 处缺 encoding（已登记豁免：第三方运维脚本；上游代码 ⇒ 不改）"
+    },
+    {
+      "code": "E1-exempt",
+      "path": "kb/sip/协议实现源码/kamailio/utils/pdbt/scripts/get_carrier_names_finland.sh",
+      "detail": "含 mojibake 标记 1 个（已登记豁免：单个不可逆 mojibake 标记；上游原生；无法确定原文 ⇒ 不改）"
+    }
+  ],
+  "violation_count": 0,
+  "fixed": [],
+  "verdict": "OK"
+}

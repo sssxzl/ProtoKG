@@ -62,9 +62,8 @@ derived/exp_semantic/*
 #   这些是外部项目的快照，不是本项目的知识资产。
 kb/*/_bak_*/
 
-# 已下线协议的抓包归档（local/*.tar.gz，93MB）
-#   ftp / dns / dtls / ssh / tls 已裁剪出目标协议范围，这些归档是历史物证，
-#   保留在本地即可，不进版本库。
+# 已下线协议的抓包归档（历史物证，保留在本地即可，不进版本库）
+#   ★ 2026-11-10：``local/`` 目录已移除 ⇒ 若再出现此目录，忽略其内容。
 local/*.tar.gz
 
 # 本地凭据与密钥（安全红线：绝不进版本库）
@@ -98,12 +97,14 @@ _crlf_probe_*/
 # 消融/实验的运行时输出目录（种子 .raw + 构建日志）⇒ 可重建，不入库。
 /out/
 
-# 消融脚本的运行时中间工件目录（最终工件已归档到 local/ablation_rtsp/）。
+# 消融脚本的运行时中间工件目录
+#   ★ 2026-11-10：消融已随论文实验层移除（``tools/guard/ablation/`` 已删）⇒ 保留规则防复发
 tools/guard/ablation/_out/
 
 # 编码护栏产物与原始坏版本备份（本地留存，不入库）
+#   ★ 2026-11-10：``local/`` 已移除 ⇒ 护栏产物统一落 ``guard/``
 local/encoding_backup/
-local/encoding_guard_result.json
+guard/encoding_guard_result.json
 
 # ── 中枢重设计（2026-11-08）：中枢共用一套（derived/hub/）────────────────
 # 派生产物（中枢 facts / 图 / 社区 / 种子 / 护栏输出）⇒ 全部可重建，不入库。
