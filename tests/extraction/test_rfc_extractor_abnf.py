@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_extractor_abnf.py —— SIP 的 ABNF 方法枚举抽取（L1/L2/L3）。
+"""tests/test_rfc_extractor_abnf.py —— SIP 的 ABNF 方法枚举抽取（L1/L2/L3）。
 
 背景
 ----

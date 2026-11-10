@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_target_env.py —— target_env 端点/资源归一化的**真实 profile** 回归测试。
+"""tests/test_target_env.py —— target_env 端点/资源归一化的**真实 profile** 回归测试。
 
 ★ 为什么单独建这个文件（而不是并进 test_rq4_target_url_normalization.py）：
 

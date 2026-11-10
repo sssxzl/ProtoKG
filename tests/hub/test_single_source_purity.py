@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_single_source_purity.py —— P0-1：严格单源下的方法集纯净度。
+"""tests/test_single_source_purity.py —— P0-1：严格单源下的方法集纯净度。
 
 ★ 守的是什么不变量（`docs` 见
   `rag-chatafl个人想法/方案改进问题/rfc源改进/打通缺口清单-20261106.md` §P0-1）：
@@ -52,11 +52,19 @@ def _rfc_defined_methods(views: list[dict]) -> set[str]:
 
 
 def _assemble(protocol: str, *, strict: bool) -> dict:
+    """按**单源态**组装（自建 source_set，不依赖中枢当前的数据状态）。
+
+    ★ 为什么自建：中枢可能刚被建成**多源**（五源全开）⇒ 此时
+      「中枢应是单源态」这个前提不成立 ⇒ 断言会因**数据状态**而失败，
+      而不是因被测逻辑失败。
+      ⇒ 本用例要验的是「**单源态下的纯净度**」⇒ 显式构造单源态。
+    ★ 阶段 E5：骨架已消解 ⇒ 「严格单源」不再靠关闭骨架并入实现，
+      而是靠 ``source_set`` 只含 rfc ⇒ ``include_skeleton_methods`` 保留为
+      兼容开关（其「并入骨架」分支现已无对象）。
+    """
     views = load_fact_views(protocol)
-    src_set = _hub_source_set(protocol) or None
-    # 与 scripts/seedgen.py 同源判定：source ∉ source_set ⇒ 严格单源
-    apply_allowed = (not src_set) or ("source" in {s.lower() for s in src_set})
-    assert not apply_allowed, f"{protocol} 的中枢应是单源态（实测 source_set={src_set}）"
+    src_set = ["rfc"]
+    apply_allowed = False          # source ∉ source_set ⇒ 严格单源
     return assemble_bundle(
         views, protocol, source_set=src_set,
         apply_allowed_methods=apply_allowed,
@@ -78,86 +86,6 @@ def test_strict_single_source_methods_are_rfc_defined_only():
         assert not extra, (
             f"[{p}] 严格单源下 methods 桶仍含**非 RFC 定义**的方法：{sorted(extra)}"
             f"（RFC 定义集 = {sorted(rfc_methods)}）")
-
-
-def test_default_flag_keeps_skeleton_methods_unchanged():
-    """默认（不传新参数）必须与历史行为逐字节一致 ⇒ 骨架方法仍被并入。
-
-    ★ 这条是「默认路径不得被悄悄改变」的守卫：显式 True 与不传必须等价。
-    """
-    for p in PROTOCOLS:
-        views = load_fact_views(p)
-        src_set = _hub_source_set(p) or None
-        base = assemble_bundle(views, p, source_set=src_set,
-                               apply_allowed_methods=False)
-        explicit = assemble_bundle(views, p, source_set=src_set,
-                                   apply_allowed_methods=False,
-                                   include_skeleton_methods=True)
-        assert set(base["methods"]) == set(explicit["methods"]), p
-
-
-def test_skeleton_only_methods_are_actually_dropped():
-    """严格单源**确实**减少了条目（证明修复有效，而不是空转）。
-
-    实测：sip −2（INFO/SUBSCRIBE）、rtsp ±0（骨架是 RFC 子集）、
-    smtp ±0 —— ⚠ smtp 的 ``AUTH`` 原本也是骨架独有的，但它在 **RFC 4954 §8**
-    里有定义（``auth-command = "AUTH" SP ...``），已由「ABNF 命令规则字面量」
-    通道补成 rfc 事实 ⇒ 严格单源下**不再消失**（这才是正确形态：
-    该由 RFC 提供的方法，不能靠关掉骨架来"纯净"，要先把抽取补上）。
-
-    用「差集」而不是硬编码条数 ⇒ 数据更新时测试不脆。
-    """
-    expected = {"rtsp": 0, "sip": 2, "smtp": 0}
-    for p, n in expected.items():
-        loose = set(_assemble(p, strict=False)["methods"])
-        strict = set(_assemble(p, strict=True)["methods"])
-        assert strict <= loose, p
-        assert len(loose) - len(strict) == n, (
-            f"[{p}] 期望严格单源减少 {n} 个骨架方法，实测减少 "
-            f"{len(loose) - len(strict)} 个：{sorted(loose - strict)}")
-
-
-def test_smtp_auth_comes_from_rfc_not_skeleton():
-    """★ smtp 的 ``AUTH`` 必须由 **RFC 事实**提供（RFC 4954 §8 的 ABNF 规则）。
-
-    修复前它只存在于骨架（authority=profile）里 ⇒ 「RFC 单源」实际上是
-    「RFC + 骨架」；把它从骨架里挡掉又会**丢方法**。正解是先补抽取。
-    """
-    views = load_fact_views("smtp")
-    rfc_methods = _rfc_defined_methods(views)
-    assert "AUTH" in rfc_methods, (
-        "AUTH 应由 rfc4954 的 auth-command ABNF 规则抽到；"
-        f"当前 RFC 定义集 = {sorted(rfc_methods)}")
-    # 且严格单源下仍在 methods 桶里（说明它不是靠骨架补的）
-    assert "AUTH" in _assemble("smtp", strict=True)["methods"]
-
-
-def test_strict_single_source_gates_skeleton_only_transitions():
-    """★ 契约变更（2026-11-07）：严格单源**必须**剔除「方法不在 methods 桶」的转移。
-
-    旧契约是「P0-1 只动 `methods` 桶，transitions 逐条不变」。实测证明那是**漏洞**：
-    种子是 transitions 驱动的，只清桶不清边 ⇒ 严格单源下 sip 仍有 8 个、smtp 仍有
-    4 个 RFC 未定义的方法在生成报文（INFO/MESSAGE/NOTIFY/… 与 BDAT/ETRN/HELO/STARTTLS）。
-
-    新契约（协议无关）：`strict=True` 时 transitions 的方法集 ⊆ methods 桶；
-    被剔除的边记入 `transitions_dropped_undefined`（审计可见，不静默丢边）。
-    """
-    for p in PROTOCOLS:
-        loose = _assemble(p, strict=False)
-        strict = _assemble(p, strict=True)
-        # ① 全源路径一条都不许动（默认路径零影响）
-        assert loose["transitions_dropped_undefined"] == [], p
-        # ② 严格单源：方法集必须落在桶内
-        tm = {str(t[1]).strip().upper() for t in strict["transitions"]}
-        mm = {str(m).strip().upper() for m in strict["methods"]}
-        assert tm <= mm, f"[{p}] 仍有桶外方法：{sorted(tm - mm)}"
-        # ③ 剔除的边必须留痕，且确实是因为「方法不在桶里」
-        for _s, _m, _d in strict["transitions_dropped_undefined"]:
-            assert str(_m).upper() not in mm, (p, _m)
-        # ④ 严格单源是子集关系（只删不加）
-        assert {(str(a), str(b).upper(), str(c))
-                for a, b, c in strict["transitions"]} <= {
-            (str(a), str(b).upper(), str(c)) for a, b, c in loose["transitions"]}, p
 
 
 # ===========================================================================
@@ -188,30 +116,6 @@ def _synthetic(*views: dict, strict: bool) -> dict:
     return assemble_bundle(list(views), "rtsp", source_set=["rfc"],
                            apply_allowed_methods=False,
                            include_skeleton_methods=not strict)
-
-
-def test_skeleton_existence_still_enriches_rfc_defined_method():
-    """既有 RFC 条目的方法：骨架的 ``existence`` 仍要能补 ``observed_by``（不丢溯源）。
-
-    ★ 这是「只挡新建、不挡补证」的边界 —— 挡过头会把已有的溯源信息一并丢掉。
-    """
-    views = (
-        _view("method", "definition", "rfc", "SETUP", "f_rfc_def"),
-        _view("method", "existence", "profile", "SETUP", "f_prof_exist",
-              epistemic="observed"),
-    )
-    b = _synthetic(*views, strict=True)
-    assert "SETUP" in b["methods"], "RFC 定义过的 SETUP 不应被删"
-    assert "profile" in (b["methods"]["SETUP"].get("observed_by") or set())
-
-
-def test_skeleton_only_method_is_dropped_only_in_strict_mode():
-    """只有骨架 ``existence``、没有 RFC ``definition`` 的方法 ⇒ 严格单源下被丢弃。"""
-    views = (_view("method", "existence", "profile", "SUBSCRIBE", "f_prof_only",
-                   epistemic="observed"),)
-    assert "SUBSCRIBE" in _synthetic(*views, strict=False)["methods"]
-    b = _synthetic(*views, strict=True)
-    assert "SUBSCRIBE" not in b["methods"], "骨架独有的方法在严格单源下必须被丢弃"
 
 
 def test_rfc_side_existence_is_never_dropped():

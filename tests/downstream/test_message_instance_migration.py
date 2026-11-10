@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_message_instance_migration.py —— 字段实例迁移与来源标注（P1-1c）。
+"""tests/test_message_instance_migration.py —— 字段实例迁移与来源标注（P1-1c）。
 
 ★ 修的是什么（实测 bug）：
   `_align_message_instances` 原来写的是 ``allow_migrate=apply_allowed_methods``

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_all_sources_state_machines.py —— 批次 2.3。
+"""tests/test_all_sources_state_machines.py —— 批次 2.3。
 
 ★ 用户要求：「每个知识源获取的状态机信息也都保存到结构化知识中枢中，
   后期让 LLM 依据我们定的规则进行判别」⇒ 本期只做**保存 + 预留判别接口**。
@@ -37,10 +37,17 @@ def bundle():
 # ===========================================================================
 
 def test_all_sources_state_machines_are_in_hub(bundle):
-    """★ 各来源的状态机**都在**中枢的 facts 里（按 authority 可分）。"""
+    """★ 各来源的状态机**都在**中枢的 facts 里（按 authority 可分）。
+
+    ★ 阶段 E5：协议骨架已**消解并物理移除** ⇒ 状态机不再由 ``profile`` 提供
+      ⇒ 断言改为「**真源**（rfc / source / traffic）提供状态机」。
+    """
     by_src = bundle.get("transitions_by_source") or {}
     assert by_src, "中枢里没有任何来源的状态机"
-    assert "profile" in by_src, "协议骨架的状态机没在中枢里"
+    assert "profile" not in by_src, \
+        "profile 只应承载协议结构声明（required_headers），不应再有状态机"
+    assert any(k in by_src for k in ("rfc", "source", "traffic")), \
+        "真源（rfc/source/traffic）都没贡献状态机 ⇒ 骨架消解失败"
     # 每条都有来源标注 ⇒ 逐条可追
     for src, rows in by_src.items():
         for row in rows:
@@ -60,8 +67,12 @@ def test_rfc_source_state_machines_are_in_hub():
         for c in (v.get("all_claims") or []):
             if c.get("authority"):
                 auths.add(c["authority"])
-    assert "profile" in auths, "骨架的状态机缺失"
+    # ★ 阶段 E5：骨架已移除 ⇒ 状态机由**真源**提供
+    assert "profile" not in auths, \
+        "profile 不应再贡献状态机（骨架已消解 ⇒ 状态机应来自 rfc/source/traffic）"
     assert "rfc" in auths, "RFC 源的状态机没进中枢（enable_transitions 未开？）"
+    assert any(a in auths for a in ("source", "traffic")), \
+        "源码/流量源也没贡献状态机 ⇒ 骨架消解不完整"
 
 
 # ===========================================================================

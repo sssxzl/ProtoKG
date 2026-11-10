@@ -2360,7 +2360,8 @@ def _extract_abnf_quoted_commands(text: str) -> list[str]:
       全小写形态、无缩写括号），也**不是** hex 伴生规则
       （``_extract_abnf_methods`` 只认 ``INVITEm = %x49.4E...``）
       ⇒ 三种既有形态全都不命中 ⇒ smtp 的方法集漏掉 AUTH，
-      只能靠 profile 骨架"补"，这在「RFC 单源」口径下就是污染。
+      ★ 2026-11-10 更新：**已由形态 E（散文命令格式声明）覆盖** ⇒ AUTH/STARTTLS
+      由 RFC 源自己产出 ⇒ 不再需要「靠 profile 骨架补」（骨架已物理移除）。
 
     ★ 边界（诚实标注）：RFC 3207 的 ``STARTTLS`` **没有** ABNF 规则
       （正文只写 "The format for the STARTTLS command is: / STARTTLS"），
@@ -2395,7 +2396,8 @@ def _extract_prose_command_formats(
           "The format for the STARTTLS command is:" / "STARTTLS"
       它**既没有** ABNF 规则（形态 D 不命中）、也不是 "描述名 (缩写)" 形态
       （形态 A′ 不命中）⇒ 前四种形态全不命中 ⇒ smtp 的方法集漏掉 STARTTLS，
-      只能靠 profile 骨架"补"（在「RFC 单源」口径下就是污染）。
+      ★ 2026-11-10 更新：**已由形态 E 覆盖**（RFC 源自产 AUTH/STARTTLS）
+      ⇒ 不再需要「靠 profile 骨架补」（骨架已物理移除）。
 
     ★ 判据（**协议无关**，只认句式）：
       ① **句式**：``<format|syntax> of|for [the] <全大写词> command|method is|are``
@@ -2526,9 +2528,9 @@ _FIELD_STOPWORDS = {
 # ★ 确定性保障：**磁盘缓存**（按候选段落的 block_hash 判定）
 #   ⇒ 同一份 RFC ⇒ 命中缓存 ⇒ **不调 LLM** ⇒ 产物逐字节可复现。
 #
-#: 状态机段落的定位：全文里含「state machine」的**行**⇒ 取其前后文本。
-_RE_STATE_MACHINE_HINT = re.compile(r"state\s+machines?", re.IGNORECASE)
-
+#: 状态机段落的定位（**协议无关**）：同一句内同时出现「已识别的消息名」与「迁移动词」
+#: ⇒ 取其前后文本。★ 旧的「state machine 字样」判据已于 2026-11-10 **移除**
+#: （依赖英文措辞 ⇒ 换协议即失效；实测删除对 rtsp 抽取**零影响**，仍 14 条）。
 #: 单个候选段落的最大行数（前后各取多少行）
 _TRANSITION_CONTEXT_LINES = 60
 
@@ -2548,7 +2550,9 @@ RE_TRANSITION_VERB = re.compile(
 _TRANSITION_MAX_CANDIDATES = 40
 
 #: LLM 输出契约（JSON）
-#: ★ 2026-11-08（批次 3）：加**骨架约束**（实体白名单）⇒ 抑制幻觉迁移。
+#: ★ 2026-11-08（批次 3）：加**实体白名单约束**（原名「骨架约束」）⇒ 抑制幻觉迁移。
+#:   ★ 2026-11-10：该约束**不再读取任何骨架文件** ⇒ 白名单来自图模块的 state 候选
+#:     + 实体名抽取；函数名保留以免动 LLM 缓存键（``TRANSITION_PROMPT_VERSION``）。
 #:   ★ 约束式提示的落地：把「已确定的状态/消息」告诉 LLM，
 #:     并**禁止**它引入列表外的实体名（GraphRAG 的核心纪律之一）。
 _PROMPT_TRANSITION = """你是协议规范分析助手。下面的文本来自 {protocol} 协议的 RFC 规范，其中包含
@@ -2576,7 +2580,7 @@ TRANSITION_PROMPT_VERSION = "rfc-transition-prose-v2-skeleton"
 
 
 def _build_skeleton_constraint(protocol: str) -> tuple[str, set[str], set[str]]:
-    """构造**骨架约束**（实体白名单）⇒ 抑制 LLM 幻觉迁移。
+    """构造**实体白名单约束**（历史名「骨架约束」）⇒ 抑制 LLM 幻觉迁移。
 
     ★ 2026-11-08（批次 3）：GraphRAG 的核心纪律之一 ——
       「LLM 只能在**已确定的实体集合**内生成」。
@@ -2689,9 +2693,10 @@ def _iter_section_windows(rfc_path: Path, cfg: dict):
 def extract_transition_candidates(protocol: str) -> list[dict]:
     """定位 RFC 里的**状态机段落**（供 LLM 抽状态转移）。
 
-    ★ 定位方式：全文扫含「state machine」的行 ⇒ 取该行**前 60 行 / 后 60 行**
-      的上下文 ⇒ 拼成候选段落。
+    ★ 定位方式（**协议无关**）：全文扫「**同一句**内同时出现已识别的消息名与迁移动词」
+      的行 ⇒ 取该行**前 60 行 / 后 60 行**的上下文 ⇒ 拼成候选段落。
       ⇒ RTSP 的 A.1/A.2、SIP 的 §17（ASCII 图）都能被覆盖。
+      ⇒ ★ **不再使用「state machine」字样判据**（依赖英文措辞 ⇒ 换协议即失效）。
 
     Returns:
         ``[{"text": 段落文本, "source": "file:...#@N", "hash": 段落哈希}, ...]``
@@ -2701,16 +2706,20 @@ def extract_transition_candidates(protocol: str) -> list[dict]:
     if not spec_dir.is_dir():
         return []
     out: list[dict] = []
-    # ★ 2026-11-08（批次 3 / A1）：**实体共现**判据（L1/L2/L3）
-    #   ⇒ 与旧判据（`state machine` 字样）**并集**，不替换。
+    # ★ 2026-11-08（批次 3 / A1）：**实体共现**判据（L1/L2/L3）——**唯一**判据
     #   ★ 动机（实测卡点）：DHCP 的 36 份 RFC 里 `state machine` **命中 0**
-    #     ⇒ LLM 状态机通道**从未被调用** ⇒ transitions 只能来自骨架。
+    #     ⇒ 依赖英文措辞的**旧**判据从未被调用（**不影响**新判据）
+    #     ⇒ 该旧判据已于 2026-11-10 **移除**（不做并集）。
     _entity_names = _protocol_entity_names(protocol)
 
     for f in sorted(spec_dir.glob("*.txt")):
         lines = f.read_text(encoding="utf-8", errors="ignore").splitlines()
-        hits = [i for i, ln in enumerate(lines)
-                if _RE_STATE_MACHINE_HINT.search(ln)]
+        # ★★ 只用**协议无关**的新判据（同一句内「已识别的消息名」+「迁移动词」）
+        #   ⇒ 不再保留旧的「state machine 字样」判据（**不做并集**）
+        #   ⇒ 理由：旧判据依赖英文措辞 ⇒ 换协议即失效（实测 DHCP 的 36 份 RFC
+        #     里 `state machine` 命中 0 ⇒ 通道从未被调用）；
+        #     且新判据已能覆盖 ASCII 时序图类段落（实测 dhcpv4 抽出 24 条迁移）。
+        hits: list[int] = []
         # ★ 新判据：**同一句**内同时出现「已识别的消息名」与「迁移动词」⇒ 命中
         #   ★ **必须同句**（实测收紧）：整行判定会把 rfc3207 的 AUTH 段落
         #     （含 "SMTP" + "server issues"）也算成候选 ⇒ 质量不高
@@ -3581,6 +3590,9 @@ def _rfc_source_methods(protocol: str, cfg: dict) -> set[str]:
       **全拦下**（实测 ``dropped_method_not_a_method: 24``）⇒
       RFC 通道等于**没跑** ⇒ 状态机只能用骨架（owner=profile）
       ⇒ 纯度闸把骨架边也拦掉 ⇒ **纯 RFC 单源下路径式种子 = 0 条**。
+      #   ★ 2026-11-10 更新：**该卡点已修复** —— 判据分裂修正后，dhcpv4 的 RFC 源
+      #     直接抽出 24 条迁移（证据通道 ``file:llm@state-machine``）⇒ 纯 RFC 单源
+      #     下的路径式种子**不再是 0**；协议骨架也已消解并物理移除。
       ⇒ 这里**必须**与「通道 A0d（消息清单表）」保持一致
       ⇒ **判据分裂**（同一形态两处实现）——本项目已踩过多次。
     """

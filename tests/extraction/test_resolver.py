@@ -1,4 +1,4 @@
-"""tests/fused/test_resolver.py —— 统一消解引擎（P2a）。"""
+"""tests/test_resolver.py —— 统一消解引擎（P2a）。"""
 from __future__ import annotations
 
 from core.fused.downstream.resolver import (

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_required_header_global.py —— RFC 源的**消息级必填头**（F1）。
+"""tests/test_required_header_global.py —— RFC 源的**消息级必填头**（F1）。
 
 ★ F1 的三条设计承诺（逐条被本文件锁住）：
   ① **默认关闭** ⇒ 产物逐字节不变；

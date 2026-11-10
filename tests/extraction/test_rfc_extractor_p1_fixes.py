@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-r"""tests/fused/test_rfc_extractor_p1_fixes.py —— rfc 抽取器 P1 批次修复的回归测试。
+r"""tests/test_rfc_extractor_p1_fixes.py —— rfc 抽取器 P1 批次修复的回归测试。
 
 背景（独立 QA 实测复核，2026-11-01）
 -----------------------------------

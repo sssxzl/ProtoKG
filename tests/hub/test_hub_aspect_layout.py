@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_hub_aspect_layout.py —— 批次 1.6 **步 1**（中枢布局改 aspect）。
+"""tests/test_hub_aspect_layout.py —— 批次 1.6 **步 1**（中枢布局改 aspect）。
 
 ★ 覆盖六条新行为：
   ① 中枢**按 aspect 统一存放**（``facts/<aspect>.jsonl``）——不再按源分目录；
@@ -232,7 +232,7 @@ def test_legacy_and_aspect_layout_produce_identical_bundle(hub):
     new_bundle = rag_seedgen.assemble_bundle(list(new_views), PROTOCOL)
     # ★ 阶段 C2/D1 给 fact / bundle **新增**了字段（纯增量）
     #   ⇒ 比对前剥离（被比对的仍是**旧契约**的全部内容）。
-    from tests.fused._compat import strip_bundle
+    from tests.extraction._compat import strip_bundle
     assert _dump(strip_bundle(new_bundle)) == _dump(strip_bundle(legacy_bundle))
 
 
@@ -333,7 +333,8 @@ def test_purge_clears_aspect_layout(hub, monkeypatch):
 def test_source_manifest_records_hub_layout(hub):
     """★ ``sources.json`` 记录 aspect 分布（中枢布局可审计）。"""
     path = build_hub._write_source_manifest(
-        PROTOCOL, ["rfc"], {"rfc": "rb_x"}, skeleton_count=145,
+        PROTOCOL, ["rfc"], {"rfc": "rb_x"},
+        required_headers_count=9,
         aspect_counts={"definition": 71, "syntax": 45})
     doc = json.loads(path.read_text(encoding="utf-8"))
     assert doc["hub_layout"]["scheme"] == "aspect-v1"
@@ -344,49 +345,3 @@ def test_source_manifest_records_hub_layout(hub):
 # ===========================================================================
 # 批次 2.3：骨架来源维度消融开关（--exclude-skeleton-dims）
 # ===========================================================================
-
-def test_skeleton_aspect_origin_maps_dimensions():
-    """★ 骨架各 aspect → 来源维度（source=源码分析 / traffic=流量观测）。
-
-    ★ 这是「规范单源能撑起多少」消融实验的基础：只有能**按维度**排除
-      骨架的一部分，才能分别测出「实现侧知识」与「观测侧知识」的贡献。
-    """
-    from scripts.build_hub import (
-        SKELETON_ORIGIN_FALLBACK, _skeleton_aspect_origin,
-    )
-    # ① 显式声明优先
-    doc = {"origin": {"source": ["target_state"],
-                      "traffic": ["existence"]}}
-    m = _skeleton_aspect_origin(doc)
-    assert m["target_state"] == "source"
-    assert m["existence"] == "traffic"
-    # ② 声明缺失 ⇒ 用兜底表补全
-    m2 = _skeleton_aspect_origin({})
-    for asp in SKELETON_ORIGIN_FALLBACK["source"]:
-        assert m2[asp] == "source", asp
-    for asp in SKELETON_ORIGIN_FALLBACK["traffic"]:
-        assert m2[asp] == "traffic", asp
-
-
-def test_skeleton_materialize_can_exclude_dims(tmp_path, monkeypatch):
-    """★ 排除某个来源维度 ⇒ 该维度的 facts 不进中枢（消融档位）。"""
-    import json as _json
-    from scripts import build_hub as _bh
-    root = tmp_path / "per_source" / "rtsp"
-    (root / "profile" / "facts").mkdir(parents=True, exist_ok=True)
-    skel = {"origin": {"source": ["target_state"], "traffic": ["existence"]},
-            "facts": [
-                {"fact_key": {"aspect": "target_state"}, "all_claims": []},
-                {"fact_key": {"aspect": "existence"}, "all_claims": []},
-            ]}
-    src = tmp_path / "skeleton.json"
-    src.write_text(_json.dumps(skel), encoding="utf-8")
-    monkeypatch.setattr(_bh.paths, "target_skeleton", lambda p: src)
-    monkeypatch.setattr(_bh.paths, "per_source_facts_dir",
-                        lambda p, s: root / s / "facts")
-    n_all = _bh._materialize_skeleton("rtsp")
-    n_excl = _bh._materialize_skeleton("rtsp", exclude_dims=("traffic",))
-    assert n_all == 2
-    assert n_excl == 1, "排除 traffic 维度后应只剩 1 条"
-
-

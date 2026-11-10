@@ -1,4 +1,4 @@
-"""tests/fused/test_rag_seedgen.py —— 知识中枢 → RAG → LLM → 种子（第一步全量分桶）。"""
+"""tests/test_rag_seedgen.py —— 知识中枢 → RAG → LLM → 种子（第一步全量分桶）。"""
 from __future__ import annotations
 
 from core.fused.downstream.rag_seedgen import (

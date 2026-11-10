@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_scripts_syntax.py —— scripts/ 下所有脚本必须语法合法。
+"""tests/test_scripts_syntax.py —— scripts/ 下所有脚本必须语法合法。
 
 为什么需要这一条
 ----------------

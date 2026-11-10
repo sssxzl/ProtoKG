@@ -1,4 +1,4 @@
-"""tests/fused/test_canonical.py —— canonical 序列化与 ID 计算。"""
+"""tests/test_canonical.py —— canonical 序列化与 ID 计算。"""
 from __future__ import annotations
 
 from core.fused.hub.canonical import (

@@ -1,4 +1,4 @@
-"""tests/fused/test_single_protocol_single_source.py —— 「一次一个协议 × 一个知识源」契约。
+"""tests/test_single_protocol_single_source.py —— 「一次一个协议 × 一个知识源」契约。
 
 架构约束（2026-10-31 用户明确）：
     「我这个模型，一次只对一个知识库进行处理，目标是一个知识源，

@@ -1,4 +1,4 @@
-"""tests/fused/test_bundle_projection.py —— B-8 bundle 契约扩展 + 语义规则投影。
+"""tests/test_bundle_projection.py —— B-8 bundle 契约扩展 + 语义规则投影。
 
 对应 docs/实施/路线与里程碑/RFC源里程碑路线图.md §3.8 任务表 B-8（文档任务号 B7）与
 §3.6 选项 c（「影子实现升级为两层模型，`legal_boundary` 桶保留但由两层模型
@@ -123,7 +123,7 @@ def test_bundle_contract_has_semantic_rules_and_version(monkeypatch):
       （`core/fused/semantic/llm_ensemble.py`）。本用例测的是**开关开启**时的契约 ——
       ⇒ 显式打开开关，避免它随默认值变化而失去意义。
       「开关关闭 ⇒ 产物与 B-8 之前逐字节一致」由
-      `tests/fused/test_semantic_rules_switch.py` 覆盖。
+      `tests/test_semantic_rules_switch.py` 覆盖。
     """
     monkeypatch.setenv(SEMANTIC_RULES_ENV_KEY, "1")
     bundle = assemble_bundle([], protocol="rtsp")

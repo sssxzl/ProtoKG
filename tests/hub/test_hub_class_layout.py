@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_hub_class_layout.py —— **阶段 C**：中枢按知识分类落盘（护栏）。
+"""tests/test_hub_class_layout.py —— **阶段 C**：中枢按知识分类落盘（护栏）。
 
 ★ 阶段 C 的目标：中枢按「**知识分类**」存储，而不是按 aspect 存储。
 

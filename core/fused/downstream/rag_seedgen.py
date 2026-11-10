@@ -37,7 +37,7 @@ from core.fused.semantic.llm_ensemble import semantic_rules_enabled
 from core.fused.hub.hub_view import (          # noqa: E402
     BUNDLE_SCHEMA_VERSION,
     RFC_AUTHORITY,
-    SKELETON_AUTHORITY,
+    PROFILE_AUTHORITY,
     _BUCKET_BY_KIND,
     _EXPECTED_BEHAVIOR_CODES,
     _GLOBAL_REQUIRED_KEY,
@@ -433,12 +433,14 @@ def get_bundle_schema_version(bundle: dict) -> str:
 
 
 
-#: ★ 批次 1.6 步 2：协议骨架在中枢里的 authority（骨架**不是**抽取源，
-#:   而是跨实验复用的协议结构 ⇒ 组装期过滤时**恒允许**）。
+#: ★ 协议档案（authority=profile）在中枢里的来源（**协议结构声明** required_headers；
+#:   ★ 阶段 E5 起协议骨架已物理移除 ⇒ profile 与其它源**一视同仁**
+#:   ⇒ 要它进中枢就把它**显式写进 source_set**）。
 
 #: ★ 2026-11-05：**规范原生**状态机的 authority（直接抽自 RFC 文本）。
 #:   ★ 已知：骨架的 ``target_state`` 实为 **source 源**派生（``skeleton.json``
-#:     的 ``origin.source`` 含 ``target_state``）—— 追查出的思想源头是
+#:     ★ 阶段 E5：协议骨架已消解并物理移除 ⇒ target_state 由真正的源提供
+#:     （rtsp 14 条来自 RFC 原生状态表；dhcpv4 24 条来自 RFC 源的 LLM 通道）
 #:     ``source_autoseeder.py`` 提示词里硬塞的 **SIP 式状态名范例**
 #:     ⇒ 骨架的状态名**不一定**属于该协议的规范。
 

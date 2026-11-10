@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_graph_communities.py —— Phase B2（社区检测 + 社区报告）的护栏。
+"""tests/test_graph_communities.py —— Phase B2（社区检测 + 社区报告）的护栏。
 
 ★ 覆盖：
   ① B2.1 **MultiDiGraph 合并**（同对节点多条边都保留）；

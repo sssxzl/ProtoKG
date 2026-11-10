@@ -1,4 +1,4 @@
-"""tests/fused/test_build_hub_gate_order.py —— 质量闸顺序 + 幂等快照留存契约。
+"""tests/test_build_hub_gate_order.py —— 质量闸顺序 + 幂等快照留存契约。
 
 两个缺陷（2026-11-01 独立 QA 复核证实，QA 实测三协议快照全空）：
 

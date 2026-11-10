@@ -1,4 +1,4 @@
-"""tests/fused/test_export.py —— LLM 安全接口。"""
+"""tests/test_export.py —— LLM 安全接口。"""
 from __future__ import annotations
 
 import json

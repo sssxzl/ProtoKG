@@ -1,4 +1,4 @@
-"""tests/fused/test_source.py —— source 源（协议实现源码）→ Fact 映射。"""
+"""tests/test_source.py —— source 源（协议实现源码）→ Fact 映射。"""
 from __future__ import annotations
 
 import json

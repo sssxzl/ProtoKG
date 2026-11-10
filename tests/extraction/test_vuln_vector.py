@@ -1,4 +1,4 @@
-"""tests/fused/test_vuln_vector.py —— 漏洞模式向量库（Phase 3，GLMFuzz 借鉴）。"""
+"""tests/test_vuln_vector.py —— 漏洞模式向量库（Phase 3，GLMFuzz 借鉴）。"""
 from __future__ import annotations
 
 from core.fused.extraction.vuln_vector import (

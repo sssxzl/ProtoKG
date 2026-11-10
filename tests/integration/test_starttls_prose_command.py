@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_starttls_prose_command.py —— 形态 E：散文里的「命令格式声明」。
+"""tests/test_starttls_prose_command.py —— 形态 E：散文里的「命令格式声明」。
 
 ★ 背景（2026-11-07 实测缺口）
   RFC 3207 用**散文**声明 STARTTLS 的命令格式：

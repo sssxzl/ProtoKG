@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_example_form_tightened.py —— `example` 判据收紧（P1-1a）。
+"""tests/test_example_form_tightened.py —— `example` 判据收紧（P1-1a）。
 
 ★ 背景（证伪记录，见 `core/fused/rfc_forms.py` 模块 docstring）：
   旧判据 = 「缩进 + 短全大写词 + 任意 token」，把**散文**判成示例报文。

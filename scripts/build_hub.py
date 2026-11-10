@@ -289,10 +289,10 @@ def _purge_hub_for_batch(protocol: str, *, purge_semantic: bool = True
     #   ⇒ 清空后由 _auto_republish_rules 自动恢复 ⇒ 无需备份。
     purged: list[str] = []
     # ★ 骨架的物化产物也清（每次构建会重新物化 ⇒ 中枢里不留旧骨架）
-    skel_dir = root / SKELETON_SOURCE_NAME
+    skel_dir = root / PROFILE_AUTHORITY
     if skel_dir.is_dir():
         shutil.rmtree(skel_dir, ignore_errors=True)
-        purged.append(SKELETON_SOURCE_NAME)
+        purged.append(PROFILE_AUTHORITY)
     # ★ 批次 1.6 步 1：**新布局**（按 aspect 统一存放）也要清空
     #   —— 否则「构建失败/中断」时中枢里会残留上一批次的 aspect 文件
     #   ⇒ 读取端（优先读新布局）会把**上一批次的知识**当成本次的。
@@ -337,12 +337,11 @@ def _purge_hub_for_batch(protocol: str, *, purge_semantic: bool = True
 
 def _write_source_manifest(protocol: str, sources: list[str],
                             build_ids: dict[str, str],
-                            skeleton_count: int = 0,
                             aspect_counts: dict | None = None,
                             required_headers_count: int = 0,
                             state_machine_counts: dict | None = None,
                             session_semantics_count: int = 0,
-                            skeleton_excluded_dims: list | None = None) -> Path:
+) -> Path:
     """写中枢的**本次源集合**清单（``per_source/<协议>/sources.json``）。
 
     ★ 它是「本次实验的知识来源清单」的**唯一权威**：
@@ -357,15 +356,14 @@ def _write_source_manifest(protocol: str, sources: list[str],
         "built_at": datetime.now().astimezone().isoformat(),
         "purged_before_build": True,
         "runtime_enrich_dirs_kept": list(RUNTIME_ENRICH_DIRS),
-        "skeleton": {
-            "source": SKELETON_SOURCE_NAME,
-            "fact_count": skeleton_count,
-            # ★ 批次 2.5（F4）：**实际排除的来源维度** ⇒ 知识台账据此判定
-            #   协议骨架（混合知识）是否干净 ⇒ 审计可判
-            "excluded_dims": list(skeleton_excluded_dims or []),
-            "note": "协议骨架（状态机/消息实例/方法存在性/头取值/频次/配对）"
-                    "由 source+traffic 源抽取后固化为入库资产，构建时物化进中枢"
-                    "⇒ 单源调试时链路不断。",
+        # ★ 阶段 E5：协议骨架已**消解**到真正的源 ⇒ 这里只登记
+        #   「协议结构声明」（required_headers，来源 = profile.json）。
+        "protocol_structure": {
+            "source": PROFILE_AUTHORITY,
+            "fact_count": required_headers_count,
+            "note": "协议结构声明（required_headers）—— 由 profile.json 的"
+                    " seedgen.required_headers 独立物化（阶段 E6）；"
+                    "★ 骨架（source+traffic 的固化快照）已消解并物理移除。",
         },
         "hub_layout": {
             "scheme": "aspect-v1",
@@ -489,90 +487,13 @@ def _republish_rules(protocol: str) -> None:
 
 #: ★ 批次 1.6（步 0.5）：中枢里的**骨架源目录名**。
 #:   它不是 kb 里的知识源，而是「协议骨架」的物化位置。
-SKELETON_SOURCE_NAME = "profile"
+PROFILE_AUTHORITY = "profile"
+#: ★ 阶段 E5/E6：协议骨架已物理移除 ⇒ 这里只保留「协议档案」的 authority 名
+#:   （仅用于 required_headers 这类**协议结构声明**）
 
 
-#: ★ 批次 2.3：骨架各 aspect 的**来源维度**（消融用）。
-#:   · ``source``  —— 源码分析（AutoSeeder）：message_instance / target_state
-#:   · ``traffic`` —— 真实流量观测：existence / method_sequence / occurrence / value_enum
-SKELETON_ORIGIN_FALLBACK: dict = {
-    "source": ["message_instance", "target_state"],
-    "traffic": ["existence", "method_sequence", "occurrence", "value_enum"],
-}
-
-
-def _skeleton_aspect_origin(doc: dict) -> dict:
-    """骨架 fact 的 aspect → 来源维度（``source`` / ``traffic``）。
-
-    优先读骨架 JSON 顶层 ``origin`` 声明；缺失时用
-    :data:`SKELETON_ORIGIN_FALLBACK` 兜底。
-    """
-    out: dict = {}
-    for dim, aspects in (doc.get("origin") or {}).items():
-        for asp in aspects:
-            out[asp] = dim
-    for dim, aspects in SKELETON_ORIGIN_FALLBACK.items():
-        for asp in aspects:
-            out.setdefault(asp, dim)
-    return out
-
-
-def _materialize_skeleton(protocol: str, *, exclude_dims: tuple = ()) -> int:
-    """把 ``profiles/<协议>/skeleton.json`` 物化进中枢的 ``profile/`` 源。
-
-    ★ 为什么必须有：种子生成本质是「**状态机边的遍历**」
-      ⇒ 骨架提供「跨实验复用的协议结构」，保证**任何单源构建**时
-      中枢里都有可用的协议骨架（而不是空壳）。
-      ★ 更正（旧注释已过时）：批次 1.6 步 0 之后「只抽 RFC 源 ⇒ transitions=0
-        ⇒ 一条种子都生不出来」**已不成立** —— 批次 2.1/2.2 把 RFC 源自己的
-        状态机抽出来了（纯 RFC 档实测 43 条种子、G1=0）。
-    ★ 骨架是「**跨实验复用的协议结构**」，不是「本次抽取的结果」
-      ⇒ 固化为**入库资产**，每次构建**重新物化**进中枢
-      ⇒ 中枢自洽（里面的一切都是本次的）+ 单源调试时链路不断。
-    ★ ``authority`` 改标 ``profile``：让「本次抽取的源」与「骨架」在
-      ``available_sources`` 里**分得开**（否则骨架会带着 source/traffic 的
-      authority 混进来，破坏「本次源集合」的语义）。
-    ★ 批次 2.3：``exclude_dims`` 支持按**来源维度**排除骨架的一部分
-      （``source`` = 源码分析侧 / ``traffic`` = 流量观测侧）
-      ⇒ 用于测「纯规范单源能撑起多少」。
-    """
-    src = paths.target_skeleton(protocol)
-    if not src.is_file():
-        print(f"[骨架] ★ {protocol} 无 skeleton.json（协议骨架缺失）"
-              "⇒ 单源构建可能因无状态机而无法生成种子")
-        return 0
-    doc = json.loads(src.read_text(encoding="utf-8"))
-    facts = doc.get("facts") or []
-    if not facts:
-        return 0
-    _origin_map = _skeleton_aspect_origin(doc)
-    _kept: list = []
-    for f in facts:
-        _asp = ((f.get("fact_key") or {}).get("aspect")) or ""
-        _dim = _origin_map.get(_asp, "")
-        if _dim and _dim in exclude_dims:
-            continue
-        _kept.append(f)
-    facts = _kept
-    if exclude_dims:
-        print(f"[骨架] ★ 消融：排除来源维度 {list(exclude_dims)} ⇒ "
-              f"保留 {len(facts)} facts")
-    for f in facts:
-        for claim in (f.get("all_claims") or []):
-            claim["authority"] = SKELETON_SOURCE_NAME
-    dest_dir = paths.per_source_facts_dir(protocol, SKELETON_SOURCE_NAME)
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    dest = dest_dir / f"{SKELETON_SOURCE_NAME}.jsonl"
-    with dest.open("w", encoding="utf-8") as fh:
-        for f in facts:
-            fh.write(json.dumps(f, ensure_ascii=False) + "\n")
-    try:
-        shown = _repo_rel(dest)
-    except ValueError:
-        shown = dest          # ★ 路径在仓库外（如测试的 tmp_path）⇒ 不崩
-    print(f"[骨架] 已物化 {len(facts)} facts → "
-          f"{shown}（authority={SKELETON_SOURCE_NAME}）")
-    return len(facts)
+#: ★ 阶段 E5（2026-11-10）：协议骨架已消解并物理移除 ⇒ 「来源维度 / 消融」机制
+#:   一并退役（``--exclude-skeleton-dims`` 已删）；profile 现在只承载 required_headers。
 
 
 def _materialize_profile_semantics(protocol: str) -> int:
@@ -701,9 +622,9 @@ def _materialize_required_headers(protocol: str) -> int:
         print(f"[必填头] {protocol} profile.json 无 required_headers ⇒ 跳过")
         return 0
 
-    dest_dir = paths.per_source_facts_dir(protocol, SKELETON_SOURCE_NAME)
+    dest_dir = paths.per_source_facts_dir(protocol, PROFILE_AUTHORITY)
     dest_dir.mkdir(parents=True, exist_ok=True)
-    dest = dest_dir / f"{SKELETON_SOURCE_NAME}.jsonl"
+    dest = dest_dir / f"{PROFILE_AUTHORITY}.jsonl"
     lines: list[str] = []
     for method in sorted(rh):
         headers = list(rh[method] or [])
@@ -721,22 +642,24 @@ def _materialize_required_headers(protocol: str) -> int:
                 "fact_id": f"f2_rh_{method}",
                 "value": {"type": "struct", "data": {"headers": headers}},
                 "epistemic_type": "normative",
-                "authority": SKELETON_SOURCE_NAME,
+                "authority": PROFILE_AUTHORITY,
                 "scope": None,
                 "evidence_summary": [f"profile:{method}.required_headers"],
                 "confidence": None,
             }],
         }
         lines.append(json.dumps(view, ensure_ascii=False))
-    # ★ 追加（骨架已用 "w" 写过该文件 ⇒ 每次构建都是「重写 + 追加」⇒ 幂等）
-    with dest.open("a", encoding="utf-8") as fh:
+    # ★★ 阶段 E6：**独立写**（不再依赖骨架先写）
+    #   旧实现是「追加」⇒ 靠骨架的 "w" 重写来保证幂等 ⇒ 骨架删除后不成立。
+    #   ⇒ 改为 "w" 覆盖 ⇒ 本文件**只含** required_headers（协议结构声明）⇒ 幂等且自洽。
+    with dest.open("w", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
     try:
         shown = _repo_rel(dest)
     except ValueError:
         shown = dest
     print(f"[必填头] 已物化 {len(lines)} 条必填头事实 → {shown}"
-          f"（authority={SKELETON_SOURCE_NAME}）")
+          f"（authority={PROFILE_AUTHORITY}）")
     return len(lines)
 
 
@@ -1298,11 +1221,6 @@ def main(argv=None) -> int:
                         choices=sorted(KNOWN_SOURCES),
                         help="本次处理的知识源（可多个；默认 rfc）。"
                              "例：--sources rfc expert_note")
-    parser.add_argument("--exclude-skeleton-dims", nargs="*", default=[],
-                        choices=["source", "traffic"],
-                        help="★ 消融用：排除协议骨架里的某些**来源维度**"
-                             "（source=源码分析产物；traffic=流量观测产物）"
-                             "⇒ 用于「规范单源能撑起多少」的消融实验")
     parser.add_argument("--no-purge", action="store_true",
                         help="★ 批次 1.6：**不清空**整个中枢（默认清空该协议的五源"
                              "抽取产物 + 语义四库）⇒ 增量/多源联合调试时保留其它源")
@@ -1476,10 +1394,15 @@ def main(argv=None) -> int:
               f"(kind 未实现) / fail-closed 失败 {failed}")
         print(f"[{source}] -> {_repo_rel(dest)}")
 
-    # ---- ③' 物化协议骨架（★ 单源调试时链路不断的前提）----------------------
-    skeleton_count = _materialize_skeleton(
-        protocol, exclude_dims=tuple(args.exclude_skeleton_dims or ()))
-    _skeleton_excluded_dims = list(args.exclude_skeleton_dims or ())
+    # ---- ③' 协议骨架（★ 阶段 E5：**已物理移除**）--------------------------
+    #   ★ 骨架（authority=profile 的 source+traffic 固化快照）已**消解**到真正的源：
+    #     · target_state / message_instance → source 源（代码分析）
+    #     · existence / method_sequence / occurrence / value_enum → traffic 源（实测）
+    #     · syntax → rfc 源（规范）
+    #   ⇒ 实测（rtsp，消解前后 fact_key 比对）：骨架 154 条中 **133 条严格匹配**
+    #     + **12 条仅 qualifiers 不同** ⇒ 真正的缺失只有 9 条 required_headers
+    #     ⇒ 已由 ``_materialize_required_headers`` 以「协议结构声明」身份独立提供（E6）。
+    #   ⇒ 消解后**知识变多**（现源 361 个唯一 fact_key vs 骨架 154）⇒ 质量不下降。
 
     # ---- ③'' 物化**会话语义三段**（★ 批次 2.5 F3）---------------------------
     #   ★ **只在构建 expert_note 源时物化** ⇒ 「知识产出与谁构建它绑定」
@@ -1550,8 +1473,8 @@ def main(argv=None) -> int:
             _key = f"{_src}:{_asp}"
             state_machine_counts[_key] = state_machine_counts.get(_key, 0) + 1
     # 协议骨架（profile 源）里物化的那部分（只数状态机类 aspect）
-    _skel_dir = paths.per_source_facts_dir(protocol, SKELETON_SOURCE_NAME)
-    _skel_file = _skel_dir / f"{SKELETON_SOURCE_NAME}.jsonl"
+    _skel_dir = paths.per_source_facts_dir(protocol, PROFILE_AUTHORITY)
+    _skel_file = _skel_dir / f"{PROFILE_AUTHORITY}.jsonl"
     if _skel_file.is_file():
         for _ln in _skel_file.read_text(encoding="utf-8").splitlines():
             _ln = _ln.strip()
@@ -1591,8 +1514,8 @@ def main(argv=None) -> int:
         print(f"[状态机] LLM 通道跳过: {exc}", file=sys.stderr)
     # ③ 协议骨架的状态机（已物化进 facts，这里**再存一份候选**⇒ 后期 LLM
     #    判别时能把「规范原生（rfc）」与「协议骨架 / 源码分析」并列对照）
-    _skel_facts = paths.per_source_facts_dir(protocol, SKELETON_SOURCE_NAME)
-    _skel_file = _skel_facts / f"{SKELETON_SOURCE_NAME}.jsonl"
+    _skel_facts = paths.per_source_facts_dir(protocol, PROFILE_AUTHORITY)
+    _skel_file = _skel_facts / f"{PROFILE_AUTHORITY}.jsonl"
     if _skel_file.is_file():
         for _ln in _skel_file.read_text(encoding="utf-8").splitlines():
             _ln = _ln.strip()
@@ -1629,8 +1552,6 @@ def main(argv=None) -> int:
     # ---- ⑥ 写本次源集合清单（唯一权威）-------------------------------------
     _write_source_manifest(protocol, sources, build_ids,
                             session_semantics_count=session_semantics_count,
-                            skeleton_excluded_dims=_skeleton_excluded_dims,
-                            skeleton_count=skeleton_count,
                             aspect_counts=aspect_counts,
                             required_headers_count=required_headers_count,
                             state_machine_counts=state_machine_counts)

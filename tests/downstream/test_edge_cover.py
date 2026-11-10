@@ -1,4 +1,4 @@
-"""tests/fused/test_edge_cover.py —— ① 结构覆盖层（贪心最小边覆盖）。"""
+"""tests/test_edge_cover.py —— ① 结构覆盖层（贪心最小边覆盖）。"""
 from __future__ import annotations
 
 from core.fused.downstream.edge_cover import edge_cover

@@ -677,9 +677,12 @@ def extract_prose_transitions(lines: list[str], file_name: str,
                               ) -> list[GraphEdge]:
     """E3：从**散文**里抽状态迁移 ⇒ ``transitions_to`` 边（medium 置信）。
 
-    ★ 实测依据：RFC 2131 的状态名**只出现在散文**里
-      （"the client reverts to INIT state" / "moving to the INIT state in the
-      DHCP state diagram"）⇒ 没有图形可解析 ⇒ 这是唯一来源。
+    ★ 实测依据（2026-11-10 更新）：RFC 2131 的状态名**同时**出现在散文与 §4.1 Figure 5
+      的 ASCII 状态图里（REQUESTING 甚至**只在图内**出现）；该图**能被识别为状态图**
+      （``_looks_like_state_graph`` → True），但没有规则能从 ASCII 画里解析出边
+      ⇒ 本模块 E2 出 0 条、E3 只出 4 条（源状态为占位 ``state:?``）。
+      ⇒ 如今状态机事实的**主要来源是 RFC 源的 LLM 通道**（dhcpv4 实测 24 条
+        target_state，证据通道 ``file:llm@state-machine``），其候选段落**包含**该 ASCII 图。
     ★ 源状态：同句里若出现 ``from the <X> state`` ⇒ 取 X；
       否则源状态**留空**（不猜）⇒ 由后续的图上分析补全。
     """

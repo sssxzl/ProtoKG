@@ -1,4 +1,4 @@
-"""tests/fused/test_vuln.py —— vuln 源（kb/历史漏洞）→ Fact 原生映射。"""
+"""tests/test_vuln.py —— vuln 源（kb/历史漏洞）→ Fact 原生映射。"""
 from __future__ import annotations
 
 from core.fused.extraction.vuln import vuln_to_facts, vuln_entry_to_facts

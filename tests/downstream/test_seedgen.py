@@ -1,4 +1,4 @@
-"""tests/fused/test_seedgen.py —— seedgen.py 入口的漏洞边界候选接入（回归测试）。
+"""tests/test_seedgen.py —— seedgen.py 入口的漏洞边界候选接入（回归测试）。
 
 固化「seedgen.py 必须包含漏洞导向层（序列型漏洞边界候选）」这一契约，防止再次出现
 「seedgen.py 漏接漏洞导向层、导致历史漏洞知识不参与生成」的盲区。

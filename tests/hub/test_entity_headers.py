@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_entity_headers.py —— 实体头机制（B2，2026-11-07）。
+"""tests/test_entity_headers.py —— 实体头机制（B2，2026-11-07）。
 
 ★ 背景：SMTP 的 ``DATA`` 命令之后是**邮件内容**（RFC 5321 §2.3.9：
   「message content includes the message header section and the possibly

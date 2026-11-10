@@ -111,7 +111,7 @@ print('CRLF =', b.count(b'\r\n'), ' loneCR =', b.count(b'\r') - b.count(b'\r\n')
 ### 7.4 改完：必须让护栏证明它真的变了
 改完不能只看「pytest 绿」——**要先确认护栏在坏版本上会红**（变异测试），
 否则无法区分「护栏有效」与「护栏根本没碰到这段代码」。
-护栏必须打在**真实执行路径**上：测被调用的函数 ≠ 测调用点（详见 `tests/fused/test_analyze_compare_index.py` 的做法）。
+护栏必须打在**真实执行路径**上：测被调用的函数 ≠ 测调用点（详见 `（该文件已随目录重组移除）` 的做法）。
 
 #### 7.4.1 ★ 变异测试**在副本上做**，不要改生产脚本（2026-10-30 真实事故）
 
@@ -133,7 +133,7 @@ s = s.replace('原写法', '变异写法')
 p.write_text(s, encoding='utf-8')
 PY
 # ③ 让护栏指向副本跑（护栏已支持 RQ4_COLLECT_SH 环境变量）
-RQ4_COLLECT_SH="$(pwd)/.tmp_mut/mutant.sh" python -m pytest tests/fused/... -q
+RQ4_COLLECT_SH="$(pwd)/.tmp_mut/mutant.sh" python -m pytest tests/... -q
 # ④ 确认变红后删掉副本即可 —— 生产脚本从未被改过，无需恢复
 rm -rf .tmp_mut
 ```

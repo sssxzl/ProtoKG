@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_source_set_filter.py —— 批次 1.6 **步 2**（组装期源过滤）。
+"""tests/test_source_set_filter.py —— 批次 1.6 **步 2**（组装期源过滤）。
 
 ★ 覆盖四条：
   ① 组装期按 ``authority ∈ source_set`` 过滤 —— **其它源的条目根本不进桶**
@@ -126,8 +126,11 @@ def test_source_set_none_keeps_everything():
     assert "vuln" in unfiltered["available_sources"]
 
 
-def test_empty_source_set_filters_everything_but_skeleton():
-    """★ 空集合 ⇒ 只剩骨架（profile），且 **methods 桶为空**。
+def test_empty_source_set_filters_everything():
+    """★ 空集合 ⇒ **什么都不进桶**（骨架也不再是例外，见阶段 E1/E2）。
+
+    ★★ 契约变更（阶段 E1/E2，2026-11-10）：空 source_set 时骨架**不再**恒放行
+      ⇒ 骨架需**显式**写进 source_set 才放行。
 
     ★ 批次 2.5（生产侧改动 ①「state_changing 兜底只补标记」）：
       兜底循环由 ``for name in sorted(set(methods) | _state_changing_from_facts)``
@@ -147,8 +150,9 @@ def test_empty_source_set_filters_everything_but_skeleton():
     assert b["methods"] == {}, \
         f"空 source_set ⇒ methods 桶应为空，实测 {sorted(b['methods'])}"
     assert "rfc" not in b["available_sources"]
-    # ★ 骨架恒允许
-    assert b["transitions"], "协议骨架被误过滤 ⇒ 单源时链路会断"
+    # ★ 阶段 E5：骨架已移除 ⇒ 空 source_set ⇒ **什么都不进桶**（含 transitions）
+    assert not b["transitions"], \
+        "空 source_set ⇒ transitions 也应为空（骨架已消解，不再恒允许）"
 
     # ★ 按源集合分流：非空集合时 rfc 的方法照常进桶（且标注来源）
     b_rfc = assemble_bundle(views, PROTOCOL, source_set=["rfc"])
@@ -185,15 +189,27 @@ def test_claim_level_pruning_drops_foreign_claims():
 # ③ 协议骨架恒允许
 # ===========================================================================
 
-def test_skeleton_profile_always_allowed():
-    """★ 协议骨架（authority=profile）**不在** source_set 里也恒允许。"""
+def test_skeleton_profile_not_allowed_unless_declared():
+    """★ 协议骨架（authority=profile）**不再恒放行** —— 必须显式纳入 source_set。
+
+    ★★ 契约变更（阶段 E1/E2，2026-11-10）：原先 ``hub_view`` 里有一行
+      ``_allowed.add(SKELETON_AUTHORITY)`` ⇒ 骨架**无条件**通过纯度闸
+      ⇒ 「闸对骨架无效」⇒ 台账数字与闸行为不一致。
+      ⇒ 现在骨架是**一个普通的源**：要它进中枢就把它**显式写进 source_set**
+      （``scripts/seedgen.py:resolve_source_set`` 会并入中枢声明的
+      ``skeleton.source``）⇒ **闸行为与声明一致**。
+    """
     views = [
         _transition_view("profile", "Init", "SETUP", "Ready",
                          fid="f1", claim_id="c1"),
     ]
+    # ① 未声明 ⇒ profile 的 claim 被剔除（纯度闸真正生效）
     b = assemble_bundle(views, PROTOCOL, source_set=["rfc"])
-    assert b["transitions"], "协议骨架被误过滤 ⇒ 单源时链路会断"
-    assert "profile" in b["available_sources"]
+    assert not b["transitions"], "profile 未被纯度闸拦住 ⇒ E1 未生效"
+    # ② 显式声明 ⇒ profile 放行（链路不断）
+    b2 = assemble_bundle(views, PROTOCOL, source_set=["rfc", "profile"])
+    assert b2["transitions"], "显式声明后 profile 应放行"
+    assert "profile" in b2["available_sources"]
 
 
 # ===========================================================================

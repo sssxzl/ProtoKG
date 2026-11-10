@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_hub_slots_and_entities.py —— 中枢重设计**阶段 A**的护栏。
+"""tests/test_hub_slots_and_entities.py —— 中枢重设计**阶段 A**的护栏。
 
 ★ 覆盖：
   ① 槽位契约（``knowledge_slots.json``）的自洽与落位判定；

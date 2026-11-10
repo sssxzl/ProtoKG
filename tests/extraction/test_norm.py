@@ -1,4 +1,4 @@
-"""tests/fused/test_norm.py —— norm → Fact 原生映射 (Layer 2 第一源 rfc)。"""
+"""tests/test_norm.py —— norm → Fact 原生映射 (Layer 2 第一源 rfc)。"""
 from __future__ import annotations
 
 from core.fused.extraction.norm import (

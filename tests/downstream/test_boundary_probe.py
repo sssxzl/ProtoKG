@@ -1,4 +1,4 @@
-"""tests/fused/test_boundary_probe.py —— 边界探针单元测试（oracle mock，不依赖虚拟机）。"""
+"""tests/test_boundary_probe.py —— 边界探针单元测试（oracle mock，不依赖虚拟机）。"""
 from __future__ import annotations
 
 from core.fused.downstream.boundary_probe import (

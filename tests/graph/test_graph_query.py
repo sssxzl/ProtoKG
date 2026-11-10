@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_graph_query.py —— Phase D（B3 检索层）的护栏。
+"""tests/test_graph_query.py —— Phase D（B3 检索层）的护栏。
 
 ★ 覆盖：
   ① M1 **k-hop 邻域**（图驱动，边类型数据驱动）；

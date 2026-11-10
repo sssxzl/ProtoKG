@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_norm_outcome_content.py —— outcome content 的「含义 | when: 条件」解析。
+"""tests/test_norm_outcome_content.py —— outcome content 的「含义 | when: 条件」解析。
 
 ★ P1-1（2026-11-01，QA 独立复核发现）
 --------------------------------------------

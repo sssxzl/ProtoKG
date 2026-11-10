@@ -1,4 +1,4 @@
-"""tests/fused/test_rule_store.py —— B-7 四库分离 + `reflow_rules`。
+"""tests/test_rule_store.py —— B-7 四库分离 + `reflow_rules`。
 
 对应 docs/实施/路线与里程碑/RFC源里程碑路线图.md §3.8 任务表 B-7（文档任务号 B5）与
 §3.3 强制机制 3（落盘隔离），以及 docs/实施/路线与里程碑/RFC源知识抽取改造方案.md §3.5

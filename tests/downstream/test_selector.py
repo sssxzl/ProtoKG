@@ -1,4 +1,4 @@
-"""tests/fused/test_selector.py —— 三层编排 + 降级。"""
+"""tests/test_selector.py —— 三层编排 + 降级。"""
 from __future__ import annotations
 
 from core.fused.downstream.selector import select_seeds

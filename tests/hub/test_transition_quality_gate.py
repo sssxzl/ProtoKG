@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_transition_quality_gate.py —— 状态机抽取的**质量闸**。
+"""tests/test_transition_quality_gate.py —— 状态机抽取的**质量闸**。
 
 ★ 闸的两条判据（均可机器判定、协议无关）：
   ① **可溯源**：状态名必须出现在该协议的 RFC 原文里；

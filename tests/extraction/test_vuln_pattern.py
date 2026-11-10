@@ -1,4 +1,4 @@
-"""tests/fused/test_vuln_pattern.py —— 漏洞模式（vuln_pattern）识别与抽取（GLMFuzz 借鉴，rule 部分）。"""
+"""tests/test_vuln_pattern.py —— 漏洞模式（vuln_pattern）识别与抽取（GLMFuzz 借鉴，rule 部分）。"""
 from __future__ import annotations
 
 import json

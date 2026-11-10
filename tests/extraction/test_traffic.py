@@ -1,4 +1,4 @@
-"""tests/fused/test_traffic.py —— traffic 源（pcap/raw 观测）→ Fact 映射。"""
+"""tests/test_traffic.py —— traffic 源（pcap/raw 观测）→ Fact 映射。"""
 from __future__ import annotations
 
 import json

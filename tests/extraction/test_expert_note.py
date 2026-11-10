@@ -1,4 +1,4 @@
-"""tests/fused/test_expert_note.py —— expert_note v3（专家判断）→ Fact 原生映射。"""
+"""tests/test_expert_note.py —— expert_note v3（专家判断）→ Fact 原生映射。"""
 from __future__ import annotations
 
 from core.fused.extraction.expert_note import expert_note_to_facts

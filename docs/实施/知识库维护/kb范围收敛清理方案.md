@@ -313,7 +313,7 @@ TLS 的 ContentType）全部指向**已不存在的 kb 源**。保留一个自�
 | `scripts/run_boundary_probe.py:39` `SSH = [...]` | 同上 |
 | `scripts/response_rewriter.py:425` `PROTO_FTP = "ftp"` | ChatAFL 富化链路的协议标签常量；`extract_ftp_messages` 有 12 个专门测试（`tests/test_response_rewriter.py` 53 passed）；**删它会打断一条独立且完整的链路** |
 | `scripts/response_rewriter.py:36-45` `FTP_METHODS` | 同上，42 个 FTP 命令，与 `targets/ftp/profile.json` 的 allowed_methods 对齐 |
-| `tests/fused/test_response_rewriter.py` 全部 53 个用例 | 纯函数级，不依赖 kb |
+| `tests/integration/test_response_rewriter.py` 全部 53 个用例 | 纯函数级，不依赖 kb |
 
 ### 2.6 其它残留（**建议一并清理，非阻塞**）
 
@@ -453,7 +453,7 @@ implicit_constraints 挂 header subject。
 # 就不是目标协议
 ```
 
-### 3.7 `tests/fused/test_rq3_focus_group.py` —— **不动**
+### 3.7 `（该批 RQ3 语料契约测试已随论文实验层移除）` —— **不动**
 
 | 行 | 内容 | 处置 |
 |---|---|---|

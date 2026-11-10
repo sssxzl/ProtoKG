@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_protocol_flags.py —— 协议级行为开关的配置化（批次 1 / A1 + A3）。
+"""tests/test_protocol_flags.py —— 协议级行为开关的配置化（批次 1 / A1 + A3）。
 
 ★ 为什么有这个文件（2026-11-07）：
   「CSeq 是否渲染成『序号 + 方法』」是**协议语义**，原先用协议名硬判：

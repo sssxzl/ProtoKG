@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_llm_ensemble_alignment.py —— D-1 / D-4 / D-7 的行为契约。
+"""tests/test_llm_ensemble_alignment.py —— D-1 / D-4 / D-7 的行为契约。
 
 本文件把「跨模型对齐的口径」固化成可执行断言。覆盖：
 

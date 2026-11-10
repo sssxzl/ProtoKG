@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_semantic_rule_projection_purity.py —— 语义规则投影的纯净与来源标注。
+"""tests/test_semantic_rule_projection_purity.py —— 语义规则投影的纯净与来源标注。
 
 ★ 背景（2026-11-07，P2-2 预检发现的两类问题）：
 

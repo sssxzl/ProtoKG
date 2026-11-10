@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_action_seq_hardening.py —— action_seq 的**安全与端点**硬化回归。
+"""tests/test_action_seq_hardening.py —— action_seq 的**安全与端点**硬化回归。
 
 覆盖 QA 独立验证（批次 1 首轮实现）查出的两个安全相关缺陷：
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_batch3_message_list_and_backfill.py —— 批次 3 的护栏。
+"""tests/test_batch3_message_list_and_backfill.py —— 批次 3 的护栏。
 
 ★ 覆盖三件事：
   ① **通道 A0d：消息清单表**（RFC 2131 §3.1 的表 2）

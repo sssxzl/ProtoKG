@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_build_hub_batch.py —— 批次 1.6 步 0/0.5 的回归用例。
+"""tests/test_build_hub_batch.py —— 批次 1.6 步 0/0.5 的回归用例。
 
 ★ 覆盖四条新行为：
   ① 批次级「**清空整个中枢**」（只清五源抽取产物；**保留**运行时富化目录）
@@ -79,69 +79,9 @@ def test_purge_keeps_semantic_when_disabled(tmp_path, monkeypatch):
 # ② 骨架物化
 # ===========================================================================
 
-def test_materialize_skeleton_writes_profile_facts(tmp_path, monkeypatch):
-    """★ 骨架物化：写进中枢的 ``profile/`` 源，authority 改标 profile。"""
-    skel = tmp_path / "profiles" / "rtsp" / "skeleton.json"
-    skel.parent.mkdir(parents=True, exist_ok=True)
-    skel.write_text(json.dumps({
-        "protocol": "rtsp",
-        "facts": [{
-            "fact_key": {"protocol": "rtsp", "version": "1.0",
-                         "subject": {"type": "method", "name": "SETUP"},
-                         "aspect": "target_state", "condition": {"type": "always"}},
-            "all_claims": [{"claim_id": "c1", "fact_id": "f1",
-                            "authority": "source", "value": {}}],
-            "resolution": {},
-        }],
-    }, ensure_ascii=False), encoding="utf-8")
-    monkeypatch.setattr(build_hub, "REPO_ROOT", tmp_path)
-    # ★ 批次 2.3 起骨架路径统一走 core.paths.target_skeleton（不再在
-    #   build_hub 内拼 REPO_ROOT）⇒ 同步 patch 该解析入口。
-    monkeypatch.setattr(
-        paths_mod, "target_skeleton",
-        lambda p: tmp_path / "profiles" / p.lower()
-        / "skeleton.json")
-    monkeypatch.setattr(paths_mod, "per_source_facts_dir",
-                        lambda p, s: tmp_path / "derived" / "per_source" / p / s
-                        / "facts")
-
-    n = build_hub._materialize_skeleton("rtsp")
-    assert n == 1
-    dest = tmp_path / "derived" / "per_source" / "rtsp" / "profile" / "facts" \
-        / "profile.jsonl"
-    assert dest.is_file()
-    fact = json.loads(dest.read_text(encoding="utf-8").splitlines()[0])
-    assert fact["all_claims"][0]["authority"] == "profile", \
-        "骨架的 authority 必须改标 profile（与本次抽取的源分得开）"
-
-
-def test_missing_skeleton_is_reported_not_silent(tmp_path, monkeypatch, capsys):
-    """★ 骨架缺失必须**显式提示**（否则单源构建会因无状态机而悄悄失败）。"""
-    monkeypatch.setattr(build_hub, "REPO_ROOT", tmp_path)
-    # ★ 同上：骨架路径统一走 core.paths.target_skeleton。
-    monkeypatch.setattr(
-        paths_mod, "target_skeleton",
-        lambda p: tmp_path / "profiles" / p.lower()
-        / "skeleton.json")
-    assert build_hub._materialize_skeleton("rtsp") == 0
-    assert "skeleton.json" in capsys.readouterr().out
-
-
 # ===========================================================================
 # ③ sources.json = 本次源集合的唯一权威
 # ===========================================================================
-
-def test_source_manifest_records_source_set_and_skeleton(tmp_path, monkeypatch):
-    monkeypatch.setattr(paths_mod, "per_source_root",
-                        lambda p: tmp_path / "per_source" / p.lower())
-    path = build_hub._write_source_manifest(
-        "rtsp", ["rfc"], {"rfc": "rb_1"}, skeleton_count=145)
-    doc = json.loads(path.read_text(encoding="utf-8"))
-    assert doc["source_set"] == ["rfc"]
-    assert doc["build_ids"] == {"rfc": "rb_1"}
-    assert doc["skeleton"]["fact_count"] == 145
-    assert doc["skeleton"]["source"] == "profile"
-
 
 # ===========================================================================
 # ④ 护栏6：窄化数据态的**条件性**豁免

@@ -1,4 +1,4 @@
-"""tests/fused/test_semantic_rules_switch.py —— D-6：语义规则参与生成的可关闭开关位。
+"""tests/test_semantic_rules_switch.py —— D-6：语义规则参与生成的可关闭开关位。
 
 对应 docs/实施/路线与里程碑/RFC源里程碑路线图.md §5.2 任务表 **D-6**（文档任务号 D6）：
 "**投票保持可关闭** | 同上 + `scripts/build_hub.py` | 默认关闭；关闭时 bundle 的
@@ -17,7 +17,7 @@
 本文件只测 `core/fused/semantic/llm_ensemble.py`（开关位）+ `rag_seedgen.assemble_bundle`
 （行为矩阵）+ `scripts/build_hub.py`（CLI 暴露）。
 
-★ 本文件**不改动** B-8 的契约文件 `tests/fused/test_bundle_projection.py`（只读）。
+★ 本文件**不改动** B-8 的契约文件 `tests/test_bundle_projection.py`（只读）。
 """
 from __future__ import annotations
 
@@ -256,7 +256,7 @@ def test_set_does_not_touch_environment(monkeypatch):
 def test_b8_contract_semantics_hold_when_switch_is_on(isolated_library):
     """★ B-8 契约所验证的**能力**在开关 ON 下**完好**（D-6 未削弱 B-8）。
 
-    B-8 的只读契约文件 `tests/fused/test_bundle_projection.py` 有两条用例
+    B-8 的只读契约文件 `tests/test_bundle_projection.py` 有两条用例
     断言的是**默认路径**的旧行为（未显式传参 ⇒ 产物带两个新键 + 自动装载
     权威库 + 投影两桶）。D-6 把「默认」改成**关闭**（路线图 D-6：
     "默认关闭；关闭时 bundle 的 `semantic_rules` 不参与任何生成"），
@@ -384,7 +384,7 @@ def test_off_bundle_is_byte_identical_to_pre_b8(monkeypatch, isolated_library):
                 if k not in ("semantic_rules", "bundle_schema_version",
                              "by_category", "entities")}
 
-    from tests.fused._compat import strip_bundle
+    from tests.extraction._compat import strip_bundle
     assert _dump(strip_bundle(stripped)) == _dump(strip_bundle(off_bundle))
 
 

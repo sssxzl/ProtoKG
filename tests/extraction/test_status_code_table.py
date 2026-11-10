@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_status_code_table.py —— P1-2：状态码的「表格形态」抽取。
+"""tests/test_status_code_table.py —— P1-2：状态码的「表格形态」抽取。
 
 ★ 背景（`打通缺口清单-20261106.md` §P1-2）：smtp 的 `statuses` 抽成 **0** 条，
   两个缺陷叠加：

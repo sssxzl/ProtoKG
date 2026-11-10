@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_required_headers_deterministic.py —— 消息级必填头的**确定性判据**。
+"""tests/test_required_headers_deterministic.py —— 消息级必填头的**确定性判据**。
 
 ★ 为什么要这个文件（2026-11-06 实测）：
   给 LLM 缓存键并入 ``prompt_version`` 后重抽，RTSP 的必填头从 1 条（CSeq）

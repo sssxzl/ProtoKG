@@ -1,4 +1,4 @@
-"""tests/fused/test_source_availability.py —— 五源分工下游决策（方法白名单降级链）。
+"""tests/test_source_availability.py —— 五源分工下游决策（方法白名单降级链）。
 
 固化「方法白名单降级链」契约，尤其 2026-10-23 修复的「observed 非空就整体采用
 导致白名单缩水」缺陷：observed 是 traffic 的**不完整实测子集**，只能用于确认

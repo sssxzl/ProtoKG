@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_graph_pipeline.py —— GraphRAG 改造**批次 1**的护栏。
+"""tests/test_graph_pipeline.py —— GraphRAG 改造**批次 1**的护栏。
 
 ★ 覆盖：
   ① 图模式注册表的自洽性（节点/边类型引用、遍历配置）；

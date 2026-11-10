@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_method_required_headers.py —— 方法级必填头抽取（第 2 步，2026-11-07）。
+"""tests/test_method_required_headers.py —— 方法级必填头抽取（第 2 步，2026-11-07）。
 
 ★ 背景：必填头清单原是**手写**的（`profile.seedgen.required_headers`），
   漏一项就是**静默**的（种子发无头报文 ⇒ 非法报文 ⇒ fuzzer 白跑）。

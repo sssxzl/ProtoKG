@@ -1,4 +1,4 @@
-"""tests/fused/test_rfc_extractor_a1.py —— rfc 抽取器 A1 改造的单元测试。
+"""tests/test_rfc_extractor_a1.py —— rfc 抽取器 A1 改造的单元测试。
 
 覆盖 A1.1~A1.7 + A0.4/A0.5：
   - TOC 前置隔离（A1.2）

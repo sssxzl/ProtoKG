@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_transition_table.py —— 批次 2.1（P1）RFC 状态机抽取。
+"""tests/test_rfc_transition_table.py —— 批次 2.1（P1）RFC 状态机抽取。
 
 ★ 背景：RFC 源此前**不产** `kind="transition"` 的 norm
   （`norm.py::transition_norm_to_fact` 明写「无数据源（死代码）」）

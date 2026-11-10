@@ -1,4 +1,4 @@
-"""tests/fused/test_validation.py —— fail-closed 验证。"""
+"""tests/test_validation.py —— fail-closed 验证。"""
 from __future__ import annotations
 
 import pytest

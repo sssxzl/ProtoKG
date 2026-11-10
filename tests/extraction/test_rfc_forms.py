@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_forms.py —— RFC 内容形态分类层（协议无关 / 位置无关）。
+"""tests/test_rfc_forms.py —— RFC 内容形态分类层（协议无关 / 位置无关）。
 
 ★ 覆盖：
   ① 行级与块级判据（表格 / ASCII 图 / ABNF / 示例 / 规范性 / 抬头页眉 / 目录）；

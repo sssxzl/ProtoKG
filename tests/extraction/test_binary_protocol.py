@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_binary_protocol.py —— **二进制协议**处理流程（2026-11-07）。
+"""tests/test_binary_protocol.py —— **二进制协议**处理流程（2026-11-07）。
 
 ★ 覆盖三层：
   ① **协议类型判断阶段**（``core/kinds``）—— 文本 vs 二进制，配置优先 + 自动探测；

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_multifile_and_table_rows.py —— 多 RFC 消歧 + 表格行排除（2026-11-07）。
+"""tests/test_multifile_and_table_rows.py —— 多 RFC 消歧 + 表格行排除（2026-11-07）。
 
 ★ 三个问题的回归护栏：
   ① **协议名大小写校验**（`build_hub.py`）—— 目录名含大写的协议双向都过不了；

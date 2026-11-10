@@ -1,4 +1,4 @@
-"""tests/fused/test_generic_danger.py —— ② 通用危险层（规则推导，不调 LLM）。"""
+"""tests/test_generic_danger.py —— ② 通用危险层（规则推导，不调 LLM）。"""
 from __future__ import annotations
 
 from core.fused.downstream.generic_danger import generic_danger

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_response_oracle.py —— 三轴结果模型 + 判定顺序 + 期望响应词表防漂移。
+"""tests/test_response_oracle.py —— 三轴结果模型 + 判定顺序 + 期望响应词表防漂移。
 
 覆盖 C 阶段的四个修正点：
 

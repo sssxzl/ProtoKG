@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_action_seq_batch1_regress.py —— 批次 1 **第三轮**修复的回归用例。
+"""tests/test_action_seq_batch1_regress.py —— 批次 1 **第三轮**修复的回归用例。
 
 对应 QA 第二段复验查出的 **5 个开放缺陷**（R-1 / R-2 / P1-2 / P2-1 / P2-2 / P2-3）
 与 team-lead 复现确认的两个根因：

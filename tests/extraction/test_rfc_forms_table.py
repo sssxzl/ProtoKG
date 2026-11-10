@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_forms_table.py —— 表格腿「按列角色」解析（协议无关）。
+"""tests/test_rfc_forms_table.py —— 表格腿「按列角色」解析（协议无关）。
 
 ★ 补齐 S1 的测试缺口：`core/fused/rfc_forms.parse_state_table()` 已在生产路径
   （`rfc_extractor._extract_transition_tables_by_form`）但一度**零测试覆盖**。

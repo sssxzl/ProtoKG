@@ -1,4 +1,4 @@
-"""tests/fused/test_source_retrieval.py —— AutoSeeder 检索层（切片/query/后处理）。"""
+"""tests/test_source_retrieval.py —— AutoSeeder 检索层（切片/query/后处理）。"""
 from __future__ import annotations
 
 import tempfile

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_channel_e_and_llm_transitions.py —— 批次 2.2。
+"""tests/test_rfc_channel_e_and_llm_transitions.py —— 批次 2.2。
 
 ★ 覆盖两组：
 

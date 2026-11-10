@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_seed_legality.py —— 种子合法性三修（2026-11-07）。
+"""tests/test_seed_legality.py —— 种子合法性三修（2026-11-07）。
 
 ★ 修的三个问题（全链路审计 §0.11 的三个 P0 级）：
 

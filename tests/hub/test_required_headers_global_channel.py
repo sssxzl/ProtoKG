@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_required_headers_global_channel.py —— P2-1：消息级必填头的活通道。
+"""tests/test_required_headers_global_channel.py —— P2-1：消息级必填头的活通道。
 
 ★ 背景（`打通缺口清单-20261106.md` §P2-1）：
   RFC 源会抽出 ``aspect=required_header_global`` 的事实（实测 rtsp 1 条 CSeq、

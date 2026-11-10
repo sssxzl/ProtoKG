@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_semantic_chain.py —— 批次 1.5：RFC 语义链路的回归用例。
+"""tests/test_semantic_chain.py —— 批次 1.5：RFC 语义链路的回归用例。
 
 ★ 链路（此前有**三级断链**，机制齐备但没接线）::
 

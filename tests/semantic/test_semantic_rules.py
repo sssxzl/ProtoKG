@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_semantic_rules.py —— B-5（operator/operand 模式表 + 字段绑定）。
+"""tests/test_semantic_rules.py —— B-5（operator/operand 模式表 + 字段绑定）。
 
 对应 docs/实施/路线与里程碑/RFC源里程碑路线图.md §3.8 任务表 **B-5** 行（:673）的验收标准：
 

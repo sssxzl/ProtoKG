@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_consumer_wiring.py —— 批次 1.6 **步 5**（消费端接线）。
+"""tests/test_consumer_wiring.py —— 批次 1.6 **步 5**（消费端接线）。
 
 ★ 覆盖六条：
   ① 消费端能读中枢的 ``sources.json``（本次源集合 = 唯一权威）；

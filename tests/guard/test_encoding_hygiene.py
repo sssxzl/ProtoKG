@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_encoding_hygiene.py —— **编码卫生护栏**（防乱码复发）。
+"""tests/test_encoding_hygiene.py —— **编码卫生护栏**（防乱码复发）。
 
 ★ 背景（批次 2.5 收尾）
   发现部分 UTF-8 文本在读写或解码环节被按错误字符集解析，产生 mojibake

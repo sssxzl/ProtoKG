@@ -233,7 +233,7 @@ DNS 的字段（QNAME/QTYPE/QCLASS/RDLENGTH）是**表格 + ABNF 形态**，需 
 - `--protocol` 改为**单值**；不传且不加 `--all-protocols` → `ap.error` 退出
 - 新增 `--all-protocols`：**显式**批量（仅用于跨协议回归对比），并打印「[批量模式]」提示
 
-**新增 `tests/fused/test_single_protocol_single_source.py`**（13 个用例）
+**新增 `tests/hub/test_single_protocol_single_source.py`**（13 个用例）
 把约束固化为可自动验证的测试：
 - CLI：多源被拒 / `--protocol` 必填 / 未知协议 exit 2 / 非法源被拒
 - 清理范围：只清指定源，其他源文件**必须仍在**（核心回归）
@@ -291,7 +291,7 @@ md5sum derived/per_source/sip/rfc/facts/rfc.jsonl   # 两次应一致
 # 5) 测试
 python -m pytest tests/ -q      # 37 failed / 646 passed / 20 errors（失败全为预存）
 python -m pytest tests/fused/test_rfc_extractor_a1.py -q            # 36 passed
-python -m pytest tests/fused/test_single_protocol_single_source.py -q  # 13 passed
+python -m pytest tests/hub/test_single_protocol_single_source.py -q  # 13 passed
 ```
 
 ---

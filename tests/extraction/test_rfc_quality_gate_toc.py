@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_quality_gate_toc.py —— A 阶段质量闸的 **TOC 隔离检出力**测试。
+"""tests/test_rfc_quality_gate_toc.py —— A 阶段质量闸的 **TOC 隔离检出力**测试。
 
 背景（审查发现，2026-11-01）
 ---------------------------

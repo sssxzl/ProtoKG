@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_action_seq_r3_prologue.py —— R-3（P0）回归用例。
+"""tests/test_action_seq_r3_prologue.py —— R-3（P0）回归用例。
 
 ★ R-3（P0，QA 第二轮新查出）：⑤（action-seq 变异层）种子**从未**被
   ``_prepend_session_prologue`` 补 prologue。

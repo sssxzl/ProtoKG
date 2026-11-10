@@ -36,14 +36,16 @@ CLASS_ENV = "L3"         # 目标环境事实
 #: **源 → 类别**（台账按源判定「这条知识是不是本次源集合的」）。
 #:   ★ ``rfc`` = L1（规范知识）；其余四源都是 L2（实现/观测/漏洞/专家知识）；
 #:   ``profile`` = 协议骨架（**混合** ⇒ 其内部按 origin 维度再分，
-#:   由 ``build_hub --exclude-skeleton-dims`` 控制）。
+#:   ★ 阶段 E5：骨架已消解 ⇒ 改为「由 build_hub 的 source_set 控制」）。
 SOURCE_CLASS: dict[str, str] = {
     "rfc": CLASS_SPEC,
     "expert_note": CLASS_IMPL,
     "traffic": CLASS_IMPL,
     "vuln": CLASS_IMPL,
     "source": CLASS_IMPL,
-    "profile": "MIXED",
+    # ★ 阶段 E5：协议骨架已消解 ⇒ profile 只承载 required_headers（协议结构声明）
+    #   ⇒ 不再是「source+traffic 固化」的混合知识 ⇒ 归 L2（人工档案）。
+    "profile": "L2",
 }
 
 #: **桶 → 通道**（桶的内容来自哪条知识通道 ⇒ 台账给它 class/owner）。
@@ -164,7 +166,7 @@ def summarize(protocol: str) -> dict:
 
 
 def source_class(source: str) -> str:
-    """某个知识源的类别（``rfc``→L1；其余→L2；``profile``→MIXED）。"""
+    """某个知识源的类别（``rfc``→L1；其余→L2，含 ``profile`` 协议档案）。"""
     return SOURCE_CLASS.get(str(source or "").strip().lower(), CLASS_IMPL)
 
 
@@ -224,7 +226,7 @@ def build_ledger(bucket_sources: dict, protocol: str,
             cls = source_class(src)
             owner = src
             # profile（协议骨架）是**混合** ⇒ 其内部按 origin 维度区分，
-            # 由 build_hub --exclude-skeleton-dims 控制 ⇒ 台账只标 MIXED。
+            # ★ 阶段 E5：骨架已消解 ⇒ 台账按 L2 标注（不再有 MIXED 档）。
             if chan and src == "profile":
                 cls = str(chans.get(chan, {}).get("class") or cls)
                 owner = str(chans.get(chan, {}).get("owner") or owner)
@@ -255,7 +257,7 @@ def build_ledger(bucket_sources: dict, protocol: str,
         #     产出**不同的 bundle** ⇒ 破坏「默认路径逐字节不变」的不变量
         #     （护栏 test_default_call_is_byte_identical_to_unfiltered 抓到过）。
         #   ⇒ 需要看本次源集合时，由**调用方**（seedgen）打印即可。
-        "skeleton_dims": _skeleton_dims(protocol),
+        "protocol_structure": _protocol_structure(protocol),
         "buckets": ledger,
         "violations": violations,
         "violation_count": len(violations),
@@ -263,12 +265,11 @@ def build_ledger(bucket_sources: dict, protocol: str,
     }
 
 
-def _skeleton_dims(protocol: str) -> dict:
-    """中枢记录的**骨架来源维度**（谁构建时排除了哪些维度）。
+def _protocol_structure(protocol: str) -> dict:
+    """中枢记录的**协议结构声明**（required_headers 等，来自 profile.json）。
 
-    ★ 协议骨架是**混合**知识 ⇒ 台账无法从桶级信息判定它是否干净
-      ⇒ 由 ``build_hub --exclude-skeleton-dims`` 在**构建时**决定，
-      并记进中枢 ``sources.json`` ⇒ 台账读它 ⇒ 审计可判。
+    ★ 阶段 E5：协议骨架已**消解并物理移除** ⇒ 这里不再有「骨架来源维度」
+      ⇒ 只登记「协议结构声明」的条数 ⇒ 台账仍可审计。
     """
     from core import paths as P
     f = P.hub_root() / "sources.json"
@@ -278,11 +279,8 @@ def _skeleton_dims(protocol: str) -> dict:
         doc = json.loads(f.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return {}
-    sk = doc.get("skeleton") or {}
-    return {"excluded_dims": sk.get("excluded_dims") or [],
-            "fact_count": sk.get("fact_count")}
-
-
+    st = doc.get("protocol_structure") or {}
+    return {"excluded_dims": [], "fact_count": st.get("fact_count") or 0}
 __all__ = [
     "CLASS_SPEC", "CLASS_IMPL", "CLASS_ENV",
     "SOURCE_CLASS", "BUCKET_CHANNEL",

@@ -1,4 +1,4 @@
-"""tests/fused/test_rfc_extractor.py —— rfc 源（RFC 规范文本 → rfc norm）。"""
+"""tests/test_rfc_extractor.py —— rfc 源（RFC 规范文本 → rfc norm）。"""
 from __future__ import annotations
 
 from core.fused.extraction.rfc_extractor import (

@@ -1,4 +1,4 @@
-"""tests/fused/test_build_hub_clean.py —— build_hub._clean_per_source 只清五源、保留运行时回写。
+"""tests/test_build_hub_clean.py —— build_hub._clean_per_source 只清五源、保留运行时回写。
 # ★ 中枢**共用一套** ⇒ 隔离中枢根（不污染仓库 derived/）
 monkeypatch.setattr(paths, "hub_root",
                     lambda *a: tmp_path / "hub")

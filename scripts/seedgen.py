@@ -879,6 +879,25 @@ def _write_dictionary(out: Path, protocol: str, dict_kind: str,
     raise ValueError(f"未知字典种类: {dict_kind}")
 
 
+def _skeleton_source(protocol: str) -> str:
+    """中枢声明的**协议骨架源名**（读 ``sources.json`` 的 ``skeleton.source``）。
+
+    ★ 阶段 E2：骨架不再是「纯度闸里的特权」，而是**显式纳入源集合的一个源**
+      ⇒ 台账（``by_source``）里能看到它 ⇒ 闸行为与声明一致。
+
+    ★ **兼容期**：中枢**没有声明**（``sources.json`` 缺失或无 ``skeleton`` 段）
+      ⇒ 返回空 ⇒ **不并入** ⇒ 保持原有「**不过滤**」语义（不擅自改变旧行为）。
+    """
+    try:
+        manifest = load_source_manifest(protocol)
+    except Exception:            # noqa: BLE001
+        manifest = {}
+    if not manifest:
+        return ""
+    skel = manifest.get("skeleton") or {}
+    return str(skel.get("source") or "").strip().lower()
+
+
 def resolve_source_set(protocol: str,
                        cli_sources: list | None = None) -> tuple[list[str], str]:
     """★ 批次 1.6 步 5：解析「本次消费的知识源集合」。

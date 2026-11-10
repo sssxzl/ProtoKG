@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_bundle_provenance.py —— 批次 1.6 **步 3**（溯源保留）。
+"""tests/test_bundle_provenance.py —— 批次 1.6 **步 3**（溯源保留）。
 
 ★ 覆盖五条：
   ① 桶映射表 ``_BUCKET_BY_KIND`` **逐组合验证**（每个 ``(类型, aspect)``

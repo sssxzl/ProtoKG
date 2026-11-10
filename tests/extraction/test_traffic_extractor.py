@@ -1,4 +1,4 @@
-"""tests/fused/test_traffic_extractor.py —— traffic extractor（client.log/rtsp.csv → norm）。"""
+"""tests/test_traffic_extractor.py —— traffic extractor（client.log/rtsp.csv → norm）。"""
 from __future__ import annotations
 
 from core.fused.extraction.traffic_extractor import (

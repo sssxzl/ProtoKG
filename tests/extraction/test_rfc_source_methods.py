@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_source_methods.py —— 「RFC 源方法集」的五种形态。
+"""tests/test_rfc_source_methods.py —— 「RFC 源方法集」的五种形态。
 
 ★ 五种形态（① 章节标题 / A′ 括号 / B ABNF 枚举 / **D ABNF 命令规则字面量**
   / **E 散文命令格式声明**）：

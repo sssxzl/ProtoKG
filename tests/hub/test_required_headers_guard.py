@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_required_headers_guard.py —— 必填头覆盖守卫（2026-11-07）。
+"""tests/test_required_headers_guard.py —— 必填头覆盖守卫（2026-11-07）。
 
 ★ 为什么有这个文件：
   必填头清单是**人工撰写**的（`profile.seedgen.required_headers`）。

@@ -303,19 +303,6 @@ def target_profile(protocol: str) -> Path:
     return targets_root() / protocol.lower() / "profile.json"
 
 
-def target_skeleton(protocol: str) -> Path:
-    """profiles/<protocol>/skeleton.json（**协议骨架**）。
-
-    ★ 批次 1.6 步 0.5 引入：协议骨架是「跨实验复用的协议结构」（消息实例 +
-      目标状态 + 方法序列 + 取值枚举），不属于任何单一知识源 ⇒ 固化为
-      **入库资产**，每次构建重新物化进中枢，保证单源构建时链路不断。
-
-    ★ 批次 2.3：骨架内部的 facts 带**来源维度**（source / traffic），
-      供消融实验按维度排除。
-    """
-    return targets_root() / protocol.lower() / "skeleton.json"
-
-
 def target_rfc_config(protocol: str) -> Path:
     """profiles/<protocol>/rfc_config.json（rfc 源的协议专属抽取配置）。
 
@@ -353,7 +340,6 @@ __all__ = [
     "seeds_dir",
     "targets_root",
     "target_profile",
-    "target_skeleton",
     "target_rfc_config",
     "target_resources",
     "target_request_templates",

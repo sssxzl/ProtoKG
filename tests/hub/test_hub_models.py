@@ -1,4 +1,4 @@
-"""tests/fused/test_models.py —— Layer 0 数据结构测试。"""
+"""tests/test_models.py —— Layer 0 数据结构测试。"""
 from __future__ import annotations
 
 import pytest

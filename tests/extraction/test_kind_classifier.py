@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_kind_classifier.py —— 「从内容判定类别」独立通道的护栏。
+"""tests/test_kind_classifier.py —— 「从内容判定类别」独立通道的护栏。
 
 ★ 背景：GraphRAG 改造批次 2 / S1（独立通道）+ S2（E-1 对照实验）。
 ★ 旧通道 = 章节号配置（``_section_kind``）；新通道 = 内容判据（本模块）。

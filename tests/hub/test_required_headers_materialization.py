@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_required_headers_materialization.py —— 批次 1.6 **步 4**。
+"""tests/test_required_headers_materialization.py —— 批次 1.6 **步 4**。
 
 ★ 覆盖六条：
   ① 物化产生正确的事实（条数 / 方法 / 头名 / authority=profile）；

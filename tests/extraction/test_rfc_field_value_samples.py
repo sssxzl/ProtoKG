@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_field_value_samples.py —— 批次 2.0（P0）RFC 字段取值样本。
+"""tests/test_rfc_field_value_samples.py —— 批次 2.0（P0）RFC 字段取值样本。
 
 ★ 背景：RFC 源此前只贡献 syntax + definition ⇒ 知识中枢 ``headers`` 桶
   **取值池大面积为空**（rtsp 28/58 = 48%、sip 26/63 = 41%，且 sip 的

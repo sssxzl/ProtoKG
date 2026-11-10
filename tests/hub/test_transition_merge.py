@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_transition_merge.py —— D′ 跨块 PSM 合并（PSMBENCH 第③步）。
+"""tests/test_transition_merge.py —— D′ 跨块 PSM 合并（PSMBENCH 第③步）。
 
 ★ 设计要点（2026-11-06 实测，勿改回无条件合并）：
   · rtsp：表格腿 14 条 与 LLM 腿 14 条**集合完全相同**，0 冲突

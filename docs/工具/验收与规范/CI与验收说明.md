@@ -184,7 +184,7 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 
 | 文件 | 条数 |
 |---|---|
-| `tests/fused/test_rq3_focus_group.py` | 22 |
+| `（该批 RQ3 语料契约测试已随论文实验层移除）` | 22 |
 | `tests/fused/test_rq3_manifest.py` | 6 |
 | `tests/fused/test_rq3_dict.py` | 3 |
 | `tests/fused/test_rag_seedgen.py` | 2 |

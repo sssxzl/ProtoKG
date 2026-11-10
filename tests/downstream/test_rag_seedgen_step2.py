@@ -1,4 +1,4 @@
-"""tests/fused/test_rag_seedgen_step2.py —— 第二步：subgraph 检索 + ReAct + 落盘。"""
+"""tests/test_rag_seedgen_step2.py —— 第二步：subgraph 检索 + ReAct + 落盘。"""
 from __future__ import annotations
 
 from core.fused.downstream.rag_seedgen import (

@@ -156,7 +156,9 @@ def _resolve_semantic_rules(semantic_rules: Optional[list],
             out.append(plain)
     return out
 
-SKELETON_AUTHORITY = "profile"
+PROFILE_AUTHORITY = "profile"
+#: ★ 阶段 E5：协议骨架已物理移除 ⇒ 「profile」authority 现在只承载
+#:   **协议结构声明**（required_headers）⇒ 不再是跨源污染通道。
 
 _GLOBAL_REQUIRED_KEY = "*"
 
@@ -226,7 +228,7 @@ def _select_active_transitions(by_source: dict[str, list]) -> list:
       （字段实例退化；``RECORD`` 无实例 ⇒ 该边消息无字段，**已知缺陷**，
       全源模式下因 ``allowed_methods`` 不含 RECORD 会自动裁掉该边）。
     """
-    for _auth in (RFC_AUTHORITY, SKELETON_AUTHORITY):
+    for _auth in (RFC_AUTHORITY, PROFILE_AUTHORITY):
         _chosen = by_source.get(_auth) or []
         if _chosen:
             return sorted(set(_chosen))
@@ -482,7 +484,7 @@ def build_view(views: list[dict], protocol: str = "rtsp",
             ``sources.json``）。给定 ⇒ 组装期**按 claim 的 authority 过滤**：
             非集合内的 claim **直接不进桶**（不是「进去再标记」）。
             **缺省（None）= 不过滤** ⇒ 与本参数引入前**逐字节一致**。
-            ★ 协议骨架（authority = ``profile``）**恒允许** —— 它是跨实验复用的
+    ★ 协议骨架已于阶段 E5（2026-11-10）**物理移除** ⇒ profile（协议档案）现在
               协议结构（状态机 / 消息实例 / 方法存在性 / 头取值），
               **不是**某次抽取的源派生知识 ⇒ 单源调试时链路不断。
         apply_allowed_methods: 是否用 ``profile.allowed_methods``（源码侧命令白名单）
@@ -573,8 +575,11 @@ def build_view(views: list[dict], protocol: str = "rtsp",
     if source_set is not None:
         _allowed = {str(s).strip().lower() for s in source_set
                     if str(s).strip()}
-        # ★ 协议骨架恒允许（跨实验复用的协议结构，不是源派生知识）
-        _allowed.add(SKELETON_AUTHORITY)
+        # ★★ 阶段 E1：**不再无条件放行协议骨架** ⇒ 纯度闸对**所有源**真正生效。
+        #   骨架（authority=profile）现在与其他源**一视同仁**：
+        #   要它进中枢，就把它**显式写进 source_set**
+        #   （见 scripts/seedgen.py:resolve_source_set —— 它会并入中枢声明的
+        #     skeleton.source）⇒ 台账可见、闸行为与声明一致。
 
     for v in views:
         fk = v.get("fact_key") or {}
@@ -589,8 +594,10 @@ def build_view(views: list[dict], protocol: str = "rtsp",
                       if str(c.get("authority") or "").strip().lower() in _allowed]
             if not claims:
                 continue
-        # ★★ P0-1：严格单源（`include_skeleton_methods=False`）下，
-        #   骨架（profile）的 method `existence` 事实**不得新建 `methods` 桶条目**。
+        # ★★ P0-1（**阶段 E5 后已成死分支**）：严格单源下 profile 的 method
+        #   `existence` 事实**不得新建 `methods` 桶条目**。
+        #   ★ 骨架已物理移除 ⇒ profile 只产 required_headers ⇒ **不再有 existence 事实**
+        #   ⇒ 该条件永不满足（保留作防御：若将来 profile 再产 existence 仍生效）。
         #   为什么必须挡在**这里**（by_source 登记之前）：
         #     · `apply_allowed_methods` 只做**裁剪**（删 RFC 有、白名单没有的），
         #       做不了**并入**；而 `("method","existence") → "methods"` 的映射
@@ -598,11 +605,12 @@ def build_view(views: list[dict], protocol: str = "rtsp",
         #     · 因此必须在「进桶」之前拦，否则 `by_source` 台账会把「未采用」的
         #       事实记成「已采用」⇒ 溯源失真。
         #   只挡「新建」：已有条目（RFC 侧 `definition` 建过）仍允许补 `observed_by`。
+        #   ★ 2026-11-10：profile 的 existence 事实已归零 ⇒ 上述闸**不再被触发**。
         if (not include_skeleton_methods
                 and stype == "method" and aspect == "existence"
                 and sname not in methods
                 and all(str(c.get("authority") or "").strip().lower()
-                        == SKELETON_AUTHORITY for c in claims)):
+                        == PROFILE_AUTHORITY for c in claims)):
             continue
         val = None
         main_auth = ""    # P0：主 claim 的来源
@@ -812,7 +820,8 @@ def build_view(views: list[dict], protocol: str = "rtsp",
     #     **使用**（消费端用哪套）是两件事 ⇒ 本期只做前者 + 预留后者接口。
     #   ★ 当前采用规则见 `_select_active_transitions()`：**规范原生（rfc）优先，
     #     协议骨架兜底**（2026-11-05 修正）。旧规则是「骨架优先」⇒ RTSP 采用了
-    #     骨架那 38 条 SIP 式状态名的边（RFC 原文命中 0/6）⇒ 种子状态路径
+    #     ★ 阶段 E5：骨架已物理移除 ⇒ 那 38 条（SIP 式状态名，RFC 原文命中 0/6）已随之消失
+    #     ⇒ 现在采用的是 **RFC 原生状态机**（rtsp 14 条：Init/Ready/Playing/Recording）
     #     精确率 **0%**；改用 RFC 原生那 14 条 ⇒ 精确率 **100%**
     #     （依据：``local/状态机消费口径对照实验报告.md（已移除）`（已移除）`）。
     #   ★ 后期 LLM 判别时**只需替换 `_select_active_transitions()`** 这一个函数。
@@ -893,6 +902,8 @@ def build_view(views: list[dict], protocol: str = "rtsp",
     #     **解耦**。原实现让两者共用一个旗标 ⇒ 默认路径（全源、不裁剪方法）
     #     反而禁止迁移 ⇒ rtsp 的骨架实例键（Idle--SETUP-->Ready）与采用的转移
     #     （Init--SETUP-->Ready）精确命中 0 条 ⇒ `message_instances` **恒为 0**
+    #     ★ 阶段 E5：骨架删除后**全仓已无 message_instance 事实** ⇒ 恒为 0 的原因
+    #       变成「没有实例来源」（而非本段描述的键不匹配）；举例键在旧骨架里本就不存在
     #     ⇒ 消息退回「必填头 + 取值池首值（池空则空串）」，同字段全方法同值、
     #     方法特有字段组合全丢（实测）。
     #     解耦后默认允许迁移；迁移出来的实例**逐个标注出处**（provenance），

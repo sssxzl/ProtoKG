@@ -1,4 +1,4 @@
-"""tests/fused/test_rfc_constraint_span.py —— B-3（约束候选带 span）+ B-4（norm_id 冲突修复）。
+"""tests/test_rfc_constraint_span.py —— B-3（约束候选带 span）+ B-4（norm_id 冲突修复）。
 
 B-3 验收（对应 docs/实施/路线与里程碑/RFC源里程碑路线图.md §3.8 任务表）：
   ① 候选含 `span_start` / `span_end` / `section_path` / `spec_version`；

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/fused/test_rfc_logical_sentences.py —— B-13（约束候选按**逻辑句**切句）。
+"""tests/test_rfc_logical_sentences.py —— B-13（约束候选按**逻辑句**切句）。
 
 背景
 ----

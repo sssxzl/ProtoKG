@@ -1,4 +1,4 @@
-"""tests/fused/test_action_seq.py —— ⑤ 字段级 action-sequence 变异（批次 1）。
+"""tests/test_action_seq.py —— ⑤ 字段级 action-sequence 变异（批次 1）。
 
 覆盖（对应验收 1~8）：
   · ``apply_actions`` 的每个 op（add / remove / update）× 每个 field_path 类型
