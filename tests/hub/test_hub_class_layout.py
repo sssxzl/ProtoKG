@@ -71,8 +71,8 @@ def test_classify_uses_aspect_map():
         ("C_constraints", "required_headers")
     assert hub_layout.classify(_fact("binary_layout", "x", stype="header")) == \
         ("D_construction", "layout")
-    assert hub_layout.classify(_fact("occurrence", "x", stype="header")) == \
-        ("E_observation", "frequency")
+    assert hub_layout.classify(_fact("value_enum_observed", "x", stype="header")) == \
+        ("E_observation", "observed_samples")
 
 
 def test_classify_falls_back_without_losing_data():

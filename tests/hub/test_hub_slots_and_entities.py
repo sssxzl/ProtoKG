@@ -54,7 +54,7 @@ def test_locate_by_aspect_and_entity_type():
     assert locate("legal_boundary", "header") == \
         ("C_constraints", "value_constraints")
     assert locate("binary_layout", "header") == ("D_construction", "layout")
-    assert locate("occurrence", "header") == ("E_observation", "frequency")
+    assert locate("value_enum_observed", "header") == ("E_observation", "observed_samples")
 
 
 def test_locate_unknown_aspect_returns_none():

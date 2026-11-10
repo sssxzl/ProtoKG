@@ -24,18 +24,6 @@
       "description": "对象是否存在（bool）"
     },
     {
-      "name": "occurrence",
-      "value_type": "scalar",
-      "applicable_subject_types": [
-        "header",
-        "method",
-        "status"
-      ],
-      "resolution_semantics": "consensus",
-      "cardinality": "one",
-      "description": "出现次数（int）"
-    },
-    {
       "name": "relation_to_other",
       "value_type": "struct",
       "applicable_subject_types": [

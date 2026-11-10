@@ -32,7 +32,7 @@ ALL_KINDS = (
     ("method", "session_header"), ("method", "url_template"),
     ("method", "legal_boundary"), ("method", "vuln_pattern"),
     ("header", "syntax"), ("header", "definition"),
-    ("header", "value_enum"), ("header", "occurrence"),
+    ("header", "value_enum"),
     ("header", "security_property"), ("header", "legal_boundary"),
     ("header", "response_expectation"), ("header", "vuln_pattern"),
     ("relation", "target_state"), ("relation", "method_sequence"),
@@ -42,9 +42,10 @@ ALL_KINDS = (
 )
 
 #: ★ 已知**不进任何桶**的组合（既有行为，本步不改，只如实记录）。
-#:   `status` + `occurrence` ⇒ `assemble_bundle` 只处理 status/definition
+#:   ★ 2026-11-11：`occurrence`（实测频次）已整体删除 ⇒ 此表清空
 #:   ⇒ 真实骨架里实测 13 条这样的事实被丢弃。
-NO_BUCKET_KINDS = (("status", "occurrence"),)
+#: ★ 2026-11-11：`occurrence`（实测频次）已删除 ⇒ 无「有意不映射」的组合
+NO_BUCKET_KINDS = ()
 
 
 #: ★ 测试用的方法名：必须在 rtsp 的 ``allowed_methods`` 里（否则会被白名单过滤），

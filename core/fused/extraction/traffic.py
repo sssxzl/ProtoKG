@@ -6,10 +6,10 @@ traffic 源现走确定性抽取（core/fused/traffic_extractor.py 从数据流�
 
 kind → 映射（epistemic 一律 observed）:
   message      method=DESCRIBE occurrences=1       → method  + existence（bool）
-  field        CSeq header occurrences=10          → header  + occurrence（int）
+  field        CSeq header occurrences=10          → header  + value_enum_observed（set）
   field        unique URLs=2 samples=[...]         → header  + value_enum_observed（set）
   state_machine observed transitions: A → B → C    → relation + method_sequence（相邻对）
-  outcome      status code distribution: {...}     → status  + occurrence（int）
+  outcome      status code distribution: {...}     → status  + （不产出 fact：实测频次无意义）
   protocol     transport distribution / methods    → protocol + value_enum_observed（set）
   actor        RTSP server observed on ports [...] → actor   + value_enum（set）
 
@@ -86,14 +86,6 @@ def parse_message(content: str) -> Optional[str]:
     """'method=DESCRIBE occurrences=1' → 'DESCRIBE'。"""
     m = re.search(r"method=(\S+)", content)
     return m.group(1).upper() if m else None
-
-
-def parse_field_occurrence(content: str) -> Optional[tuple[str, int]]:
-    """'CSeq header occurrences=10' → ('CSeq', 10)。"""
-    m = re.search(r"(\S+)\s+header\s+occurrences=(\d+)", content)
-    if m:
-        return m.group(1), int(m.group(2))
-    return None
 
 
 def parse_field_samples(content: str) -> Optional[list[str]]:
@@ -188,11 +180,9 @@ def _message_facts(norm: dict[str, Any], quote: str) -> list[Fact]:
 
 def _field_facts(norm: dict[str, Any], quote: str) -> list[Fact]:
     content = norm.get("content", "")
-    occ = parse_field_occurrence(content)
-    if occ:
-        name, n = occ
-        return [_make_fact(Subject(type="header", name=name), "occurrence",
-                           Value(type="scalar", data=n), norm, quote)]
+    # ★ 2026-11-11：删除「实测频次」（occurrence）⇒ 字段的 ``occurrences=N`` **不再产出 fact**
+    #   （理由：知识抽取层**面向知识源**⇒ 源码/RFC/注记里得不到「实测频次」
+    #   ⇒ 只有抓包才有 ⇒ 属于**投放期观测**，不是协议知识 ⇒ 不该占知识维度）
     samples = parse_field_samples(content)
     if samples:
         name = norm.get("name", "") or "field"
@@ -228,11 +218,9 @@ def _state_machine_facts(norm: dict[str, Any], quote: str) -> list[Fact]:
 
 
 def _outcome_facts(norm: dict[str, Any], quote: str) -> list[Fact]:
-    facts = []
-    for code, n in parse_outcome(norm.get("content", "")):
-        facts.append(_make_fact(Subject(type="status", name=code), "occurrence",
-                                Value(type="scalar", data=n), norm, quote))
-    return facts
+    # ★ 2026-11-11：删除「实测频次」（occurrence）⇒ 状态码分布**不产出 fact**
+    #   （同上：实测频次是投放期观测，不是协议知识）
+    return []
 
 
 def _protocol_facts(norm: dict[str, Any], quote: str) -> list[Fact]:

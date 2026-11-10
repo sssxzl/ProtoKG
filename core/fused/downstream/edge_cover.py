@@ -313,7 +313,7 @@ def edge_cover(transitions, required_headers=None, headers=None,
     Args:
         transitions:       [(from_state, method, to_state)]
         required_headers:  {method: [header, ...]}（填必填头）
-        headers:           {header: {syntax, values, occurrence}}（取值池）
+        headers:           {header: {syntax, values}}（取值池）
         message_instances: {(from, method, to): [(field, value), ...]}
                            （AutoSeeder 字段级实例，命中则用实例字段值）
         protocol:          协议名（写入 SeedCorpus.protocol，供 raw_writer 派发）

@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from core.fused.extraction.traffic import (
-    parse_message, parse_field_occurrence, parse_field_samples,
+    parse_message, parse_field_samples,
     parse_state_machine, parse_outcome, parse_distribution_keys,
     parse_bracketed_list, traffic_norm_to_facts, traffic_norms_to_facts,
 )
@@ -58,11 +58,6 @@ def test_parse_message():
     assert parse_message("no method here") is None
 
 
-def test_parse_field_occurrence():
-    assert parse_field_occurrence("CSeq header occurrences=10 protocol=rtsp") == ("CSeq", 10)
-    assert parse_field_occurrence("no occurrences") is None
-
-
 def test_parse_field_samples():
     assert parse_field_samples("unique URLs=2 samples=['rtsp://a/x', 'rtsp://a/y']") == \
         ["rtsp://a/x", "rtsp://a/y"]
@@ -102,11 +97,13 @@ def test_message_maps_existence():
     assert f.claims[0].authority == "traffic"
 
 
-def test_field_occurrence_and_samples():
-    occ = traffic_norm_to_facts(FIELD_OCC_NORM)[0]
-    assert occ.fact_key.subject.name == "CSeq"
-    assert occ.fact_key.aspect == "occurrence"
-    assert occ.claims[0].value.data == 10
+def test_field_occurrence_not_produced_and_samples():
+    """★ 2026-11-11：字段的 ``occurrences=N``（实测频次）**不再产出 fact**。
+
+    ★ 理由：知识抽取层**面向知识源**⇒ 只有抓包能得到「实测频次」
+      ⇒ 它属于**投放期观测**，不是协议知识 ⇒ 不该占知识维度。
+    """
+    assert traffic_norm_to_facts(FIELD_OCC_NORM) == []
     samp = traffic_norm_to_facts(FIELD_SAMPLE_NORM)[0]
     assert samp.fact_key.aspect == "value_enum_observed"   # ★ 阶段 E4：traffic 侧=实测样本
     assert samp.claims[0].value.data == ["rtsp://a/x", "rtsp://a/y"]
@@ -128,10 +125,8 @@ def test_protocol_actor_status_mapping():
     a = traffic_norm_to_facts(ACTOR_NORM)[0]
     assert a.fact_key.subject.type == "actor"
     assert a.claims[0].value.data == ["8554"]
-    o = traffic_norm_to_facts(OUTCOME_NORM)[0]
-    assert o.fact_key.subject.type == "status"
-    assert o.fact_key.aspect == "occurrence"
-    assert o.claims[0].value.data == 5
+    # ★ 2026-11-11：状态码分布（实测频次）**不再产出 fact** ⇒ 无 fact
+    assert traffic_norm_to_facts(OUTCOME_NORM) == []
 
 
 # ===== 去重 =====

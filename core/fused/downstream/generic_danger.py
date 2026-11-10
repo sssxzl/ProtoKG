@@ -212,7 +212,7 @@ def generic_danger(transitions, headers=None, required_headers=None,
 
     Args:
         transitions:       [(from_state, method, to_state)]
-        headers:           {header: {syntax, values, occurrence}}
+        headers:           {header: {syntax, values}}
         required_headers:  {method: [header, ...]}
         minimal:           精简模式（True 时只保留序列型关键种子，见 _filter_minimal）
         precondition:      {method: [前置方法,...]}（知识中枢会话语义，驱动 DESCRIBE 前缀）

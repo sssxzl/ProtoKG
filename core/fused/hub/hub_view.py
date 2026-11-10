@@ -415,7 +415,7 @@ def build_view(views: list[dict], protocol: str = "rtsp",
     产出:
       methods          method_name -> {state_changing, definition, existence,
                                        declared_by, observed_by}
-      headers          header_name -> {syntax, values, occurrence, source_values}
+      headers          header_name -> {syntax, values, source_values}
       required_headers method_name -> [header_name]
       transitions      [(from_state, method, to_state)]  (state --method--> state)
       method_sequences [(from_method, to_method)]          (方法序列, traffic 观测)
@@ -720,8 +720,7 @@ def build_view(views: list[dict], protocol: str = "rtsp",
                 if main_auth:  # P0：各源取值
                     info.setdefault("source_values", {}).setdefault(
                         main_auth, set()).update(list(val or []))
-            elif aspect == "occurrence":
-                headers.setdefault(sname, {})["occurrence"] = val
+            # ★ 2026-11-11：删除「实测频次」（occurrence）⇒ 不再投影到 headers 桶
             elif aspect == "binary_layout":
                 # ★ 2026-11-07：二进制协议的**字段布局**
                 #   （offset/length/order/encoding，来自 RFC 的位域图）
@@ -1368,7 +1367,6 @@ _BUCKET_BY_KIND: dict[tuple[str, str], str] = {
     ("header", "value_enum"): "headers",
     ("header", "value_enum_spec"): "headers",
     ("header", "value_enum_observed"): "headers",
-    ("header", "occurrence"): "headers",
     ("header", "security_property"): "security",
     ("header", "legal_boundary"): "legal_boundary",
     ("header", "response_expectation"): "response_expectation",
@@ -1378,16 +1376,9 @@ _BUCKET_BY_KIND: dict[tuple[str, str], str] = {
     ("relation", "method_sequence"): "method_sequences",
     ("relation", "message_instance"): "message_instances",
     # ── status 主体 ──
-    # ★ 2026-11-07：`("status", "occurrence")` **有意不映射**（不进任何桶）。
-    #   实测中枢里有 13 条该组合的 fact（rtsp 2 / sip 5 / smtp 6），值是
-    #   「状态码在 RFC 原文里出现几次」（如 200 → 5）。它不指导报文构造，
-    #   下游无消费者 ⇒ 进 bundle 只会增加体积与误读风险。
-    #   ⇒ 保持「白名单式映射」语义：没列进本表 = 有意不投影。
+    # ★ 2026-11-11：`occurrence`（实测频次）**已整体删除**（不再注册为 aspect）
+    #   ⇒ 「状态码出现几次」这类观测不再进中枢（它不指导报文构造）。
     ("status", "definition"): "statuses",
-    # ★ `("status", "occurrence")` **刻意不在此表**：`assemble_bundle` 只处理
-    #   `status` + `definition` ⇒ status/occurrence 事实**不进任何桶**
-    #   （既有行为；真实骨架里实测有 13 条这样的事实 ⇒ 被丢弃）。
-    #   本步**不改**这个行为（改了会动 bundle 内容 ⇒ 种子漂移）⇒ 只如实记录。
     # ── protocol / actor 主体 ──
     ("protocol", "value_enum"): "protocol",
     ("protocol", "value_enum_spec"): "protocol",

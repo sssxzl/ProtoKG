@@ -296,9 +296,7 @@
       "slots": [
         {
           "name": "frequency",
-          "aspects": [
-            "occurrence"
-          ],
+          "aspects": [],
           "entity_types": [
             "header",
             "method",
@@ -451,10 +449,6 @@
     "option_layout": {
       "category": "D_construction",
       "slot": "layout"
-    },
-    "occurrence": {
-      "category": "E_observation",
-      "slot": "frequency"
     },
     "value_enum": {
       "category": "A_structure",

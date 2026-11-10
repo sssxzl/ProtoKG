@@ -7,7 +7,7 @@
 ★ 背景：中枢声明 `source_set=["rfc"]`，但**协议骨架**（authority=profile）被
   「恒允许」物化进中枢（`rag_seedgen.py:968`），而骨架的 origin 是：
     {"source":  ["message_instance", "target_state"],
-     "traffic": ["existence", "method_sequence", "occurrence", "value_enum"]}
+     "traffic": ["existence", "method_sequence", "value_enum"]}
   ⇒ 骨架里**含 traffic 源派生的维度** ⇒ 这些也会进 RFC 单源实验。
 
 用法：E:/app/Anaconda3/python.exe scripts/_audit_bucket_sources.py
@@ -32,7 +32,7 @@ _KIND_BY_ASPECT = {
     "url_template": "url_template", "legal_boundary": "legal_boundary",
     "value_enum": "headers/values", "target_state": "transitions",
     "message_instance": "message_instances",
-    "method_sequence": "method_sequences", "occurrence": "occurrence",
+    "method_sequence": "method_sequences",
 }
 
 
