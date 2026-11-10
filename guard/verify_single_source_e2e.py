@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/guard/verify_single_source_e2e.py —— 批次 1.6 **步 6**：单源端到端验收。
+"""guard/verify_single_source_e2e.py —— 批次 1.6 **步 6**：单源端到端验收。
 
 六条判据（方案 §3.1.10.7）：
   ① ``sources.json.source_set`` 恰为本次单源；
@@ -11,7 +11,7 @@
 
 用法::
 
-    E:/app/Anaconda3/python.exe tools/guard/verify_single_source_e2e.py \
+    E:/app/Anaconda3/python.exe guard/verify_single_source_e2e.py \
         --protocol rtsp --group B
 
 脚本会**改写中枢**（单源 → 多源对照 → 恢复单源）⇒ 请勿在别的构建并行时跑。
@@ -24,7 +24,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -93,7 +93,7 @@ def main(argv=None) -> int:
     protocols = args.protocol or ["rtsp", "sip", "smtp"]
 
     overall_ok = True
-    # ★ 产物目录必须放在**仓库外**（tools/guard/ 下新增文件会破坏护栏1 的
+    # ★ 产物目录必须放在**仓库外**（guard/ 下新增文件会破坏护栏1 的
     #   「源码树静止」检查）⇒ 用系统临时目录。
     import tempfile
     tmp_root = Path(tempfile.mkdtemp(prefix=f"protorag_e2e_{protocols[0]}_"))

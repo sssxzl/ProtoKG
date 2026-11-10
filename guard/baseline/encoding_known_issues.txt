@@ -1,4 +1,4 @@
-# tools/guard/baseline/encoding_known_issues.txt —— 编码护栏的**已知豁免**清单
+# guard/baseline/encoding_known_issues.txt —— 编码护栏的**已知豁免**清单
 #
 # 格式：``<仓库相对路径>\t<违规码>\t<原因>``
 #   · 违规码 E2 = 文件不能整体按 UTF-8 解码；E1 = mojibake；E4 = 缺 encoding

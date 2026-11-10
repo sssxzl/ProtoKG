@@ -30,7 +30,7 @@
   是否在）。⇒ 固定基线会把这些项算成「新增失败」⇒ 护栏**永远红**
   （实测：基线 37、本机 39 ⇒ 谁跑都「不可采信」⇒ 闸门等于失效）。
   ⇒ 新增 ``--env-variant <清单>``（默认
-    ``tools/guard/baseline/env_variant_failed_ids.txt``）：清单内的 test id
+    ``guard/baseline/env_variant_failed_ids.txt``）：清单内的 test id
     **可存在也可缺席** ⇒ 判漂移时**既不计入「新增」也不计入「消失」**。
   ★ **不削弱闸门**：
     · 只有**清单里点名的** id 被豁免；**任何不在清单里的新失败照抓**；
@@ -42,12 +42,12 @@
 
 用法
 ----
-    python tools/guard/run_guarded_pytest.py                       # 全量 + 与基线期望集比对
-    python tools/guard/run_guarded_pytest.py tests/fused/xxx.py    # 指定路径
-    python tools/guard/run_guarded_pytest.py --no-compare         # 只跑，不比对期望集
-    python tools/guard/run_guarded_pytest.py --out-dir <目录>      # 指定产物目录
-    python tools/guard/run_guarded_pytest.py --repo-root <目录>    # 指定仓库根（默认自动推断）
-    python tools/guard/run_guarded_pytest.py --env-variant ""     # 关闭环境相关豁免（看原始漂移）
+    python guard/run_guarded_pytest.py                       # 全量 + 与基线期望集比对
+    python guard/run_guarded_pytest.py tests/fused/xxx.py    # 指定路径
+    python guard/run_guarded_pytest.py --no-compare         # 只跑，不比对期望集
+    python guard/run_guarded_pytest.py --out-dir <目录>      # 指定产物目录
+    python guard/run_guarded_pytest.py --repo-root <目录>    # 指定仓库根（默认自动推断）
+    python guard/run_guarded_pytest.py --env-variant ""     # 关闭环境相关豁免（看原始漂移）
 
 退出码
 ------
@@ -57,7 +57,7 @@
     2 = 用法或环境错误（pytest 二进制缺失、目录不存在等）
 
 ★ 期望基线（"失败集合不漂移"闸门的锚点）
-  基线文件**必须入库**（否则换台机器无处比对），位于 ``tools/guard/baseline/``：
+  基线文件**必须入库**（否则换台机器无处比对），位于 ``guard/baseline/``：
     · ``expected_b_class_failed_ids.txt`` —— 预存 FAILED 集合，每行 ``<test_id>``
       （**带完整路径**，与 pytest 的 ``FAILED <path>::<name>`` 一致）
     · ``baseline_errors_pre_cleanup.txt`` —— 预存 ERROR 集合，每行 ``<test_name>``
@@ -74,12 +74,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-#: 本脚本所在目录（tools/guard/）
+#: 本脚本所在目录（guard/）
 HERE = Path(__file__).resolve().parent
 
-#: 仓库根默认推断：tools/guard/run_guarded_pytest.py → 上两级 = 仓库根。
+#: 仓库根默认推断：guard/run_guarded_pytest.py → 上两级 = 仓库根。
 #: ★ **不硬编码绝对路径** —— 否则换机器/换 CI runner 就找不到仓库。
-DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _force_utf8_stdio() -> None:
@@ -187,7 +187,7 @@ def _detect_narrow_hub_state(root=None) -> dict:
     """
     all_sources = {"rfc", "expert_note", "traffic", "vuln", "source"}
     if root is None:
-        _proj = Path(__file__).resolve().parents[2] / "derived"
+        _proj = Path(__file__).resolve().parents[1] / "derived"
         # ★ 中枢重设计（2026-11-08）：中枢根已迁到 ``derived/hub/<协议>/``
         #   ⇒ 窄化检测**两个位置都要看**（兼容期：新位置优先，旧位置兜底）。
         _hub = _proj / "hub"
@@ -243,10 +243,10 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="带三道护栏的全量 pytest 验收跑法")
     ap.add_argument("paths", nargs="*", default=["tests/"], help="要跑的路径（默认 tests/）")
     ap.add_argument("--repo-root", default=str(DEFAULT_REPO_ROOT),
-                    help="仓库根目录（默认由脚本位置自动推断：tools/guard/ 上两级）")
+                    help="仓库根目录（默认由脚本位置自动推断：guard/ 上两级）")
     ap.add_argument("--out-dir", default=str(DEFAULT_REPO_ROOT / "_ci_artifacts"),
                     help="产物目录（默认 <仓库根>/_ci_artifacts/；"
-                         "**不写进源码目录**，避免污染 tools/guard/）")
+                         "**不写进源码目录**，避免污染 guard/）")
     ap.add_argument("--expect-failed", default=str(DEFAULT_EXPECT_FAILED),
                     help="期望 FAILED 集（基线文件）")
     ap.add_argument("--expect-errors", default=str(DEFAULT_EXPECT_ERRORS),
@@ -259,7 +259,7 @@ def main() -> int:
                          "传空串可关闭该豁免（看原始漂移）")
     ap.add_argument("--narrow-hub", default=str(DEFAULT_NARROW_HUB),
                     help="窄化数据态豁免清单（默认 "
-                         "tools/guard/baseline/narrow_hub_failed_ids.txt）；"
+                         "guard/baseline/narrow_hub_failed_ids.txt）；"
                          "**仅当中枢处于窄化态时**生效（多源态照常计入漂移）")
     ap.add_argument("--no-compare", action="store_true", help="不与期望集比对")
     ap.add_argument("--extra", default="", help="追加给 pytest 的参数（空格分隔）")

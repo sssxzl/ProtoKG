@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/guard/verify_encoding.py —— **编码卫生护栏**（UTF-8 统一 / 防乱码复发）。
+"""guard/verify_encoding.py —— **编码卫生护栏**（UTF-8 统一 / 防乱码复发）。
 
 ★ 为什么需要它
   批次 2.5 收尾时发现：**部分 UTF-8 文本在读写或解码环节被按错误字符集解析**，
@@ -18,12 +18,12 @@
                      （在 Windows 上默认走 locale 编码 cp936 ⇒ 换机器就炸）
 
 ★ 用法
-  python tools/guard/verify_encoding.py                # 只检查，退出码 0=干净 1=有违规
-  python tools/guard/verify_encoding.py --json out.json # 机器可读结果
-  python tools/guard/verify_encoding.py --fix          # 修复可逆 mojibake + 混合行尾
+  python guard/verify_encoding.py                # 只检查，退出码 0=干净 1=有违规
+  python guard/verify_encoding.py --json out.json # 机器可读结果
+  python guard/verify_encoding.py --fix          # 修复可逆 mojibake + 混合行尾
                                                        （★ 不动 E2 的上游原生文件）
 
-★ 豁免清单：``tools/guard/baseline/encoding_known_issues.txt``
+★ 豁免清单：``guard/baseline/encoding_known_issues.txt``
   每行 ``<相对路径>\\t<原因>``（``#`` 开头为注释）⇒ 这些路径的 E2 不算违规。
 """
 from __future__ import annotations
@@ -35,7 +35,7 @@ import sys
 import warnings
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 
 #: 不扫描的目录（构建产物 / 缓存 / 生成物 / VCS）
 SKIP_DIRS = {

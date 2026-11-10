@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools/guard/verify_required_headers.py —— 批次 1.6 **步 4** 的**分布校验**。
+"""guard/verify_required_headers.py —— 批次 1.6 **步 4** 的**分布校验**。
 
 判据（方案 §3.1.10.6 步 4）：
   ① bundle 的 ``required_headers`` 与 profile.json 的**等价**（物化前后不变）；
@@ -8,7 +8,7 @@
 
 用法::
 
-    E:/app/Anaconda3/python.exe tools/guard/verify_required_headers.py \
+    E:/app/Anaconda3/python.exe guard/verify_required_headers.py \
         --protocol rtsp --protocol sip --protocol smtp
 """
 from __future__ import annotations
@@ -18,7 +18,7 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 

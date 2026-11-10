@@ -74,12 +74,12 @@ local/*.tar.gz
 !.env.example
 
 # QA 本地工作区（备份 / 探针副本 / 临时脚本），非项目资产
-# ★ 用 `/guard/`（前导斜杠）而不是 `guard/`：
-#   `guard/` 会匹配**任意层级**同名目录 ⇒ 连入库的 `tools/guard/`（护栏工具）都被排除。
-#   加前导斜杠后只匹配仓库根的 `guard/`（护栏**产物**目录，不入库）。
-/guard/
+# ★ 用 `/guard/_out/`（**两级**）而不是 `/guard/`：
+#   `/guard/` 会把整个护栏工具目录也排除掉（★ 工具是入库的！）
+#   ⇒ 只排除其内部的 `_out/`（护栏**产物**目录，不入库）。
+/guard/_out/
 
-# 护栏验收脚本的产物目录（tools/guard/run_guarded_pytest.py 默认写这里）
+# 护栏验收脚本的产物目录（guard/run_guarded_pytest.py 默认写这里）
 _ci_artifacts/
 
 # CRLF 鲁棒性探针的仓内临时目录（tests/fused/test_annotation_tools.py 生成）。
@@ -98,8 +98,8 @@ _crlf_probe_*/
 /out/
 
 # 消融脚本的运行时中间工件目录
-#   ★ 2026-11-10：消融已随论文实验层移除（``tools/guard/ablation/`` 已删）⇒ 保留规则防复发
-tools/guard/ablation/_out/
+#   ★ 2026-11-10：消融已随论文实验层移除（``guard/ablation/`` 已删）⇒ 保留规则防复发
+guard/ablation/_out/
 
 # 编码护栏产物与原始坏版本备份（本地留存，不入库）
 #   ★ 2026-11-10：``local/`` 已移除 ⇒ 护栏产物统一落 ``guard/``

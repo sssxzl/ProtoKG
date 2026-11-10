@@ -15,9 +15,9 @@
 #   差额**全部**源于 `derived/` 是 gitignored 的中间产物
 #   （`.gitignore` 明写「derived/* … 由 kb/ 重建」），**不是代码缺陷**。
 #   ⇒ 因此基线分两份：
-#       tools/guard/baseline/expected_b_class_failed_ids.txt          ← 本机/完整环境
-#       tools/guard/baseline/ci_expected_failed_ids_ubuntu.txt    ← CI/Ubuntu 干净 checkout
-#       tools/guard/baseline/ci_expected_failed_ids_windows.txt  ← CI/Windows 干净 checkout
+#       guard/baseline/expected_b_class_failed_ids.txt          ← 本机/完整环境
+#       guard/baseline/ci_expected_failed_ids_ubuntu.txt    ← CI/Ubuntu 干净 checkout
+#       guard/baseline/ci_expected_failed_ids_windows.txt  ← CI/Windows 干净 checkout
 #     两个 job 各用各的，**语义一致**：都是「相对本环境的已知集合不许漂移」。
 #     ⚠ 这两份基线**不可互换**：拿 68 的基线去比本机、或拿 37 的去比 CI，
 #       都会报出大量漂移 —— 那是**环境不匹配**，不是回归。
@@ -203,11 +203,11 @@ jobs:
       #   ★ 退出码：0 = 集合未漂移；1 = 漂移/护栏触发 ⇒ job 红（这就是闸门）。
       - name: Run guarded pytest (drift gate)
         run: |
-          python tools/guard/run_guarded_pytest.py \
+          python guard/run_guarded_pytest.py \
             --repo-root "$GITHUB_WORKSPACE" \
             --out-dir "$GITHUB_WORKSPACE/_ci_artifacts" \
-            --expect-failed "$GITHUB_WORKSPACE/tools/guard/baseline/ci_expected_failed_ids_ubuntu.txt" \
-            --expect-errors "$GITHUB_WORKSPACE/tools/guard/baseline/ci_expected_errors.txt"
+            --expect-failed "$GITHUB_WORKSPACE/guard/baseline/ci_expected_failed_ids_ubuntu.txt" \
+            --expect-errors "$GITHUB_WORKSPACE/guard/baseline/ci_expected_errors.txt"
 
       # ★ 无论成败都上传护栏产物 —— CI 挂了也得能查「到底哪条漂移了」。
       - name: Upload guarded artifacts
@@ -284,11 +284,11 @@ jobs:
 
       - name: Run guarded pytest (drift gate)
         run: |
-          python tools/guard/run_guarded_pytest.py `
+          python guard/run_guarded_pytest.py `
             --repo-root "${{ github.workspace }}" `
             --out-dir "${{ github.workspace }}/_ci_artifacts" `
-            --expect-failed "${{ github.workspace }}/tools/guard/baseline/ci_expected_failed_ids_windows.txt" `
-            --expect-errors "${{ github.workspace }}/tools/guard/baseline/ci_expected_errors.txt"
+            --expect-failed "${{ github.workspace }}/guard/baseline/ci_expected_failed_ids_windows.txt" `
+            --expect-errors "${{ github.workspace }}/guard/baseline/ci_expected_errors.txt"
 
       - name: Upload guarded artifacts
         if: always()

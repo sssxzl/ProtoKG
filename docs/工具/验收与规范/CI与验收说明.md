@@ -5,8 +5,8 @@
 
 > 配套文件
 > - `.github/workflows/ci.yml` —— CI 定义（5 个 job）
-> - `tools/guard/run_guarded_pytest.py` —— 验收护栏脚本（闸门本体，本地与 CI 共用）
-> - `tools/guard/baseline/` —— 四份期望集基线（见 §3）
+> - `guard/run_guarded_pytest.py` —— 验收护栏脚本（闸门本体，本地与 CI 共用）
+> - `guard/baseline/` —— 四份期望集基线（见 §3）
 
 ---
 
@@ -136,7 +136,7 @@ CI **不是「写完就算」** —— 它在真机 runner 上连跑 4 次，**�
 
 ## 3. 基线文件在哪、分别管什么
 
-全部在 `tools/guard/baseline/`：
+全部在 `guard/baseline/`：
 
 | 文件 | 行数 | 用途 | 用它的场景 |
 |---|---|---|---|
@@ -258,13 +258,13 @@ manifest 是语料的溯源凭证，多出的 3 条记录需要人工判断是�
 
 ```bash
 cd "E:/科研/想法idea/rag-chatafl"
-E:/app/Anaconda3/python.exe tools/guard/run_guarded_pytest.py
+E:/app/Anaconda3/python.exe guard/run_guarded_pytest.py
 ```
 
 期望：**退出码 0**，`37 failed / 1252 passed / 20 errors / 1 skipped`，
 失败/错误集合漂移 **0 / 0**。
 
-> 仓库根默认由脚本位置推断（`tools/guard/` 上两级），**不硬编码绝对路径**；
+> 仓库根默认由脚本位置推断（`guard/` 上两级），**不硬编码绝对路径**；
 > 需要时用 `--repo-root <目录>` 覆盖。
 
 ### 5.2 Linux / CI 等价（干净 checkout）
@@ -279,11 +279,11 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install "pytest==8.4.2" "numpy==2.5.4"
 
 # 3) 跑护栏，用 **CI 基线**
-python tools/guard/run_guarded_pytest.py \
+python guard/run_guarded_pytest.py \
   --repo-root "$PWD" \
   --out-dir "$PWD/_ci_artifacts" \
-  --expect-failed "$PWD/tools/guard/baseline/ci_expected_failed_ids.txt" \
-  --expect-errors "$PWD/tools/guard/baseline/ci_expected_errors.txt"
+  --expect-failed "$PWD/guard/baseline/ci_expected_failed_ids.txt" \
+  --expect-errors "$PWD/guard/baseline/ci_expected_errors.txt"
 ```
 
 期望：**退出码 0**，`68 failed / 1179 passed / 20 errors / 4 skipped`，漂移 **0 / 0**。
@@ -357,18 +357,18 @@ python scripts/corpus_gate.py --protocol rtsp --seed-dir derived/seeds/rtsp/rq4_
 
 ```bash
 # 1) 先看漂移（不要跳过这步）
-E:/app/Anaconda3/python.exe tools/guard/run_guarded_pytest.py
+E:/app/Anaconda3/python.exe guard/run_guarded_pytest.py
 #    → 读 "新增 N / 消失 M" 清单，逐条按 §6.1 判断
 
 # 2) 确认无新 bug 后，重新采集基线
 E:/app/Anaconda3/python.exe -c "
 import re, sys
 from pathlib import Path
-out = Path('tools/guard/_guarded_raw.txt').read_text(encoding='utf-8', errors='replace')
+out = Path('guard/_guarded_raw.txt').read_text(encoding='utf-8', errors='replace')
 failed = sorted(set(re.findall(r'^FAILED\s+(\S+)', out, re.M)))
 errors = sorted({x.split('::')[-1] for x in re.findall(r'^ERROR\s+(\S+)', out, re.M)})
-Path('tools/guard/baseline/expected_b_class_failed_ids.txt').write_text('\n'.join(failed) + '\n', encoding='utf-8')
-Path('tools/guard/baseline/baseline_errors_pre_cleanup.txt').write_text('\n'.join(errors) + '\n', encoding='utf-8')
+Path('guard/baseline/expected_b_class_failed_ids.txt').write_text('\n'.join(failed) + '\n', encoding='utf-8')
+Path('guard/baseline/baseline_errors_pre_cleanup.txt').write_text('\n'.join(errors) + '\n', encoding='utf-8')
 print(f'failed={len(failed)} errors={len(errors)}')
 "
 
@@ -376,7 +376,7 @@ print(f'failed={len(failed)} errors={len(errors)}')
 #    在干净 checkout 里重跑，采集 ci_expected_failed_ids.txt / ci_expected_errors.txt
 
 # 4) 复跑确认漂移归零
-E:/app/Anaconda3/python.exe tools/guard/run_guarded_pytest.py
+E:/app/Anaconda3/python.exe guard/run_guarded_pytest.py
 ```
 
 ### 6.3 更新基线时必须做的事
@@ -444,7 +444,7 @@ CI 的 `static-checks` job 用的就是这个版本。
 
 ## 9. 附：护栏脚本的四道检查
 
-`tools/guard/run_guarded_pytest.py` 的全部语义（本地与 CI 完全一致）：
+`guard/run_guarded_pytest.py` 的全部语义（本地与 CI 完全一致）：
 
 1. **护栏1 —— 树静止**：跑前/跑后各取一次源码 mtime 快照；
    diff 非空 ⇒ 本次结果**不可采信**（并发编辑污染）。
