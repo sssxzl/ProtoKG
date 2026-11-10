@@ -38,8 +38,30 @@
 from __future__ import annotations
 
 import argparse
+
+def _apply_api_key_arg(api_key: str | None) -> None:
+    """把 CLI 的 ``--api-key`` 注入环境变量 ``DEEPSEEK_API_KEY``。
+
+    ★ 为什么这样实现（而不是一路透传到 ``DeepSeekClient(api_key=...)``）：
+      抽取层是**深层调用**（``rfc_extractor`` / ``source`` / ``traffic`` 内部各自
+      ``from core.llm import DeepSeekClient`` ⇒ 无参构造）⇒ 若要透传，得给
+      十几个函数加参数 ⇒ 侵入面极大、易漏。
+    ⇒ 而 ``core/llm.py`` 的读取优先级是「构造参数 > **环境变量** > .env」
+      ⇒ **注入环境变量**即可 ⇒ **零侵入** 且与其它两种方式完全等价。
+
+    ★ 优先级：若同时给了 ``--api-key`` 与环境变量 ⇒ **以 ``--api-key`` 为准**
+      （CLI 显式授权优先）。
+    """
+    if not api_key:
+        return
+    key = str(api_key).strip()
+    if key:
+        os.environ["DEEPSEEK_API_KEY"] = key
+
+
 import json
 import re
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -923,6 +945,9 @@ def resolve_source_set(protocol: str,
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="统一种子生成入口（协议 × 源二维解耦）")
+    ap.add_argument("--api-key", default=None,
+                help="DeepSeek API Key（等价于环境变量 DEEPSEEK_API_KEY；"
+                     "显式传入时覆盖环境变量；也支持写项目根 .env）")
     ap.add_argument("--protocol", default="rtsp")
     ap.add_argument("--out", default=None,
                     help="输出目录（默认 derived/seeds/<protocol>/<时间戳>/）")
@@ -992,6 +1017,7 @@ def main() -> int:
                          "（它是**源码侧**人工白名单，会裁掉 RFC 抽到的真实方法）。"
                          "★ 默认**关闭** ⇒ 不改变既有产物字节。")
     args = ap.parse_args()
+    _apply_api_key_arg(args.api_key)
 
     cfg, err = _resolve_config(args)
     if err:
@@ -1483,3 +1509,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

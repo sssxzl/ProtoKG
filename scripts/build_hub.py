@@ -38,6 +38,27 @@
 from __future__ import annotations
 
 import argparse
+
+def _apply_api_key_arg(api_key: str | None) -> None:
+    """把 CLI 的 ``--api-key`` 注入环境变量 ``DEEPSEEK_API_KEY``。
+
+    ★ 为什么这样实现（而不是一路透传到 ``DeepSeekClient(api_key=...)``）：
+      抽取层是**深层调用**（``rfc_extractor`` / ``source`` / ``traffic`` 内部各自
+      ``from core.llm import DeepSeekClient`` ⇒ 无参构造）⇒ 若要透传，得给
+      十几个函数加参数 ⇒ 侵入面极大、易漏。
+    ⇒ 而 ``core/llm.py`` 的读取优先级是「构造参数 > **环境变量** > .env」
+      ⇒ **注入环境变量**即可 ⇒ **零侵入** 且与其它两种方式完全等价。
+
+    ★ 优先级：若同时给了 ``--api-key`` 与环境变量 ⇒ **以 ``--api-key`` 为准**
+      （CLI 显式授权优先）。
+    """
+    if not api_key:
+        return
+    key = str(api_key).strip()
+    if key:
+        os.environ["DEEPSEEK_API_KEY"] = key
+
+
 import json
 import os
 import re
@@ -1208,6 +1229,9 @@ def _write_and_validate(source: str, facts, registry, protocol: str = "rtsp",
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         description="中枢构建入口（**一次一个协议 x 一个知识源**）")
+    parser.add_argument("--api-key", default=None,
+                help="DeepSeek API Key（等价于环境变量 DEEPSEEK_API_KEY；"
+                     "显式传入时覆盖环境变量；也支持写项目根 .env）")
     parser.add_argument("--list-sources", action="store_true",
                         help="识别知识库中有哪几种知识源, 打印后退出")
     # ★★ 架构约束（2026-10-31 用户明确）：本模型**一次只处理一个知识库 ×
@@ -1271,6 +1295,7 @@ def main(argv=None) -> int:
                              "derived/per_source/<协议>/rfc/semantic/）。"
                              "用于把构建产物隔离到临时目录，避免污染 derived/")
     args = parser.parse_args(argv)
+    _apply_api_key_arg(args.api_key)
 
     # ★ D-6：开关置位（进程内 + 环境变量双保险）——默认**不置位**（保持关闭）。
     #   ⚠ `--rules-only` 模式**不改**这个开关位（rules_only 只管「产出」，
@@ -1560,3 +1585,4 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

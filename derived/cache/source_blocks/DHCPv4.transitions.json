@@ -3,22 +3,12 @@
   "transitions": [
     {
       "from": "INIT",
-      "method": "DHCPOFFER",
+      "method": "DHCPDISCOVER",
       "to": "SELECTING"
     },
     {
       "from": "SELECTING",
       "method": "DHCPOFFER",
-      "to": "SELECTING"
-    },
-    {
-      "from": "SELECTING",
-      "method": "DHCPNAK",
-      "to": "INIT"
-    },
-    {
-      "from": "SELECTING",
-      "method": "DHCPACK",
       "to": "REQUESTING"
     },
     {
@@ -28,22 +18,12 @@
     },
     {
       "from": "REQUESTING",
-      "method": "DHCPOFFER",
-      "to": "REQUESTING"
-    },
-    {
-      "from": "REQUESTING",
       "method": "DHCPNAK",
       "to": "INIT"
     },
     {
       "from": "INIT-REBOOT",
-      "method": "DHCPNAK",
-      "to": "INIT"
-    },
-    {
-      "from": "INIT-REBOOT",
-      "method": "DHCPACK",
+      "method": "DHCPREQUEST",
       "to": "REBOOTING"
     },
     {
@@ -58,18 +38,8 @@
     },
     {
       "from": "BOUND",
-      "method": "DHCPOFFER",
-      "to": "BOUND"
-    },
-    {
-      "from": "BOUND",
-      "method": "DHCPACK",
-      "to": "BOUND"
-    },
-    {
-      "from": "BOUND",
-      "method": "DHCPNAK",
-      "to": "BOUND"
+      "method": "DHCPREQUEST",
+      "to": "RENEWING"
     },
     {
       "from": "RENEWING",
@@ -79,6 +49,11 @@
     {
       "from": "RENEWING",
       "method": "DHCPNAK",
+      "to": "INIT"
+    },
+    {
+      "from": "RENEWING",
+      "method": "DHCPREQUEST",
       "to": "REBINDING"
     },
     {
@@ -92,14 +67,14 @@
       "to": "INIT"
     },
     {
-      "from": "INIT-REBOOT",
+      "from": "SELECTING",
       "method": "DHCPACK",
       "to": "BOUND"
     },
     {
-      "from": "RENEWING",
-      "method": "DHCPREQUEST",
-      "to": "REBINDING"
+      "from": "INIT-REBOOT",
+      "method": "DHCPACK",
+      "to": "BOUND"
     },
     {
       "from": "REBINDING",
