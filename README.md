@@ -144,17 +144,49 @@ python scripts/seedgen.py --protocol <新协议>
 ## 快速开始
 
 ```bash
-cd E:\科研\想法idea\ProtoKG
+cd E://科研//想法idea//ProtoKG
 
 # 1. 查看 kb 中实际存在的知识源
 python scripts/build_hub.py --list-sources
 
 # 2. 五源抽取 → derived/per_source/<协议>/<源>/facts/<源>.jsonl
-python scripts/build_hub.py --sources rfc expert_note source traffic vuln --protocol rtsp
+#    （source 源走 AutoSeeder，需 LLM ⇒ 见下方「LLM 配置」）
+python scripts/build_hub.py --sources rfc expert_note source traffic vuln --protocol rtsp \
+       --api-key sk-xxx --model deepseek-chat --base-url https://api.deepseek.com
 
 # 3. 生成种子（--focus-group B 含漏洞边界层；--focused 启用漏洞接近度排序）
 python scripts/seedgen.py --protocol rtsp --focus-group B
 ```
+
+### LLM 配置（`source` 源与语义规则抽取需要）
+
+本项目的 LLM 通道走 **OpenAI 兼容协议** ⇒ **换厂商/模型只改三个变量**：
+
+| 变量 | CLI 参数 | 环境变量 | 默认 |
+|---|---|---|---|
+| 凭据 | `--api-key` | `LLM_API_KEY` | 无（必填） |
+| 模型 | `--model` | `LLM_MODEL` | `deepseek-chat` |
+| endpoint | `--base-url` | `LLM_BASE_URL` | `https://api.deepseek.com` |
+
+**优先级**：CLI 显式传入 > 环境变量 > 项目根 `.env` > `DEEPSEEK_*`（兼容别名）。
+
+**三种传法**（任选其一）：
+
+```bash
+# A. 命令行（优先级最高，临时最方便）
+python scripts/build_hub.py --protocol rtsp --api-key sk-xxx \
+       --model gpt-4o-mini --base-url https://api.openai.com/v1
+
+# B. 环境变量
+export LLM_API_KEY=sk-xxx
+export LLM_MODEL=qwen-max
+export LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+
+# C. 项目根 .env（复制 .env.example 改三个值即可；.env 不入库）
+```
+
+**支持的厂商**（任何 OpenAI 兼容服务）：DeepSeek · 阿里云百炼（qwen）· OpenAI ·
+本地 ollama / vLLM。
 
 > 提示：`source` 源走 AutoSeeder（LLM 分析源码状态机），首次构建较慢且结果已按 code_blocks hash 缓存到
 > `derived/source_blocks/<协议>.state.json`，后续构建直接命中缓存。

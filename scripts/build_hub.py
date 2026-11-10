@@ -1230,8 +1230,11 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         description="中枢构建入口（**一次一个协议 x 一个知识源**）")
     parser.add_argument("--api-key", default=None,
-                help="DeepSeek API Key（等价于环境变量 DEEPSEEK_API_KEY；"
-                     "显式传入时覆盖环境变量；也支持写项目根 .env）")
+                help="LLM 凭据（等价于环境变量 LLM_API_KEY；显式传入时覆盖环境变量）")
+    parser.add_argument("--model", default=None,
+                help="LLM 模型名（等价于 LLM_MODEL；默认 deepseek-chat）")
+    parser.add_argument("--base-url", default=None,
+                help="LLM endpoint（等价于 LLM_BASE_URL；任何 OpenAI 兼容服务均可）")
     parser.add_argument("--list-sources", action="store_true",
                         help="识别知识库中有哪几种知识源, 打印后退出")
     # ★★ 架构约束（2026-10-31 用户明确）：本模型**一次只处理一个知识库 ×
@@ -1295,6 +1298,7 @@ def main(argv=None) -> int:
                              "derived/per_source/<协议>/rfc/semantic/）。"
                              "用于把构建产物隔离到临时目录，避免污染 derived/")
     args = parser.parse_args(argv)
+    _apply_llm_args(args.api_key, args.model, args.base_url)
     _apply_api_key_arg(args.api_key)
 
     # ★ D-6：开关置位（进程内 + 环境变量双保险）——默认**不置位**（保持关闭）。
@@ -1583,6 +1587,25 @@ def main(argv=None) -> int:
     return 0
 
 
+
+def _apply_llm_args(api_key: str | None = None, model: str | None = None,
+                    base_url: str | None = None) -> None:
+    """把 CLI 的 LLM 相关参数注入**通用**环境变量。
+
+    ★ 注入的是**通用**名（``LLM_API_KEY`` / ``LLM_MODEL`` / ``LLM_BASE_URL``），
+      因为 ``core/llm.py`` 走 **OpenAI 兼容协议** ⇒ 换厂商/模型只改这三个即可
+      （DeepSeek / OpenAI / ollama / vLLM / 硅基流动 …）。
+    ★ ``DEEPSEEK_*`` 仅作**向后兼容别名**（优先级低于 ``LLM_*``）。
+    ★ 优先级：CLI 显式传入 > 环境变量 > 项目根 ``.env``。
+    """
+    for name, value in (("LLM_API_KEY", api_key),
+                        ("LLM_MODEL", model),
+                        ("LLM_BASE_URL", base_url)):
+        if value is None:
+            continue
+        v = str(value).strip()
+        if v:
+            os.environ[name] = v
 if __name__ == "__main__":
     raise SystemExit(main())
 

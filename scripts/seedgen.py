@@ -946,8 +946,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(
         description="统一种子生成入口（协议 × 源二维解耦）")
     ap.add_argument("--api-key", default=None,
-                help="DeepSeek API Key（等价于环境变量 DEEPSEEK_API_KEY；"
-                     "显式传入时覆盖环境变量；也支持写项目根 .env）")
+                help="LLM 凭据（等价于环境变量 LLM_API_KEY；显式传入时覆盖环境变量）")
+    ap.add_argument("--model", default=None,
+                help="LLM 模型名（等价于 LLM_MODEL；默认 deepseek-chat）")
+    ap.add_argument("--base-url", default=None,
+                help="LLM endpoint（等价于 LLM_BASE_URL；任何 OpenAI 兼容服务均可）")
     ap.add_argument("--protocol", default="rtsp")
     ap.add_argument("--out", default=None,
                     help="输出目录（默认 derived/seeds/<protocol>/<时间戳>/）")
@@ -1017,6 +1020,7 @@ def main() -> int:
                          "（它是**源码侧**人工白名单，会裁掉 RFC 抽到的真实方法）。"
                          "★ 默认**关闭** ⇒ 不改变既有产物字节。")
     args = ap.parse_args()
+    _apply_llm_args(args.api_key, args.model, args.base_url)
     _apply_api_key_arg(args.api_key)
 
     cfg, err = _resolve_config(args)
@@ -1507,6 +1511,25 @@ def main() -> int:
     return 0
 
 
+
+def _apply_llm_args(api_key: str | None = None, model: str | None = None,
+                    base_url: str | None = None) -> None:
+    """把 CLI 的 LLM 相关参数注入**通用**环境变量。
+
+    ★ 注入的是**通用**名（``LLM_API_KEY`` / ``LLM_MODEL`` / ``LLM_BASE_URL``），
+      因为 ``core/llm.py`` 走 **OpenAI 兼容协议** ⇒ 换厂商/模型只改这三个即可
+      （DeepSeek / OpenAI / ollama / vLLM / 硅基流动 …）。
+    ★ ``DEEPSEEK_*`` 仅作**向后兼容别名**（优先级低于 ``LLM_*``）。
+    ★ 优先级：CLI 显式传入 > 环境变量 > 项目根 ``.env``。
+    """
+    for name, value in (("LLM_API_KEY", api_key),
+                        ("LLM_MODEL", model),
+                        ("LLM_BASE_URL", base_url)):
+        if value is None:
+            continue
+        v = str(value).strip()
+        if v:
+            os.environ[name] = v
 if __name__ == "__main__":
     raise SystemExit(main())
 

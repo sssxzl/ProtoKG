@@ -52,6 +52,13 @@ class LLMClient(Protocol):
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 DEEPSEEK_MODEL = "deepseek-chat"
 
+#: ★ **通用** LLM 配置的环境变量名（**OpenAI 兼容协议** ⇒ 换厂商只改这三个）
+#:   · ``LLM_API_KEY``   —— 凭据
+#:   · ``LLM_BASE_URL``  —— endpoint（DeepSeek / OpenAI / ollama / vLLM …）
+#:   · ``LLM_MODEL``     —— 模型名
+#:   读取优先级：**构造参数 > ``LLM_*`` > ``DEEPSEEK_*``（兼容别名）> ``.env``**
+#:   ⇒ ``DEEPSEEK_*`` 仅作**向后兼容**，新代码一律用 ``LLM_*``。
+
 
 # ============================================================================
 # FixtureStubLLM — strict fixture replay (v2.1.1)
@@ -184,13 +191,16 @@ class DeepSeekClient:
 
     读取 key 顺序(后者覆盖前者):
       1. 构造参数 api_key
-      2. 环境变量 DEEPSEEK_API_KEY
-      3. 项目根 .env 文件中的 DEEPSEEK_API_KEY
+      2. 环境变量 ``LLM_API_KEY``（通用）⇒ ``DEEPSEEK_API_KEY``（兼容别名）
+      3. 项目根 .env 文件中的同名变量
+
+    ★ **OpenAI 兼容协议** ⇒ 换厂商/模型只改三个变量即可：
+      ``LLM_API_KEY`` / ``LLM_BASE_URL`` / ``LLM_MODEL``
 
     .env 格式:
-      DEEPSEEK_API_KEY=sk-xxxx
-      DEEPSEEK_BASE_URL=https://api.deepseek.com
-      DEEPSEEK_MODEL=deepseek-chat
+      LLM_API_KEY=sk-xxxx
+      LLM_BASE_URL=https://api.deepseek.com
+      LLM_MODEL=deepseek-chat
     """
 
     def __init__(self, api_key: Optional[str] = None,
@@ -201,7 +211,9 @@ class DeepSeekClient:
         # 读取 key 优先级: 构造参数 > 环境变量 > .env 文件
         self.api_key = (
             api_key
+            or os.getenv("LLM_API_KEY")
             or os.getenv("DEEPSEEK_API_KEY")
+            or _load_env_file(env_file).get("LLM_API_KEY")
             or _load_env_file(env_file).get("DEEPSEEK_API_KEY")
         )
         if not self.api_key:
@@ -213,13 +225,17 @@ class DeepSeekClient:
         # base_url + model (同样的优先级, fallback 到顶部硬编码常量)
         self.base_url = (
             base_url
+            or os.getenv("LLM_BASE_URL")
             or os.getenv("DEEPSEEK_BASE_URL")
+            or _load_env_file(env_file).get("LLM_BASE_URL")
             or _load_env_file(env_file).get("DEEPSEEK_BASE_URL")
             or DEEPSEEK_BASE_URL
         )
         self.model = (
             model
+            or os.getenv("LLM_MODEL")
             or os.getenv("DEEPSEEK_MODEL")
+            or _load_env_file(env_file).get("LLM_MODEL")
             or _load_env_file(env_file).get("DEEPSEEK_MODEL")
             or DEEPSEEK_MODEL
         )
