@@ -61,15 +61,57 @@ def _claim_key(claim: dict) -> str:
     return claim.get("claim_id") or claim.get("authority", "")
 
 
+#: ★ 阶段 N-1：struct 内**明确无序**的字段（比较时按内容排序 ⇒ 顺序无关）
+#:
+#: ★ 为什么只列这几个（而不对 struct 一刀切）：
+#:   struct 的 `data` 形态有 4 种（实测中枢 278 条 struct claim）：
+#:     ① ``{"fields": [...]}``            —— 消息实例的字段集合 ⇒ **无序**
+#:     ② ``{"headers": [...]}``           —— 必填头清单 ⇒ **无序**
+#:     ③ ``{"action":…, "trigger_sequence": [...]}`` —— 触发序列 ⇒ **有序**（序列语义！）
+#:     ④ ``{"target_field":…, "operator":…, "operand": [...]}`` —— 语义算子 ⇒ 逐字段定
+#:   ⇒ 对 ③④ 无序化会**破坏语义**（序列被当成集合）⇒ 只对 ①② 无序化。
+#:
+#: ★ 规范见 ``docs/设计/顶层设计/值形态与比较语义.md``
+UNORDERED_STRUCT_FIELDS = ("fields", "headers")
+
+
+def _normalize_value(value: dict | None) -> object:
+    """把 claim 的 ``value`` 归一到**可比较**的规范形态（阶段 N-1）。
+
+    ★ 归一目标形态（按 ``value.type`` 分派）：
+      · ``set`` / 裸 list ⇒ **无序**（排序后的字符串列表）
+      · ``struct`` ⇒ 逐字段：``UNORDERED_STRUCT_FIELDS`` 内的**无序化**，
+        其余**保持原样**（顺序敏感 ⇒ 序列语义不被破坏）
+      · ``text`` / ``pattern`` / ``scalar`` ⇒ 原样
+    """
+    if not isinstance(value, dict):
+        return value
+    data = value.get("data")
+    if isinstance(data, (list, set, tuple)):
+        return sorted(map(str, data))
+    if isinstance(data, dict) and value.get("type") == "struct":
+        out = {}
+        for k, v in data.items():
+            if k in UNORDERED_STRUCT_FIELDS and isinstance(v, (list, set, tuple)):
+                out[k] = sorted(map(str, v))
+            else:
+                out[k] = v
+        return out
+    return data
+
+
 def _value_eq(a, b) -> bool:
-    """两个 claim 的 value 是否一致（对 set/list 做无序遍历比较）。"""
+    """两个 claim 的 value 是否**语义等价**（阶段 N-1：先归一再比较）。
+
+    ★ 归一后：
+      · ``set`` / list ⇒ 无序比较（顺序无关）
+      · ``struct`` ⇒ ``fields`` / ``headers`` 无序，其余有序
+      · 其余 ⇒ 原样相等
+    """
     va, vb = a.get("value"), b.get("value")
     if va is None or vb is None:
         return va == vb
-    da, db = va.get("data"), vb.get("data")
-    if isinstance(da, (list, set, tuple)) and isinstance(db, (list, set, tuple)):
-        return sorted(map(str, da)) == sorted(map(str, db))
-    return da == db
+    return _normalize_value(va) == _normalize_value(vb)
 
 
 def resolve_claims(claims: list[dict], aspect: str,

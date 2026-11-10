@@ -42,6 +42,9 @@ SKIP_DIRS = {
     ".git", "__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache",
     "out", "guard", "derived", "node_modules", "local/encoding_backup",
     "local/guard_out",
+    # ★ IDE 工作区文件（**不入库**，内容随编辑器状态漂移 ⇒ 扫描它们只会噪声）
+    #   实测踩到：PyCharm 写 ``.idea/workspace.xml``（混合行尾）⇒ 护栏判红
+    ".idea", ".vscode",
 }
 #: 不扫描的路径前缀（相对仓库根）
 SKIP_PREFIX = ("out/", "guard/", "derived/", ".ruff_cache/", "local/encoding_backup/")
