@@ -144,10 +144,12 @@ python scripts/seedgen.py --protocol <新协议>
 ## 快速开始
 
 ```bash
-cd E://科研//想法idea//ProtoKG
+# 0. 克隆并进入仓库（路径自选；下面所有命令都在仓库根目录执行）
+git clone https://github.com/sssxzl/ProtoKG.git
+cd ProtoKG
 
-# 1. 查看 kb 中实际存在的知识源
-python scripts/build_hub.py --list-sources
+# 1. 查看该协议在 kb 里实际存在的知识源（--protocol 必填）
+python scripts/build_hub.py --list-sources --protocol rtsp
 
 # 2. 五源抽取 → derived/per_source/<协议>/<源>/facts/<源>.jsonl
 #    （source 源走 AutoSeeder，需 LLM ⇒ 见下方「LLM 配置」）

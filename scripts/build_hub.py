@@ -32,7 +32,7 @@
   - 本脚本走 core.fused.extraction.norm (原生 norm → Fact 映射, 基于 Layer 1 Profile)。
 
 ★ 只读保证:
-  kb/ 全程只读; 仅读 derived/spec/<protocol>/norms/norms.jsonl (v1 extractor 产物);
+  kb/ 全程只读; 五源各自从 kb/<protocol>/<源>/ 抽取（★ v1 的 norms.jsonl 通道已于 2026-11 退役）;
   只写 derived/per_source/<protocol>/<source>/ (用户 2026-10-08 授权落盘)。
 """
 from __future__ import annotations
@@ -88,10 +88,6 @@ from core.fused.semantic.llm_ensemble import (                          # noqa: 
 )
 from core import paths                                          # noqa: E402
 
-#: v1 norms 产物路径（协议 × 源二维解耦：derived/spec/<protocol>/norms/norms.jsonl）
-def _norms_path(protocol: str) -> Path:
-    return paths.norms_path(protocol)
-
 #: 五源 -> 底层 kb_source_type 集合 (与 v1 build_hub.py 对齐)
 KNOWN_SOURCES = {
     "rfc": ("rfc",),
@@ -115,27 +111,40 @@ KB_SOURCE_DIRS = {
 _LAST_BUILD_IDS: dict = {}
 
 
-def scan_kb_sources() -> dict:
-    """扫描 kb/<protocol>/ 目录，识别【实际存在】的知识源（按目录 + 数据量）。
+def scan_kb_sources(protocol: str | None = None) -> dict:
+    """扫描 kb/ 目录，识别【实际存在】的知识源（按目录 + 数据量）。
 
     协议 × 源二维：kb/ 下每协议一个目录，协议目录下每源一个子目录。同时兼容旧的
     kb/<源>/ 单协议布局（尚未迁移时）。
+
+    ★ 2026-11-10 修正：**按协议扫描**。
+      原实现**遍历 kb/ 下所有协议目录**⇒ 输出的文件数是**全体协议合计**
+      （实测 rtsp 与 sip 输出完全相同：rfc 42 / source 6442）
+      ⇒ 而 ``--list-sources`` 又被 argparse 强制要求 ``--protocol``
+      ⇒ **参数与行为不一致**（照 README 跑会看到「这个协议的源有 6442 个文件」）。
+      ⇒ 现在：给了 protocol ⇒ 只列**该协议**的源；不给 ⇒ 列全体（并标注合计）。
     """
     result = {}
     kb = REPO_ROOT / "kb"
+    protos = ([kb / protocol.lower()] if protocol
+               else [p for p in kb.iterdir() if p.is_dir()])
     for source, sub in KB_SOURCE_DIRS.items():
         files: list = []
-        # 新结构 kb/<protocol>/<源>/
-        for proto_dir in [p for p in kb.iterdir() if p.is_dir()]:
+        dirs: list[str] = []
+        for proto_dir in protos:
             d = proto_dir / sub
             if d.is_dir():
+                dirs.append(d.relative_to(REPO_ROOT).as_posix())
                 files.extend(f for f in d.rglob("*") if f.is_file())
-        # 旧结构 kb/<源>/（向后兼容）
-        legacy = kb / sub
-        if legacy.is_dir():
-            files.extend(f for f in legacy.rglob("*") if f.is_file())
+        # 旧结构 kb/<源>/（向后兼容）⇒ 仅在「列全体」时纳入
+        if not protocol:
+            legacy = kb / sub
+            if legacy.is_dir():
+                dirs.append(legacy.relative_to(REPO_ROOT).as_posix())
+                files.extend(f for f in legacy.rglob("*") if f.is_file())
         if files:
-            result[source] = {"dir": f"kb/<protocol>/{sub}", "files": len(files)}
+            result[source] = {"dir": ", ".join(dirs) if dirs else sub,
+                              "files": len(files)}
     return result
 
 
@@ -922,31 +931,9 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
     return written
 
 
-def _load_norms(protocol: str) -> list[dict]:
-    """读 derived/spec/<protocol>/norms/norms.jsonl（v1 norms 产物）。
-
-    容错：norms.jsonl 不存在时返回空列表（不 fail）。因为 source 源走 AutoSeeder、
-    expert_note/vuln 源直接读 kb，都不依赖 norms；只有 rfc/traffic 源需要 norms，
-    缺 norms 时它们自然映射 0 facts。
-    """
-    norms_path = _norms_path(protocol)
-    if not norms_path.is_file():
-        print(f"  [提示] norms.jsonl 不存在（{norms_path}），"
-              f"rfc/traffic 源将映射 0 facts（source/expert_note/vuln 不受影响）")
-        return []
-    norms = []
-    for line in norms_path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            norms.append(json.loads(line))
-        except json.JSONDecodeError as exc:
-            raise SystemExit(f"norms.jsonl 解析失败: {exc}")
-    return norms
 
 
-def _build_source(source: str, norms: list[dict], registry,
+def _build_source(source: str, registry,
                   protocol: str = "rtsp", constraints: bool = False,
                   vuln_llm: bool = False,
                   known_methods: set | None = None) -> tuple[list, int]:
@@ -1038,12 +1025,15 @@ def _build_source(source: str, norms: list[dict], registry,
         facts = []
         facts.extend(infer_source_facts(protocol))
         return facts, 0
-    # 其余源（rfc 等）走 norms.jsonl
+    # ★ 理论不可达：五个源各自都有专门分支（expert_note/vuln/traffic/rfc/source）
+    #   ⇒ 保留此兜底仅为「将来新增源时不至于静默漏抽」。
+    #   ★ 但 v1 的 norms.jsonl 通道已退役 ⇒ 本分支**无输入** ⇒ 映射 0 facts
+    #     ⇒ 新增源时**必须**补专门分支（否则表现为「抽到 0 条」）。
     mapper = map_norm_to_facts
     types = KNOWN_SOURCES[source]
     facts = []
     skipped = 0
-    for norm in norms:
+    for norm in ():
         if norm.get("kb_source_type") not in types:
             continue
         mapped = mapper(norm)
@@ -1341,7 +1331,6 @@ def main(argv=None) -> int:
         print()
         return _run_rules_only(protocol, args)
 
-    norms = _load_norms(protocol)
     registry = load_registry()
     # ★ 批次 2.3：各源状态机候选需要 RFC 正文（表格通道用）
     _rfc_full_texts: dict = {}
@@ -1352,8 +1341,9 @@ def main(argv=None) -> int:
             for f in sorted(_spec_dir.glob("*.txt"))]
 
     if args.list_sources:
-        print("知识库知识源识别结果（扫描 kb/ 目录，仅列出实际存在的源）:")
-        found = scan_kb_sources()
+        scope = f"协议 {args.protocol}" if args.protocol else "全部协议（合计）"
+        print(f"知识库知识源识别结果（扫描 kb/ 目录 · {scope}，仅列出实际存在的源）:")
+        found = scan_kb_sources(args.protocol)
         if not found:
             print("  （kb/ 目录下未发现任何知识源数据）")
         for src, info in found.items():
@@ -1384,7 +1374,7 @@ def main(argv=None) -> int:
     known_methods: set = set()
     for source in sources:
         _LAST_BUILD_IDS.pop(protocol, None)
-        facts, skipped = _build_source(source, norms, registry, protocol,
+        facts, skipped = _build_source(source, registry, protocol,
                                        constraints=args.constraints,
                                        vuln_llm=args.vuln_llm,
                                        known_methods=known_methods or None)
