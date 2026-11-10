@@ -198,7 +198,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="编码卫生护栏（UTF-8 统一 / 防乱码复发）")
     ap.add_argument("--root", default=str(ROOT), help="仓库根目录")
     ap.add_argument("--known-issues",
-                    default=str(ROOT / "tools" / "guard" / "baseline"
+                    default=str(ROOT / "guard" / "baseline"
                                 / "encoding_known_issues.txt"),
                     help="豁免清单（E2 上游原生非 UTF-8 文件）")
     ap.add_argument("--json", dest="json_out", help="机器可读结果输出路径")

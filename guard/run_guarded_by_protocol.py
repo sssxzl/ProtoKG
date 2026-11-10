@@ -62,8 +62,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TESTS = ROOT / "tests"
-EXPECTED = ROOT / "tools" / "guard" / "baseline" / "expected_b_class_failed_ids.txt"
-NARROW_EXEMPT = ROOT / "tools" / "guard" / "baseline" / "narrow_hub_failed_ids.txt"
+EXPECTED = ROOT / "guard" / "baseline" / "expected_b_class_failed_ids.txt"
+NARROW_EXEMPT = ROOT / "guard" / "baseline" / "narrow_hub_failed_ids.txt"
 
 #: 已知协议（**从 kb 推导** ⇒ 只有真正有知识源的协议才参与）
 def known_protocols() -> list[str]:

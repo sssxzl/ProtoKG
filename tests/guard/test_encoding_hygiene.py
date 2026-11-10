@@ -36,7 +36,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-VERIFIER = ROOT / "tools" / "guard" / "verify_encoding.py"
+VERIFIER = ROOT / "guard" / "verify_encoding.py"
 
 
 def _run_verifier() -> dict:
@@ -80,7 +80,7 @@ def test_encoding_guard_covers_kb_third_party():
     ⇒ 校验「可还原的 mojibake」在 kb/ 里为 0：那是我们拷贝时弄坏的，必须修。
     ⇒ 「上游原生 latin-1」允许存在，但必须**登记**在豁免清单里。
     """
-    known = (ROOT / "tools" / "guard" / "baseline" / "encoding_known_issues.txt")
+    known = (ROOT / "guard" / "baseline" / "encoding_known_issues.txt")
     assert known.is_file(), f"豁免清单缺失: {known}"
     listed = set()
     for line in known.read_text(encoding="utf-8").splitlines():
@@ -105,7 +105,7 @@ def test_encoding_guard_covers_kb_third_party():
 
 
 def test_own_code_uses_explicit_utf8():
-    """★ 我们自己维护的代码（core/ scripts/ tools/ tests/）**零**编码违规。
+    """★ 我们自己维护的代码（core/ scripts/ guard/ tests/）**零**编码违规。
 
     ⇒ kb/ 第三方素材可豁免；**我们的**代码不行。
     """
@@ -113,7 +113,7 @@ def test_own_code_uses_explicit_utf8():
     ours = [v for v in data["violations"]
             if not v["code"].endswith("-exempt")
             and (v["path"].startswith("core/") or v["path"].startswith("scripts/")
-                 or v["path"].startswith("tools/") or v["path"].startswith("tests/"))]
+                 or v["path"].startswith("guard/") or v["path"].startswith("tests/"))]
     assert not ours, (
         f"自有代码编码违规 {len(ours)} 项：\n"
         + "\n".join(f"  [{v['code']}] {v['path']} — {v['detail']}" for v in ours[:20]))
