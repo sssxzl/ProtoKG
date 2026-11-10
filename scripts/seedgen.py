@@ -187,9 +187,22 @@ def _load_resources(profile: dict, protocol: str,
     """读 profile.resources_file 声明的资源实例清单（如 RTSP 的流名列表），返回
     流名列表，多轨(tracks 大)在前——多轨资源通常覆盖更多状态（多 track 会话）。
 
-    协议无关：resources_file 缺失、文件不存在或无 streams 字段时返回空（表示该协议
-    无「多资源实例」概念，如 SMTP/FTP 是命令序列协议，保持单占位符行为）。
+    ★★ **资源集的来源规则**（2026-11-11 用户定，三条互斥情形）：
 
+    ┌─ 有**协议实现源码**（kb/<协议>/协议实现源码/ 非空）
+    │    ⇒ **源码即目标环境** ⇒ 资源集 = **源码级清单**（``resources_file``）
+    │      （源码描述的就是目标实现 ⇒ 其声明的资源实例即目标支持的）
+    │      ⇒ 额外：若 profile 声明了某环境的 ``playable_resources_file``
+    │        ⇒ 再收窄到该环境的**可播子集**（部署级事实，更精确）
+    │
+    ├─ 无源码，但有 ``resources_file``（如协议档案里的人工资源清单）
+    │    ⇒ 同样按该清单收窄（人工资产 ⇒ 也是环境事实）
+    │
+    └─ 既无源码也无 ``resources_file``
+         ⇒ **不知道目标实现** ⇒ **通用种子**（不假设任何具体资源 ⇒ 空列表
+           ⇒ 保持单占位符行为，如 SMTP/FTP 是命令序列协议）
+
+    ★ 协议无关：``resources_file`` 缺失、文件不存在或无 streams 字段时返回空。
     ★ 目标环境限定（可选）：profile.seedgen.environments.<env>.playable_resources_file
       声明了该环境下**实际可播/可用**的资源实例子集（环境级事实）。传入 env_cfg 时
       取交集——源码级清单（rtsp_streams.json 的 18 个）不删改，仅在本环境下收敛到
@@ -1441,6 +1454,27 @@ def main() -> int:
     # ★ env_cfg 传入 → 目标环境可播资源子集限定对字典同样生效（字典里的会话名
     #   token 与种子 URL 里的会话名保持一致，避免字典提示出不可播的会话）。
     resources = _load_resources(profile, protocol, env_cfg)
+    # ★ 2026-11-11：资源集来源的**显式提示**（让使用者知道当前用的是哪一档）
+    #   · 有资源清单（来自协议档案；清单内容通常抽自**协议实现源码**）
+    #     ⇒ **源码即目标环境** ⇒ 用该清单（未做部署级收窄）
+    #   · 无资源清单 ⇒ **通用种子**（不假设任何具体资源）
+    #
+    # ★ 合规：⑤ 消费端**不得直读 kb 目录**（guard/verify_consumer_wiring.py 的
+    #   `test_consumer_never_reads_kb_directory`）⇒ 这里**不检查 kb/**，
+    #   只按「协议档案是否声明了资源清单」分档。
+    # ★ 注意：`env_cfg` 变量其实是 `effective_config()` 的**合并配置 dict**（永远非空）
+    #   ⇒ 判「是否施加了环境级约束」要看 **`_environment`**（None = 未选环境）
+    _env_applied = bool(cfg.get("_environment"))
+    if resources and not _env_applied:
+        print(f"  [资源集] 协议档案资源清单 {len(resources)} 个（{protocol}）"
+              + "  ★ 清单通常抽自协议实现源码 ⇒ 源码即目标环境"
+              + "  ⇒ 未做**部署级**收窄；若目标镜像只提供部分资源，"
+                "请用 --target-env <环境> 收窄，或靠种子预检报出")
+    elif resources and _env_applied:
+        print(f"  [资源集] **{cfg.get('_environment')}** 环境的可播子集 "
+              f"{len(resources)} 个（{protocol}）  ⇒ 已做部署级收窄")
+    elif not resources:
+        print(f"  [资源集] **通用种子**（{protocol} 无资源清单 ⇒ 不假设具体资源）")
     dict_path = _write_dictionary(out, protocol, dict_kind, bundle, profile,
                                   resources)
     dict_info: dict = {"path": "", "token_count": 0, "md5": ""}
@@ -1491,6 +1525,39 @@ def main() -> int:
         }
         if _action_seq_enabled(profile):
             manifest_cfg["action_seq"] = dict(action_seq_info)
+        # ★ 2026-11-11：**图质量指标**随 manifest 落盘（4.2 的落地）
+        #   ⇒ 目的：把「图边数/节点数/社区数」当作**知识完备度的观测指标**
+        #     （跨版本可比）⇒ 而**不是**质量问题判定（算法问题另议）
+        #   ⇒ 图产物**无协议层**（derived/graph/ 平铺）⇒ 必须按 protocol 字段过滤
+        _gm_path = paths.graph_root() / "graph_meta.json"
+        _gm = {}
+        if _gm_path.is_file():
+            try:
+                _gm = json.loads(_gm_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                _gm = {}
+        if _gm and _gm.get("protocol") == protocol:
+            _metrics = _gm.get("metrics") or {}
+            manifest_cfg["graph_metrics"] = {
+                "protocol": protocol,
+                "node_count": _metrics.get("node_count"),
+                "edge_count": _metrics.get("edge_count"),
+                "isolated_node_ratio": _metrics.get("isolated_node_ratio"),
+                "largest_connected_component": _metrics.get(
+                    "largest_connected_component"),
+                "community_count": _gm.get("community_count"),
+                "community_algorithm": _gm.get("community_algorithm"),
+                "phase_a_node_count": _gm.get("phase_a_node_count"),
+                "phase_a_edge_count": _gm.get("phase_a_edge_count"),
+                "fingerprint": _gm.get("fingerprint"),
+            }
+        else:
+            manifest_cfg["graph_metrics"] = {
+                "protocol": protocol,
+                "available": False,
+                "note": ("本协议无图产物（图产物无协议层 ⇒ 只保留最后一次构建的协议）"
+                         if _gm else "未构建图（先跑 build_graph.py）"),
+            }
         manifest = build_manifest(seeds, out, protocol=protocol,
                                   group=focus_group, seedgen_cfg=manifest_cfg,
                                   dictionary=dict_info, base_count=base_count)
