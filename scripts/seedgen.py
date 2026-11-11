@@ -1210,6 +1210,22 @@ def main() -> int:
     #     无 CSeq/Transport/Session ⇒ 服务器必然拒 ⇒ 种子几乎无用；
     #     seedcheck 量化：36 条里 35 条越界、missing_required_header 234 条）
     #   ⇒ 明确告知使用者：**要出可用的种子，本次源集合必须含 source**。
+    # ★ 2026-11-11：③ 漏洞边界层**缺漏洞知识支撑**时警告
+    #   （实测：只跑 rfc 单源 ⇒ vuln_pattern=0 / security=0
+    #     ⇒ 「③ 漏洞边界候选」只剩语义规则(legal_boundary)+状态机+必填头在驱动
+    #     ⇒ 是「规范侧边界探测」，**不是**「漏洞知识驱动」⇒ 名不副实）
+    #   ⇒ B/C/D 组都含③层 ⇒ 本次源集合不含 vuln 时提示
+    if ("vuln_boundary" in (layers or [])) and not (bundle.get("vuln_pattern") or {}):
+        print("  ★★ 警告：③ 漏洞边界层**无漏洞知识支撑**（vuln_pattern=0）"
+              "⇒ 本次的「漏洞边界候选」只由语义规则/状态机/必填头驱动"
+              "（= 规范侧边界探测，**非**漏洞知识驱动）"
+              "⇒ 要真正的漏洞导向，源集合需含 **vuln**（历史漏洞）。",
+              file=sys.stderr)
+    # ★ 2026-11-11：③ 漏洞边界层**缺漏洞知识支撑**时警告
+    #   （实测：只跑 rfc 单源 ⇒ vuln_pattern=0 / security=0
+    #     ⇒ 「③ 漏洞边界候选」只剩语义规则(legal_boundary)+状态机+必填头在驱动
+    #     ⇒ 是「规范侧边界探测」，**不是**「漏洞知识驱动」⇒ 名不副实）
+    #   ⇒ B/C/D 组都含③层 ⇒ 本次源集合不含 vuln 时提示
     if not (bundle.get("message_instances") or {}):
         print("  ★★ 警告：本次**无字段级实例**（message_instances=0）"
               "⇒ 种子只有方法序列、没有头 ⇒ 服务器大概率直接拒"
