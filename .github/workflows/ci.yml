@@ -78,11 +78,13 @@ jobs:
       - name: Install ruff
         run: python -m pip install --upgrade "ruff==0.12.0"
 
-      # ★ 只查 guard/：全仓 ruff 有 114 个既存告警（core/ scripts/ tests/ 的历史遗留，
+      # ★ 只查 guard/ 与 seedcheck/（★ 新增 seedcheck/ ⇒ 它是本次新建的目录
+      #   ⇒ 必须纳入 lint 覆盖；scripts/ core/ tests/ 的既存告警暂不纳入）：
+      #   全仓 ruff 有 114 个既存告警（core/ scripts/ tests/ 的历史遗留，
       #   那些文件不在本次改动范围内，动它们会污染 diff）。
       #   guard/ 是 CI 闸门本体，必须 100% 干净 —— 闸门自己有 lint 债很荒唐。
       - name: Ruff check (guard/ only)
-        run: python -m ruff check guard/
+        run: python -m ruff check guard/ seedcheck/
 
       # ★ 文档-机器一致性（H-5）：文档里引用的路径/符号必须真实存在
       #   ⇒ 防止「删了/改名了路径，文档还教人照抄」
