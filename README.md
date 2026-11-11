@@ -156,8 +156,14 @@ python scripts/build_hub.py --list-sources --protocol rtsp
 python scripts/build_hub.py --sources rfc expert_note source traffic vuln --protocol rtsp \
        --api-key sk-xxx --model deepseek-chat --base-url https://api.deepseek.com
 
-# 3. 生成种子（--focus-group B 含漏洞边界层；--focused 启用漏洞接近度排序）
+# 3. 建知识图（GraphRAG 整理层）→ derived/graph/<协议>/
+python scripts/build_graph.py --protocol rtsp
+
+# 4. 生成种子（--focus-group B 含漏洞边界层；--focused 启用漏洞接近度排序）
 python scripts/seedgen.py --protocol rtsp --focus-group B
+
+# 5.（可选）种子质量校验 ⇒ 报告落在 seedcheck/_out/
+python seedcheck/run.py --protocol rtsp
 ```
 
 ### LLM 配置（`source` 源与语义规则抽取需要）

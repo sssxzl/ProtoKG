@@ -946,13 +946,28 @@ def resolve_source_set(protocol: str,
       · 中枢没声明清单（兼容期：中枢尚未按批次 1.6 流程重建）
         ⇒ 返回空列表 ⇒ 调用方按「**不过滤**」处理（保持旧行为）。
     """
+    # ★★ 2026-11-11：**profile（协议结构声明）必须显式并入** source_set
+    #   ★ 理由：骨架消解后，profile 只承载 **required_headers（协议结构声明）**
+    #     ⇒ 它**不是**「本次抽取的源」，而是**协议级的结构知识**
+    #     ⇒ 若不并入 ⇒ 组装期按 authority 过滤会把它丢掉
+    #     ⇒ 后果：种子**一个必填头都没有**（实测 rtsp 20 条全无 CSeq，
+    #       seedcheck 报 152 条 missing_required_header）
+    #   ★ **不动 hub_view 的过滤语义**（E1：profile 不得恒允许 ⇒ 空 source_set 仍要滤掉它）
+    #     ⇒ 在这里**显式声明**它参与 ⇒ 既守住 E1，又不丢必填头。
+    picked: list[str] = []
+    origin = ""
     if cli_sources:
         picked = [str(s).strip() for s in cli_sources if str(s).strip()]
-        return picked, "命令行 --sources（显式覆盖中枢声明）"
-    manifest = load_source_manifest(protocol)
-    declared = [str(s).strip() for s in (manifest.get("source_set") or [])
-                if str(s).strip()]
-    return declared, "中枢 sources.json 声明"
+        origin = "命令行 --sources（显式覆盖中枢声明）"
+    else:
+        manifest = load_source_manifest(protocol)
+        picked = [str(s).strip() for s in (manifest.get("source_set") or [])
+                  if str(s).strip()]
+        origin = "中枢 sources.json 声明"
+    if picked and "profile" not in {p.lower() for p in picked}:
+        picked.append("profile")
+        origin += " + profile（协议结构声明：必填头等）"
+    return picked, origin
 
 
 def main() -> int:

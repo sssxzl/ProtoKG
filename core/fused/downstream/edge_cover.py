@@ -16,6 +16,7 @@ from typing import Iterable, Optional
 
 from core.models import SeedCorpus, SeedMessage
 from core.fused.downstream.protocol_flags import cseq_with_method
+from core.fused.downstream.rag_seedgen import required_headers_for  # noqa: E402
 
 _INIT_STATE = "Init"
 
@@ -180,7 +181,11 @@ def build_message(method: str, *, required_headers: Optional[dict],
         ⇒ 单独一个参数，不混进 `required_headers`。
         值同样取自 `headers` 桶（RFC 抽取的取值池）⇒ **不硬编码**。
     """
-    reqs = (required_headers or {}).get(method, []) or []
+    # ★ 2026-11-11：必须用 ``required_headers_for``（合并 ``"*"`` 全局必填头）
+    #   ⇒ 旧实现 ``.get(method)`` **漏掉全局头**（rtsp 的 CSeq 就在 ``"*"`` 里）
+    #   ⇒ 结果：种子的 CSeq 丢失 ⇒ 服务端必拒（seedcheck 实测 152 条缺 CSeq）
+    #   ⇒ ⑤ 层 action_seq 早已改用它（此处**补齐 ①② 层**）
+    reqs = required_headers_for(required_headers or {}, method)
     msg_headers: dict = {}
     for h in reqs:
         if h.lower() == "cseq":

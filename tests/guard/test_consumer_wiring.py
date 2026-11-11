@@ -73,18 +73,31 @@ def test_load_source_manifest_invalid_json_returns_empty(hub):
 # ===========================================================================
 
 def test_resolve_source_set_defaults_to_manifest(hub):
-    """★ 缺省 ⇒ 用中枢声明的源集合。"""
+    """★ 缺省 ⇒ 用中枢声明的源集合 **+ profile**（协议结构声明）。
+
+    ★ 2026-11-11 契约变更：骨架消解后 profile 只承载 **required_headers**
+      （协议结构声明）⇒ 它**不是**「本次抽取的源」⇒ 必须显式并入 source_set
+      ⇒ 否则组装期按 authority 过滤会丢掉它 ⇒ 种子**一个必填头都没有**
+      （实测 rtsp 20 条全无 CSeq，seedcheck 报 152 条 missing_required_header）。
+    ★ **E1 的纯度闸语义不变**：hub_view 侧仍**不放行** profile
+      ⇒ 空 source_set 仍会滤掉它（见 test_source_set_filter.py 的两条 E1 测试）。
+    """
     _write_manifest(hub, ["rfc"])
     picked, origin = seedgen.resolve_source_set(PROTOCOL, None)
-    assert picked == ["rfc"]
+    assert picked == ["rfc", "profile"]
     assert "sources.json" in origin
+    assert "profile" in origin
 
 
 def test_resolve_source_set_cli_overrides_manifest(hub):
-    """★ `--sources` ⇒ **覆盖**中枢声明（调用方显式授权 = 双保险）。"""
+    """★ `--sources` ⇒ **覆盖**中枢声明（调用方显式授权 = 双保险）**+ profile**。
+
+    ★ 2026-11-11：profile（协议结构声明）**恒并入** ⇒ 理由同
+      ``test_resolve_source_set_defaults_to_manifest``。
+    """
     _write_manifest(hub, ["rfc", "vuln"])
     picked, origin = seedgen.resolve_source_set(PROTOCOL, ["rfc"])
-    assert picked == ["rfc"]
+    assert picked == ["rfc", "profile"]
     assert "--sources" in origin
 
 

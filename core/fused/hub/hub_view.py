@@ -575,6 +575,11 @@ def build_view(views: list[dict], protocol: str = "rtsp",
     if source_set is not None:
         _allowed = {str(s).strip().lower() for s in source_set
                     if str(s).strip()}
+        # ★★ 2026-11-11：**不在此处放行 profile** ⇒ 保持 **E1** 的纯度闸语义
+        #   （profile 必须**显式**写进 source_set 才参与 ⇒ 见
+        #    ``tests/hub/test_source_set_filter.py`` 的两条 E1 保护测试）。
+        #   ⇒ 必填头丢失的**根因在调用方**（``seedgen.resolve_source_set``
+        #     没有把 profile 并进来）⇒ 在那里修，不在这里。
         # ★★ 阶段 E1：**不再无条件放行协议骨架** ⇒ 纯度闸对**所有源**真正生效。
         #   骨架（authority=profile）现在与其他源**一视同仁**：
         #   要它进中枢，就把它**显式写进 source_set**
