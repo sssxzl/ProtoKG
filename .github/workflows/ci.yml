@@ -180,6 +180,51 @@ jobs:
   #   只被 scripts/ 与可选降级路径用到，不在测试路径上；实测两者都装不上
   #   也不影响失败集合 —— 见文件末尾「实测记录」）。
   # ==========================================================================
+  # ★ 种子校验层（产物审查）：**独立于代码审查**的 job
+  #   ⇒ 查「生成的种子质量」⇒ 而非「代码有没有回归」
+  #   ⇒ V1（格式必假）失败 ⇒ job 红（唯一阻断级）
+  #   ⇒ V2~V5 只告警（报告进 artifact）
+  seedcheck:
+    name: seedcheck (seeds quality)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install test dependencies
+        run: python -m pip install --upgrade "pytest==8.4.2" "numpy>=2.1"
+
+      # ★ ① 架构护栏：seedcheck 不得反向依赖 downstream / 不直读 kb / 不写回中枢与种子
+      - name: Seedcheck wiring guard
+        run: python guard/verify_seedcheck_wiring.py
+
+      # ★ ② 单测（校验器本身要可信 ⇒ 必须有单测钉住判据）
+      - name: Seedcheck unit tests
+        run: python -m pytest tests/seedcheck/ -q
+
+      # ★ ③ 真实跑一次校验（需要中枢 ⇒ 先构建 rtsp 的中枢）
+      #   ★ 只跑确定性检查（V1~V5）⇒ V6（LLM）不在 CI 跑（有抖动 ⇒ 只报告）
+      - name: Build hub (rtsp) for seedcheck
+        run: |
+          python scripts/build_hub.py --protocol rtsp \
+            --sources rfc source traffic expert_note vuln --no-purge
+      - name: Run seedcheck (rtsp)
+        run: |
+          python seedcheck/run.py --protocol rtsp \
+            --out-dir "$GITHUB_WORKSPACE/_ci_artifacts/seedcheck"
+
+      - name: Upload seedcheck report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seedcheck-report
+          path: ${{ github.workspace }}/_ci_artifacts/seedcheck
+
   guarded-pytest:
     name: guarded-pytest (ubuntu)
     runs-on: ubuntu-latest

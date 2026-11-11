@@ -213,7 +213,7 @@ export LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 | ③ | **知识中枢层**<br>`hub/` | **对齐**：五源事实归一到统一事实空间 → claim 级消解（保留「谁说的、谁赢了、为什么」）→ 按知识分类 A~F 落位 | `core/fused/hub/`<br>（`models` · `canonical` · `hub_layout` · `hub_view` · `registry/` · `knowledge_slots.json`） | `derived/hub/`（A~F 六分类 + `index/`） |
 | ④ | **GraphRAG 整理层**<br>`graph/` | 把中枢投影成**实体关系图**（带 `entity_id`）+ 社区 ⇒ 供检索与路径式种子 | `core/fused/graph/`<br>（`graph_ops` · `rfc_graph` · `state_graph` · `graph_query`） | `derived/graph/<协议>/` |
 | ⑤ | **种子生成层**<br>`downstream/` | 由视图 + 图生成**五层种子**（结构覆盖 / 通用危险 / 漏洞边界 / 目标聚焦 / 字段级变异）+ 定向字典 + manifest | `core/fused/downstream/`<br>（`rag_seedgen` · `selector` · `edge_cover` · `generic_danger` · `boundary_probe` · `action_seq` · `resolver` · `seed_manifest`） | `derived/seeds/<协议>/<时间戳>/` |
-| ⑥ | **种子校验层**<br>`guard/` | **fail-closed** 校验：契约一致性 / 溯源完整性 / 编码卫生 / 文档-机器一致性 / 回归（失败集合不漂移） | `guard/`<br>（`run_guarded_pytest` + `verify_*` 共 10 个检查器） | `guard/_out/`（不入库） |
+| ⑥ | **种子校验层**<br>`seedcheck/` | **产物审查**：只检查**生成的种子质量**（V1 格式必假 → 阻断；V2~V4 协议越界 → **只打标不丢弃**；V5 多样性 → 告警；V6 语义 → LLM 只报告） | `seedcheck/`<br>（`run` · `model` · `knowledge` · `v1_format` · `v2_knowledge` · `v3_env` · `v4_fsm` · `v5_diversity` · `v6_llm`） | `seedcheck/_out/`（不入库） |
 
 **贯穿全流程的两条横切线**
 
@@ -221,6 +221,12 @@ export LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 |---|---|---|
 | **协议档案** | `profiles/<协议>/`（`profile.json` · `rfc_config.json` · `semantic_rules.json`） | 协议级配置与**人工资产**（协议结构声明、语义规则）⇒ **协议无关**主程序靠它适配不同协议 |
 | **编排入口** | `scripts/`（`build_hub` · `build_graph` · `seedgen` · `onboard_protocol` · `check_protocol_ready`） | 每阶段一个命令行入口 ⇒ 全流程可脚本化、可复现 |
+| **代码审查**（工程设施） | `guard/`（`run_guarded_pytest` + `verify_*` 共 11 个检查器） | 查**代码/契约/文档**：失败集合不漂移 ⇒ 每次提交都跑 |
+| **产物审查**（工程设施） | `seedcheck/`（见上 ⑥ 层） | 查**种子质量**：V1 格式必假失败 ⇒ CI 红 |
+
+> ★ **两类审查刻意分开**：`guard/` 回答「这次改动有没有引入回归？」；
+> `seedcheck/` 回答「这批种子**能不能用**？」⇒ 互不依赖、互不越界
+> （护栏 `guard/verify_seedcheck_wiring.py` 强制 `seedcheck/` 不反向依赖 `downstream/`）。
 
 **数据流（一次完整构建）**
 
@@ -238,9 +244,12 @@ derived/graph/<协议>/    ④  知识图
         │  seedgen.py（视图 + 图 ⇒ 五层种子）
         ▼
 derived/seeds/<协议>/    ⑤  种子 + 定向字典 + manifest
-        │  guard/run_guarded_pytest.py + verify_*
+        │  seedcheck/run.py（V1 格式必假 → 阻断；其余打标/告警/报告）
         ▼
-        ⑥  校验（新增 0 / 消失 0 ⇒ 可采信）
+        ⑥  种子质量报告（seedcheck/_out/）
+
+（另有一条**平行的**审查线，不参与数据流：
+  guard/run_guarded_pytest.py + verify_*  ⇒ 查代码 ⇒ 新增 0 / 消失 0）
 ```
 
 ## License
