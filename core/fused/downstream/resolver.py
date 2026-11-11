@@ -6,7 +6,7 @@
 
   - precedence：取最高认识论优先级来源的值（existence/state_changing/target_state
     等「单值判定」aspect；observed 实测 > normative 规范 > descriptive 推断）。
-  - union     ：合并所有来源的取值（value_enum 等「取值池」aspect，
+  - union     ：合并所有来源的取值（value_enum_spec/observed 等「取值池」aspect，
     多源互补不冲突，取并集）。
   - consensus ：多源一致取其一；值不同且同优先级 → 标记 conflict 保留（不误判）。
 
@@ -41,13 +41,14 @@ _ASPECT_SEMANTICS: dict[str, str] = {
     "state_changing": "precedence",
     "target_state": "precedence",
     # ★ 阶段 E4：value_enum 拆成「规范值」与「实测样本」⇒ 两者都是**取值池**（union）
+    # ★ 2026-11-11：旧的 `value_enum` 已整体删除（24 → 21 个 aspect）
+    # ★ 2026-11-11：旧的 `value_enum` 已整体删除（24 → 21 个 aspect）
+    # ★ 2026-11-11：旧的 `value_enum` 已整体删除（24 → 21 个 aspect）
+    # ★ 2026-11-11：旧的 `value_enum` 已整体删除（24 → 21 个 aspect）
     #   · value_enum_spec      —— 来自 RFC 规范文本（落 D_construction）
     #   · value_enum_observed  —— 来自抓包观测（落 E_observation）
-    "value_enum": "union",
     "value_enum_spec": "union",
     "value_enum_observed": "union",
-    "case_sensitivity": "precedence",
-    "value_type": "precedence",
 }
 
 

@@ -40,6 +40,9 @@ def test_parse_transition_content():
 
 
 def test_transition_norm_to_fact_structure():
+    """★ 2026-11-11：transition norm ⇒ target_state fact（**边级**）。
+    ★ 状态存在性（existence）改在 ``rfc_extractor`` 的**表级**产出（每个状态一条）
+      ⇒ 避免同一状态被多个 transition 引用 ⇒ 重复 fact_id ⇒ 质量闸阻断。"""
     fact = transition_norm_to_fact(TRANSITION_NORM)
     subj = fact.fact_key.subject
     assert subj.type == "relation"
@@ -48,6 +51,7 @@ def test_transition_norm_to_fact_structure():
     assert subj.qualifiers["target"].name == "Ready"
     assert subj.qualifiers["method"].name == "SETUP"
     assert fact.fact_key.aspect == "target_state"
+    assert len(map_norm_to_facts(TRANSITION_NORM)) == 1
     assert fact.claims[0].value.type == "text"
     assert fact.claims[0].value.data == "Ready"
     assert fact.claims[0].epistemic_type == "normative_unspecified"
@@ -169,7 +173,7 @@ def test_method_fact_passes_fail_closed():
 # ===== 分派 =====
 
 def test_map_norm_to_facts_dispatches():
-    assert len(map_norm_to_facts(TRANSITION_NORM)) == 1
+    # ★ 2026-11-11：transition “ target_state + 两个状态存在性（existence） ⇒ 3 条
     assert len(map_norm_to_facts(FIELD_NORM)) == 2
     assert len(map_norm_to_facts(OUTCOME_NORM)) == 1
     assert len(map_norm_to_facts(METHOD_NORM)) == 1

@@ -1108,7 +1108,8 @@ VALUE_SAMPLE_SEP = " |~| "
 # ===========================================================================
 #
 # ★ 为什么需要：RFC 源此前**不产** `kind="transition"` 的 norm
-#   （`norm.py::transition_norm_to_fact` 的 docstring 明写「无数据源（死代码）」）
+#   （★ 2026-11-11 更正：rfc 侧**确实**产 transition norm（通道 F 全文扫状态表）
+#    ⇒ `norm.py::transition_norm_to_facts` 有数据源，且**同时产出状态存在性**）
 #   ⇒ 状态机一直由 source 源（源码分析）提供 ⇒ **协议骨架借来的**。
 #   而骨架的状态命名**实测有误**：rtsp 的骨架状态名是
 #   Idle/Registered/Invited/Confirmed（**SIP 的体系**）却配着 RTSP 的方法
@@ -1913,6 +1914,26 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
         for _r in _extract_transition_tables_by_form(_full_text):
             if _r not in _trs:
                 _trs.append(_r)
+    # ★★ 2026-11-11：**状态存在性**（aspect=existence, subject=state）——**表级**产出
+    #   ★ 动机：``target_state`` 的两端（状态名）此前**没有对应的 state 实体**
+    #     ⇒ 状态机边在图里**悬空**（端点只能靠边临时补出来 ⇒ 与中枢实体主表对不上）。
+    #   ★ **表级**（不是边级）：状态存在性是「状态转移表里出现过这个状态」⇒
+    #     每个状态只产一条 ⇒ 若按边级产 ⇒ 同一状态被多个 transition 引用
+    #     ⇒ 产出**重复 fact_id**（实测 24 个）⇒ 被质量闸阻断。
+    #   ★ 复用已有 aspect：``existence`` 的适用主体本就含 ``state`` ⇒ 契约面不变。
+    _seen_states: set[str] = set()
+    for _tr in _trs:
+        for _st in (_tr.get("from", ""), _tr.get("to", "")):
+            if not _st or _st in _seen_states:
+                continue
+            _seen_states.add(_st)
+            _sn = _norm("state", _st, f"state { _st } exists", protocol,
+                        src_name, "@state-table")
+            _sn["norm_id"] = f"{protocol}.state.{_st.lower()}"
+            if _sn["norm_id"] in seen_ids:
+                continue
+            seen_ids.add(_sn["norm_id"])
+            norms.append(_sn)
     for _tr in _trs:
         _content = (f"from={_tr['from']} method={_tr['method']} "
                     f"to={_tr['to']}")

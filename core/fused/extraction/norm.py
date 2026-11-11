@@ -150,10 +150,15 @@ def transition_norm_to_fact(norm: dict[str, Any]) -> Fact:
     qualifiers 保留 source/target state + method（触发转移的方法）——
     seedgen 需要「from_state --method--> to_state」完整三元组。
 
-    ★注意（2026-10-21）：当前 rfc_extractor.extract_rfc_norms 不产 kind="transition"
-    的 norm（RFC 状态机是自然语言场景描述，非确定性标题，见 rfc_extractor 注释），
-    故本映射目前无数据源（死代码）。
-    保留此映射作为「rfc LLM 补状态机」的未来接口；状态机当前由 source 源（AutoSeeder）提供。
+    ★★ 2026-11-11：**状态存在性（existence, subject=state）改在 ``rfc_extractor``
+      的**表级**产出**（见那里）⇒ 不在本函数里 ⇒ 否则多个 transition 指向同一状态
+      ⇒ 会产出**重复 fact_id**（实测 24 个）⇒ 被质量闸阻断。
+      ⇒ 理由：状态存在性是**状态转移表的属性**（表里出现过这个状态），
+        不是**每条边**的属性 ⇒ 按表去重才是对的粒度。
+
+    ★注（2026-10-21 的旧注释已过时）：rfc_extractor **确实**产 kind="transition"
+      的 norm（通道 F：状态转移表全文扫，evidence 标 ``@state-table``）
+      ⇒ 本映射**有数据源**，rfc 源自己贡献 target_state。
     """
     d = parse_transition_content(norm.get("content", ""))
     src = d.get("from", "")
@@ -168,6 +173,23 @@ def transition_norm_to_fact(norm: dict[str, Any]) -> Fact:
             "method": Subject(type="method", name=method),
         })
     return _make_fact(subject, "target_state", Value(type="text", data=tgt),
+                      "normative_unspecified", norm)
+
+
+def state_norm_to_fact(norm: dict[str, Any]) -> Fact:
+    """rfc state norm → v2 Fact (aspect=existence, subject=state)。
+
+    ★★ 2026-11-11：**状态存在性**（新维度落地）。
+      动机：``target_state`` 的两端（状态名）此前**没有对应的 state 实体**
+      ⇒ 状态机边在图里**悬空**（端点只能靠边临时补出来 ⇒ 与中枢实体主表对不上）。
+    ⇒ 复用已有 aspect ``existence``（其适用主体本就含 ``state``）⇒ **契约面不变**。
+    ⇒ 由 ``rfc_extractor`` 的**表级**产出（每个状态一条）⇒ 不会重复 fact_id。
+    """
+    name = str(norm.get("name") or "").strip()
+    if not name:
+        name = str(norm.get("content") or "").split()[-1] if norm.get("content") else ""
+    subject = Subject(type="state", name=name)
+    return _make_fact(subject, "existence", Value(type="scalar", data=True),
                       "normative_unspecified", norm)
 
 
@@ -473,8 +495,10 @@ def required_header_by_method_norm_to_fact(norm: dict[str, Any]) -> list[Fact]:
 #: rfc 源 kind → 映射函数（返回 list[Fact]）
 RFC_KIND_MAP = {
     "transition": lambda n: [transition_norm_to_fact(n)],
+    # ★ 2026-11-11：状态存在性（表级产出 ⇒ 状态成为中枢一等实体 ⇒ 边不悬空）
+    "state": lambda n: [state_norm_to_fact(n)],
     "field": field_norm_to_facts,
-    # ★ 批次 2.0（P0）：字段取值样本 → value_enum fact
+    # ★ 批次 2.0（P0）：字段取值样本 → value_enum_spec fact（★ 2026-11-11：旧 value_enum 已删）
     "field_value": field_value_norm_to_facts,
     # ★ 2026-11-07：二进制协议的布局通道
     "binary_layout": binary_layout_norm_to_fact,

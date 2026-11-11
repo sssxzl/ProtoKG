@@ -33,8 +33,7 @@
           "name": "headers",
           "aspects": [
             "definition",
-            "syntax",
-            "case_sensitivity"
+            "syntax"
           ],
           "entity_types": [
             "header"
@@ -48,8 +47,7 @@
         {
           "name": "statuses",
           "aspects": [
-            "definition",
-            "value_type"
+            "definition"
           ],
           "entity_types": [
             "status"
@@ -386,14 +384,6 @@
       "category": "A_structure",
       "slot": "headers"
     },
-    "case_sensitivity": {
-      "category": "A_structure",
-      "slot": "headers"
-    },
-    "value_type": {
-      "category": "A_structure",
-      "slot": "statuses"
-    },
     "target_state": {
       "category": "B_interaction",
       "slot": "transitions"
@@ -450,10 +440,6 @@
       "category": "D_construction",
       "slot": "layout"
     },
-    "value_enum": {
-      "category": "A_structure",
-      "slot": "headers"
-    },
     "security_property": {
       "category": "F_security",
       "slot": "security_properties"
@@ -478,7 +464,6 @@
   "aspect_map_notes": [
     "definition/existence 标 by_entity_type ⇒ 落位时按 subject.type 再分到 methods/headers/statuses/states（待决 3）。",
     "value_enum 暂落 A_structure/headers；待决 2 落地后按 epistemic 再分流：normative=>A、observed=>E_observation/observed_samples。",
-    "case_sensitivity 在 A.headers 与 D.case_rules 两处登记 ⇒ 落位按 entity_type 判定；D.case_rules 为空槽位占位。",
     "★ 阶段 E4（2026-11-10）：value_enum 拆成「规范取值 / 实测样本」—— value_enum_spec（rfc 侧）落 D_construction/case_rules（构造）；value_enum_observed（traffic 侧）落 E_observation/observed_samples（观测）⇒ 语义强度不再混在一起（规范值=硬约束 / 实测值=候选）。"
   ]
 }

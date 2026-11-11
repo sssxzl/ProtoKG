@@ -614,6 +614,21 @@ def _materialize_profile_semantics(protocol: str) -> int:
     dest = dest_dir / "expert_note.jsonl"
     with dest.open("a", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
+    # ★★ 2026-11-11：**同时写 aspect 分桶文件**（否则读端会丢掉这批知识）
+    #   ★ 读端规则（``paths.iter_source_fact_files``）：「若存在分桶文件 ⇒ **只读分桶**」
+    #     ⇒ 只写合并文件 ⇒ 这 3 个 aspect（precondition / session_header /
+    #       url_template）**永远进不了中枢**（实测：三维度在中枢里恒为 0）
+    #     ⇒ 连带后果：L2 generic_danger 拿不到前置链、L5 action_seq 拿不到会话语义。
+    #   ⇒ 与其它 aspect 保持一致：**每个 aspect 一个文件**。
+    _by_asp: dict[str, list[str]] = {}
+    for _ln in lines:
+        _a = str(json.loads(_ln).get("fact_key", {}).get("aspect") or "")
+        if _a:
+            _by_asp.setdefault(_a, []).append(_ln)
+    for _a, _rows in sorted(_by_asp.items()):
+        _d = dest_dir / f"{_a}.jsonl"
+        with _d.open("w", encoding="utf-8") as fh:
+            fh.write("\n".join(_rows) + "\n")
     try:
         shown = _repo_rel(dest)
     except ValueError:

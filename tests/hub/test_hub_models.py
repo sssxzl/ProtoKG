@@ -47,7 +47,7 @@ def test_fact_key_minimal():
 
 def test_condition_predicate_required_fields():
     c = ConditionPredicate(subject=Subject(type="method", name="SETUP"),
-                           aspect="value_type", op="in",
+                           aspect="definition", op="in",
                            value=Value(type="set", data={"string", "int"}))
     assert c.op == "in"
     assert c.value.type == "set"

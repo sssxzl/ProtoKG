@@ -32,13 +32,13 @@ ALL_KINDS = (
     ("method", "session_header"), ("method", "url_template"),
     ("method", "legal_boundary"), ("method", "vuln_pattern"),
     ("header", "syntax"), ("header", "definition"),
-    ("header", "value_enum"),
+    ("header", "value_enum_spec"),
     ("header", "security_property"), ("header", "legal_boundary"),
     ("header", "response_expectation"), ("header", "vuln_pattern"),
     ("relation", "target_state"), ("relation", "method_sequence"),
     ("relation", "message_instance"),
     ("status", "definition"),
-    ("protocol", "value_enum"), ("actor", "value_enum"),
+    ("protocol", "value_enum_spec"), ("actor", "value_enum_spec"),
 )
 
 #: ★ 已知**不进任何桶**的组合（既有行为，本步不改，只如实记录）。
@@ -79,7 +79,7 @@ def _view(stype: str, aspect: str, authority: str = "rfc",
     """
     subject = {"type": stype, "name": name, "qualifiers": {}, "path": []}
     value: object = True
-    if aspect == "value_enum":
+    if aspect == "value_enum_spec":
         value = ["v1"]
     elif aspect == "relation_to_other":
         # ★ 用一个 profile 里**没有**的头名 ⇒ 桶内容必然变化（否则被去重吸收）

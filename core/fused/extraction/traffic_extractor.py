@@ -8,9 +8,9 @@ kind 的 traffic norm，喂给 traffic.py 的 traffic_norm_to_facts → observed
 6 种 kind（对齐 traffic.py 的解析器）:
   message        方法存在性（实际调用 ∪ 服务器声明 Public 头）→ method + existence
   state_machine  观测到的方法序列（实际调用顺序）             → 相邻方法对
-  field          字段出现次数 + 取值样本                      → header + occurrence/value_enum
+  field          字段出现次数 + 取值样本                      → header + value_enum_observed
   outcome        响应码分布                                   → status + occurrence
-  protocol       传输类型                                     → protocol + value_enum
+  protocol       传输类型                                     → protocol + value_enum_observed_observed_observed_observed
   actor          端口                                         → actor + value_enum
 
 脱敏：Authorization 的 username/nonce/response 替换为占位符，避免凭据泄露进 fact。

@@ -192,7 +192,7 @@ def test_value_enum_spec_lands_in_headers_bucket():
             "protocol": PROTOCOL, "version": "1.0",
             "subject": {"type": "header", "name": "Accept",
                         "qualifiers": {}, "path": []},
-            "aspect": "value_enum", "condition": {"type": "always"},
+            "aspect": "value_enum_spec", "condition": {"type": "always"},
         },
         "resolution": None,
         "all_claims": [{

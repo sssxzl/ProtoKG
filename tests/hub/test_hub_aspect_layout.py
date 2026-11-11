@@ -132,7 +132,7 @@ def test_class_layout_keeps_source_as_fact_field(hub):
         _fact_view("rfc", "definition", fid="f1", claim_id="c1"),
     ])
     _write_facts(hub / "traffic" / "facts" / "traffic.jsonl", [
-        _fact_view("traffic", "value_enum", subject_type="header",
+        _fact_view("traffic", "value_enum_spec", subject_type="header",
                    subject_name="CSeq", fid="f2", claim_id="c2"),
     ])
     build_hub._write_aspect_layout(PROTOCOL)
@@ -175,7 +175,7 @@ def test_load_fact_views_falls_back_to_legacy_layout(hub):
         _fact_view("rfc", "definition", fid="f1", claim_id="c1"),
     ])
     _write_facts(hub / "traffic" / "facts" / "traffic.jsonl", [
-        _fact_view("traffic", "value_enum", subject_type="header",
+        _fact_view("traffic", "value_enum_spec", subject_type="header",
                    subject_name="CSeq", fid="f2", claim_id="c2"),
     ])
     assert not paths_mod.per_source_aspect_facts_dir(PROTOCOL).exists()
@@ -213,7 +213,7 @@ def test_legacy_and_aspect_layout_produce_identical_bundle(hub):
                    fid="f3", claim_id="c3"),
     ])
     _write_facts(hub / "traffic" / "facts" / "traffic.jsonl", [
-        _fact_view("traffic", "value_enum", subject_type="header",
+        _fact_view("traffic", "value_enum_spec", subject_type="header",
                    subject_name="CSeq", value=["1", "2"],
                    fid="f4", claim_id="c4"),
     ])

@@ -49,7 +49,7 @@ def test_union_value_enum_merges_sources():
         {"claim_id": "c2", "value": {"type": "set", "data": ["B", "C"]},
          "epistemic_type": "observed", "authority": "traffic"},
     ]
-    r = resolve_claims(claims, "value_enum")
+    r = resolve_claims(claims, "value_enum_spec")
     assert r["method"] == "union"
     assert r["value"]["data"] == ["A", "B", "C"]
     assert len(r["basis_claim_ids"]) == 2

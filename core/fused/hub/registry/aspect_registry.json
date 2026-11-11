@@ -3,16 +3,6 @@
   "notes": "Aspect Registry —— rtsp Profile v1 + expert_note 扩展。Layer 0 协议无关；本表登记 rtsp 实测 + expert_note 维度用到的 aspect。",
   "registered_aspects": [
     {
-      "name": "case_sensitivity",
-      "value_type": "scalar",
-      "applicable_subject_types": [
-        "header"
-      ],
-      "resolution_semantics": "consensus",
-      "cardinality": "one",
-      "description": "头字段是否大小写敏感（bool）"
-    },
-    {
       "name": "existence",
       "value_type": "scalar",
       "applicable_subject_types": [
@@ -65,16 +55,6 @@
       "description": "方法序列相邻对的目标方法名（traffic 观测的方法调用顺序，区别于状态机边 target_state）"
     },
     {
-      "name": "value_type",
-      "value_type": "enum",
-      "applicable_subject_types": [
-        "status"
-      ],
-      "resolution_semantics": "consensus",
-      "cardinality": "one",
-      "description": "状态码类别（1xx/2xx/3xx/4xx/5xx）"
-    },
-    {
       "name": "syntax",
       "value_type": "pattern",
       "applicable_subject_types": [
@@ -104,18 +84,6 @@
       "resolution_semantics": "consensus",
       "cardinality": "one",
       "description": "方法是否改变服务器状态（bool）"
-    },
-    {
-      "name": "value_enum",
-      "value_type": "set",
-      "applicable_subject_types": [
-        "header",
-        "protocol",
-        "actor"
-      ],
-      "resolution_semantics": "consensus",
-      "cardinality": "one",
-      "description": "对象的实测枚举取值集合"
     },
     {
       "name": "precondition",

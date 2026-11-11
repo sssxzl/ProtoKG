@@ -11,7 +11,7 @@ kind → 映射（epistemic 一律 observed）:
   state_machine observed transitions: A → B → C    → relation + method_sequence（相邻对）
   outcome      status code distribution: {...}     → status  + （不产出 fact：实测频次无意义）
   protocol     transport distribution / methods    → protocol + value_enum_observed（set）
-  actor        RTSP server observed on ports [...] → actor   + value_enum（set）
+  actor        RTSP server observed on ports [...] → actor   + value_enum_observed（set）
 
 设计依据: docs/设计/抽取与形态/抽取层方法借鉴.md §三 traffic 行（LLM-Boofuzz 借鉴，
            rule 做统计/边界，LLM 增强字段语义 —— 本模块只做 rule 部分）。

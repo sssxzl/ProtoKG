@@ -1364,7 +1364,6 @@ _BUCKET_BY_KIND: dict[tuple[str, str], str] = {
     ("header", "binary_layout"): "headers",
     ("header", "option_layout"): "headers",
     ("header", "definition"): "headers",
-    ("header", "value_enum"): "headers",
     ("header", "value_enum_spec"): "headers",
     ("header", "value_enum_observed"): "headers",
     ("header", "security_property"): "security",
@@ -1380,10 +1379,8 @@ _BUCKET_BY_KIND: dict[tuple[str, str], str] = {
     #   ⇒ 「状态码出现几次」这类观测不再进中枢（它不指导报文构造）。
     ("status", "definition"): "statuses",
     # ── protocol / actor 主体 ──
-    ("protocol", "value_enum"): "protocol",
     ("protocol", "value_enum_spec"): "protocol",
     ("protocol", "value_enum_observed"): "protocol",
-    ("actor", "value_enum"): "actors",
     ("actor", "value_enum_spec"): "actors",
     ("actor", "value_enum_observed"): "actors",
 }
