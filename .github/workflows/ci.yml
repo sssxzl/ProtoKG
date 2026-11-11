@@ -209,10 +209,18 @@ jobs:
 
       # ★ ③ 真实跑一次校验（需要中枢 ⇒ 先构建 rtsp 的中枢）
       #   ★ 只跑确定性检查（V1~V5）⇒ V6（LLM）不在 CI 跑（有抖动 ⇒ 只报告）
+      #   ★★ **不带 source 源** ⇒ CI **没有 LLM 凭据** ⇒ source 源（AutoSeeder
+      #     走 LLM）会崩（实测 2026-11-11 首次运行即因此失败）
+      #     ⇒ 只构建**纯确定性**的四个源（rfc / traffic / expert_note / vuln）
+      #   ⇒ 校验器的核心判据（必填头 / 前置链 / 会话语义 / URI）来自
+      #     profile.seedgen 的物化（**不需要 LLM**）⇒ 校验能力完整。
       - name: Build hub (rtsp) for seedcheck
         run: |
           python scripts/build_hub.py --protocol rtsp \
-            --sources rfc source traffic expert_note vuln --no-purge
+            --sources rfc traffic expert_note vuln --no-purge
+      - name: Generate seeds (rtsp)
+        run: |
+          python scripts/seedgen.py --protocol rtsp --manifest
       - name: Run seedcheck (rtsp)
         run: |
           python seedcheck/run.py --protocol rtsp \
