@@ -144,6 +144,28 @@ def _apply_instance_fields(msg_headers: dict, instance_fields, cseq: int,
     return url, argument
 
 
+def _find_instance_by_method(message_instances: Optional[dict],
+                             method: str) -> Optional[list]:
+    """按 method 找一个字段级实例（**精确键查不到时的退化取法**）。
+
+    ★ 2026-11-12（E2）：``message_instances`` 的键是 ``(from_state, method, to_state)``
+      ⇒ 当采用的状态机与实例的那套**状态名不一致**时 ⇒ 精确键查不到
+      ⇒ ⇒ 退化取「**任一**含该 method 的实例」⇒ 保证 URL/字段不丢。
+    ★ 取**第一个**（字典序稳定 ⇒ 可复现）。
+    """
+    if not message_instances:
+        return None
+    _m = str(method).strip().upper()
+    for _key, _fields in message_instances.items():
+        try:
+            _f, _mm, _t = _key
+        except (TypeError, ValueError):
+            continue
+        if str(_mm).strip().upper() == _m:
+            return _fields
+    return None
+
+
 def _instance_url_pool(message_instances: Optional[dict]) -> list[str]:
     """实例里出现过的 URL 取值（**协议无关**：只认字段名 ``url``，不认协议）。
 
@@ -227,6 +249,17 @@ def build_seed_from_edges(edges: list, *, required_headers: Optional[dict],
     for i, (_src, method, dst) in enumerate(edges, start=1):
         inst = (message_instances or {}).get(
             (_src, method.strip().upper(), dst))
+        # ★★ 2026-11-12（E2）：**实例退化的按 method 兜底**
+        #   ★ 动机：``message_instances`` 的键含**状态名** ⇒ 当采用的状态机与
+        #     实例的那套**状态名不一致**时（实测 sip：E2 切到 LLM 腿的
+        #     Calling/Proceeding/Completed…，而实例是源码侧的另一套状态名）
+        #     ⇒ 精确键查不到 ⇒ **字段实例整体退化** ⇒ 报文**缺 URL**
+        #     （实测：tests/downstream/test_seed_legality.py::
+        #      test_real_corpus_url_gap_closed 变红 ⇒ sip 报文缺 URL）
+        #   ⇒ 退化取法：**任一**含该 method 的实例 ⇒ 保证 URL/字段不丢。
+        #   ★ **rtsp 零影响**：它的实例键能精确对上 ⇒ 本分支不进。
+        if not inst:
+            inst = _find_instance_by_method(message_instances, method)
         messages.append(build_message(method, required_headers=required_headers,
                                       headers=headers, cseq=i,
                                       entity_headers=(entity_headers or {}).get(

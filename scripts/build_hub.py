@@ -638,6 +638,118 @@ def _materialize_profile_semantics(protocol: str) -> int:
     return len(lines)
 
 
+def _materialize_llm_state_machine(protocol: str) -> int:
+    """把 **LLM 抽的状态机**物化成 ``target_state`` fact（★ 2026-11-12，E2）。
+
+    ★ 背景：sip 的 RFC 状态机是散文/ASCII 图 ⇒ 通道 F（表格）抽不到
+      ⇒ rfc 源的 ``target_state`` fact 为空 ⇒ 状态机知识**实际为空**
+      ⇒ 而 ``infer_transitions``（LLM 腿）**已经抽到了**（实测 sip 12 条）
+      ⇒ 只停候选区（``state_machines.json``）⇒ 消费端用不上。
+
+    ★ **过滤**：``method`` 必须 ∈ **已知方法集**（rfc 源抽出的方法名）
+      ⇒ LLM 抽的「provisional response」「Timer F」这类**触发事件**被丢弃
+      ⇒ 避免污染 ``target_state`` 的语义（该 aspect 的契约是「由协议方法触发的转移」）。
+
+    ★ **幂等**：重复调用不会重复写（按 fact_key 去重 ⇒ 中枢层再消解一次）。
+
+    Returns:
+        物化出的 fact 条数（0 ⇒ 没有可用的 LLM 腿）。
+    """
+    try:
+        _edges = infer_transitions(protocol)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[状态机] LLM 腿读取跳过: {exc}", file=sys.stderr)
+        return 0
+    if not _edges:
+        return 0
+    # 已知方法集（rfc 源抽出的方法名）
+    _known: set[str] = set()
+    try:
+        _rf = paths.per_source_facts_dir(protocol, "rfc") / "definition.jsonl"
+        if _rf.is_file():
+            for _ln in _rf.read_text(encoding="utf-8").splitlines():
+                if not _ln.strip():
+                    continue
+                _v = json.loads(_ln)
+                _s = (_v.get("fact_key") or {}).get("subject") or {}
+                if _s.get("type") == "method" and _s.get("name"):
+                    _known.add(str(_s["name"]).upper())
+    except (OSError, ValueError):
+        pass
+    if not _known:
+        return 0
+    _dest = paths.per_source_facts_dir(protocol, "rfc") / "target_state.jsonl"
+    _existing: set[str] = set()
+    if _dest.is_file():
+        for _ln in _dest.read_text(encoding="utf-8").splitlines():
+            if _ln.strip():
+                try:
+                    _existing.add(json.dumps(json.loads(_ln)["fact_key"],
+                                             ensure_ascii=False, sort_keys=True))
+                except (ValueError, KeyError):
+                    pass
+    _rows: list[str] = []
+    for _e in _edges:
+        try:
+            _f, _m, _t = _e["from"], _e["method"], _e["to"]
+        except (KeyError, TypeError):
+            continue
+        if str(_m).upper() not in _known:
+            continue
+        _key = {
+            "protocol": protocol, "version": "1.0",
+            "subject": {
+                "type": "relation", "name": "transitions_to",
+                "qualifiers": {
+                    "source": {"type": "state", "name": str(_f),
+                               "qualifiers": {}, "path": []},
+                    "target": {"type": "state", "name": str(_t),
+                               "qualifiers": {}, "path": []},
+                    "method": {"type": "method", "name": str(_m),
+                               "qualifiers": {}, "path": []},
+                },
+                "path": [],
+            },
+            "aspect": "target_state",
+            "condition": {"type": "always"},
+        }
+        _sig = json.dumps(_key, ensure_ascii=False, sort_keys=True)
+        if _sig in _existing:
+            continue
+        _existing.add(_sig)
+        _fid = "f2_llmsm_" + _sig
+        _rows.append(json.dumps({
+            "fact_key": _key,
+            "resolution": None,
+            "all_claims": [{
+                "claim_id": "c2_llmsm_" + _sig,
+                "fact_id": _fid,
+                "value": {"type": "text", "data": str(_t)},
+                "epistemic_type": "normative_unspecified",
+                # ★ authority 用**独立的 rfc_llm**（不是 rfc）
+                #   ⇒ 理由：「规范原生优先」是 rtsp 的经验（骨架 38 条 vs RFC 14 条
+                #     ⇒ RFC 更准）⇒ 但 sip 的 source 腿是**源码实测**（observed，
+                #     证据强度更高）⇒ 若把 LLM 腿标成 rfc ⇒ 会**抢走** source 腿
+                #     （实测：sip 的 transitions 45 → 12 ⇒ 行为改变 ⇒ 测试变红）
+                #   ⇒ 独立 authority ⇒ 选路时它**排在 source 之后**
+                #     ⇒ ① 有 source 腿 ⇒ 用 source 腿（零行为改变）
+                #     ⇒ ② 无任何腿（rfc 单源）⇒ 用 LLM 腿兜底
+                "authority": "rfc_llm",
+                "scope": None,
+                "evidence_summary": ["rfc:llm-state-machine"],
+                "confidence": None,
+            }],
+        }, ensure_ascii=False))
+    if not _rows:
+        return 0
+    _dest.parent.mkdir(parents=True, exist_ok=True)
+    with _dest.open("a", encoding="utf-8") as _fh:
+        _fh.write("\n".join(_rows) + "\n")
+    print(f"[状态机] ★ LLM 腿已物化 {len(_rows)} 条 target_state fact"
+          f"（method ∈ 已知方法集）→ {_dest}")
+    return len(_rows)
+
+
 def _materialize_required_headers(protocol: str) -> int:
     """★ 批次 1.6 步 4：把 profile.json 的**必填头清单**物化进中枢。
 
@@ -1462,6 +1574,19 @@ def main(argv=None) -> int:
     if _missing_headers and getattr(args, "strict", False):
         print(f"[守卫] ❌ --strict：必填头覆盖不完整 ⇒ 阻断构建")
         return 3
+
+    # ---- ③'' ''' LLM 状态机腿**物化成 fact**（★ 2026-11-12，E2）-----------------
+    #   ★ 动机：sip 的 RFC 状态机是**散文/ASCII 图** ⇒ 通道 F（表格）抽不到
+    #     ⇒ rfc 源的 target_state fact **为空** ⇒ 状态机知识实际为空
+    #     ⇒ 而 LLM 腿**已经抽到了**（`infer_transitions`）⇒ 但只停候选区。
+    #   ★ **为什么物化而不是「读端兜底」**：读端读磁盘候选区会**污染单元测试**
+    #     （测试用内存 views 构造 ⇒ 却读到真实中枢的候选 ⇒ 不可测）
+    #     ⇒ 物化进 fact ⇒ 一切走同一条路（单测可控、语义统一）。
+    #   ★ 候选区**仍照旧写**（保持可观测 ⇒ 候选与 fact 两处可比对）。
+    #   ★ ★ **必须过「method ∈ 已知方法集」过滤**：LLM 抽的 method 可能是
+    #     「provisional response」「Timer F」这类**触发事件**（实测 SIP）
+    #     ⇒ 混进 facts 会**污染语义** ⇒ 过滤后才物化。
+    _materialize_llm_state_machine(protocol)
 
     # ---- ③''' 按 aspect 统一落盘（★ 批次 1.6 步 1：新中枢布局）--------------
     #   旧布局（按源分目录）**保留**（回退保险）；新布局（按 aspect）是读取端

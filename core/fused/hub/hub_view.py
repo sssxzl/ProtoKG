@@ -157,6 +157,11 @@ def _resolve_semantic_rules(semantic_rules: Optional[list],
     return out
 
 PROFILE_AUTHORITY = "profile"
+#: ★ 2026-11-12（E2）：LLM 抽的状态机的**独立 authority**
+#:   （排在 source 之后 ⇒ 只作「无腿可用」时的兜底）
+RFC_LLM_AUTHORITY = "rfc_llm"
+#: source 源（协议实现源码 ⇒ AutoSeeder ⇒ observed）
+SOURCE_AUTHORITY = "source"
 #: ★ 阶段 E5：协议骨架已物理移除 ⇒ 「profile」authority 现在只承载
 #:   **协议结构声明**（required_headers）⇒ 不再是跨源污染通道。
 
@@ -189,7 +194,10 @@ def _dedupe_sorted(values: list) -> list:
                                                      sort_keys=True,
                                                      default=str))
 
-def _select_active_transitions(by_source: dict[str, list]) -> list:
+def _select_active_transitions(by_source: dict[str, list],
+                              llm_edges: Optional[list] = None,
+                              known_methods: Optional[set] = None,
+                              source_set: Optional[Iterable[str]] = None) -> list:
     """从「各源的状态机」里选出**当前采用**的一套。
 
           ★★ 2026-11-05 修正（依据：旧的状态机消费口径对照实验报告，**已随论文实验层移除**）：
@@ -228,10 +236,53 @@ def _select_active_transitions(by_source: dict[str, list]) -> list:
       （字段实例退化；``RECORD`` 无实例 ⇒ 该边消息无字段，**已知缺陷**，
       全源模式下因 ``allowed_methods`` 不含 RECORD 会自动裁掉该边）。
     """
-    for _auth in (RFC_AUTHORITY, PROFILE_AUTHORITY):
+    # ★★ 2026-11-12（E2）：选路顺序 **rfc → profile → source → rfc_llm → 合并**
+    #   ★ `rfc_llm`（LLM 抽的状态机）排在 **source 之后** ⇒ 理由：
+    #     source 腿是**源码实测**（observed，证据强度 3）⇒ 高于 LLM 腿的
+    #     normative（强度 2）⇒ ⇒ **有 source 腿就用 source 腿**（零行为改变）
+    #     ⇒ 只有「一条腿都没有」（如 sip 的 rfc 单源）⇒ 才用 LLM 腿兜底。
+    #   ★ 旧的「规范原生优先」只覆盖 rfc/profile ⇒ source 腿走的是**合并兜底**
+    #     ⇒ 本次把它**提到 rfc_llm 之前**（source 优先于 LLM 腿）。
+    for _auth in (RFC_AUTHORITY, PROFILE_AUTHORITY, SOURCE_AUTHORITY,
+                  RFC_LLM_AUTHORITY):
         _chosen = by_source.get(_auth) or []
         if _chosen:
             return sorted(set(_chosen))
+    # ★★ 2026-11-12（E2）：**LLM 腿兜底** —— 表格腿为空时用 LLM 抽的状态机
+    #   ★ 动机（跨协议实测）：sip 的 RFC 状态机是**散文/ASCII 图** ⇒ 通道 F（表格）
+    #     抽不到 ⇒ fact 腿为空 ⇒ 状态机知识**实际为空**
+    #     ⇒ 而 LLM 腿**已经抽到了**（``state_machines.json`` 的 ``sources['rfc:llm']``）
+    #     ⇒ 只停候选区 ⇒ 消费端用不上 ⇒ ⇒ **候选区没接进来**。
+    #   ⇒ 这里补第三腿：**规范原生腿空 ⇒ 退回 LLM 腿**。
+    #   ★ ★ **必须过「method ∈ 已知方法集」过滤**：LLM 抽的 method 可能是
+    #     「provisional response」「Timer F」这类**触发事件**（实测 SIP）
+    #     ⇒ 混进 facts 会**污染语义** ⇒ 过滤后才可用。
+    # ★★ E1 铁律：候选区是**全局**的（不按协议/源分区）⇒ LLM 腿兜底**也必须**
+    #   受 source_set 约束 ⇒ 否则「空 source_set ⇒ 一切为空」的铁律被绕过
+    #   （实测：绕过 ⇒ tests/hub/test_source_set_filter.py 的两条 E1 保护测试变红）
+    #   ⇒ 只有当本次源集合**显式包含 rfc** 时才允许用 LLM 腿。
+    #   ★ **三态区分**（E1 铁律）：
+    #     · ``source_set is None`` ⇒ **不过滤** ⇒ 允许用 LLM 腿（与其它源同口径）
+    #     · ``source_set == []``   ⇒ **显式空** ⇒ 一律为空 ⇒ **禁止**（E1 保护测试）
+    #     · ``source_set 含 rfc``  ⇒ 允许
+    if source_set is None:
+        _llm_allowed = True
+    else:
+        _src_set = {str(s).strip().lower() for s in source_set if str(s).strip()}
+        _llm_allowed = "rfc" in _src_set
+    if llm_edges and _llm_allowed:
+        _known = {str(m).upper() for m in (known_methods or set())}
+        _kept = []
+        for _e in llm_edges:
+            try:
+                _f, _m, _t = _e
+            except (TypeError, ValueError):
+                continue
+            if _known and str(_m).upper() not in _known:
+                continue      # ★ 方法不在已知集合 ⇒ 丢弃（触发事件/噪声）
+            _kept.append((str(_f), str(_m), str(_t)))
+        if _kept:
+            return sorted(set(_kept))
     return sorted({t for rows in by_source.values() for t in rows})
 
 def _align_message_instances(transitions: list, message_instances: dict,
@@ -832,6 +883,10 @@ def build_view(views: list[dict], protocol: str = "rtsp",
     transitions_by_source: dict[str, list] = {}
     for _t, _a in zip(transitions, _transitions_auth):
         transitions_by_source.setdefault(_a or "(unknown)", []).append(_t)
+    # ★ 2026-11-12（E2）：LLM 腿已在**构建期物化成 fact**
+    #   （``scripts/build_hub.py::_materialize_llm_state_machine``）
+    #   ⇒ 读端**不再读磁盘候选区**（那会污染单元测试：测试用内存 views 构造
+    #   ⇒ 却读到真实中枢的候选 ⇒ 不可测）⇒ ⇒ 一切走同一条路。
     transitions = _select_active_transitions(transitions_by_source)
 
     # 去重（多源可能重复，保持稳定序）
