@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -72,12 +73,24 @@ def load_manifest(seed_dir: Path) -> dict:
         return {}
 
 
+#: 语料目录名的时间戳格式（``YYYYmmdd_HHMMSS``）⇒ 只有它算「一次构建的产物」
+_SEED_DIR_STAMP = re.compile(r"^\d{8}_\d{6}$")
+
+
 def latest_seed_dir(protocol: str) -> Path | None:
-    """该协议最新一次的语料目录。"""
+    """该协议最新一次的语料目录。
+
+    ★ 2026-11-11 修复：**只认时间戳格式的目录**（``YYYYmmdd_HHMMSS``）
+      ⇒ 旧实现按名字排序取最后一个 ⇒ ASCII ``_``(0x5F) > ``2``(0x32)
+      ⇒ **非时间戳目录**（如探针用的 ``_probe``）会排到最后 ⇒ 被误当成「最新」
+      ⇒ 实测：用户刚跑完 205304，seedcheck 却校验了 ``_probe``（22 条）。
+    ⇒ 时间戳目录的**字典序 = 时间序** ⇒ 取最大者即可。
+    """
     root = _ROOT / "derived" / "seeds" / protocol.lower()
     if not root.is_dir():
         return None
-    dirs = sorted((d for d in root.iterdir() if d.is_dir()),
+    dirs = sorted((d for d in root.iterdir()
+                   if d.is_dir() and _SEED_DIR_STAMP.match(d.name)),
                   key=lambda d: d.name)
     return dirs[-1] if dirs else None
 
