@@ -1544,10 +1544,17 @@ def main() -> int:
         print(f"字典: {len(tokens)} 个 token 到 {dict_path}")
         # ★ 字典 token 数自检（非阻断：仅警告，供标定与一致性排查）
         expect_dict_tokens = cfg.get("expect_dict_tokens")
+        # ★ 2026-11-11：与「种子数」同一口径 ⇒ **全源**才判据；单源降级为提示
+        #   （实测：sip 只跑 rfc+source ⇒ 期望 175（全源标定）/ 实际 109 ⇒ 不该判红）
         if expect_dict_tokens is not None and len(tokens) != expect_dict_tokens:
-            print(f"!! 字典 token 数不符: 期望 {expect_dict_tokens}，"
-                  f"实际 {len(tokens)}（分组配置与实际生成不一致）",
-                  file=sys.stderr)
+            if _is_full_source:
+                print(f"!! 字典 token 数不符: 期望 {expect_dict_tokens}，"
+                      f"实际 {len(tokens)}（分组配置与实际生成不一致）",
+                      file=sys.stderr)
+            else:
+                print(f"[提示] 字典 token 数 {len(tokens)}（期望 {expect_dict_tokens} "
+                      f"是按**全源**标定的；本次源集合 = {sorted(_src_set)} ⇒ 不作判据）",
+                      file=sys.stderr)
 
     # manifest（种子溯源：层/分数/排名/MD5/模式标签）
     # ★ 分组模式**默认产出** manifest —— T6 变异命中率归因完全依赖它，

@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import json
 import re
 import sys
@@ -179,6 +180,18 @@ def main(argv: list[str] | None = None) -> int:
                 for v in v2_knowledge.check(s, k):
                     s.add(v)
                     report.violations.append(v)
+            # ★ 取值域不匹配：已降级为**统计**（不判违规）⇒ 写进 metrics
+            #   ★ 原因：中枢的 value_enum_spec 是**示例集合**而非封闭取值域
+            #     ⇒ 对实例型值（会话 id / branch / 端口）必然误报
+            _vm = list(getattr(v2_knowledge, "_VALUE_MISMATCH", []) or [])
+            if _vm:
+                by_head = collections.Counter(x[1] for x in _vm)
+                report.metrics["value_domain_mismatch"] = {
+                    "count": len(_vm),
+                    "by_header": dict(by_head.most_common()),
+                    "note": ("★ 降级项：不判违规（中枢的取值域是**示例集合**而非封闭域；"
+                             "且缺头模式知识）⇒ 只统计"),
+                }
         if v3_env is not None:
             report.layers_run += ["V3"]
             for s in seeds:

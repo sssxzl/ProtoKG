@@ -67,9 +67,15 @@ def _required_for(k: Knowledge, method: str) -> list[str]:
     return sorted({str(h) for h in heads})
 
 
+#: 取值域不匹配的**统计**累加器（由 run.py 取走 ⇒ 写进 metrics）
+#: ★ 降级原因见 check() 里 value_outside_domain 分支的注释。
+_VALUE_MISMATCH: list = []
+
+
 def check(seed: SeedRecord, k: Knowledge) -> list[Violation]:
     """V2 检查 ⇒ 违规列表（打标）。"""
     out: list[Violation] = []
+    _value_mismatch = _VALUE_MISMATCH
     fn = seed.filename
 
     # ---- 逐报文 ----
@@ -124,10 +130,19 @@ def check(seed: SeedRecord, k: Knowledge) -> list[Violation]:
             if any(_value_pattern(x) == pat for x in domain):
                 # 同构变体（端口号/会话 id 等参数不同）⇒ **合法**，不报违规
                 continue
-            out.append(Violation(
-                "V2", "value_outside_domain",
-                f"第 {i} 个报文的头 {hname} 的值不在规范取值域内：{hval[:40]}",
-                fn, hname, f"value_enum_spec[{hname}]（{len(domain)} 个合法值）"))
+            # ★★ 2026-11-11：**降级为「统计提示」，不判违规**
+            #   ★ 原因：中枢的 ``value_enum_spec`` 抽到的是**规范文本里出现过的示例值集合**
+            #     （实测 sip 的 Call-ID 域 = ``843817637684230@998sdasdh09`` 等 3 个实例；
+            #       rtsp 的 Range 域 = ``npt=0-`` 等 12 个示例），
+            #     **不是「封闭取值域」**。
+            #   ⇒ 而**实例型值**（会话 id / branch / tag / 端口 / 时间戳）**每次都不同**
+            #     ⇒ 用「成员判定」必然误报（实测 sip：22 条种子全部被误判 ⇒ 114 条误报）。
+            #   ⇒ 且中枢**缺「头模式」知识**（实测 rtsp 的 syntax 0 条、sip 的 45 条全是头名）
+            #     ⇒ 无法用模式替代。
+            #   ⇒ ★ 因此：**只统计、不判违规**（保留信息，不污染「合规/越界」分级）。
+            #   ⇒ ★ 要恢复这项判定 ⇒ 中枢需补：① **封闭取值域声明**（区别于示例）
+            #     或 ② **头的语法模式**（ABNF/BNF 片段）⇒ 见 docs/设计/顶层设计/值形态与比较语义.md
+            _value_mismatch.append((fn, hname, hval[:40]))
 
     # ---- 跨报文 ----
     # ⑤ 前置链有序

@@ -145,12 +145,22 @@ def test_v2_hex_session_id_is_isomorphic():
     assert not any(v.code == "value_outside_domain" for v in vs)
 
 
-def test_v2_truly_wrong_value_is_violation():
+def test_v2_wrong_value_is_counted_not_flagged():
+    """★ 2026-11-11：取值域不匹配已**降级为统计**（不判违规）。
+
+    ★ 原因：中枢的 ``value_enum_spec`` 是**示例集合**而非封闭取值域
+      （实测 sip 的 Call-ID 域只有 3 个实例值）⇒ 对实例型值必然误报
+      ⇒ 且中枢缺「头模式」知识 ⇒ 无法用模式替代
+      ⇒ ⇒ 只统计（``_VALUE_MISMATCH``），**不判违规**（不污染合规/越界分级）。
+    """
+    import seedcheck.v2_knowledge as v2mod
     k = _k(header_values={"Transport": ["RTP/AVP;unicast"]}, known_methods={"SETUP"})
     s = _seed(raw="SETUP rtsp://h/s/track1 RTSP/1.0\n"
                   "CSeq: 1\nTransport: GARBAGE\n\n")
+    before = len(v2mod._VALUE_MISMATCH)
     vs = v2_knowledge.check(s, k)
-    assert any(v.code == "value_outside_domain" for v in vs)
+    assert not any(v.code == "value_outside_domain" for v in vs)
+    assert len(v2mod._VALUE_MISMATCH) == before + 1
 
 
 def test_v2_resource_extraction_skips_track_segment():
