@@ -1205,6 +1205,17 @@ def main() -> int:
     print(f"  方法白名单({len(whitelist)}): {whitelist}")
     print(f"  transitions={len(bundle['transitions'])} 条, "
           f"message_instances={len(bundle.get('message_instances') or {})} 条")
+    # ★ 2026-11-11：**字段级实例缺失 ⇒ 种子只有方法序列、没有头** ⇒ 质量严重退化
+    #   （实测：只跑 rfc 单源 ⇒ message_instances=0 ⇒ 每条报文只有方法行、
+    #     无 CSeq/Transport/Session ⇒ 服务器必然拒 ⇒ 种子几乎无用；
+    #     seedcheck 量化：36 条里 35 条越界、missing_required_header 234 条）
+    #   ⇒ 明确告知使用者：**要出可用的种子，本次源集合必须含 source**。
+    if not (bundle.get("message_instances") or {}):
+        print("  ★★ 警告：本次**无字段级实例**（message_instances=0）"
+              "⇒ 种子只有方法序列、没有头 ⇒ 服务器大概率直接拒"
+              "（实测 missing_required_header 234 条 / 36 条种子全部越界）"
+              "⇒ 要出可投的种子，源集合需含 **source**（协议实现源码）。",
+              file=sys.stderr)
 
     transitions = bundle["transitions"]
     if not transitions:
@@ -1445,10 +1456,22 @@ def main() -> int:
     #   它的构建环境（env 级还是协议级），会退回协议级契约报出误导性的期望值。
     expect_seeds = cfg.get("expect_seeds")
     seeds_mismatch = False
+    # ★ 2026-11-11：期望数是按**全源**标定的 ⇒ **单源**时不应拿它当判据
+    #   （实测：只跑 rfc 单源 ⇒ 期望 37 / 实际 36 ⇒ 退出码 3 ⇒ CI 会红）
+    #   ⇒ 现在：**全源**才判「不符」（退出码 3）；**单源**降级为提示（退出码 0）
+    #   ⇒ 且提示里说清「期望值基于全源」。
+    _ALL_SOURCES = {"rfc", "source", "traffic", "expert_note", "vuln"}
+    _src_set = set(srcs or [])
+    _is_full_source = bool(_ALL_SOURCES.issubset(_src_set))
     if expect_seeds is not None and len(written) != expect_seeds:
-        seeds_mismatch = True
-        print(f"!! 种子数不符: 期望 {expect_seeds}，实际 {len(written)}"
-              "（分组配置与实际生成不一致）", file=sys.stderr)
+        if _is_full_source:
+            seeds_mismatch = True
+            print(f"!! 种子数不符: 期望 {expect_seeds}，实际 {len(written)}"
+                  "（分组配置与实际生成不一致）", file=sys.stderr)
+        else:
+            print(f"[提示] 种子数 {len(written)} 条（期望 {expect_seeds} 是按**全源**标定的"
+                  f"；本次源集合 = {sorted(_src_set)} ⇒ 不作判据）",
+                  file=sys.stderr)
 
     # 定向变异字典
     # ★ env_cfg 传入 → 目标环境可播资源子集限定对字典同样生效（字典里的会话名
