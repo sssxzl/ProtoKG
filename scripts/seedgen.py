@@ -105,8 +105,21 @@ from core.models import SeedCorpus  # noqa: E402
 
 
 #: 全部可用的生成分层（--layers 的取值域）
+#: ⑥ 命令序列种子层的名字（**无状态机协议的降级路**）。
+#:
+#: ★ 2026-11-12（跨协议实测）：①② 层（edge_cover / generic_danger）**都以状态机
+#:   为骨架** ⇒ 对「规范里没有可确定性抽取的状态转移表」的协议（SIP 散文态、
+#:   SMTP 无状态机）⇒ 这两层产出为空 ⇒ 种子层 ``!! 无状态机转移``（退出码 1）
+#:   ⇒ **rfc 单源在 sip / smtp 上到不了种子层**。
+#: ⇒ 本层以 ``profile.seedgen.canonical_flow`` 为骨架 ⇒ 不依赖状态机。
+#:
+#: ★ **不进 focus_group 的 layers 配置**（A~D 组口径不变 ⇒ manifest 的 layers 字段
+#:   在有状态机协议上**完全不变**）⇒ ⇒ **只在「无状态机」时由代码自动启用**
+#:   ⇒ ⇒ 有状态机的协议（rtsp）**零影响**（既有语料逐字节不变 ⇒ 回滚手段成立）。
+COMMAND_SEQ_LAYER_NAME = "command_sequence"
+
 ALL_LAYERS: tuple[str, ...] = ("edge_cover", "generic_danger", "vuln_boundary",
-                               "canonical")
+                               "canonical", COMMAND_SEQ_LAYER_NAME)
 
 #: ⑤ 字段级 action-sequence 变异层的名字。
 #:
@@ -1249,15 +1262,22 @@ def main() -> int:
               file=sys.stderr)
 
     transitions = bundle["transitions"]
+    # ★ 2026-11-12：**不再因「无状态机」直接退出** ⇒ 改走 ⑥ 命令序列层
+    #   （实测：sip / smtp 的 rfc 单源此前在此退出码 1 ⇒ 到不了种子层）
+    #   ⇒ 有状态机的协议**完全不受影响**（本分支不进）
+    no_state_machine = False
     if not transitions:
-        print("!! 无状态机转移，无法生成种子")
-        return 1
+        no_state_machine = True
+        print("[降级] 本次**无状态机转移**（规范里无可确定性抽取的状态转移表）"
+              "⇒ 改走 ⑥ 命令序列种子层（以 profile 的 canonical_flow 为骨架）")
     if not whitelist:
         print("!! 方法白名单为空（所有知识源均未提供方法），无法生成种子")
         return 1
     # 防御性过滤：去掉白名单外的方法的转移（多源融合时由白名单约束）
     transitions = [t for t in transitions if t[1] in whitelist]
-    if not transitions:
+    if not transitions and not no_state_machine:
+        # ★ 原本**有**状态机、但白名单把边全滤掉 ⇒ 是真的「白名单与状态机不匹配」
+        #   ⇒ 仍判错（保持原行为）
         print("!! 白名单过滤后无状态机转移，无法生成种子")
         return 1
 
@@ -1273,7 +1293,8 @@ def main() -> int:
         print(f"  消息起点过滤: 保留 {len(seed_transitions)}/{len(transitions)} 条转移边, "
               f"不作为消息起点的方法: {dropped}")
     transitions = seed_transitions
-    if not transitions:
+    if not transitions and not no_state_machine:
+        # ★ 原本**有**状态机、但消息起点过滤后为空 ⇒ 真的不可用 ⇒ 判错（保持原行为）
         print("!! 消息起点方法过滤后无可用转移，无法生成种子")
         return 1
 
@@ -1357,6 +1378,24 @@ def main() -> int:
             print(f"黄金路径: {' -> '.join(str(c) for c in canonical_flow)}")
     elif "canonical" in layers:
         print("黄金路径: 跳过（profile 未声明 canonical_flow）")
+
+    # ★ 2026-11-12（E1）：⑥ 命令序列种子层 —— **无状态机协议的降级路**
+    #   ★ 只在「本次无状态机转移」时启用 ⇒ 有状态机的协议**完全不受影响**
+    #     （既有语料逐字节不变 ⇒ 回滚手段成立）
+    #   ★ 骨架 = profile.seedgen.canonical_flow（人工声明的黄金命令流程）
+    #     ⇒ 缺省时退化为「按方法集逐个单命令」
+    if no_state_machine:
+        from core.fused.downstream.command_seq import command_sequence_seeds
+        _cflow = ((profile.get("seedgen") or {}).get("canonical_flow") or [])
+        _cs = command_sequence_seeds(bundle, protocol=protocol,
+                                     canonical_flow=_cflow)
+        if _cs:
+            seeds += _cs
+            print(f"⑥ 命令序列: {len(_cs)} 条种子"
+                  f"（骨架: {' -> '.join(str(c) for c in _cflow) if _cflow else '方法集逐个单命令'}）")
+        else:
+            print("⑥ 命令序列: 跳过（既无状态机、profile 也未声明 canonical_flow"
+                  "、且中枢无方法集）")
 
     # ⑤ 字段级 action-sequence 变异（批次 1：SemFuzz 迁移项 A）
     #   ★ 由 profile.seedgen.action_seq.enabled 控制（**默认关闭** ⇒ 关闭时
