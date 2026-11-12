@@ -112,8 +112,11 @@ def _load_cache(protocol: str, block_hash: str) -> Optional[dict]:
 def _save_cache(protocol: str, block_hash: str, items: list[dict]) -> None:
     p = _cache_path(protocol)
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps({"block_hash": block_hash, "items": items},
-                            ensure_ascii=False, indent=2), encoding="utf-8")
+    from core.fused.extraction.cache_key import key_manifest
+    _payload = {"block_hash": block_hash, "items": items,
+                "key_manifest": key_manifest(block_hash)}
+    p.write_text(json.dumps(_payload, ensure_ascii=False, indent=2),
+                 encoding="utf-8")
 
 
 def _collect_blocks(files: list[Path]) -> list[dict]:
@@ -157,11 +160,16 @@ def extract_prose_norms(protocol: str, files: list[Path], *,
         except OSError:
             doc_lines[f.name] = []
 
-    # ---- ① block_hash（输入指纹）⇒ 命中缓存则不调 LLM ----
-    block_hash = hashlib.sha256("|".join(
-        [PROSE_SEMANTICS_PROMPT_VERSION, str(max_items)]
-        + [_hash_text(b["doc"] + str(b["start"]) + b["text"]) for b in blocks]
+    # ---- ① 缓存键（★ 版本化：模型 / 推理配置 / 解析器 / Schema / 校验器）----
+    #   ⇒ 任一要素变化 ⇒ 键变化 ⇒ **旧缓存自动失效**
+    from core.fused.extraction.cache_key import cache_key as _cache_key
+    _block_hash = hashlib.sha256("|".join(
+        [_hash_text(b["doc"] + str(b["start"]) + b["text"]) for b in blocks]
     ).encode("utf-8")).hexdigest()
+    block_hash = _cache_key(
+        prompt_version=PROSE_SEMANTICS_PROMPT_VERSION,
+        input_fingerprint=_block_hash,
+        temperature=0.1, max_tokens=16000)
     cached = _load_cache(protocol, block_hash)
     if cached is not None:
         raw_items = list(cached.get("items") or [])

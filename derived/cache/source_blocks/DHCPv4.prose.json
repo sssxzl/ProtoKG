@@ -1,971 +1,895 @@
 {
-  "block_hash": "3ced800602c46e1d652a41fe7531fda49a0946a03523ab0911023fc007f61361",
+  "block_hash": "684008feca3e6683c4148029727446b4b83b8be7b4385d50b138d31eaffe3d6b",
   "items": [
     {
       "doc": "rfc1534.txt",
       "entity": "DHCP",
-      "meaning": "DHCP 提供 BOOTP 所提供功能的超集",
+      "meaning": "提供 BOOTP 功能的超集",
       "constraint": "",
       "span": 18
     },
     {
       "doc": "rfc1534.txt",
       "entity": "DHCP messages",
-      "meaning": "DHCP 消息格式基于 BOOTP 消息格式",
+      "meaning": "消息格式基于 BOOTP 消息格式",
       "constraint": "",
       "span": 26
     },
     {
       "doc": "rfc1534.txt",
       "entity": "vendor extensions",
-      "meaning": "BOOTP 中的 vendor extensions 字段在 DHCP 中更名为 options 字段",
+      "meaning": "BOOTP 中的 vendor extensions 字段在 DHCP 中改名为 options 字段",
       "constraint": "",
       "span": 32
     },
     {
       "doc": "rfc1534.txt",
       "entity": "DHCPDISCOVER",
-      "meaning": "带有 DHCP message type 选项类型 1 的 DHCP 消息称为 DHCPDISCOVER 消息",
+      "meaning": "带有 'DHCP message type' 选项类型 1 的 DHCP 消息",
       "constraint": "",
       "span": 43
     },
     {
       "doc": "rfc1534.txt",
       "entity": "DHCP message type",
-      "meaning": "DHCP 服务器收到的包含 DHCP message type (51) 选项的消息被假定由 DHCP 客户端发送",
-      "constraint": "",
+      "meaning": "DHCP 服务器收到包含该选项的消息时假定其来自 DHCP 客户端",
+      "constraint": "包含 'DHCP message type' (51) 选项",
       "span": 61
     },
     {
       "doc": "rfc1534.txt",
+      "entity": "BOOTP client",
+      "meaning": "缺少 DHCP Message Type 选项的消息被假定由 BOOTP 客户端发送",
+      "constraint": "缺少 DHCP Message Type 选项",
+      "span": 63
+    },
+    {
+      "doc": "rfc1534.txt",
       "entity": "BOOTP clients",
-      "meaning": "DHCP 服务器对 BOOTP 客户端的支持由本地系统管理员酌情决定",
-      "constraint": "",
+      "meaning": "DHCP 服务器对 BOOTP 客户端的支持是可选的，由本地系统管理员决定",
+      "constraint": "可选，由本地系统管理员决定",
       "span": 64
     },
     {
       "doc": "rfc1534.txt",
       "entity": "BOOTREQUEST",
-      "meaning": "未配置支持 BOOTP 客户端的 DHCP 服务器收到来自 BOOTP 客户端的 BOOTREQUEST 时会静默丢弃该消息",
-      "constraint": "未配置支持 BOOTP 客户端时静默丢弃",
-      "span": 67
-    },
-    {
-      "doc": "rfc1534.txt",
-      "entity": "automatic addresses",
-      "meaning": "已配置支持 BOOTP 客户端的 DHCP 服务器可被配置提供静态地址、自动地址或两者",
-      "constraint": "",
-      "span": 71
+      "meaning": "未配置支持 BOOTP 客户端的 DHCP 服务器收到 BOOTREQUEST 时静默丢弃",
+      "constraint": "服务器未配置支持 BOOTP 客户端时静默丢弃",
+      "span": 66
     },
     {
       "doc": "rfc1534.txt",
       "entity": "Static addresses",
-      "meaning": "静态地址是系统管理员先前分配并存储在 DHCP 服务器可用数据库中的地址",
+      "meaning": "由系统管理员预先分配并存储在 DHCP 服务器可访问数据库中的地址",
       "constraint": "",
       "span": 72
     },
     {
       "doc": "rfc1534.txt",
       "entity": "Automatic addresses",
-      "meaning": "自动地址是 DHCP 服务器从其未分配地址池中选择的地址",
+      "meaning": "由 DHCP 服务器从其未分配地址池中选择的地址",
       "constraint": "",
       "span": 74
     },
     {
       "doc": "rfc1534.txt",
-      "entity": "DHCP server",
-      "meaning": "允许 DHCP 服务器返回自动地址的决定必须由系统管理员控制",
+      "entity": "system administrator",
+      "meaning": "控制是否允许 DHCP 服务器向 BOOTP 客户端返回自动地址",
       "constraint": "必须由系统管理员控制",
-      "span": 78
+      "span": 79
     },
     {
       "doc": "rfc1542.txt",
       "entity": "BOOTP relay agents",
-      "meaning": "BOOTP relay agents 原称 BOOTP forwarding agents",
+      "meaning": "BOOTP 中继代理，原称 BOOTP forwarding agents，其行为在原规范中仅作一般描述",
       "constraint": "",
-      "span": 24
+      "span": 22
+    },
+    {
+      "doc": "rfc1542.txt",
+      "entity": "BOOTP forwarding agents",
+      "meaning": "BOOTP relay agents 的旧称",
+      "constraint": "",
+      "span": 23
     },
     {
       "doc": "rfc2563.txt",
       "entity": "DHCP servers",
-      "meaning": "文档描述一种机制，使 DHCP 服务器能告知客户端没有可提供的 IP 地址",
+      "meaning": "能够告诉客户端它们没有可提供的 IP 地址",
+      "constraint": "客户端不应自行生成 IP 地址",
+      "span": 30
+    },
+    {
+      "doc": "rfc2563.txt",
+      "entity": "IPv6 stack",
+      "meaning": "在无其他配置机制时可给自己分配全局地址",
+      "constraint": "无其他配置机制时",
+      "span": 45
+    },
+    {
+      "doc": "rfc2563.txt",
+      "entity": "IPv4",
+      "meaning": "文档讨论如何按子网或按节点禁用 IPv4 地址自动配置",
+      "constraint": "可按子网或按节点禁用",
+      "span": 60
+    },
+    {
+      "doc": "rfc2563.txt",
+      "entity": "node",
+      "meaning": "在一种情况下节点可给自己分配 IP 地址并与本地链路其他节点完全连通",
       "constraint": "",
-      "span": 32
-    },
-    {
-      "doc": "rfc2563.txt",
-      "entity": "client",
-      "meaning": "客户端不应自行生成 IP 地址",
-      "constraint": "SHOULD NOT generate an IP address its own",
-      "span": 34
-    },
-    {
-      "doc": "rfc2563.txt",
-      "entity": "DHCP",
-      "meaning": "DHCP 提供由站点管理员向网络设备提供 IP 地址及其他网络参数的方法",
-      "constraint": "",
-      "span": 41
-    },
-    {
-      "doc": "rfc2563.txt",
-      "entity": "auto-configuration",
-      "meaning": "IPv4 地址自动配置可按子网或按节点禁用",
-      "constraint": "may be disabled on a per-subnet or per-node basis",
-      "span": 62
-    },
-    {
-      "doc": "rfc2563.txt",
-      "entity": "IP address",
-      "meaning": "节点可给自己分配 IP 地址并与本地链路上的其他节点完全连通",
-      "constraint": "",
-      "span": 78
+      "span": 77
     },
     {
       "doc": "rfc2937.txt",
-      "entity": "DHCP",
-      "meaning": "文档定义一个新的 DHCP 选项，由 DHCP 服务器传给 DHCP 客户端",
-      "constraint": "",
-      "span": 24
+      "entity": "DHCP Server",
+      "meaning": "向 DHCP Client 传递新 DHCP 选项以指定名称服务查询顺序",
+      "constraint": "从 DHCP Server 传给 DHCP Client",
+      "span": 23
     },
     {
       "doc": "rfc2937.txt",
       "entity": "DHCP servers",
-      "meaning": "RFC 2132 允许 DHCP 服务器指定各种名称服务的配置信息并传给 DHCP 客户端",
+      "meaning": "RFC 2132 允许 DHCP 服务器指定各类名称服务的配置信息并传给 DHCP 客户端",
       "constraint": "",
-      "span": 33
+      "span": 31
     },
     {
       "doc": "rfc2937.txt",
       "entity": "DHCP",
-      "meaning": "无法通过 DHCP 指定搜索顺序",
+      "meaning": "此前无法通过 DHCP 指定搜索顺序",
       "constraint": "",
-      "span": 38
-    },
-    {
-      "doc": "rfc2937.txt",
-      "entity": "DHCP servers",
-      "meaning": "文档目的是允许 DHCP 服务器指定 DHCP 客户端使用的搜索顺序",
-      "constraint": "",
-      "span": 39
+      "span": 36
     },
     {
       "doc": "rfc2937.txt",
       "entity": "DHCP client",
-      "meaning": "DHCP 客户端是使用 DHCP 获取网络地址等配置参数的 Internet 主机",
+      "meaning": "使用 DHCP 获取配置参数（如网络地址）的 Internet 主机",
       "constraint": "",
       "span": 63
     },
     {
       "doc": "rfc2937.txt",
       "entity": "DHCP server",
-      "meaning": "DHCP 服务器是向 DHCP 客户端返回配置参数的 Internet 主机",
+      "meaning": "向 DHCP 客户端返回配置参数的 Internet 主机",
       "constraint": "",
       "span": 68
     },
     {
       "doc": "rfc2937.txt",
-      "entity": "117",
-      "meaning": "该选项的代码为 117，最小长度为 2 字节",
-      "constraint": "minimum length is 2 bytes",
+      "entity": "option",
+      "meaning": "该选项代码为 117，最小长度为 2 字节",
+      "constraint": "代码 117；最小长度 2 字节",
       "span": 73
     },
     {
       "doc": "rfc2937.txt",
       "entity": "DHCP server",
-      "meaning": "DHCP 服务器应按偏好顺序返回名称服务的 16 位网络字节序整数选项代码",
-      "constraint": "SHOULD return in preferred order; 16-bit network byte order; earlier in list more preferred",
+      "meaning": "应按规定顺序返回名称服务选项代码",
+      "constraint": "SHOULD 按其首选顺序返回 16 位网络字节序整数选项代码",
       "span": 74
     },
     {
       "doc": "rfc2939.txt",
       "entity": "DHCP",
-      "meaning": "DHCP 提供在 TCP/IP 网络上向主机传递配置信息的框架",
+      "meaning": "提供在 TCP/IP 网络上向主机传递配置信息的框架",
       "constraint": "",
       "span": 23
     },
     {
       "doc": "rfc2939.txt",
       "entity": "options",
-      "meaning": "配置参数和其他控制信息携带在存储在 DHCP 消息 options 字段中的标记数据项里",
+      "meaning": "配置参数和控制信息存储在 DHCP 消息的 options 字段中的标记数据项",
       "constraint": "",
       "span": 27
     },
     {
       "doc": "rfc2939.txt",
-      "entity": "options",
-      "meaning": "这些数据项本身也称为 options",
-      "constraint": "",
-      "span": 28
-    },
-    {
-      "doc": "rfc2939.txt",
-      "entity": "DHCP Message Type",
-      "meaning": "DHCP 协议消息由 DHCP Message Type 选项（选项代码 51）标识",
-      "constraint": "option code 51",
+      "entity": "DHCP protocol messages",
+      "meaning": "由 'DHCP Message Type' 选项（选项代码 51）标识",
+      "constraint": "选项代码 51",
       "span": 30
     },
     {
       "doc": "rfc2939.txt",
       "entity": "DHCP Message Type",
-      "meaning": "每种消息类型由 DHCP Message Type 选项携带的数据值定义",
+      "meaning": "每个消息类型由该选项携带的数据值定义",
       "constraint": "",
       "span": 32
     },
     {
-      "doc": "rfc3004.txt",
-      "entity": "User Class option",
-      "meaning": "DHCP 客户端用来可选地标识其所代表的用户或应用类型/类别的选项。",
-      "constraint": "This option should be configurable by a user.",
-      "span": 45
-    },
-    {
-      "doc": "rfc3004.txt",
-      "entity": "DHCP client",
-      "meaning": "使用 DHCP 获取网络地址等配置参数的 Internet 主机。",
+      "doc": "rfc2939.txt",
+      "entity": "DHCP options",
+      "meaning": "可在 DHCP 规范发布后定义新的 DHCP 选项和消息类型",
       "constraint": "",
-      "span": 64
+      "span": 34
     },
     {
-      "doc": "rfc3004.txt",
-      "entity": "binding",
-      "meaning": "包含至少一个 IP 地址并与 DHCP 客户端关联或绑定的配置参数集合，由 DHCP 服务器管理。",
+      "doc": "rfc2939.txt",
+      "entity": "IANA",
+      "meaning": "作为分配 DHCP 选项和消息类型代码等数字的中心权威",
       "constraint": "",
       "span": 72
     },
     {
+      "doc": "rfc3004.txt",
+      "entity": "User Class option",
+      "meaning": "DHCP server uses it to choose the address pool it allocates an address from",
+      "constraint": "",
+      "span": 84
+    },
+    {
+      "doc": "rfc3004.txt",
+      "entity": "DHCP client",
+      "meaning": "Internet host using DHCP to obtain configuration parameters such as a network address",
+      "constraint": "",
+      "span": 68
+    },
+    {
+      "doc": "rfc3004.txt",
+      "entity": "DHCP server",
+      "meaning": "Internet host that returns configuration parameters to DHCP clients",
+      "constraint": "",
+      "span": 72
+    },
+    {
+      "doc": "rfc3004.txt",
+      "entity": "binding",
+      "meaning": "collection of configuration parameters, including at least an IP address, associated with or bound to a DHCP client",
+      "constraint": "including at least an IP address",
+      "span": 76
+    },
+    {
+      "doc": "rfc3004.txt",
+      "entity": "User Class option",
+      "meaning": "can be used to configure clients in the accounting department with a different printer than clients in the marketing department",
+      "constraint": "",
+      "span": 48
+    },
+    {
+      "doc": "rfc3011.txt",
+      "entity": "IPv4 Subnet Selection Option",
+      "meaning": "DHCP option for selecting the subnet on which to allocate an address",
+      "constraint": "",
+      "span": 9
+    },
+    {
       "doc": "rfc3011.txt",
       "entity": "subnet selection option",
-      "meaning": "允许 DHCP 客户端指定在其上分配地址的子网的新 DHCP 选项。",
-      "constraint": "This option takes precedence over the methods that the DHCP server uses to determine the subnet on which to select an address.",
-      "span": 68
+      "meaning": "new DHCP option that allows the DHCP client to specify the subnet on which to allocate an address",
+      "constraint": "takes precedence over the methods that the DHCP server uses to determine the subnet on which to select an address",
+      "span": 71
     },
     {
       "doc": "rfc3011.txt",
       "entity": "DHCP server",
-      "meaning": "DHCP 服务器确定请求来源的子网，并在来源子网或同一网段子网上选择地址。",
+      "meaning": "determines the subnet from which the request originated and selects an address on the originating subnet or on a subnet on the same network segment",
       "constraint": "",
-      "span": 56
+      "span": 59
     },
     {
       "doc": "rfc3011.txt",
       "entity": "giaddr field",
-      "meaning": "DHCP 包头部中的 giaddr 字段的子网地址可用于确定请求来源的子网；若该字段为零，则使用本地接口的子网地址。",
+      "meaning": "field in the DHCP packet header whose subnet address can be used to determine the subnet from which the request originates",
+      "constraint": "if the giaddr field is zero, use the subnet address of the local interface on which the DHCP server received the packet",
+      "span": 65
+    },
+    {
+      "doc": "rfc3011.txt",
+      "entity": "DHCP client",
+      "meaning": "can specify the subnet on which to allocate an address using the subnet selection option",
       "constraint": "",
-      "span": 62
+      "span": 72
     },
     {
       "doc": "rfc3046.txt",
       "entity": "Relay Agent Information option",
-      "meaning": "由 DHCP 中继代理在向 DHCP 服务器转发客户端发起的 DHCP 包时插入的新 DHCP 选项。",
+      "meaning": "new DHCP option inserted by the DHCP relay agent when forwarding client-originated DHCP packets to a DHCP server",
       "constraint": "",
-      "span": 32
+      "span": 35
     },
     {
       "doc": "rfc3046.txt",
       "entity": "DHCP relay agent",
-      "meaning": "在向 DHCP 服务器转发客户端发起的 DHCP 包时插入 Relay Agent Information 选项的实体。",
+      "meaning": "inserts the Relay Agent Information option when forwarding client-originated DHCP packets to a DHCP server",
       "constraint": "",
-      "span": 33
-    },
-    {
-      "doc": "rfc3046.txt",
-      "entity": "sub-options",
-      "meaning": "Relay Agent Information 选项包含一个或多个子选项，用于传递中继代理已知的信息。",
-      "constraint": "",
-      "span": 42
+      "span": 36
     },
     {
       "doc": "rfc3046.txt",
       "entity": "DHCP Server",
-      "meaning": "在服务器到客户端的响应中向中继代理原样回显该选项，随后中继代理在向客户端转发响应前移除该选项。",
+      "meaning": "echoes the Relay Agent Information option back verbatim to the relay agent in server-to-client replies",
+      "constraint": "verbatim",
+      "span": 39
+    },
+    {
+      "doc": "rfc3046.txt",
+      "entity": "relay agent",
+      "meaning": "strips the option before forwarding the reply to the client",
+      "constraint": "",
+      "span": 41
+    },
+    {
+      "doc": "rfc3046.txt",
+      "entity": "Relay Agent Information",
+      "meaning": "option organized as a single DHCP option that contains one or more sub-options conveying information known by the relay agent",
+      "constraint": "contains one or more sub-options",
+      "span": 44
+    },
+    {
+      "doc": "rfc3046.txt",
+      "entity": "circuit ID",
+      "meaning": "sub-option for the incoming circuit",
+      "constraint": "",
+      "span": 48
+    },
+    {
+      "doc": "rfc3046.txt",
+      "entity": "remote ID",
+      "meaning": "provides a trusted identifier for the remote high-speed modem",
+      "constraint": "",
+      "span": 49
+    },
+    {
+      "doc": "rfc3046.txt",
+      "entity": "Servers",
+      "meaning": "recognizing the Relay Agent Information option may use the information to implement IP address or other parameter assignment policies",
+      "constraint": "",
+      "span": 37
+    },
+    {
+      "doc": "rfc3074.txt",
+      "entity": "DHC Load Balancing Algorithm",
+      "meaning": "algorithm for load balancing",
+      "constraint": "",
+      "span": 15
+    },
+    {
+      "doc": "rfc3074.txt",
+      "entity": "algorithmic load balancing",
+      "meaning": "method enabling multiple cooperating servers to decide which one should service a client without exchanging any information beyond initial configuration",
+      "constraint": "",
+      "span": 31
+    },
+    {
+      "doc": "rfc3074.txt",
+      "entity": "server selection",
+      "meaning": "based on the servers hashing client MAC addresses when multiple DHCP servers are available to service DHCP clients",
       "constraint": "",
       "span": 36
     },
     {
       "doc": "rfc3074.txt",
-      "entity": "DHC Load Balancing Algorithm",
-      "meaning": "一种算法负载均衡方法，使多个协作服务器无需交换初始配置之外的信息即可决定由哪台服务器服务客户端。",
+      "entity": "DHCP servers",
+      "meaning": "available to service DHCP clients",
       "constraint": "",
-      "span": 12
+      "span": 38
     },
     {
       "doc": "rfc3074.txt",
-      "entity": "MAC",
-      "meaning": "当多台 DHCP 服务器可服务 DHCP 客户端时，服务器选择基于对客户端 Media Access Control（MAC）地址进行哈希。",
+      "entity": "BOOTP relay",
+      "meaning": "forwarding agent whose target server can be selected by the same method",
       "constraint": "",
-      "span": 34
+      "span": 43
     },
     {
       "doc": "rfc3074.txt",
       "entity": "DHCP Failover Protocol",
-      "meaning": "该协议最初被设计用于支持 DHCP Failover Protocol 的一项特定负载均衡优化。",
+      "meaning": "protocol for which the load balancing optimization was originally devised",
       "constraint": "",
-      "span": 45
+      "span": 48
+    },
+    {
+      "doc": "rfc3074.txt",
+      "entity": "Service Delay",
+      "meaning": "load balancing parameter allowing delayed service of a client by a server participating in the load-balancing scheme instead of ignoring the client",
+      "constraint": "",
+      "span": 80
+    },
+    {
+      "doc": "rfc3074.txt",
+      "entity": "Hash Bucket Assignments",
+      "meaning": "configuration directive that assigns a set of hash bucket values",
+      "constraint": "",
+      "span": 85
     },
     {
       "doc": "rfc3118.txt",
-      "entity": "authenticated DHCP server",
-      "meaning": "具有适当授权的新接入主机可由经过认证的 DHCP 服务器自动配置。",
+      "entity": "Authentication for DHCP Messages",
+      "meaning": "authentication for DHCP messages",
       "constraint": "",
-      "span": 27
+      "span": 11
     },
     {
       "doc": "rfc3118.txt",
-      "entity": "DHCP messages",
-      "meaning": "网络管理员可能希望提供 DHCP 消息来源和内容的认证。",
+      "entity": "authorization tickets",
+      "meaning": "can be easily generated through a new DHCP option",
       "constraint": "",
-      "span": 32
+      "span": 28
+    },
+    {
+      "doc": "rfc3118.txt",
+      "entity": "DHCP server",
+      "meaning": "authenticated DHCP server from which newly attached hosts with proper authorization can be automatically configured",
+      "constraint": "",
+      "span": 30
+    },
+    {
+      "doc": "rfc3118.txt",
+      "entity": "DHCP",
+      "meaning": "transports protocol stack configuration parameters from centrally administered servers to TCP/IP hosts",
+      "constraint": "",
+      "span": 39
     },
     {
       "doc": "rfc3203.txt",
       "entity": "FORCERENEW",
-      "meaning": "A unicast FORCERENEW message is introduced to force the client to the RENEW state.",
-      "constraint": "",
-      "span": 27
+      "meaning": "一种单播的 DHCP 消息，用于强制客户端进入 RENEW 状态，从而实现单个主机的动态重配置",
+      "constraint": "以单播方式发送",
+      "span": 33
     },
     {
       "doc": "rfc3203.txt",
-      "entity": "FORCERENEW",
-      "meaning": "The DHCP server sends a unicast FORCERENEW message to the client.",
+      "entity": "RENEW",
+      "meaning": "客户端收到 FORCERENEW 后转入的状态，并将在该状态下按常规 DHCP 过程续租",
       "constraint": "",
-      "span": 61
+      "span": 34
     },
     {
       "doc": "rfc3203.txt",
-      "entity": "FORCERENEW",
-      "meaning": "Upon receipt of the unicast FORCERENEW message, the client changes to the RENEW state and tries to renew its lease according to normal DHCP procedures.",
+      "entity": "DHCP client",
+      "meaning": "通过 DHCP 被重配置的主机",
       "constraint": "",
       "span": 62
     },
     {
       "doc": "rfc3203.txt",
-      "entity": "DHCP NAK",
-      "meaning": "If the server wants to assign a new IP address to the client, it replies to the DHCP REQUEST with a DHCP NAK.",
+      "entity": "DHCP server",
+      "meaning": "对 DHCP 客户端进行配置的服务器",
       "constraint": "",
-      "span": 66
+      "span": 64
     },
     {
       "doc": "rfc3203.txt",
       "entity": "FORCERENEW",
-      "meaning": "If the FORCERENEW message is lost, the DHCP server should retransmit it using an exponential backoff algorithm.",
-      "constraint": "should retransmit using an exponential backoff algorithm",
+      "meaning": "DHCP 服务器发送给客户端的单播强制续租消息",
+      "constraint": "由 DHCP 服务器以单播发送给客户端",
+      "span": 68
+    },
+    {
+      "doc": "rfc3203.txt",
+      "entity": "RENEW",
+      "meaning": "客户端收到该单播消息后切换到的状态",
+      "constraint": "",
       "span": 70
     },
     {
       "doc": "rfc3203.txt",
       "entity": "FORCERENEW",
-      "meaning": "Receipt of a multicast FORCERENEW message by the client should be silently discarded.",
-      "constraint": "should be silently discarded",
+      "meaning": "可能丢失、需要重传的强制续租消息",
+      "constraint": "若服务器未收到客户端的 DHCP REQUEST，应使用指数退避算法重传，且重传次数应受限",
       "span": 77
     },
     {
-      "doc": "rfc3256.txt",
-      "entity": "Relay Agent Information Option",
-      "meaning": "A new sub-option is proposed for the DHCP Relay Agent Information Option.",
+      "doc": "rfc3203.txt",
+      "entity": "FORCERENEW",
+      "meaning": "以组播形式发送的强制续租消息",
+      "constraint": "客户端收到组播 FORCERENEW 应静默丢弃",
+      "span": 84
+    },
+    {
+      "doc": "rfc3203.txt",
+      "entity": "DHCP INFORM",
+      "meaning": "客户端已通过其他方式获得网络地址时，用于获取其他本地配置参数的请求",
       "constraint": "",
-      "span": 23
+      "span": 88
     },
     {
       "doc": "rfc3256.txt",
       "entity": "device class",
-      "meaning": "The sub-option describes the device class to which a cable modem belongs.",
-      "constraint": "",
-      "span": 25
-    },
-    {
-      "doc": "rfc3256.txt",
-      "entity": "Relay Agent",
-      "meaning": "The cable modem signals device class information to the Relay Agent using DOCSIS signaling, and the Relay Agent forwards it to the DHCP Server.",
-      "constraint": "",
-      "span": 27
-    },
-    {
-      "doc": "rfc3256.txt",
-      "entity": "relay agent",
-      "meaning": "The relay agent passes the Device Class value unchanged to the DHCP server.",
-      "constraint": "MUST pass unchanged",
-      "span": 66
-    },
-    {
-      "doc": "rfc3256.txt",
-      "entity": "Device Class",
-      "meaning": "DOCSIS defines the Device Class as a 32-bit field where individual bits represent individual attributes of the CM.",
-      "constraint": "",
-      "span": 77
-    },
-    {
-      "doc": "rfc3361.txt",
-      "entity": "DHCP-for-IPv4",
-      "meaning": "Defines a DHCP-for-IPv4 option containing a list of domain names or IPv4 addresses mapped to SIP outbound proxy servers.",
-      "constraint": "",
-      "span": 24
-    },
-    {
-      "doc": "rfc3361.txt",
-      "entity": "SIP server",
-      "meaning": "A SIP server in this document must be an outbound proxy server.",
-      "constraint": "MUST be an outbound proxy server",
-      "span": 39
-    },
-    {
-      "doc": "rfc3361.txt",
-      "entity": "DHCP option",
-      "meaning": "The DHCP option allows SIP clients to locate a local SIP server used for all outbound SIP requests, called an outbound proxy server.",
-      "constraint": "",
-      "span": 68
-    },
-    {
-      "doc": "rfc3361.txt",
-      "entity": "SIP server DHCP option",
-      "meaning": "The SIP server DHCP option carries a 32-bit IPv4 address or preferably a DNS fully-qualified domain name used by the SIP client to locate a SIP server.",
-      "constraint": "",
-      "span": 80
-    },
-    {
-      "doc": "rfc3442.txt",
-      "entity": "DHCP Server",
-      "meaning": "A new DHCP option is passed from the DHCP Server to the DHCP Client to configure a list of static routes in the client.",
-      "constraint": "",
-      "span": 28
-    },
-    {
-      "doc": "rfc3442.txt",
-      "entity": "subnet mask",
-      "meaning": "Each routing table entry includes a subnet mask, and the network destinations are classless.",
-      "constraint": "",
-      "span": 31
-    },
-    {
-      "doc": "rfc3442.txt",
-      "entity": "Static Route option",
-      "meaning": "This option obsoletes the Static Route option (option 33) defined in RFC 2132.",
-      "constraint": "",
-      "span": 35
-    },
-    {
-      "doc": "rfc3442.txt",
-      "entity": "DHCP Router option",
-      "meaning": "The host routing table can be maintained using the DHCP Router option defined in RFC 2132.",
-      "constraint": "",
-      "span": 47
-    },
-    {
-      "doc": "rfc3442.txt",
-      "entity": "DHCP protocol",
-      "meaning": "The DHCP protocol and RFC 2132 options only provide a mechanism for installing a default route or a table of classful routes.",
-      "constraint": "",
-      "span": 66
-    },
-    {
-      "doc": "rfc3442.txt",
-      "entity": "DHCP Static Route",
-      "meaning": "Classful routing is no longer in common use, so the DHCP Static Route option is no longer useful.",
-      "constraint": "",
-      "span": 72
-    },
-    {
-      "doc": "rfc3495.txt",
-      "entity": "DHCP",
-      "meaning": "Defines a DHCP option used to configure various devices deployed within CableLabs architectures.",
-      "constraint": "",
-      "span": 25
-    },
-    {
-      "doc": "rfc3495.txt",
-      "entity": "PacketCable Media Terminal Adapter (MTA)",
-      "meaning": "The option content is used to configure one class of CableLabs client device: a PacketCable Media Terminal Adapter (MTA).",
-      "constraint": "",
-      "span": 29
-    },
-    {
-      "doc": "rfc3495.txt",
-      "entity": "option content",
-      "meaning": "The option content will be extended as future CableLabs client devices are developed.",
+      "meaning": "电缆调制解调器所属的设备类别",
       "constraint": "",
       "span": 30
     },
     {
+      "doc": "rfc3256.txt",
+      "entity": "Relay Agent",
+      "meaning": "用 DOCSIS 信令接收电缆调制解调器设备类别信息，并转发给 DHCP 服务器的中继代理",
+      "constraint": "",
+      "span": 32
+    },
+    {
+      "doc": "rfc3256.txt",
+      "entity": "DHCP relay agents",
+      "meaning": "终结电缆调制解调器并添加该子选项的中继代理",
+      "constraint": "",
+      "span": 41
+    },
+    {
+      "doc": "rfc3256.txt",
+      "entity": "relay agent",
+      "meaning": "把 Device Class 值转发给 DHCP 服务器的中继代理",
+      "constraint": "MUST 把 Device Class 值原样传给 DHCP 服务器",
+      "span": 71
+    },
+    {
+      "doc": "rfc3256.txt",
+      "entity": "Device Class",
+      "meaning": "DOCSIS 定义的 32 位字段，其中各个比特表示 CM 的不同属性",
+      "constraint": "",
+      "span": 82
+    },
+    {
+      "doc": "rfc3361.txt",
+      "entity": "DHCP client",
+      "meaning": "使用 DHCP 获取网络地址等配置参数的 Internet 主机",
+      "constraint": "",
+      "span": 37
+    },
+    {
+      "doc": "rfc3361.txt",
+      "entity": "DHCP server",
+      "meaning": "向 DHCP 客户端返回配置参数的 Internet 主机",
+      "constraint": "",
+      "span": 41
+    },
+    {
+      "doc": "rfc3361.txt",
+      "entity": "SIP server",
+      "meaning": "SIP 服务器；在本文档的语境中，指运行 SIP 服务器的主机",
+      "constraint": "MUST 是 outbound proxy server",
+      "span": 44
+    },
+    {
+      "doc": "rfc3361.txt",
+      "entity": "SIP client",
+      "meaning": "SIP 客户端，可以是用户代理客户端，也可以是代理服务器的客户端部分",
+      "constraint": "",
+      "span": 49
+    },
+    {
+      "doc": "rfc3361.txt",
+      "entity": "SIP server DHCP option",
+      "meaning": "携带 32 位 IPv4 地址或（更可取的）DNS 完全限定域名的 DHCP 选项，供 SIP 客户端定位 SIP 服务器",
+      "constraint": "",
+      "span": 84
+    },
+    {
+      "doc": "rfc3442.txt",
+      "entity": "Classless Static Route Option",
+      "meaning": "由 DHCP 服务器传给 DHCP 客户端以配置静态路由列表的 DHCP 选项，其路由目标是无类的，每条路由表项都包含子网掩码",
+      "constraint": "",
+      "span": 15
+    },
+    {
+      "doc": "rfc3442.txt",
+      "entity": "DHCP Server",
+      "meaning": "把该选项传给 DHCP 客户端的一方",
+      "constraint": "",
+      "span": 33
+    },
+    {
+      "doc": "rfc3442.txt",
+      "entity": "DHCP Client",
+      "meaning": "接收该选项以在自身配置静态路由列表的客户端",
+      "constraint": "",
+      "span": 33
+    },
+    {
+      "doc": "rfc3442.txt",
+      "entity": "Static Route option",
+      "meaning": "RFC 2132 定义的选项 33",
+      "constraint": "被本选项废弃（obsoletes）",
+      "span": 40
+    },
+    {
+      "doc": "rfc3442.txt",
+      "entity": "DHCP Router option",
+      "meaning": "RFC 2132 定义的选项，可用于维护 IP 主机的路由表",
+      "constraint": "",
+      "span": 52
+    },
+    {
+      "doc": "rfc3495.txt",
+      "entity": "Dynamic Host Configuration Protocol (DHCP)",
+      "meaning": "本文档定义了一个 DHCP 选项，用于配置 CableLabs 架构内所部署的各类设备",
+      "constraint": "",
+      "span": 30
+    },
+    {
+      "doc": "rfc3495.txt",
+      "entity": "PacketCable Media Terminal Adapter (MTA)",
+      "meaning": "该选项内容所配置的一类 CableLabs 客户端设备",
+      "constraint": "",
+      "span": 34
+    },
+    {
+      "doc": "rfc3679.txt",
+      "entity": "IANA",
+      "meaning": "IANA will make these unused DHCP option codes available for assignment to other DHCP options in the future.",
+      "constraint": "",
+      "span": 36
+    },
+    {
+      "doc": "rfc3679.txt",
+      "entity": "Section 3",
+      "meaning": "Section 3 lists DHCP option codes that are not currently documented in an RFC but should not be made available for reassignment.",
+      "constraint": "should not be made available for reassignment to future DHCP options",
+      "span": 39
+    },
+    {
       "doc": "rfc3679.txt",
       "entity": "Service Location Protocol Naming Authority",
-      "meaning": "DHCP option code 80 name, defined in an expired Internet-Draft, contact Charlie Perkins, reason to recover never published as standard and not in general use.",
-      "constraint": "Listed as unused and to be returned to IANA for reassignment to future DHCP options.",
-      "span": 58
+      "meaning": "Name of an unused DHCP option code listed for recovery/reassignment.",
+      "constraint": "",
+      "span": 59
     },
     {
       "doc": "rfc3679.txt",
       "entity": "Relay Agent Options",
-      "meaning": "DHCP option codes 83 and 84 name, defined in an early draft of RFC 3046, reason to recover not defined in RFC 3046 as published.",
-      "constraint": "Listed as unused and to be returned to IANA for reassignment to future DHCP options.",
-      "span": 66
-    },
-    {
-      "doc": "rfc3679.txt",
-      "entity": "FQDNs in DHCP Options",
-      "meaning": "DHCP option code 89 name, defined in an expired Internet-Draft, contact Ralph Droms who agrees the option code should be reassigned, reason to recover never published as standard and not in general use.",
-      "constraint": "Listed as unused and to be returned to IANA for reassignment to future DHCP options.",
-      "span": 82
-    },
-    {
-      "doc": "rfc3925.txt",
-      "entity": "Enterprise Numbers",
-      "meaning": "Identifiers contained in two new DHCP options to remove ambiguity when a DHCP client represents multiple vendors.",
-      "constraint": "",
-      "span": 26
-    },
-    {
-      "doc": "rfc3925.txt",
-      "entity": "option 60",
-      "meaning": "DHCP option that allows a client to indicate its vendor type; the vendor identified by option 60 defines the interpretation of option 43.",
-      "constraint": "",
-      "span": 55
-    },
-    {
-      "doc": "rfc3925.txt",
-      "entity": "option 43",
-      "meaning": "DHCP option used by the DHCP client and server to exchange vendor-specific information.",
-      "constraint": "",
-      "span": 56
-    },
-    {
-      "doc": "rfc4361.txt",
-      "entity": "DUID",
-      "meaning": "DHCP Unique Identifier specified in DHCPv6; conforming DHCPv4 client implementations use it to identify themselves.",
-      "constraint": "DHCPv4 client implementations that conform to this specification use a DUID as specified in DHCPv6.",
-      "span": 65
-    },
-    {
-      "doc": "rfc4361.txt",
-      "entity": "client identifier option",
-      "meaning": "DHCPv4 option in which the DUID is encapsulated.",
+      "meaning": "Name for the unused DHCP option codes 83 and 84.",
       "constraint": "",
       "span": 67
     },
     {
+      "doc": "rfc3679.txt",
+      "entity": "Server Selection",
+      "meaning": "Name for the unused DHCP option code 92.",
+      "constraint": "",
+      "span": 100
+    },
+    {
+      "doc": "rfc3925.txt",
+      "entity": "Enterprise Numbers",
+      "meaning": "Included in the two new vendor-identifying options to remove ambiguity.",
+      "constraint": "",
+      "span": 27
+    },
+    {
+      "doc": "rfc3925.txt",
+      "entity": "option 60",
+      "meaning": "DHCP option allowing a client to indicate its vendor type.",
+      "constraint": "",
+      "span": 59
+    },
+    {
+      "doc": "rfc3925.txt",
+      "entity": "option 43",
+      "meaning": "DHCP option used by client and server to exchange vendor-specific information.",
+      "constraint": "",
+      "span": 60
+    },
+    {
+      "doc": "rfc4361.txt",
+      "entity": "DUID",
+      "meaning": "DHCP Unique Identifier used by DHCPv4 client implementations conforming to this specification, as specified in DHCPv6.",
+      "constraint": "DHCPv4 client implementations that conform to this specification use a DUID",
+      "span": 67
+    },
+    {
+      "doc": "rfc4361.txt",
+      "entity": "DHCPv4 client identifier option",
+      "meaning": "Option into which the DUID is encapsulated in DHCPv4.",
+      "constraint": "",
+      "span": 69
+    },
+    {
       "doc": "rfc4702.txt",
-      "entity": "DNS RR",
-      "meaning": "DNS resource record related to the client's address assignment; the DHCPv4 option can convey responsibility for updating it.",
+      "entity": "fully qualified domain name",
+      "meaning": "Information about a DHCPv4 client's fully qualified domain name that can be exchanged by the option.",
       "constraint": "",
       "span": 28
     },
     {
-      "doc": "rfc4776.txt",
-      "entity": "Location Configuration Information (LCI)",
-      "meaning": "Information including country, administrative units such as states, provinces, and cities, street addresses, postal community names, and building information, with the option allowing multiple renditions of the same address in different scripts and languages.",
+      "doc": "rfc4702.txt",
+      "entity": "DNS RR",
+      "meaning": "DNS RR related to the client's address assignment for which responsibility can be exchanged.",
       "constraint": "",
-      "span": 31
+      "span": 29
     },
     {
       "doc": "rfc4776.txt",
-      "entity": "RFC 4676",
-      "meaning": "Document obsoleted by RFC 4776; RFC 4776 corrects an error in the assignment of the numeric value of the DHCPv6 option-code in RFC 4676.",
-      "constraint": "RFC 4776 obsoletes RFC 4676.",
-      "span": 25
+      "entity": "DHCPv4",
+      "meaning": "One of the DHCP protocols for which the option contains the civic location of the client or DHCP server.",
+      "constraint": "",
+      "span": 30
     },
     {
       "doc": "rfc4776.txt",
-      "entity": "DHCPv6 option-code",
-      "meaning": "DHCPv6 option code whose numeric value was assigned with an error in RFC 4676 and corrected by RFC 4776.",
+      "entity": "Location Configuration Information",
+      "meaning": "LCI includes country, administrative units, street addresses, postal community names, and building information.",
       "constraint": "",
-      "span": 24
+      "span": 32
+    },
+    {
+      "doc": "rfc4776.txt",
+      "entity": "DHCP server",
+      "meaning": "The civic location contained in the option can be of the client or the DHCP server.",
+      "constraint": "",
+      "span": 32
     },
     {
       "doc": "rfc4833.txt",
       "entity": "POSIX 1003.1",
-      "meaning": "POSIX 1003.1 timezone strings are one common way to communicate timezone information.",
+      "meaning": "POSIX 1003.1 timezone strings are one of two common ways to communicate timezone information.",
       "constraint": "",
-      "span": 23
+      "span": 28
     },
     {
       "doc": "rfc4833.txt",
       "entity": "timezone database names",
-      "meaning": "Timezone database names are one common way to communicate timezone information.",
+      "meaning": "Timezone database names are one of two common ways to communicate timezone information.",
       "constraint": "",
-      "span": 24
+      "span": 29
     },
     {
       "doc": "rfc4833.txt",
       "entity": "DHCP options",
-      "meaning": "This memo specifies DHCP options for each of the two timezone communication methods.",
+      "meaning": "The memo specifies DHCP options for the POSIX timezone string method and the timezone database name method.",
       "constraint": "",
-      "span": 25
+      "span": 30
     },
     {
       "doc": "rfc4833.txt",
       "entity": "DHCPv4 time offset",
       "meaning": "The DHCPv4 time offset option is deprecated.",
       "constraint": "deprecated",
-      "span": 25
-    },
-    {
-      "doc": "rfc5010.txt",
-      "entity": "new suboption",
-      "meaning": "This memo defines a new suboption of the DHCP relay agent information option.",
-      "constraint": "",
-      "span": 21
+      "span": 30
     },
     {
       "doc": "rfc5010.txt",
       "entity": "relay agent information option",
-      "meaning": "The new suboption is defined under the DHCP relay agent information option.",
+      "meaning": "A new suboption of the DHCP relay agent information option allows the DHCP relay to specify flags for the forwarded packet.",
       "constraint": "",
-      "span": 22
+      "span": 26
     },
     {
       "doc": "rfc5010.txt",
-      "entity": "flags",
-      "meaning": "The DHCP relay can specify flags for the forwarded packet.",
+      "entity": "unicast",
+      "meaning": "One flag indicates whether the DHCP relay received the packet via unicast or broadcast.",
       "constraint": "",
-      "span": 23
+      "span": 28
     },
     {
       "doc": "rfc5010.txt",
-      "entity": "DHCP relay",
-      "meaning": "A flag indicates whether the DHCP relay received the packet via unicast or broadcast.",
+      "entity": "broadcast packet",
+      "meaning": "A flag indicates whether the DHCP relay received the packet via a broadcast packet.",
       "constraint": "",
-      "span": 24
+      "span": 29
     },
     {
       "doc": "rfc5010.txt",
       "entity": "DHCP server",
-      "meaning": "The DHCP server may use this information to better serve clients based on whether their request was originally broadcast or unicast.",
+      "meaning": "This information may be used by the DHCP server to better serve clients based on whether their request was originally broadcast or unicast.",
       "constraint": "",
-      "span": 25
+      "span": 29
     },
     {
       "doc": "rfc6607.txt",
       "entity": "DHCPv4 Virtual Subnet Selection (VSS) option",
-      "meaning": "This memo defines a DHCPv4 VSS option.",
+      "meaning": "The memo defines a DHCPv4 Virtual Subnet Selection (VSS) option.",
       "constraint": "",
-      "span": 12
+      "span": 16
     },
     {
       "doc": "rfc6607.txt",
       "entity": "DHCPv6 VSS option",
-      "meaning": "This memo defines a DHCPv6 VSS option.",
+      "meaning": "The memo defines a DHCPv6 VSS option.",
       "constraint": "",
-      "span": 13
+      "span": 17
     },
     {
       "doc": "rfc6607.txt",
-      "entity": "DHCPv4 VSS and VSS-Control sub-options",
-      "meaning": "This memo defines DHCPv4 VSS and VSS-Control sub-options.",
+      "entity": "VSS-Control",
+      "meaning": "The memo defines DHCPv4 VSS and VSS-Control sub-options.",
       "constraint": "",
-      "span": 13
+      "span": 17
     },
     {
       "doc": "rfc6607.txt",
       "entity": "DHCPv4 Relay Agent Information option",
       "meaning": "The DHCPv4 VSS and VSS-Control sub-options are carried in the DHCPv4 Relay Agent Information option.",
       "constraint": "",
-      "span": 14
+      "span": 18
     },
     {
       "doc": "rfc6607.txt",
       "entity": "DHCP clients",
-      "meaning": "The VSS options are intended for use by DHCP clients, relay agents, and proxy clients.",
+      "meaning": "The options are intended for use by DHCP clients, relay agents, and proxy clients.",
       "constraint": "",
-      "span": 15
+      "span": 19
     },
     {
       "doc": "rfc6607.txt",
-      "entity": "RFC 3942",
-      "meaning": "For the DHCPv4 option and Relay Agent Information sub-options, this memo documents and extends existing usage as per RFC 3942.",
+      "entity": "VSS information",
+      "meaning": "VSS information needs to be passed to the DHCP server for proper address or prefix allocation.",
       "constraint": "",
       "span": 20
     },
     {
       "doc": "rfc6607.txt",
-      "entity": "RFC 3046",
-      "meaning": "This memo updates RFC 3046 regarding details relating to the copying of sub-options.",
+      "entity": "RFC 3942",
+      "meaning": "The memo documents and extends existing usage as per RFC 3942.",
       "constraint": "",
-      "span": 21
+      "span": 24
+    },
+    {
+      "doc": "rfc6607.txt",
+      "entity": "RFC 3046",
+      "meaning": "The memo updates RFC 3046 regarding details relating to the copying of sub-options.",
+      "constraint": "",
+      "span": 25
     },
     {
       "doc": "rfc6704.txt",
       "entity": "Dynamic Host Configuration Protocol (DHCP) FORCERENEW",
       "meaning": "DHCP FORCERENEW allows reconfiguration of a single host by forcing the DHCP client into a Renew state on a trigger from the DHCP server.",
       "constraint": "",
-      "span": 12
+      "span": 20
+    },
+    {
+      "doc": "rfc6704.txt",
+      "entity": "DHCP client",
+      "meaning": "The DHCP client is forced into a Renew state.",
+      "constraint": "",
+      "span": 21
+    },
+    {
+      "doc": "rfc6704.txt",
+      "entity": "DHCP server",
+      "meaning": "A trigger from the DHCP server causes the DHCP client to enter a Renew state.",
+      "constraint": "",
+      "span": 22
     },
     {
       "doc": "rfc6704.txt",
       "entity": "nonce",
-      "meaning": "In the Forcerenew Nonce Authentication protocol, the server sends a nonce to the client in the initial DHCP ACK for subsequent validation of a FORCERENEW message.",
+      "meaning": "The server sends a nonce to the client in the initial DHCP ACK for subsequent validation of a FORCERENEW message.",
       "constraint": "",
-      "span": 15
+      "span": 23
     },
     {
       "doc": "rfc6704.txt",
-      "entity": "initial DHCP ACK",
+      "entity": "DHCP ACK",
       "meaning": "The initial DHCP ACK carries the nonce used for subsequent validation of a FORCERENEW message.",
       "constraint": "",
-      "span": 16
+      "span": 24
     },
     {
       "doc": "rfc6704.txt",
       "entity": "RFC 3203",
       "meaning": "This document updates RFC 3203.",
       "constraint": "",
-      "span": 17
+      "span": 25
     },
     {
       "doc": "rfc6842.txt",
       "entity": "RFC 2131",
-      "meaning": "This document updates RFC 2131 Dynamic Host Configuration Protocol.",
+      "meaning": "This document updates RFC 2131.",
       "constraint": "",
-      "span": 12
+      "span": 17
     },
     {
       "doc": "rfc6842.txt",
-      "entity": "'client identifier' option",
-      "meaning": "This document addresses issues arising from RFC 2131's specification that the server MUST NOT return the client identifier option to the client.",
-      "constraint": "server MUST NOT return it to the client",
-      "span": 14
+      "entity": "Dynamic Host Configuration Protocol",
+      "meaning": "The document updates the Dynamic Host Configuration Protocol specification.",
+      "constraint": "",
+      "span": 17
     },
     {
-      "doc": "rfc8357.txt",
-      "entity": "DHCP",
-      "meaning": "This document defines an extension to the DHCP protocols that allows a relay agent to use any available source port for upstream communications.",
-      "constraint": "",
-      "span": 12
-    },
-    {
-      "doc": "rfc8357.txt",
-      "entity": "relay agent",
-      "meaning": "A relay agent may use any available source port for upstream communications.",
-      "constraint": "",
-      "span": 13
-    },
-    {
-      "doc": "rfc8357.txt",
-      "entity": "DHCP option",
-      "meaning": "A DHCP option can be used to statelessly route responses back to the appropriate source port on downstream communications.",
-      "constraint": "",
-      "span": 14
-    },
-    {
-      "doc": "rfc8910.txt",
-      "entity": "DHCPv4 and DHCPv6 option",
-      "meaning": "This document describes a DHCPv4 and DHCPv6 option to inform clients that they are behind a captive portal enforcement device and need to satisfy Captive Portal conditions to get Internet access.",
-      "constraint": "",
+      "doc": "rfc6842.txt",
+      "entity": "client identifier",
+      "meaning": "The server MUST NOT return the 'client identifier' option to the client.",
+      "constraint": "server MUST NOT return the 'client identifier' option to the client",
       "span": 19
-    },
-    {
-      "doc": "rfc8910.txt",
-      "entity": "RA",
-      "meaning": "A Router Advertisement option informs clients that they are behind a captive portal enforcement device and need to satisfy Captive Portal conditions to get Internet access.",
-      "constraint": "",
-      "span": 20
-    },
-    {
-      "doc": "rfc8910.txt",
-      "entity": "RFC 7710",
-      "meaning": "This document replaces RFC 7710, which used DHCP code point 160.",
-      "constraint": "",
-      "span": 31
-    },
-    {
-      "doc": "rfc8910.txt",
-      "entity": "114",
-      "meaning": "This document specifies DHCP code point 114 due to a conflict.",
-      "constraint": "",
-      "span": 32
-    },
-    {
-      "doc": "rfc8910.txt",
-      "entity": "RFC 3679",
-      "meaning": "This document also updates RFC 3679.",
-      "constraint": "",
-      "span": 33
-    },
-    {
-      "doc": "rfc8925.txt",
-      "entity": "DHCPv4 option",
-      "meaning": "This document specifies a DHCPv4 option to indicate that a host supports an IPv6-only mode and is willing to forgo obtaining an IPv4 address if the network provides IPv6 connectivity.",
-      "constraint": "",
-      "span": 16
-    },
-    {
-      "doc": "rfc8925.txt",
-      "entity": "RFC 2563",
-      "meaning": "This document updates RFC 2563 to specify DHCPv4 server behavior when the server receives a DHCPDISCOVER not containing the Auto-Configure option but containing the new option defined in this document.",
-      "constraint": "",
-      "span": 19
-    },
-    {
-      "doc": "rfc8925.txt",
-      "entity": "DHCPDISCOVER",
-      "meaning": "When a DHCPDISCOVER does not contain the Auto-Configure option but contains the new option defined in this document, RFC 2563 is updated to specify DHCPv4 server behavior.",
-      "constraint": "",
-      "span": 20
-    },
-    {
-      "doc": "rfc8925.txt",
-      "entity": "Auto-Configure option",
-      "meaning": "The absence of the Auto-Configure option together with the presence of the new option affects specified DHCPv4 server behavior.",
-      "constraint": "",
-      "span": 20
-    },
-    {
-      "doc": "rfc9463.txt",
-      "entity": "DHCP",
-      "meaning": "This document specifies new DHCP options to discover encrypted DNS resolvers such as DNS over HTTPS, DNS over TLS, and DNS over QUIC.",
-      "constraint": "",
-      "span": 20
-    },
-    {
-      "doc": "rfc9463.txt",
-      "entity": "IPv6 Router Advertisement",
-      "meaning": "This document specifies new IPv6 Router Advertisement options to discover encrypted DNS resolvers.",
-      "constraint": "",
-      "span": 20
-    },
-    {
-      "doc": "rfc9463.txt",
-      "entity": "encrypted DNS resolvers",
-      "meaning": "Encrypted DNS resolvers can include DNS over HTTPS, DNS over TLS, and DNS over QUIC.",
-      "constraint": "",
-      "span": 21
-    },
-    {
-      "doc": "rfc9463.txt",
-      "entity": "Authentication Domain Name",
-      "meaning": "A host can learn an Authentication Domain Name together with a list of IP addresses and a set of service parameters to reach encrypted DNS resolvers.",
-      "constraint": "",
-      "span": 23
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "BOOTP",
-      "meaning": "An IP/UDP bootstrap protocol that allows a diskless client machine to discover its own IP address, the address of a server host, and the name of a file to be loaded into memory and executed.",
-      "constraint": "",
-      "span": 18
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "TWO PHASES",
-      "meaning": "The bootstrap operation can be thought of as consisting of two phases; this RFC describes the first phase.",
-      "constraint": "",
-      "span": 22
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "TFTP protocol",
-      "meaning": "The file transfer will typically use the TFTP protocol.",
-      "constraint": "",
-      "span": 26
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "single packet exchange",
-      "meaning": "A single packet exchange is performed.",
-      "constraint": "Timeouts are used to retransmit until a reply is received.",
-      "span": 44
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "opcode",
-      "meaning": "An opcode field exists with two values.",
-      "constraint": "",
-      "span": 50
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "bootrequest",
-      "meaning": "The client broadcasts a bootrequest packet.",
-      "constraint": "",
-      "span": 51
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "bootreply",
-      "meaning": "The server answers with a bootreply packet.",
-      "constraint": "",
-      "span": 52
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "bootrequest",
-      "meaning": "The bootrequest contains the client's hardware address and its IP address, if known.",
-      "constraint": "",
-      "span": 52
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "request",
-      "meaning": "The request can optionally contain the name of the server the client wishes to respond.",
-      "constraint": "",
-      "span": 64
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "BOOTP server",
-      "meaning": "The function of dealing with name/domain services is pushed off to the BOOTP server.",
-      "constraint": "",
-      "span": 69
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "request",
-      "meaning": "The request can optionally contain the 'generic' filename to be booted.",
-      "constraint": "",
-      "span": 71
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "bootreply",
-      "meaning": "When the server sends the bootreply, it replaces the filename field with the fully qualified path name of the appropriate boot file.",
-      "constraint": "",
-      "span": 73
-    },
-    {
-      "doc": "rfc951.txt",
-      "entity": "server",
-      "meaning": "The server may consult its own database correlating the client's address and filename request with a particular boot file.",
-      "constraint": "",
-      "span": 75
-    },
-    {
-      "doc": "rfc9928.txt",
-      "entity": "IPv4-only clients",
-      "meaning": "Clients in networks that use services provided by DHCPv4 over DHCPv6 in a Relay Agent.",
-      "constraint": "",
-      "span": 19
-    },
-    {
-      "doc": "rfc9928.txt",
-      "entity": "RFC 7341",
-      "meaning": "Specifies the use of DHCPv4 over DHCPv6 in the client only.",
-      "constraint": "",
-      "span": 20
-    },
-    {
-      "doc": "rfc9928.txt",
-      "entity": "Relay Agent",
-      "meaning": "Can implement the DHCPv4-over-DHCPv6 encapsulation and decapsulation of DHCPv4 messages in DHCPv6 messages on behalf of a DHCPv4 client.",
-      "constraint": "",
-      "span": 22
-    },
-    {
-      "doc": "rfc9928.txt",
-      "entity": "DHCPv4-over-DHCPv6",
-      "meaning": "Encapsulation and decapsulation mechanism for carrying DHCPv4 messages in DHCPv6 messages.",
-      "constraint": "",
-      "span": 22
-    },
-    {
-      "doc": "rfc9928.txt",
-      "entity": "DHCPv4",
-      "meaning": "Protocol whose messages are encapsulated and decapsulated in DHCPv6 messages.",
-      "constraint": "",
-      "span": 23
-    },
-    {
-      "doc": "rfc9928.txt",
-      "entity": "DHCPv6",
-      "meaning": "Protocol in whose messages DHCPv4 messages are encapsulated and decapsulated.",
-      "constraint": "",
-      "span": 23
     }
-  ]
+  ],
+  "key_manifest": {
+    "key": "684008feca3e6683c4148029727446b4b83b8be7b4385d50b138d31eaffe3d6b",
+    "parser_version": "rfc-parser-v1",
+    "schema_version": "rfc-norm-schema-v1",
+    "verifier_version": "normative-verifier-v1",
+    "model": "deepseek-flash",
+    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
+  }
 }

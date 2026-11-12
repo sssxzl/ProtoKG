@@ -33,6 +33,9 @@ from typing import Any, Iterable, Optional
 
 from core import paths
 from core.fused.extraction.norm import constraint_identity_digest
+from core.fused.extraction.coverage_ledger import (  # ★ 2026-11-12 第一批
+    CoverageLedger, merge_excluded_reason,
+)
 
 #: 任意层级章节标题（协议无关，不限定层级数）：`N.N(...) Title`（标题为无空格单词）。
 #: 要求至少一个 `.N`（二级及以上），排除一级标题（如「6 Request」「13 Caching」这类章节名）。
@@ -4051,7 +4054,34 @@ def extract_rfc_norms(protocol: str, llm=None) -> list[dict]:
     #     ⇒ 只把这些喂给通道 I ⇒ **不重复劳动、不增加已有文档的调用量**
     _known_entities: set[str] = set()
     _unmatched_files: list[Path] = []
+    # ★ 2026-11-12（第一批）：**文本覆盖台账**（原始 → 清洗 → 窗口 三段映射）
+    #   ⇒ 分母用**原始输入** ⇒ 清洗误删会暴露
+    #   ⇒ 台账走**元数据**（不进 fact 空间 ⇒ 中枢零影响）
+    _cov_ledger = CoverageLedger()
+    _cov_ledger.text.protocol = protocol
+    _cov_ledger.text.source = "rfc"
+    _cov_excluded: dict[str, int] = {}
     for f in sorted(spec_dir.glob("*.txt")):
+        # ---- 文本覆盖：原始 → 清洗后正文 的映射 ----
+        try:
+            _raw_lines = f.read_text(encoding="utf-8",
+                                     errors="replace").replace("\r\n", "\n").split("\n")
+        except OSError:
+            _raw_lines = []
+        _content = _doc_content_lines(_raw_lines)
+        _line_map = {orig_no: idx for idx, (orig_no, _t) in enumerate(_content, 1)}
+        _cov_ledger.text.raw_lines += len(_raw_lines)
+        _cov_ledger.text.content_lines += len(_content)
+        _cov_ledger.text.excluded_lines += max(0, len(_raw_lines) - len(_content))
+        if len(_raw_lines) > len(_content):
+            merge_excluded_reason(_cov_excluded, "cleaned_or_toc",
+                                  len(_raw_lines) - len(_content))
+        _cov_ledger.text.line_map.update(_line_map)
+        # ★ 窗口归属：rfc 源是**文件级抽取** ⇒ 该文件的**全部内容行**都进入了
+        #   抽取窗口（章节树 + 窗口组织在文件内完成）⇒ ⇒ 计入 in_window
+        #   ⇒ ⇒ 「有效正文窗口覆盖率」= 进入窗口的内容行 / 内容行
+        _cov_ledger.text.in_window.update(range(1, len(_content) + 1))
+        # ---- 抽取覆盖：通道产出 ----
         _file_norms = _extract_rfc_file(f, protocol, cfg)
         if not _file_norms:
             _unmatched_files.append(f)
@@ -4059,6 +4089,10 @@ def extract_rfc_norms(protocol: str, llm=None) -> list[dict]:
             for _n in _file_norms:
                 if str(_n.get("name") or "").strip():
                     _known_entities.add(str(_n["name"]))
+        for _kind, _cnt in collections.Counter(
+                n.get("kind") for n in _file_norms).items():
+            _cov_ledger.extraction.channel_outputs[str(_kind)] = (
+                _cov_ledger.extraction.channel_outputs.get(str(_kind), 0) + _cnt)
         for norm in _file_norms:
             # ★ P2-3（2026-11-01）：去重键改为**按 norm_id 判定**，与 norm_id 的
             #   生成规则**同源**（大小写不敏感 + 空格转下划线）。
@@ -4119,6 +4153,17 @@ def extract_rfc_norms(protocol: str, llm=None) -> list[dict]:
                       f"⇒ 产出 {_prose_n} 条散文语义（authority=rfc）")
         except Exception as exc:                # noqa: BLE001
             print(f"[通道I] 跳过：{exc}", file=sys.stderr)
+
+    # ---- 写**覆盖台账**（★ 2026-11-12，第一批）----------------------------
+    #   ⇒ ★ 走**元数据**（derived/per_source/<协议>/<源>/coverage.json）
+    #   ⇒ ⇒ **不进 fact 空间** ⇒ 中枢零影响 / 契约零变化
+    try:
+        _cov_ledger.text.excluded_reasons = dict(_cov_excluded)
+        _cov_path = (paths.per_source_facts_dir(protocol, "rfc").parent
+                     / "coverage.json")
+        _cov_ledger.write(_cov_path)
+    except Exception as exc:                    # noqa: BLE001
+        print(f"[覆盖台账] 写入跳过：{exc}", file=sys.stderr)
 
     # ---- 通道 G：LLM 状态机（★ P1b，批次 2.2）-------------------------
     #   补齐通道 F（表格）抽不到的：服务端状态机（散文）、ASCII 状态图。
