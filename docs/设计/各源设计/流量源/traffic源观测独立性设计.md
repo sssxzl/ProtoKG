@@ -1,10 +1,10 @@
-# docs/设计/各源设计/traffic源观测独立性设计.md — traffic 源 D9 观测独立性口径设计
+# docs/设计/各源设计/流量源/traffic源观测独立性设计.md — traffic 源 D9 观测独立性口径设计
 
 > 状态：Final Frozen（除 §6.5 BLOCKED）
 > §0–§13: FINAL FROZEN
 > §6.5: BLOCKED（等 M3 外部输入）
 > §6.6-C1.x: PENDING（依赖 Metadata Recon）
-> 上游：docs/工具/交接与工作流/项目交接说明.md、docs/设计/各源设计/vuln源收口设计.md（分层原则）
+> 上游：docs/工具/交接与工作流/项目交接说明.md、docs/设计/各源设计/漏洞源/vuln源收口设计.md（分层原则）
 > 契约依据：docs/设计/顶层设计/规范化序列化规范.md、docs/设计/顶层设计/规范化序列化规范.md、docs/设计/顶层设计/规范化序列化规范.md、docs/设计/顶层设计/规范化序列化规范.md
 > 本文件为 traffic D9 阶段设计真源。
 > 本文件为 standalone 设计真源，不依赖任何 superseded draft。
@@ -2531,7 +2531,7 @@ Traffic Metadata Recon（独立 backup 目录）已完成，PASS。
   collector 字段
 
 **Capability 分布**（详见
- `docs/设计/各源设计/traffic源语料能力档位.md`）：
+ `docs/设计/各源设计/流量源/traffic源语料能力档位.md`）：
 - STRONG：Message reconstruction / Request-response pairing
 - NOT ESTABLISHED：Cross-capture independence /
   Support unit identity / Cross-scenario prevalence /
@@ -2553,7 +2553,7 @@ Traffic Metadata Recon + Q1 Recon 实测：
 
 **§7.2 语义不变**——这是 corpus 事实限制，不是 contract 缺陷。
 
-详见 `docs/设计/各源设计/traffic源语料能力档位.md` §8。
+详见 `docs/设计/各源设计/流量源/traffic源语料能力档位.md` §8。
 
 **不得**在 Candidateization Design 中假装该判据
 能从当前语料导出。
@@ -2579,10 +2579,10 @@ Traffic Pre-Design Closure 实测推翻两个前序记录，
 **不需要** 对 §0–§13 开 errata。
 
 **Lane 影响**：Lane A 前置条件已清零（见
-`docs/设计/各源设计/traffic源候选项化预设计.md` §4.0）。
+`docs/设计/各源设计/流量源/traffic源候选项化预设计.md` §4.0）。
 Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 
-详见 `docs/设计/各源设计/traffic源语料能力档位.md` §10。
+详见 `docs/设计/各源设计/流量源/traffic源语料能力档位.md` §10。
 
 ---
 
@@ -2704,9 +2704,9 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 
 **冻结对象**：
 
-- `docs/设计/各源设计/traffic源规则集设计.md` — Final Frozen
+- `docs/设计/各源设计/流量源/traffic源规则集设计.md` — Final Frozen
   （带 1 条 PARTIAL 判据，见其 §10.1 判据 4）
-- `docs/设计/各源设计/traffic源溯源接口.md` — Final Frozen
+- `docs/设计/各源设计/流量源/traffic源溯源接口.md` — Final Frozen
 
 **22 候选的 emission_class 分布**：
 

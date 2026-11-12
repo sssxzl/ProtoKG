@@ -1,8 +1,8 @@
-# docs/设计/各源设计/vuln源收口设计.md — vuln 源收口 + 中枢分层原则 + claim_class 裁定
+# docs/设计/各源设计/漏洞源/vuln源收口设计.md — vuln 源收口 + 中枢分层原则 + claim_class 裁定
 
 > Step 4.8g 收口 · 设计真源
 > 契约依据：`docs/设计/顶层设计/规范化序列化规范.md` （已冻结）、`docs/设计/顶层设计/规范化序列化规范.md`、`docs/设计/顶层设计/规范化序列化规范.md`、`docs/设计/顶层设计/规范化序列化规范.md`
-> 上游：`docs/设计/各源设计/vuln源规则集设计.md`、`docs/设计/种子生成/规则集设计.md`
+> 上游：`docs/设计/各源设计/漏洞源/vuln源规则集设计.md`、`docs/设计/种子生成/规则集设计.md`
 > 状态：Final Frozen
 > 本文件为 standalone 设计真源，不依赖任何 superseded draft。
 

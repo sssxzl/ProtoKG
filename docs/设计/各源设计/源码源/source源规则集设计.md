@@ -1,11 +1,11 @@
-# docs/设计/各源设计/source源规则集设计.md — 第五源 source Lane A Rule Set 设计
+# docs/设计/各源设计/源码源/source源规则集设计.md — 第五源 source Lane A Rule Set 设计
 
 > 状态：**Final Frozen**（2026-10-05；§10 八条判据全部通过）
 > **实现**：D39 已落地双包骨架 `core/source_a/`（provenance 轨）+ `core/source_hub/`（hub_fact 轨）
 > 实测：端到端 26 条 observation；`method.register` 经 dispatcher 产出；skipped 9 → 0
-> 上游：`docs/设计/各源设计/第五源设计.md`（Final Frozen Candidate）
-> 　　　`docs/设计/各源设计/source源语料能力档位.md`（**ACTIVE**）
-> 参照：`docs/设计/各源设计/traffic源规则集设计.md`（**结构类比，内容不复制**）
+> 上游：`docs/设计/各源设计/漏洞源/第五源设计.md`（Final Frozen Candidate）
+> 　　　`docs/设计/各源设计/源码源/source源语料能力档位.md`（**ACTIVE**）
+> 参照：`docs/设计/各源设计/流量源/traffic源规则集设计.md`（**结构类比，内容不复制**）
 > 契约：`docs/设计/顶层设计/规范化序列化规范.md`、`core/fused/hub/registry/*.json`
 > 裁定：`docs/工具/决策记录/已决事项.md` **D24 – D34**
 

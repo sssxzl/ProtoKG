@@ -1,4 +1,4 @@
-# docs/设计/各源设计/vuln源规则集设计.md — vuln 源 Candidateization 规则集设计
+# docs/设计/各源设计/漏洞源/vuln源规则集设计.md — vuln 源 Candidateization 规则集设计
 
 > Step 4.8g · vuln 源收尾 · 设计真源
 > 契约: `docs/设计/顶层设计/规范化序列化规范.md` 第二章 §2.1–§2.3（Rule Contract 8 字段）
