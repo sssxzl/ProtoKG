@@ -1255,10 +1255,13 @@ def main() -> int:
     #     ⇒ 是「规范侧边界探测」，**不是**「漏洞知识驱动」⇒ 名不副实）
     #   ⇒ B/C/D 组都含③层 ⇒ 本次源集合不含 vuln 时提示
     if not (bundle.get("message_instances") or {}):
+        # ★ 2026-11-12（E4）：文案**去具体化**（原文案写死了 rtsp 的实测数字
+        #   ⇒ 在 sip / smtp / DHCPv4 的语境下**误导**）
+        #   ⇒ 具体数字交给 ⑥ 层（seedcheck）去测 ⇒ 这里是**通用表述**。
         print("  ★★ 警告：本次**无字段级实例**（message_instances=0）"
               "⇒ 种子只有方法序列、没有头 ⇒ 服务器大概率直接拒"
-              "（实测 missing_required_header 234 条 / 36 条种子全部越界）"
-              "⇒ 要出可投的种子，源集合需含 **source**（协议实现源码）。",
+              "⇒ 要出可投的种子，源集合需含 **source**（协议实现源码）"
+              "⇒ 量化指标见 ⑥ 层：python seedcheck/run.py --protocol <协议>",
               file=sys.stderr)
 
     transitions = bundle["transitions"]
