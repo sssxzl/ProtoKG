@@ -1063,7 +1063,8 @@ def _write_aspect_layout(protocol: str) -> dict[str, int]:
 def _build_source(source: str, registry,
                   protocol: str = "rtsp", constraints: bool = False,
                   vuln_llm: bool = False,
-                  known_methods: set | None = None) -> tuple[list, int]:
+                  known_methods: set | None = None,
+                  llm=None) -> tuple[list, int]:
     """对某源跑 v2 映射, 返回 (facts, skipped)。constraints=True 时 rfc 源额外抽语义约束；
     vuln_llm=True 时 vuln 源做 LLM 补全（Phase 2：trigger_sequence/mutation_hint）。"""
     if source == "expert_note":
@@ -1101,7 +1102,7 @@ def _build_source(source: str, registry,
             extract_rfc_norms, rfc_quality_report, compute_build_id,
             _load_rfc_config,
         )
-        rfc_norms = extract_rfc_norms(protocol)
+        rfc_norms = extract_rfc_norms(protocol, llm=llm)
         if constraints:
             from core.fused.extraction.rfc_extractor import (extract_constraint_norms,
                                                   infer_structures)
@@ -1501,6 +1502,8 @@ def main(argv=None) -> int:
     known_methods: set = set()
     for source in sources:
         _LAST_BUILD_IDS.pop(protocol, None)
+        # ★ llm 传 None ⇒ 下游按范式**自建** DeepSeekClient（从 LLM_* 环境变量）
+        #   （与 infer_transitions / vuln_to_facts 同一口径 ⇒ 无 key 时自动跳过）
         facts, skipped = _build_source(source, registry, protocol,
                                        constraints=args.constraints,
                                        vuln_llm=args.vuln_llm,

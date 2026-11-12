@@ -493,8 +493,50 @@ def required_header_by_method_norm_to_fact(norm: dict[str, Any]) -> list[Fact]:
 
 
 #: rfc 源 kind → 映射函数（返回 list[Fact]）
+def prose_semantics_norm_to_facts(n: dict) -> list[Fact]:
+    """散文语义 norm ⇒ ``definition`` fact（★ 通道 I，E6）。
+
+    ★ 主体 = **协议实体**（subject.type=``header`` ⇒ 契约里已有的类型
+      ⇒ **不新增主体类型** ⇒ 契约面不变）
+    ★ 证据**必须带 span**（``file:<文档>#@<行号>``）⇒ 已在抽取期过滤（可核对）。
+    """
+    name = str(n.get("name") or "").strip()
+    meaning = str(n.get("meaning") or n.get("content") or "").strip()
+    if not name or not meaning:
+        return []
+    _subj = Subject(type="header", name=name)
+    _val = Value(type="struct", data={"meaning": meaning})
+    return [_make_fact(_subj, "definition", _val,
+                       "normative_unspecified", n)]
+
+
+def prose_constraint_norm_to_facts(n: dict) -> list[Fact]:
+    """散文约束 norm ⇒ ``legal_boundary`` fact（★ 通道 I，E6）。"""
+    name = str(n.get("name") or "").strip()
+    con = str(n.get("constraint") or "").strip()
+    if not name or not con:
+        return []
+    _subj = Subject(type="header", name=name)
+    _val = Value(type="struct", data={
+        "target_field": name, "operator": "constrained",
+        "operand": [], "operand_source": "constant",
+        "operand_ref": None, "applies_to_state": [],
+        "applies_to_method": [], "expected_behavior": "protocol_error",
+        "sender_role": None, "receiver_role": None,
+        "precondition": None, "constraint_text": con})
+    return [_make_fact(_subj, "legal_boundary", _val,
+                       "normative_unspecified", n)]
+
+
 RFC_KIND_MAP = {
     "transition": lambda n: [transition_norm_to_fact(n)],
+    # ★ 2026-11-12（通道 I，E6）：**散文语义**（LLM 从纯散文 RFC 抽的）
+    #   ⇒ 复用**已有** aspect（definition / legal_boundary）⇒ **不新增 aspect**
+    #   ⇒ 契约面不变（aspect_registry.json 仍是 21 个）
+    # ★ 与其它 kind 一致：**直接函数**（不是 ``lambda n: [f(n)]``）
+    #   ⇒ 否则会产出**双层 list** ⇒ 下游按 fact 取 ``.fact_id`` 时炸
+    "prose_semantics": prose_semantics_norm_to_facts,
+    "prose_constraint": prose_constraint_norm_to_facts,
     # ★ 2026-11-11：状态存在性（表级产出 ⇒ 状态成为中枢一等实体 ⇒ 边不悬空）
     "state": lambda n: [state_norm_to_fact(n)],
     "field": field_norm_to_facts,
@@ -522,3 +564,39 @@ def map_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
             return []
         return fn(norm)
     return []
+
+
+def prose_constraint_norm_to_facts(n: dict) -> list[dict]:
+    """散文约束 norm ⇒ ``legal_boundary`` fact（★ 通道 I，E6）。"""
+    name = str(n.get("name") or "").strip()
+    con = str(n.get("constraint") or "").strip()
+    if not name or not con:
+        return []
+    _src = str(n.get("source") or "")
+    return [{
+        "fact_key": {
+            "protocol": str(n.get('protocol') or ''),
+            "version": "1.0",
+            "subject": {"type": "header", "name": name,
+                        "qualifiers": {}, "path": []},
+            "aspect": "legal_boundary",
+            "condition": {"type": "always"},
+        },
+        "resolution": None,
+        "all_claims": [{
+            "claim_id": f"c2_prosec_{n.get('norm_id')}",
+            "fact_id": f"f2_prosec_{n.get('norm_id')}",
+            "value": {"type": "struct", "data": {
+                "target_field": name, "operator": "constrained",
+                "operand": [], "operand_source": "constant",
+                "operand_ref": None, "applies_to_state": [],
+                "applies_to_method": [], "expected_behavior": "protocol_error",
+                "sender_role": None, "receiver_role": None,
+                "precondition": None, "constraint_text": con}},
+            "epistemic_type": "normative_unspecified",
+            "authority": "rfc",
+            "scope": None,
+            "evidence_summary": [_src] if _src else [],
+            "confidence": None,
+        }],
+    }]

@@ -295,6 +295,15 @@ class DeepSeekClient:
                   max_tokens: int = 4000):
         """调 LLM,自动 parse JSON(优先 response_format=json_object)。
 
+        ★★ **推理模型（reasoning）的 max_tokens 陷阱**（2026-11-12 实测）：
+        deepseek-**flash** 是**推理模型** ⇒ 它的 ``reasoning_tokens`` 会**先**
+        吃掉 ``max_tokens`` ⇒ 若给 4000 ⇒ 实测 ``finish_reason="length"`` 且
+        **正式输出为空字符串** ⇒ ⇒ JSON 解析必然失败（``Expecting value: line 1
+        column 1``）⇒ 看起来像「LLM 没返回」。
+        ⇒ ★ 用**推理模型**时 ``max_tokens`` 必须**留足推理空间**
+        （实测 16000 才正常：30s/次、产出带 span 的条目）。
+        ⇒ 非推理模型（``deepseek-chat``）用 2000~4000 正常 ⇒ **既有通道不受影响**。
+
         详细日志(每次调用打 4-5 行):
           [LLM]   → POST <url>
           [LLM]     model=..., max_tokens=..., T=...

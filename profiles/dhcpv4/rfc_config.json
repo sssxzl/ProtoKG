@@ -267,5 +267,6 @@
     "outcome",
     "transition",
     "required_header"
-  ]
+  ],
+  "enable_prose_semantics": true
 }

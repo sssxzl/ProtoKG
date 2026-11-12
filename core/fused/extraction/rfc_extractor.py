@@ -209,6 +209,14 @@ _RFC_CONFIG_EXTRA_LIST_KEYS: tuple[str, ...] = (
     "content_backfill_kinds",
 )
 
+#: ★ 2026-11-12（通道 I，E6）：**布尔型**开关白名单。
+#:   · ``enable_prose_semantics`` —— **通道 I（LLM 语义切片）**的开关
+#:     ⇒ 缺省 **False** ⇒ **默认关闭**（走 LLM ⇒ 慢 ⇒ 不影响既有产物）
+#:     ⇒ 与 ``enable_transitions`` / ``enable_required_headers`` 同范式。
+_RFC_CONFIG_BOOL_KEYS: tuple[str, ...] = (
+    "enable_prose_semantics",
+)
+
 
 def _read_json(path: Path) -> Optional[dict]:
     """读 JSON 对象；失败（不存在/非法/非对象）返回 None（调用方决定降级策略）。"""
@@ -979,6 +987,10 @@ def _load_rfc_config(protocol: str) -> dict:
             value = data.get(key)
             if isinstance(value, list):
                 cfg[key] = [str(x) for x in value]
+        # ★ 布尔型键（★ 2026-11-12：通道 I 的开关）
+        for key in _RFC_CONFIG_BOOL_KEYS:
+            if key in data:
+                cfg[key] = bool(data.get(key))
         # ★ dict 型键（按文件限定的章节配置）
         for key in _RFC_CONFIG_DICT_KEYS:
             value = data.get(key)
@@ -4010,7 +4022,7 @@ def extract_transition_norms(protocol: str, llm=None) -> list[dict]:
     return norms
 
 
-def extract_rfc_norms(protocol: str) -> list[dict]:
+def extract_rfc_norms(protocol: str, llm=None) -> list[dict]:
     """遍历 kb/<protocol>/spec/*.txt，抽取全部 rfc norm（method/field/outcome）。
 
     多个 RFC 文件（如 SMTP 的 4 个 RFC、TLS 的 2 个 RFC）都会抽取。
@@ -4032,8 +4044,22 @@ def extract_rfc_norms(protocol: str) -> list[dict]:
     # ★ P0：`field_value`（字段取值样本）**跨文件合并**而不是丢弃 ——
     #   同名字段在多份 RFC 里各有取值（如 SMTP 的 4 份 RFC）⇒ 合并才完整。
     merged_values: dict[str, list[str]] = {}
+    # ★ 通道 I（LLM 语义切片，2026-11-12）：两个收集器
+    #   · ``_known_entities``：已抽出的实体名（method/field/header）
+    #     ⇒ LLM 只能在这些主体上产出 ⇒ **防幻觉主体**
+    #   · ``_unmatched_files``：**没有任何结构化形态命中**的文档
+    #     ⇒ 只把这些喂给通道 I ⇒ **不重复劳动、不增加已有文档的调用量**
+    _known_entities: set[str] = set()
+    _unmatched_files: list[Path] = []
     for f in sorted(spec_dir.glob("*.txt")):
-        for norm in _extract_rfc_file(f, protocol, cfg):
+        _file_norms = _extract_rfc_file(f, protocol, cfg)
+        if not _file_norms:
+            _unmatched_files.append(f)
+        else:
+            for _n in _file_norms:
+                if str(_n.get("name") or "").strip():
+                    _known_entities.add(str(_n["name"]))
+        for norm in _file_norms:
             # ★ P2-3（2026-11-01）：去重键改为**按 norm_id 判定**，与 norm_id 的
             #   生成规则**同源**（大小写不敏感 + 空格转下划线）。
             #   改前的键 `(kind, name)` 大小写敏感 ⇒ 跨文件的 `Accept` / `accept`
@@ -4062,6 +4088,38 @@ def extract_rfc_norms(protocol: str) -> list[dict]:
                 continue
             seen_protocol_level.add(key)
             norms.append(norm)
+    # ---- 通道 I：LLM 语义切片（★ 2026-11-12，E6）------------------------
+    #   ★ 只喂「**没有任何结构化形态命中**」的文档 ⇒ 补散文型扩展 RFC 的知识
+    #     （实测 DHCPv4：36 个 spec ⇒ 只触及 11 个 ⇒ 26 个散文文档全丢）。
+    #   ★ 产出**已有 aspect**（definition / legal_boundary）⇒ 契约面不变。
+    #   ★ 带磁盘缓存 ⇒ 命中缓存 ⇒ 不调 LLM ⇒ 逐字节可复现。
+    # ★ **默认关闭**（2026-11-12）：通道 I 走 LLM ⇒ 慢（实测 31 文档 ≈ 530s）
+    #   且产出依赖 LLM ⇒ ⇒ 与「channel H（必填头）」同范式：**显式开关**
+    #   ⇒ 开关 = profile 的 ``rfc.enable_prose_semantics``（缺省 False）
+    #   ⇒ ⇒ 默认**不影响**既有产物（护栏与语料零变化 ⇒ 回滚手段成立）
+    _enable_prose = bool((cfg.get("rfc") or {}).get("enable_prose_semantics")
+                         if isinstance(cfg.get("rfc"), dict)
+                         else cfg.get("enable_prose_semantics"))
+    if _unmatched_files and _known_entities and _enable_prose:
+        try:
+            from core.fused.extraction.prose_semantics import extract_prose_norms
+            # ★ **批量**：多文档合并成一次 LLM 调用（实测逐文件调用 62 次 ≈ 530s
+            #   ⇒ 不可用 ⇒ 批量化后约 7 次）
+            _pns = extract_prose_norms(protocol, _unmatched_files,
+                                      entities=sorted(_known_entities), llm=llm)
+            _prose_n = 0
+            for _pn in _pns:
+                if _pn["norm_id"] in seen_protocol_level:
+                    continue
+                seen_protocol_level.add(_pn["norm_id"])
+                norms.append(_pn)
+                _prose_n += 1
+            if _prose_n:
+                print(f"[通道I] LLM 语义切片：{len(_unmatched_files)} 个未命中文档 "
+                      f"⇒ 产出 {_prose_n} 条散文语义（authority=rfc）")
+        except Exception as exc:                # noqa: BLE001
+            print(f"[通道I] 跳过：{exc}", file=sys.stderr)
+
     # ---- 通道 G：LLM 状态机（★ P1b，批次 2.2）-------------------------
     #   补齐通道 F（表格）抽不到的：服务端状态机（散文）、ASCII 状态图。
     #   ★ 带磁盘缓存 ⇒ 同一份 RFC 命中缓存 ⇒ 不调 LLM ⇒ 产物逐字节可复现。
