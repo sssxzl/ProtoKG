@@ -268,5 +268,6 @@
     "transition",
     "required_header"
   ],
-  "enable_prose_semantics": true
+  "enable_prose_semantics": true,
+  "enable_window_prose": true
 }

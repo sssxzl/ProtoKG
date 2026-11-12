@@ -4154,6 +4154,74 @@ def extract_rfc_norms(protocol: str, llm=None) -> list[dict]:
         except Exception as exc:                # noqa: BLE001
             print(f"[通道I] 跳过：{exc}", file=sys.stderr)
 
+    # ---- 通道 J：**窗口级**散文补漏（★ 2026-11-12，第二批）----------------
+    #   ★ **默认关闭**（``rfc_config.json`` 的 ``enable_window_prose``）
+    #   ★ **影子模式**：只产出候选与统计 ⇒ **不进 fact 空间** ⇒ 中枢零影响
+    #   ★ 用途：验证「混合结构文档里的散文义务不再被整体跳过」
+    _enable_window = bool(cfg.get("enable_window_prose"))
+    if _enable_window and spec_dir.is_dir():
+        try:
+            from core.fused.extraction.prose_semantics import extract_window_norms
+            from core.fused.extraction.window_candidates import RunGuard
+            _wres = extract_window_norms(
+                protocol, sorted(spec_dir.glob("*.txt")),
+                entities=sorted(_known_entities),
+                guard=RunGuard(), shadow=True)
+            _wst = _wres.get("stats") or {}
+            _cov_ledger.extraction.llm_calls += int(_wst.get("inner", {}).get("calls", 0))
+            _cov_ledger.extraction.candidates += int(_wst.get("candidates", 0))
+            _cov_ledger.extraction.confirmed += int(_wst.get("norms", 0))
+            for _tr, _cnt in (_wst.get("triggers") or {}).items():
+                _cov_ledger.extraction.llm_triggers[_tr] = (
+                    _cov_ledger.extraction.llm_triggers.get(_tr, 0) + int(_cnt))
+            _cov_ledger.extraction.sampling_check = {
+                "shadow": True,
+                "window_candidates": _wst.get("candidates", 0),
+                "window_norms": _wst.get("norms", 0),
+                "inner_rejected": _wst.get("inner", {}).get("rejected", 0),
+                "guard": _wst.get("guard", {}),
+                "note": ("★ 影子模式：只统计、不入库 ⇒ 用于评估「窗口级补漏」的"
+                         "收益（误抽率 / 拒收率 / 调用成本）⇒ 再决定是否灰度"),
+            }
+            print(f"[通道J] 窗口级补漏（影子）: 候选 {_wst.get('candidates', 0)} 段 ⇒ "
+                  f"产出 {_wst.get('norms', 0)} 条（★ 不入库）")
+        except Exception as exc:                # noqa: BLE001
+            print(f"[通道J] 跳过：{exc}", file=sys.stderr)
+
+    # ---- 通道 J：**窗口级**散文补漏（★ 2026-11-12，第二批）----------------
+    #   ★ **默认关闭**（``rfc_config.json`` 的 ``enable_window_prose``）
+    #   ★ **影子模式**：只产出候选与统计 ⇒ **不进 fact 空间** ⇒ 中枢零影响
+    #   ★ 用途：验证「混合结构文档里的散文义务不再被整体跳过」
+    _enable_window = bool(cfg.get("enable_window_prose"))
+    if _enable_window and spec_dir.is_dir():
+        try:
+            from core.fused.extraction.prose_semantics import extract_window_norms
+            from core.fused.extraction.window_candidates import RunGuard
+            _wres = extract_window_norms(
+                protocol, sorted(spec_dir.glob("*.txt")),
+                entities=sorted(_known_entities),
+                guard=RunGuard(), shadow=True)
+            _wst = _wres.get("stats") or {}
+            _cov_ledger.extraction.llm_calls += int(_wst.get("inner", {}).get("calls", 0))
+            _cov_ledger.extraction.candidates += int(_wst.get("candidates", 0))
+            _cov_ledger.extraction.confirmed += int(_wst.get("norms", 0))
+            for _tr, _cnt in (_wst.get("triggers") or {}).items():
+                _cov_ledger.extraction.llm_triggers[_tr] = (
+                    _cov_ledger.extraction.llm_triggers.get(_tr, 0) + int(_cnt))
+            _cov_ledger.extraction.sampling_check = {
+                "shadow": True,
+                "window_candidates": _wst.get("candidates", 0),
+                "window_norms": _wst.get("norms", 0),
+                "inner_rejected": _wst.get("inner", {}).get("rejected", 0),
+                "guard": _wst.get("guard", {}),
+                "note": ("★ 影子模式：只统计、不入库 ⇒ 用于评估「窗口级补漏」的"
+                         "收益（误抽率 / 拒收率 / 调用成本）⇒ 再决定是否灰度"),
+            }
+            print(f"[通道J] 窗口级补漏（影子）: 候选 {_wst.get('candidates', 0)} 段 ⇒ "
+                  f"产出 {_wst.get('norms', 0)} 条（★ 不入库）")
+        except Exception as exc:                # noqa: BLE001
+            print(f"[通道J] 跳过：{exc}", file=sys.stderr)
+
     # ---- 写**覆盖台账**（★ 2026-11-12，第一批）----------------------------
     #   ⇒ ★ 走**元数据**（derived/per_source/<协议>/<源>/coverage.json）
     #   ⇒ ⇒ **不进 fact 空间** ⇒ 中枢零影响 / 契约零变化

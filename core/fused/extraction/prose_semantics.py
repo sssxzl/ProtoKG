@@ -4,47 +4,35 @@
 ★ 为什么需要（2026-11-12 跨协议实测）
   rfc 源的 10 个结构化通道（A0/A0b/A0c/A0d/A/B/C/D/E/F）覆盖的是
   **结构化形态**（ABNF / 表格 / 命令列表 / 状态转移表 / 消息清单表）
-  ⇒ ⇒ 对「**纯散文**的扩展 RFC」**完全无能为力**：
-  · 实测 DHCPv4 的 kb 有 **36 个 spec 文档** ⇒ 结构化通道只触及 **5 个**
-    ⇒ **31 个散文型扩展 RFC 全部丢失**
-    （rfc3004 DHCP Lease Management / rfc3203 DHCP Reconfigure / rfc2939 选项定义流程…）
-  ⇒ ⇒ 这些文档定义的**选项语义与流程约束**（如选项 61/62/63）**全部丢失**。
+  ⇒ ⇒ 对「**纯散文**的扩展 RFC」**完全无能为力**
+  （实测 DHCPv4 的 36 个 spec 文档 ⇒ 结构化通道只触及 5 个 ⇒ 31 个丢失）。
 
-★ 本通道做什么
-  **只对「没有任何结构化形态命中」的文档** ⇒ 切片 ⇒ 喂 LLM ⇒ 抽**散文语义**
-  ⇒ 产出**已有 aspect**（``definition`` / ``legal_boundary``）⇒ **不新增 aspect**。
+★ 结构：**切块 + 共享内核**（★ 2026-11-12 第二批重构）
+  · `_extract_blocks(protocol, blocks, ...)` —— 共享内核（缓存 / 批量化 /
+    LLM 调用 / 运行保护 / 过滤 / 产 norm 全在这里）
+  · `extract_prose_norms(protocol, files, ...)` —— **按文档**切块
+  · `extract_window_norms(protocol, files, ...)` —— **按段落**切块
+  ⇒ ⇒ 两个入口**只在切块粒度上不同** ⇒ ⇒ 缓存 / 批处理 / 运行保护完全同源。
 
-★ 四条硬约束（缺一不可）
-  ① **只喂未命中的文档** ⇒ 不重复劳动、不增加已有文档的调用量
-  ② **只产已有 aspect** ⇒ 契约面不变（``aspect_registry.json`` 仍是 21 个）
-  ③ **证据必须可核对**：``span`` 必填 **且** 该行的原文里**出现该实体名**
-     ⇒ 「实体名 + 那一行的文本」**第三方可核对** ⇒ **比白名单更强**
-     ⇒ ★ **不限制主体必须已知**：通道 I 的价值恰恰在于抽「结构化通道没抽到」的实体
-  ④ **磁盘缓存**（``block_hash``）⇒ 命中缓存 ⇒ 不调 LLM ⇒ **逐字节可复现**
-     （范式照抄 ``infer_transitions`` ⇒ ``derived/cache/source_blocks/<协议>.prose.json``）
-
-★ ★ **批量化**（实测必需）
-  逐文件逐块调用 ⇒ DHCPv4 31 文档 × 2 块 = **62 次调用 ≈ 530s** ⇒ 不可用。
-  ⇒ ⇒ 现在**多文档合并成一次调用**（默认每批 5 个块）⇒ 31 块 ⇒ **约 7 次调用**
-  ⇒ ⇒ 每块带**文档标签**（``[文档 rfc3004.txt]``）⇒ LLM 返回 ``doc`` + ``span``
-  ⇒ ⇒ 核验时按 doc 定位文件、按 span 定位行 ⇒ **仍可核对**
+★ 四条硬约束
+  ① **只喂未充分覆盖的文档 / 段落** ⇒ 不重复劳动
+  ② **只产已有 aspect** ⇒ 契约面不变（aspect 数量仍是 21）
+  ③ **证据必须可核对**：span 必填 **且** 该行原文必须出现所声称的实体名
+  ④ **磁盘缓存**（版本化缓存键）⇒ 命中缓存 ⇒ 不调 LLM ⇒ 逐字节可复现
 """
-from __future__ import annotations
-
 import hashlib
 import json
 import sys
 from pathlib import Path
 from typing import Optional
 
-
-#: ★ prompt 版本（**改动 ⇒ block_hash 变 ⇒ 缓存自动失效**）
+#: ★ prompt 版本（改动 ⇒ 缓存键变 ⇒ 自动失效）
 PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v2"
 
 #: 每块的最大字符数（喂给 LLM 的上限 ⇒ 控制 token）
 _MAX_BLOCK_CHARS = 3500
 
-#: 每文档最多取几块
+#: 每文档最多取几块（按文档入口）
 _MAX_BLOCKS_PER_DOC = 1
 
 #: 一次调用最多合并几个块（★ 批量化 ⇒ 控制调用次数）
@@ -53,18 +41,22 @@ _BATCH_BLOCKS = 5
 #: 每块最多几条
 _MAX_ITEMS = 6
 
-#: LLM prompt（**要求结构化 JSON + 强制 span + 强制 doc**）
+#: LLM 的输出预算（★ 推理模型会把 reasoning 计入此预算 ⇒ 须留足）
+_MAX_TOKENS = 16000
+
+#: LLM prompt（要求结构化 JSON + 强制 span + 强制 doc）
 _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**片段**。
 请只抽取**片段中明确写出的**协议语义事实（不要推测、不要补充文档外知识）。
 
 ★ 每段片段前有 `[文档 <文件名>]` 标记 ⇒ 你输出时**必须**带上该文件名（`doc` 字段）。
 ★ `span` 是**该文档内**的行号（1 起始）⇒ 无法给出确切行号的条目**不要输出**。
 ★ `entity` 必须是**该行原文里真实出现**的名字（否则会被判为幻觉而丢弃）。
+★ `meaning` 用一句话说明它是什么；若有强制约束，写进 `constraint`（否则留空）。
 ★ 只输出 JSON，不要任何解释文字。
 
 格式：
-{"items": [{"doc": "<文件名>", "entity": "<实体名>", "meaning": "<它是什么/做什么，一句话>",
-   "constraint": "<若有强制约束则填，否则空串>", "span": <行号>}]}"""
+{"items": [{"doc": "<文件名>", "entity": "<实体名>", "meaning": "<一句话含义>",
+   "constraint": "<强制约束或空串>", "span": <行号>}]}"""
 
 
 def _hash_text(text: str) -> str:
@@ -72,7 +64,7 @@ def _hash_text(text: str) -> str:
 
 
 def _split_blocks(text: str, max_blocks: int) -> list[tuple[int, str]]:
-    """把文档切成若干块 ⇒ ``[(起始行号, 块文本), ...]``（★ 行号可追溯 ⇒ span 的基础）。"""
+    """把文档切成若干块 ⇒ ``[(起始行号, 块文本), ...]``（行号可追溯 ⇒ span 的基础）。"""
     lines = text.replace("\r\n", "\n").split("\n")
     blocks: list[tuple[int, str]] = []
     cur: list[str] = []
@@ -120,7 +112,7 @@ def _save_cache(protocol: str, block_hash: str, items: list[dict]) -> None:
 
 
 def _collect_blocks(files: list[Path]) -> list[dict]:
-    """收集每个文档的块 ⇒ ``[{"doc": 文件名, "start": 起始行, "text": 块文本}, ...]``。"""
+    """按**文档**切块 ⇒ ``[{"doc":…, "start":…, "text":…}, …]``。"""
     out: list[dict] = []
     for f in files:
         try:
@@ -132,80 +124,86 @@ def _collect_blocks(files: list[Path]) -> list[dict]:
     return out
 
 
-def extract_prose_norms(protocol: str, files: list[Path], *,
-                        entities: Optional[list] = None,
-                        llm=None,
-                        max_items: int = _MAX_ITEMS) -> list[dict]:
-    """对**一批未命中文档**抽散文语义 ⇒ 返回 norm 列表。
-
-    Args:
-        protocol: 协议名。
-        files: **未命中**的文档列表。
-        entities: 已知实体名（仅作 prompt 提示 ⇒ **不限制产出主体**）。
-        llm: LLM 客户端（None ⇒ 自建 ``DeepSeekClient``）。
-        max_items: 每块最多几条。
-
-    Returns:
-        norm 列表（kind=``prose_semantics`` / ``prose_constraint``）。
-    """
-    blocks = _collect_blocks(list(files or []))
-    if not blocks:
-        return []
-    # 原文行（按文档）⇒ 核验用
-    doc_lines: dict[str, list[str]] = {}
+def _doc_lines_map(files: list[Path]) -> dict:
+    """``{文件名: [原文行, …]}`` ⇒ 核验「span 所在行必须出现实体名」。"""
+    out: dict = {}
     for f in files:
         try:
-            doc_lines[f.name] = f.read_text(
+            out[f.name] = f.read_text(
                 encoding="utf-8", errors="replace").replace("\r\n", "\n").split("\n")
         except OSError:
-            doc_lines[f.name] = []
+            out[f.name] = []
+    return out
 
-    # ---- ① 缓存键（★ 版本化：模型 / 推理配置 / 解析器 / Schema / 校验器）----
-    #   ⇒ 任一要素变化 ⇒ 键变化 ⇒ **旧缓存自动失效**
+
+def _extract_blocks(protocol: str, blocks: list[dict], *,
+                    entities: Optional[list] = None,
+                    llm=None,
+                    max_items: int = _MAX_ITEMS,
+                    guard=None,
+                    doc_lines: Optional[dict] = None) -> tuple[list[dict], dict]:
+    """**共享内核**：对一批已切好的块做 LLM 抽取 ⇒ ``(norms, stats)``。
+
+    ★ 两个入口（按文档 / 按段落）都委托到这里 ⇒ ⇒ 缓存 / 批量化 / 运行保护**同源**。
+    """
     from core.fused.extraction.cache_key import cache_key as _cache_key
+
+    stats = {"protocol": protocol, "blocks": len(blocks or []),
+             "calls": 0, "retries": 0, "failures": 0, "raw_items": 0,
+             "norms": 0, "rejected": 0, "triggers": {}}
+    if not blocks:
+        return [], stats
+
+    if guard is None:
+        from core.fused.extraction.window_candidates import RunGuard
+        guard = RunGuard()
+
+    # ---- ① 缓存键（★ 版本化）⇒ 命中缓存则不调 LLM ----
     _block_hash = hashlib.sha256("|".join(
-        [_hash_text(b["doc"] + str(b["start"]) + b["text"]) for b in blocks]
-    ).encode("utf-8")).hexdigest()
-    block_hash = _cache_key(
-        prompt_version=PROSE_SEMANTICS_PROMPT_VERSION,
-        input_fingerprint=_block_hash,
-        temperature=0.1, max_tokens=16000)
+        [_hash_text(b.get("doc", "") + str(b.get("start")) + b.get("text", ""))
+         for b in blocks]).encode("utf-8")).hexdigest()
+    block_hash = _cache_key(prompt_version=PROSE_SEMANTICS_PROMPT_VERSION,
+                            input_fingerprint=_block_hash,
+                            temperature=0.1, max_tokens=_MAX_TOKENS)
     cached = _load_cache(protocol, block_hash)
     if cached is not None:
         raw_items = list(cached.get("items") or [])
+        stats["cache_hit"] = True
     else:
+        stats["cache_hit"] = False
         if llm is None:
             try:
                 from core.llm import DeepSeekClient
                 llm = DeepSeekClient()
             except Exception:                    # noqa: BLE001
-                return []
+                return [], stats
         raw_items = []
-        # ★ **批量化**：每 ``_BATCH_BLOCKS`` 块合并成一次调用
-        # ★★ **分批增量落缓存**（2026-11-12 实测：LLM 偶发超时 ⇒ 整批失败
-        #   ⇒ 若「全部成功才写缓存」⇒ 一批失败就得**全部重跑** ⇒ 极慢）
-        #   ⇒ 现在每批成功就**增量写缓存** ⇒ 下次只跑失败的批
-        # ★★ **重试 1 次**（LLM 服务偶发超时 ⇒ 重试通常就好了）
         for i in range(0, len(blocks), _BATCH_BLOCKS):
             batch = blocks[i:i + _BATCH_BLOCKS]
             body_parts = []
             for b in batch:
                 body_parts.append(
-                    f"\n\n===== [文档 {b['doc']}]（起始行号 {b['start']}）=====\n{b['text']}")
+                    f"\n\n===== [文档 {b.get('doc', '')}]"
+                    f"（起始行号 {b.get('start')}）=====\n{b.get('text', '')}")
             user = _PROMPT + "".join(body_parts)
-            got_items: list[dict] = []
+            _dedup_key = _hash_text("".join(body_parts))
+            _reject = guard.before_call(_dedup_key)
+            if _reject:
+                stats.setdefault("blocked", []).append(_reject)
+                break
+            ok = False
             for _attempt in (1, 2):
+                stats["calls"] += 1
                 try:
-                    # ★ ``chat_json`` 的签名是 **keyword-only**（``system=`` / ``user=``）
-                    # ★★ max_tokens 必须**留足推理空间**：deepseek-flash 是
-                    #   **推理模型** ⇒ ``reasoning_tokens`` 会**先**吃掉 max_tokens
-                    #   ⇒ 实测 max_tokens=4000 时 finish_reason=length 且
-                    #     **正式输出为空**（⇒ JSON 解析必失败）
-                    #   ⇒ 16000 时实测正常（30s/次，产出 9 条带 span 的条目）
+                    # ★ chat_json 的签名是 keyword-only（system= / user=）
+                    # ★ max_tokens 须留足推理空间（推理模型先吃 reasoning 预算）
                     out = llm.chat_json(
                         system="你是协议规范分析员。只输出 JSON。",
-                        user=user, temperature=0.1, max_tokens=16000)
+                        user=user, temperature=0.1, max_tokens=_MAX_TOKENS)
                 except Exception as exc:        # noqa: BLE001
+                    stats["retries"] += 1
+                    stats["failures"] += 1
+                    guard.on_failure()
                     print(f"[通道I] LLM 调用失败（第 {_attempt} 次，"
                           f"{type(exc).__name__}: {exc}）", file=sys.stderr)
                     continue
@@ -213,70 +211,161 @@ def extract_prose_norms(protocol: str, files: list[Path], *,
                     try:
                         out = json.loads(out)
                     except (ValueError, TypeError):
+                        guard.on_failure()
                         continue
                 if not isinstance(out, dict):
+                    guard.on_failure()
                     continue
                 got = 0
                 for it in (out.get("items") or []):
                     if not isinstance(it, dict):
                         continue
-                    got_items.append(dict(it))
+                    raw_items.append(dict(it))
                     got += 1
                     if got >= max_items * len(batch):
                         break
+                guard.on_success()
+                ok = True
                 break
-            if got_items:
-                raw_items.extend(got_items)
-                _save_cache(protocol, block_hash, raw_items)   # ★ 增量落缓存
+            if ok:
+                # ★ 分批增量落缓存（成功的批不重跑）
+                _save_cache(protocol, block_hash, raw_items)
         _save_cache(protocol, block_hash, raw_items)
+
+    stats["raw_items"] = len(raw_items)
 
     # ---- ② 过滤 + 产 norm ----
     norms: list[dict] = []
-    seen: set[str] = set()
+    seen: set = set()
     for it in raw_items:
         ent = str(it.get("entity") or "").strip()
         meaning = str(it.get("meaning") or "").strip()
         doc = str(it.get("doc") or "").strip()
         if not ent or not meaning or not doc:
             continue
-        if doc not in doc_lines:
-            continue                     # 文档对不上 ⇒ 拒收
         try:
             span_line = int(it.get("span"))
         except (TypeError, ValueError):
-            continue                     # ★ **span 必填** ⇒ 无 span 直接拒收
+            continue                         # ★ span 必填 ⇒ 无 span 直接拒收
         if span_line <= 0:
             continue
-        lines = doc_lines[doc]
-        idx = span_line - 1
-        if not (0 <= idx < len(lines)):
-            continue                     # span 越界 ⇒ 拒收
-        # ★ **可核对**：span 所在原文行必须**含该实体名** ⇒ 否则判幻觉、拒收
-        if ent.lower() not in lines[idx].lower():
-            continue
+        lines = (doc_lines or {}).get(doc)
+        if lines is not None:
+            idx = span_line - 1
+            if not (0 <= idx < len(lines)):
+                continue                     # span 越界 ⇒ 拒收
+            # ★ 可核对：span 所在原文行必须出现该实体名 ⇒ 否则判幻觉、拒收
+            if ent.lower() not in lines[idx].lower():
+                stats["rejected"] += 1
+                continue
         con = str(it.get("constraint") or "").strip()
         kind = "prose_constraint" if con else "prose_semantics"
-        # ★★ **按「实体 + 类别」去重**（2026-11-12 实测：质量闸 dup_fact_ids=2）
-        #   ★ 原因：``fact_key`` **不含 span** ⇒ 同一实体在同一 aspect 下
-        #     **无论来自哪个文档/哪一行都会撞成同一个 fact_key**
-        #     ⇒ ⇒ 同一实体只保留**第一条**（⇒ 事实空间唯一 ⇒ 质量闸通过）
+        # ★ 按「实体 + 类别」去重（fact_key 不含 span ⇒ 同实体必撞）
         _dedup_key = (kind, ent.lower())
         if _dedup_key in seen:
             continue
         seen.add(_dedup_key)
-        norm_id = f"{kind}_{ent.lower().replace('-', '_')}"
         norms.append({
             "kind": kind,
             "protocol": protocol,
-            # ★ ``map_norm_to_facts`` 按 ``kb_source_type`` 分派 ⇒ 缺它会被 skipped
+            # ★ map_norm_to_facts 按 kb_source_type 分派 ⇒ 缺它会被 skipped
             "kb_source_type": "rfc",
             "name": ent,
             "content": (meaning + (" | constraint: " + con if con else "")),
-            "norm_id": norm_id,
+            "norm_id": f"{kind}_{ent.lower().replace('-', '_')}",
             "source": f"file:{doc}#@{span_line}",
             "entity": ent,
             "meaning": meaning,
             "constraint": con,
             "span_line": span_line,
         })
-    return norms
+    stats["norms"] = len(norms)
+    try:
+        stats["guard"] = guard.to_dict()
+    except Exception:                        # noqa: BLE001
+        pass
+    return norms, stats
+
+
+def extract_prose_norms(protocol: str, files: list[Path], *,
+                         entities: Optional[list] = None,
+                         llm=None,
+                         max_items: int = _MAX_ITEMS) -> list[dict]:
+    """对**一批未命中文档**抽散文语义 ⇒ 返回 norm 列表（★ 按文档切块）。"""
+    _blocks = _collect_blocks(list(files or []))
+    if not _blocks:
+        return []
+    _norms, _stats = _extract_blocks(protocol, _blocks, entities=entities,
+                                    llm=llm, max_items=max_items,
+                                    doc_lines=_doc_lines_map(list(files or [])))
+    return _norms
+
+
+def extract_window_norms(protocol: str, files: list, *,
+                         entities: Optional[list] = None,
+                         llm=None,
+                         max_items: int = 5,
+                         guard=None,
+                         shadow: bool = True) -> dict:
+    """**窗口级**散文语义抽取（★ 第二批）。
+
+    ★ 与 :func:`extract_prose_norms` 的**唯一差异**是**切块粒度**：
+      · 本入口按**段落**切 ⇒ ⇒ 混合结构文档里的散文义务
+        **不再因为「同篇有表格命中」而整体跳过**
+      · 去重 = **声明级**（语义身份 + 证据区间）⇒ ⇒ 不会误删同一行里的不同义务
+      · 其余（缓存 / 批量化 / 运行保护）**与按文档入口同源**（共用内核）
+
+    ★ **影子模式**（``shadow=True``）：★ 只产出候选与统计，**不进 fact 空间**
+      ⇒ ⇒ 用实测数据决定是否灰度（第三批）。
+
+    Returns:
+        统计摘要（``{"norms": [...], "stats": {...}}``）。
+    """
+    from core.fused.extraction.window_candidates import (
+        RunGuard, dedup_declarations, find_candidates,
+    )
+    _guard = guard or RunGuard()
+    _blocks: list[dict] = []
+    _stats = {
+        "protocol": protocol,
+        "shadow": bool(shadow),
+        "documents": 0,
+        "lines_scanned": 0,
+        "candidates": 0,
+        "after_dedup": 0,
+        "triggers": {},
+        "norms": 0,
+    }
+    for _f in (files or []):
+        try:
+            _raw = _f.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        _stats["documents"] += 1
+        _lines = [(i, ln) for i, ln in
+                  enumerate(_raw.replace("\r\n", "\n").split("\n"), 1)]
+        _stats["lines_scanned"] += len(_lines)
+        _cands = find_candidates(_lines)
+        if not _cands:
+            continue
+        _cands = dedup_declarations(_cands)
+        _stats["candidates"] += len(_cands)
+        _stats["after_dedup"] += len(_cands)
+        for _c in _cands:
+            for _t in _c.triggers:
+                _stats["triggers"][_t] = _stats["triggers"].get(_t, 0) + 1
+            _blocks.append({"doc": getattr(_f, "name", ""),
+                            "start": _c.start_line, "text": _c.text})
+    _norms: list[dict] = []
+    if _blocks:
+        _norms, _istats = _extract_blocks(protocol, _blocks, entities=entities,
+                                         llm=llm, max_items=max_items,
+                                         guard=_guard,
+                                         doc_lines=_doc_lines_map(list(files or [])))
+        _stats["norms"] = len(_norms)
+        _stats["inner"] = _istats
+    try:
+        _stats["guard"] = _guard.to_dict()
+    except Exception:                        # noqa: BLE001
+        pass
+    return {"norms": _norms, "stats": _stats}
