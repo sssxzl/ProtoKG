@@ -52,6 +52,33 @@ class Knowledge:
     env_resources: dict[str, list[str]] = field(default_factory=dict)
     #: 数据来源说明（写进报告，便于判读）
     notes: list[str] = field(default_factory=list)
+    #: 中枢 ``methods`` 桶（方法 → 定义）⇒ **已知方法集**
+    methods: dict = field(default_factory=dict)
+    #: ★ **已知方法集**（命令型协议的判据）⇒ 由 ``methods`` 派生，亦可单独指定
+    #:   （★ 普通字段而非 property ⇒ 便于测试与外部注入）
+    known_methods: set = field(default_factory=set)
+    #: ★ 协议档案的 ``raw_format`` 段（**V1 分判据的来源**）
+    #:   · ``request_line`` 含 ``{version}`` ⇒ **请求型文本协议**（rtsp/sip）
+    #:   · ``request_line`` = ``{method} {argument}`` ⇒ **命令型文本协议**（smtp）
+    #:   · 有 ``binary_fields`` ⇒ **二进制协议**（DHCPv4）
+    #: ⇒ ★ **全部从 profile 取 ⇒ 不硬编码协议名**
+    raw_format: dict = field(default_factory=dict)
+
+    @property
+    def message_shape(self) -> str:
+        """报文的形态（**三档**）⇒ V1 按它选判据。
+
+        · ``"binary"``      —— 二进制协议（有 ``binary_fields``）
+        · ``"text_command"`` —— 命令型文本协议（``request_line`` 无 ``{version}``）
+        · ``"text_request"`` —— 请求型文本协议（默认）
+        """
+        rf = self.raw_format or {}
+        if rf.get("binary_fields"):
+            return "binary"
+        rl = str(rf.get("request_line") or "")
+        if "{version}" not in rl:
+            return "text_command"
+        return "text_request"
 
     def __post_init__(self) -> None:
         """自动派生大小写不敏感索引（避免手工构造时漏填 ⇒ 检查被静默跳过）。"""
@@ -186,6 +213,7 @@ def load_knowledge(protocol: str) -> Knowledge:
     """加载某协议的**全部校验判据**。"""
     k = Knowledge(protocol=protocol)
     k.profile = _load_profile(protocol)
+    k.raw_format = dict(k.profile.get("raw_format") or {})
     bundle, notes = _load_bundle(protocol)
     k.bundle = bundle
     k.notes.extend(notes)
@@ -207,6 +235,9 @@ def load_knowledge(protocol: str) -> Knowledge:
     k.url_template = {str(m): str(v) for m, v in (bundle.get("url_template") or {}).items()}
     k.header_values = _collect_header_values(bundle)
     k.header_values_ci = {str(kk).lower(): vv for kk, vv in k.header_values.items()}
+    # ★ 已知方法集（中枢 methods 桶）⇒ 命令型协议的「命令名是否已知」判据
+    k.methods = dict(bundle.get("methods") or {})
+    k.known_methods = set(k.methods.keys())
     k.header_syntax = _collect_header_syntax(bundle)
     k.fsm_edges = _collect_fsm_edges(bundle)
     k.resources = _load_resources(protocol, k.profile)

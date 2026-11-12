@@ -267,7 +267,8 @@ jobs:
             --repo-root "$GITHUB_WORKSPACE" \
             --out-dir "$GITHUB_WORKSPACE/_ci_artifacts" \
             --expect-failed "$GITHUB_WORKSPACE/guard/baseline/ci_expected_failed_ids_ubuntu.txt" \
-            --expect-errors "$GITHUB_WORKSPACE/guard/baseline/ci_expected_errors.txt"
+            --expect-errors "$GITHUB_WORKSPACE/guard/baseline/ci_expected_errors.txt" \
+            --expect-hub-protocol rtsp
 
       # ★ 无论成败都上传护栏产物 —— CI 挂了也得能查「到底哪条漂移了」。
       - name: Upload guarded artifacts
@@ -348,7 +349,8 @@ jobs:
             --repo-root "${{ github.workspace }}" `
             --out-dir "${{ github.workspace }}/_ci_artifacts" `
             --expect-failed "${{ github.workspace }}/guard/baseline/ci_expected_failed_ids_windows.txt" `
-            --expect-errors "${{ github.workspace }}/guard/baseline/ci_expected_errors.txt"
+            --expect-errors "${{ github.workspace }}/guard/baseline/ci_expected_errors.txt"             --expect-hub-protocol rtsp \
+            --expect-hub-protocol rtsp
 
       - name: Upload guarded artifacts
         if: always()

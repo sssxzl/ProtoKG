@@ -43,6 +43,11 @@ def parse_seed_file(path: Path) -> SeedRecord:
     """读一个 ``*.raw`` ⇒ 解析成 SeedRecord（messages 结构化）。"""
     raw = path.read_text(encoding="utf-8", errors="replace")
     rec = SeedRecord(filename=path.name, raw_text=raw)
+    # ★ 字节视图（**二进制协议**的长度判定需要 ⇒ 2026-11-12 E5）
+    try:
+        rec.raw_bytes = path.read_bytes()
+    except OSError:
+        rec.raw_bytes = b""
     norm = raw.replace("\r\n", "\n")
     for blk in [b for b in norm.split("\n\n") if b.strip()]:
         lines = [ln for ln in blk.split("\n") if ln.strip()]
@@ -154,7 +159,7 @@ def main(argv: list[str] | None = None) -> int:
     # ---- V1 格式必假（唯一阻断级）----
     malformed = 0
     for s in seeds:
-        for v in v1_format.check(s):
+        for v in v1_format.check(s, k):
             s.add(v)
             report.violations.append(v)
             if v.code != "empty_file":

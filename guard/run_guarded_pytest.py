@@ -262,6 +262,12 @@ def main() -> int:
                          "guard/baseline/narrow_hub_failed_ids.txt）；"
                          "**仅当中枢处于窄化态时**生效（多源态照常计入漂移）")
     ap.add_argument("--no-compare", action="store_true", help="不与期望集比对")
+    # ★ 2026-11-12（E7）：**期望的中枢协议**
+    #   ★ 动机：护栏基线隐含了「中枢当前是哪个协议」⇒ 中枢切协议时部分断言
+    #     的结果会变（数据状态）⇒ 红绿不可比 ⇒ ⇒ 显式声明期望值。
+    #   ⇒ 不匹配 ⇒ 判「本次结果不可采信」（不是「有回归」）⇒ 退出码 4。
+    ap.add_argument("--expect-hub-protocol", default=None,
+                    help="期望的中枢协议（如 rtsp）；不匹配 ⇒ 判本次结果不可采信")
     ap.add_argument("--extra", default="", help="追加给 pytest 的参数（空格分隔）")
     args = ap.parse_args()
 
@@ -301,6 +307,55 @@ def main() -> int:
 
     print(f"== 仓库根：{root}")
     print(f"== 解释器：{py}")
+
+    # ★ 2026-11-12（E7）：中枢协议**前置校验**
+    #   ⇒ 基线是在**某个协议的中枢**下采集的 ⇒ 中枢换了协议 ⇒ 部分断言的结果
+    #     会变（数据状态，非回归）⇒ 红绿不可比 ⇒ ⇒ 显式校验。
+    _orig_expect_failed = str(args.expect_failed)
+    if args.expect_hub_protocol:
+        _hub_manifest = root / "derived" / "hub" / "sources.json"
+        if not _hub_manifest.is_file():
+            print(f"[护栏0] ⚠️ 中枢未构建（{_hub_manifest} 不存在）"
+                  f"⇒ 无法校验期望协议 {args.expect_hub_protocol} ⇒ 继续跑"
+                  f"（**本次结果的可采信性由调用方保证**）")
+        else:
+            try:
+                _cur = str(json.loads(
+                    _hub_manifest.read_text(encoding="utf-8")
+                ).get("protocol") or "")
+            except (OSError, ValueError) as _exc:
+                print(f"[护栏0] ❌ 中枢清单不可读（{_exc}）⇒ 本次结果不可采信")
+                return 4
+            if _cur.lower() != args.expect_hub_protocol.lower():
+                print(f"[护栏0] ❌ 中枢协议不匹配：当前 = {_cur!r}，"
+                      f"期望 = {args.expect_hub_protocol!r}")
+                print("          ⇒ 基线是在**期望协议**的中枢下采集的 ⇒ "
+                      "当前结果的红绿**不可比**")
+                print(f"          ⇒ 请先构建期望协议的中枢："
+                      f"python scripts/build_hub.py --protocol "
+                      f"{args.expect_hub_protocol} --sources ...")
+                print("          ⇒ **这不是「有回归」**，而是**数据状态不一致**")
+                return 4
+            print(f"[护栏0] ✅ 中枢协议 = {_cur}（与期望一致）")
+            # ★ 期望集**按中枢协议分档**（2026-11-12，E7）
+            #   ⇒ 基线是在**某个协议**的中枢下采集的 ⇒ 中枢换协议 ⇒ 失败集合
+            #     本就不同 ⇒ ⇒ 用「<基文件>.<协议>.txt」分档
+            #   ⇒ 文件不存在 ⇒ 提示用默认基线（并提醒采一份）
+            _stem = str(_orig_expect_failed)
+            if _stem.lower().endswith(".txt"):
+                _stem = _stem[:-4]
+            _per_proto = Path(f"{_stem}.{_cur.lower()}.txt")
+            if _per_proto.is_file():
+                args.expect_failed = str(_per_proto)
+                print(f"[护栏0] ★ 期望集按协议分档 ⇒ {Path(_per_proto).name}")
+            else:
+                print(f"[护栏0] ⚠️ 该协议**没有**专属期望集（{_per_proto.name}）"
+                      f"⇒ 沿用默认基线（其失败集合是在别的协议下采集的 ⇒ **红绿不可比**）")
+            # ★ 期望集**按中枢协议分档**（2026-11-12，E7）
+            #   ⇒ 基线是在**某个协议**的中枢下采集的 ⇒ 中枢换协议 ⇒ 失败集合
+            #     本就不同 ⇒ ⇒ 用「<基文件>.<协议>.txt」分档
+            #   ⇒ 文件不存在 ⇒ 提示用默认基线（并提醒采一份）
+
     print("== 护栏1：跑前快照 ==")
     before = _snapshot(root)
     before_snap.write_text("\n".join(f"{k} {v}" for k, v in sorted(before.items())),

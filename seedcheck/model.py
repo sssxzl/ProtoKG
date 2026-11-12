@@ -59,6 +59,9 @@ class SeedRecord:
     filename: str
     messages: list[dict] = field(default_factory=list)   # [{method, uri, version, headers{}}]
     raw_text: str = ""
+    #: ★ 原始**字节**视图（**二进制协议**的长度判定需要 ⇒ 2026-11-12 E5）
+    #:   ⇒ text 协议可为空；binary 协议必须填
+    raw_bytes: bytes = b""
     level: str = LEVEL_COMPLIANT
     tags: list[str] = field(default_factory=list)         # 去重后的违规 code
     violations: list[Violation] = field(default_factory=list)

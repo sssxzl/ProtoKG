@@ -96,7 +96,11 @@ def check(seed: SeedRecord, k: Knowledge) -> list[Violation]:
                 fn, meth, f"required_header_by_method[{meth}]"))
 
         # ② 方法存在性
-        if k.known_methods and meth and meth not in k.known_methods:
+        #   ★ 2026-11-12（E5）：**二进制协议不判**（方法名在二进制报文里不存在
+        #     ⇒ 「首行不是方法行」⇒ 判出来全是误报；实测 DHCPv4 18 条误报）
+        #   ⇒ 判据来源 = profile 的 raw_format（binary_fields ⇒ 二进制）
+        _is_binary = bool((getattr(k, "raw_format", None) or {}).get("binary_fields"))
+        if (not _is_binary) and k.known_methods and meth and meth not in k.known_methods:
             out.append(Violation(
                 "V2", "unknown_method",
                 f"第 {i} 个报文的方法 {meth} 不在已知方法集合里",
