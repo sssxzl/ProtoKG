@@ -81,6 +81,38 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
 def _hash_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
 
+def _rule_text_of(item: dict) -> str:
+    """由 LLM 原始项构造**规则文本**（★ 与 norm 映射同源 ⇒ 字段一致）。"""
+    from core.fused.extraction.normative_rule import (
+        build_payload, normalize_keyword, rule_text,
+    )
+    _kw = str(item.get("keyword_raw") or "").strip()
+    _st = _pol = None
+    if _kw:
+        _n = normalize_keyword(_kw)          # ★ 只认全大写（RFC 8174）
+        if _n:
+            _st, _pol = _n
+    if not _st:
+        _st = str(item.get("strength") or "").strip() or None
+    if not _pol:
+        _pol = str(item.get("polarity") or "").strip() or None
+    _ent = str(item.get("entity") or "").strip()
+    _con = str(item.get("condition") or "").strip() or None
+    _exc = str(item.get("exception") or "").strip() or None
+    _payload = build_payload(
+        subject=str(item.get("normative_subject") or "").strip() or _ent,
+        action=str(item.get("action") or "").strip() or _ent,
+        object_=str(item.get("object") or "").strip() or _ent,
+        strength=_st, polarity=_pol,
+        condition=_con, condition_status=("stated" if _con else "unknown"),
+        exception=_exc, exception_status=("stated" if _exc else "unknown"),
+        scope=None,
+        cross_ref=str(item.get("cross_ref") or "").strip() or None,
+        cross_ref_status=str(item.get("cross_ref_status") or "").strip() or None,
+    )
+    return rule_text(_payload)
+
+
 
 def _split_blocks(text: str, max_blocks: int) -> list[tuple[int, str]]:
     """把文档切成若干块 ⇒ ``[(起始行号, 块文本), ...]``（行号可追溯 ⇒ span 的基础）。"""
@@ -366,7 +398,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             "subject_span": int(it.get("subject_span") or 0) or None,
             "subject_status": _subject_status,
             # ★ L1/L2 需要：规则文本 + 原文行（★ 仅作影子期校验用）
-            "rule_text": rule_text(_payload_of(it)),
+            # ★ 规则文本（★ L1/L2 用）—— 由**同一份**语义字段构造
+            #   ⇒ 保证「value 里的字段」与「校验的字段」一致
+            "rule_text": _rule_text_of(it),
             "_doc_lines": lines,
         })
     # ---- ★★ **真实接入 L1 / L2**（★ P0-2）--------------------------------
@@ -383,6 +417,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             l1_check as _l1_check, l2_check as _l2_check,
         )
         _l2_calls = 0
+        # ★ L2 用**独立预算**（★ 否则与抽取调用互相挤占 ⇒ 抽取用完额度后 L2 无机会）
+        from core.fused.extraction.window_candidates import RunGuard as _RG
+        _l2_guard = _RG(max_calls=30, circuit_breaker_threshold=5)
         for _n in norms:
             _l1 = None
             if _n.get("kind") == "prose_constraint" and _n.get("span_line"):
@@ -407,7 +444,7 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             if _l1 is not None and _l1.verdict == _CONF:
                 _payload = parse_rule_text(_n.get("rule_text") or "")
                 if _payload:
-                    _reject = guard.before_call(_hash_text(
+                    _reject = _l2_guard.before_call(_hash_text(
                         _n.get("rule_text") or "") + str(_n.get("span_line")))
                     if not _reject:
                         try:
@@ -419,7 +456,7 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                                 "field_verdicts": _l2.field_verdicts,
                                 "verifier": _l2.verifier_version}
                         except Exception as _e:
-                            guard.on_failure()
+                            _l2_guard.on_failure()
                             _n["l2"] = {"verdict": _PEND,
                                         "reasons": [f"{type(_e).__name__}: {_e}"],
                                         "verifier": "l2-error"}
@@ -433,6 +470,7 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             else:
                 _n["final_state"] = "pending"
         stats["l2_calls"] = _l2_calls
+        stats["l2_guard"] = _l2_guard.to_dict()
         stats["final_states"] = dict(collections.Counter(
             n.get("final_state") for n in norms))
     except Exception as _exc:
