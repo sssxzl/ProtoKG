@@ -536,6 +536,29 @@ def prose_constraint_norm_to_facts(n: dict) -> list[Fact]:
     if not name or not con:
         return []
 
+    # ---- ★ 主体归属（P0-1）：Rule Slot 的 subject 用**义务主体**，
+    #   **不是** entity（entity 只是原文提及的实体）
+    _nsub = str(n.get("normative_subject") or "").strip()
+    _subj_name = _nsub or name
+    # ★ 主体未解析 ⇒ **不产 Rule Slot**（★ 不得为稳定 FactID 而猜主体）
+    if n.get("subject_status") and n.get("subject_status") != "resolved":
+        _subj = Subject(type="header", name=_subj_name)
+        _val = Value(type="text", data=str(con))
+        return [_make_fact(_subj, "definition", _val,
+                           "normative_unspecified", n)]
+
+    # ---- ★ 主体归属（P0-1）：Rule Slot 的 subject 用**义务主体**，
+    #   **不是** entity（entity 只是原文提及的实体）
+    _nsub = str(n.get("normative_subject") or "").strip()
+    _subj_name = _nsub or name
+    # ★ 主体未解析 ⇒ **不产 Rule Slot**（★ 不得为稳定 FactID 而猜主体）
+    if n.get("subject_status") and n.get("subject_status") != "resolved":
+        _subj0 = Subject(type="header", name=_subj_name)
+        _val0 = Value(type="text", data=str(con))
+        return [_make_fact(_subj0, "definition", _val0,
+                           "normative_unspecified", n)]
+
+
     # ---- Rule Slot：行为位置（★ 进身份）----
     _action = str(n.get("action") or "").strip()
     _object = str(n.get("object") or "").strip()
@@ -572,7 +595,7 @@ def prose_constraint_norm_to_facts(n: dict) -> list[Fact]:
     # ★ 若 LLM 未给出强度/极性 ⇒ 记 unknown（**不得凭推测赋值**）
     _txt = rule_text(_payload)
 
-    _subj = Subject(type="header", name=name, qualifiers=_quals)
+    _subj = Subject(type="header", name=_subj_name, qualifiers=_quals)
     _val = Value(type="text", data=_txt)
     # ★ 映射函数必须返回 **list**（与其它 kind 一致）
     return [_make_fact(_subj, "definition", _val, "normative_unspecified", n)]

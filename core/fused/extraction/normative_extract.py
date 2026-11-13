@@ -21,10 +21,27 @@ import re
 from typing import Optional
 
 #: 条件句式标记
+#: ★ 2026-11-13（任务书 P0-3）：★ **排除**会让步 / 目的 / 修饰 / 替代
+#:   · ``even if``   ⇒ 让步/无条件适用（★ **不是**生效条件）
+#:   · ``in order to`` ⇒ 目的（★ **不是**触发条件）
+#:   · ``so that`` / ``in order that`` ⇒ 目的
 CONDITION_MARKERS: tuple[str, ...] = (
     "if ", "when ", "unless ", "except ", "in case", "provided that",
     "subject to", "as long as", "if and only if",
     "若", "如果", "除非", "当", "在……情况下",
+)
+
+#: ★ **不是条件**的句式（让步 / 目的 / 主体修饰 / 替代方案）
+NON_CONDITION_MARKERS: tuple[str, ...] = (
+    "even if", "even though", "in order to", "in order that", "so that",
+    "for the purpose of", "as a means of",
+    "或者", "或包含", "or contain", "or contains",
+)
+
+#: ★ **不是例外**的句式（替代方案）
+NON_EXCEPTION_MARKERS: tuple[str, ...] = (
+    "or contain", "or contains", "or include", "or includes",
+    "或包含", "或者",
 )
 
 #: 例外句式标记
@@ -64,6 +81,32 @@ def _sentence_split(text: str) -> list[str]:
     return [s.strip() for s in re.split(r"(?<=[.;。；])\s+", _flat) if s.strip()]
 
 
+def classify_clause_role(text: str) -> str:
+    """判定一段文本的**语义角色**（★ 任务书 P0-3）。
+
+    Returns:
+        ``condition``（生效条件）/ ``exception``（例外）/ ``purpose``（目的）/
+        ``qualifier``（主体修饰）/ ``alternative``（替代方案）/
+        ``concession``（让步）/ ``explanatory``（解释性上下文）
+    """
+    _low = " ".join(str(text or "").lower().split())
+    if not _low:
+        return "explanatory"
+    if any(m in _low for m in ("even if", "even though")):
+        return "concession"
+    if any(m in _low for m in ("in order to", "in order that", "so that",
+                               "for the purpose of", "as a means of")):
+        return "purpose"
+    if any(m in _low for m in NON_EXCEPTION_MARKERS):
+        return "alternative"
+    if any(m in _low for m in ("unless", "except for", "other than",
+                               "apart from", "with the exception of")):
+        return "exception"
+    if any(m in _low for m in CONDITION_MARKERS):
+        return "condition"
+    return "explanatory"
+
+
 def extract_condition(text: str) -> tuple[Optional[str], str]:
     """从原文抽**生效条件**（★ 跨行 ⇒ 先合并空白再切句）。
 
@@ -72,6 +115,9 @@ def extract_condition(text: str) -> tuple[Optional[str], str]:
     """
     for _s in _sentence_split(text):
         _low = _s.lower()
+        # ★ 让步 / 目的 / 替代 ⇒ **不是**生效条件 ⇒ 跳过
+        if any(_m in _low for _m in NON_CONDITION_MARKERS):
+            continue
         for _m in CONDITION_MARKERS:
             if _m in _low:
                 return _s, "stated"
@@ -86,6 +132,9 @@ def extract_exception(text: str) -> tuple[Optional[str], str]:
     """
     for _s in _sentence_split(text):
         _low = _s.lower()
+        # ★ 替代方案（or contain "="）⇒ **不是**例外 ⇒ 跳过
+        if any(_m in _low for _m in NON_EXCEPTION_MARKERS):
+            continue
         for _m in EXCEPTION_MARKERS:
             if _m in _low:
                 return _s, "stated"
@@ -255,5 +304,6 @@ __all__ = [
     "ENABLE_CONDITION_NORMALIZATION",
     "extract_condition", "extract_exception", "extract_cross_ref",
     "parse_reference", "locate_section_ref", "normalize_condition",
+    "classify_clause_role", "NON_CONDITION_MARKERS", "NON_EXCEPTION_MARKERS",
     "semantic_support", "entity_in_span",
 ]

@@ -20,6 +20,7 @@
   ③ **证据必须可核对**：span 必填 **且** 该行原文必须出现所声称的实体名
   ④ **磁盘缓存**（版本化缓存键）⇒ 命中缓存 ⇒ 不调 LLM ⇒ 逐字节可复现
 """
+import collections
 import hashlib
 import json
 import sys
@@ -52,6 +53,10 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
 ★ `span` 是**该文档内**的行号（1 起始）⇒ 无法给出确切行号的条目**不要输出**。
 ★ `entity` 必须是**该行原文里真实出现**的名字（否则会被判为幻觉而丢弃）。
 ★ `meaning` 用一句话说明它是什么。
+★ ★ `normative_subject`：**真正承担义务的主体**（★ **不是** `entity`！
+  `entity` 只是原文**提及**的实体；义务主体可能是它，也可能是别的（如 client / server /
+  B2BUA / DHCP server）。★ 若主体是代词或**无法确定** ⇒ **留空**（★ **不要猜**）。
+★ ★ `subject_span`：`normative_subject` 在原文中的行号（★ 用于核对；不确定就留 0）。
 ★ 若该段是**规范性要求**，额外给出：`action`（动作）/ `object`（对象）/
   `strength`（MUST|SHOULD|MAY，★ **只取原文出现的等级词，不要推测**）/
   `polarity`（positive|negative）/ `keyword_raw`（原文等级措辞）/
@@ -69,7 +74,8 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
    "strength": "<MUST|SHOULD|MAY 或空串>", "polarity": "<positive|negative 或空串>",
    "keyword_raw": "<原文等级措辞或空串>",
    "condition": "<生效条件原文片段或空串>", "exception": "<例外原文片段或空串>",
-   "cross_ref": "<跨节引用或空串>", "cross_ref_status": "<resolved|unresolved|unknown>"}]}"""
+   "cross_ref": "<跨节引用或空串>", "cross_ref_status": "<resolved|unresolved|unknown>",
+   "normative_subject": "<义务承担主体或空串>", "subject_span": <主体行号或 0>}]}"""
 
 
 def _hash_text(text: str) -> str:
@@ -298,6 +304,19 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                 stats["rejected"] += 1
                 continue
         con = str(it.get("constraint") or "").strip()
+        # ★ ★ **主体归属核验**（★ P0-1）：★ `entity` 只是**原文提及的实体**
+        #   ⇒ 义务主体可能是别的 ⇒ ⇒ 用 `normative_subject`（来自原文主语）
+        #   ⇒ ★ 且它**必须在证据跨度内可核对** ⇒ 否则 `unresolved`
+        #   ⇒ ★ **未解析 ⇒ 不产 Rule Slot**（⇒ 归描述通道 + 标待审）
+        _nsub = str(it.get("normative_subject") or "").strip()
+        _subject_status = "unresolved"
+        if _nsub:
+            if entity_in_span(lines or [], span_line, _nsub) is not None:
+                _subject_status = "resolved"
+            elif _nsub.lower() == ent.lower():
+                _subject_status = "resolved"   # ★ 主体就是 entity ⇒ 可核对
+        # ★ 主体可解析 ⇒ 用它；否则保留 entity 仅为**提及实体**（不成规则）
+        _subject_for_slot = _nsub if _subject_status == "resolved" else ""
         # ★ ④ **描述 / 规范分流**（★ 独立复核意见 P0-4）
         #   ⇒ 若「动作/对象」缺失或**就是主体名本身**（占位）⇒ ⇒ 该条**不是**
         #     行为性规范义务 ⇒ ⇒ 归**描述性知识**（prose_semantics）
@@ -307,6 +326,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
         _is_placeholder = (not _act or not _obj
                            or (_act.lower() == ent.lower()
                                and _obj.lower() == ent.lower()))
+        # ★ ★ 主体未解析 ⇒ **不成规则**（★ P0-1：不得为稳定 FactID 而猜主体）
+        if _subject_status != "resolved":
+            _is_placeholder = True
         kind = ("prose_semantics" if _is_placeholder
                 else ("prose_constraint" if con else "prose_semantics"))
         # ★ 按「实体 + 类别」去重（fact_key 不含 span ⇒ 同实体必撞）
@@ -338,7 +360,86 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             # ★ 跨节引用（★ 独立于条件）
             "cross_ref": str(it.get("cross_ref") or "").strip() or None,
             "cross_ref_status": str(it.get("cross_ref_status") or "").strip() or None,
+            # ★ ★ **主体归属**（P0-1）：`entity` = 提及实体；`normative_subject` = 义务主体
+            "mentioned_entity": ent,
+            "normative_subject": _nsub or None,
+            "subject_span": int(it.get("subject_span") or 0) or None,
+            "subject_status": _subject_status,
+            # ★ L1/L2 需要：规则文本 + 原文行（★ 仅作影子期校验用）
+            "rule_text": rule_text(_payload_of(it)),
+            "_doc_lines": lines,
         })
+    # ---- ★★ **真实接入 L1 / L2**（★ P0-2）--------------------------------
+    #   ⇒ ★ 此前 L1/L2 **只在测试里**被调用 ⇒ 真实抽取**从不校验**
+    #   ⇒ ⇒ 现在：**L1（确定性）→ L2（真实独立调用）→ 最终状态** ⇒ 写入影子产物
+    #   ⇒ ★ 成本控制：L2 **只对 L1 通过且关键字段齐备**的候选跑（其余直接 pending）
+    #   ⇒ ★ 影子模式下状态**只作记录**，不进正式 fact
+    try:
+        from core.fused.extraction.normative_rule import (
+            is_pronoun_subject, parse_rule_text,
+        )
+        from core.fused.extraction.normative_verify import (
+            CONFIRMED as _CONF, PENDING as _PEND, REJECTED as _REJ,
+            l1_check as _l1_check, l2_check as _l2_check,
+        )
+        _l2_calls = 0
+        for _n in norms:
+            _l1 = None
+            if _n.get("kind") == "prose_constraint" and _n.get("span_line"):
+                _doc_n = _n.get("_doc_lines")
+                _ln = _n.get("span_line")
+                _quote = ""
+                if isinstance(_doc_n, list) and 0 < _ln <= len(_doc_n):
+                    _quote = _doc_n[_ln - 1]
+                try:
+                    _l1 = _l1_check(
+                        rule_text_value=_n.get("rule_text") or "",
+                        quote=_quote, evidence_span=(_ln, _ln),
+                        keyword_raw=str(_n.get("keyword_raw") or ""),
+                        subject=str(_n.get("normative_subject") or
+                                    _n.get("name") or ""))
+                except Exception as _e:
+                    _n["l1_error"] = f"{type(_e).__name__}: {_e}"
+            _n["l1"] = ({"verdict": _l1.verdict, "reasons": _l1.reasons,
+                         "field_verdicts": _l1.field_verdicts,
+                         "verifier": _l1.verifier_version} if _l1 else None)
+            # ---- L2：只对 L1 通过的候选跑（成本控制）----
+            if _l1 is not None and _l1.verdict == _CONF:
+                _payload = parse_rule_text(_n.get("rule_text") or "")
+                if _payload:
+                    _reject = guard.before_call(_hash_text(
+                        _n.get("rule_text") or "") + str(_n.get("span_line")))
+                    if not _reject:
+                        try:
+                            _l2 = _l2_check(payload=_payload, quote=_quote,
+                                             llm=llm)
+                            _l2_calls += 1
+                            _n["l2"] = {
+                                "verdict": _l2.verdict, "reasons": _l2.reasons,
+                                "field_verdicts": _l2.field_verdicts,
+                                "verifier": _l2.verifier_version}
+                        except Exception as _e:
+                            guard.on_failure()
+                            _n["l2"] = {"verdict": _PEND,
+                                        "reasons": [f"{type(_e).__name__}: {_e}"],
+                                        "verifier": "l2-error"}
+            # ---- 最终状态 ----
+            _l1v = (_n.get("l1") or {}).get("verdict")
+            _l2v = (_n.get("l2") or {}).get("verdict")
+            if _l1v == _REJ or _l2v == "rejected":
+                _n["final_state"] = "rejected"
+            elif _l1v == _CONF and (_l2v in ("支持", "confirmed", _CONF)):
+                _n["final_state"] = "confirmed"
+            else:
+                _n["final_state"] = "pending"
+        stats["l2_calls"] = _l2_calls
+        stats["final_states"] = dict(collections.Counter(
+            n.get("final_state") for n in norms))
+    except Exception as _exc:
+        print(f"[通道I] L1/L2 接入跳过：{_exc}", file=sys.stderr)
+        stats["verify_error"] = f"{type(_exc).__name__}: {_exc}"
+
+
     stats["norms"] = len(norms)
     try:
         stats["guard"] = guard.to_dict()
