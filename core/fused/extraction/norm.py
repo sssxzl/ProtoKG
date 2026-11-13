@@ -511,23 +511,58 @@ def prose_semantics_norm_to_facts(n: dict) -> list[Fact]:
 
 
 def prose_constraint_norm_to_facts(n: dict) -> list[Fact]:
-    """散文约束 norm ⇒ ``legal_boundary`` fact（★ 通道 I，E6）。"""
+    """散文**规范约束** norm ⇒ ``definition`` fact（★ 第三批：Rule Slot / Assertion）。
+
+    ★ ★ **Rule Slot 与 Assertion 分离**（★ 契约核心）
+      · **Rule Slot**（行为位置）⇒ 进**事实身份**
+        —— ``subject.qualifiers``：``action`` / ``object``（★ 既有契约字段）
+        —— ★ **不含** ``strength`` / ``polarity`` / ``exception``
+          ⇒ ⇒ 同一行为位置的**相反要求**（MUST vs MUST NOT）**同槽位**
+          ⇒ ⇒ 永不进同一事实槽位 ⇒ 永不触发冲突处理 ⇒ **冲突不可见**
+      · **Assertion**（规范内容）⇒ 进**声明的值**
+        —— ★ **规范化 JSON 文本**（``[RULE:v1] {…}``）⇒ **写入前预归一化**
+        —— ⇒ 语义相同的声明**文本必然相同** ⇒ ⇒ **不伪冲突**
+      · **原文措辞**（``keyword_raw``）⇒ 进 claim 的 **evidence.quote**（★ 不进 value）
+        —— ⇒ 证据/措辞差异**不得**造成伪冲突
+
+    ★ 主体类型用**已有的** ``header`` ⇒ ⇒ **不新增主体类型** ⇒ 契约面不变。
+    """
+    from core.fused.extraction.normative_rule import (
+        RULE_KIND, build_payload, rule_text,
+    )
+
     name = str(n.get("name") or "").strip()
     con = str(n.get("constraint") or "").strip()
     if not name or not con:
         return []
-    _subj = Subject(type="header", name=name)
-    _val = Value(type="struct", data={
-        "target_field": name, "operator": "constrained",
-        "operand": [], "operand_source": "constant",
-        "operand_ref": None, "applies_to_state": [],
-        "applies_to_method": [], "expected_behavior": "protocol_error",
-        "sender_role": None, "receiver_role": None,
-        "precondition": None, "constraint_text": con})
-    return [_make_fact(_subj, "legal_boundary", _val,
-                       "normative_unspecified", n)]
 
+    # ---- Rule Slot：行为位置（★ 进身份）----
+    _action = str(n.get("action") or "").strip() or name
+    _object = str(n.get("object") or "").strip() or name
+    _condition = n.get("condition")
+    _scope = n.get("scope")
+    _quals = {"action": _action, "object": _object, "kind": RULE_KIND}
 
+    # ---- Assertion：规范内容（★ 进声明的值）----
+    _payload = build_payload(
+        subject=name,
+        action=_action,
+        object_=_object,
+        strength=n.get("strength"),
+        polarity=n.get("polarity"),
+        condition=_condition,
+        condition_status=n.get("condition_status"),
+        exception=n.get("exception"),
+        exception_status=n.get("exception_status"),
+        scope=_scope,
+    )
+    # ★ 若 LLM 未给出强度/极性 ⇒ 记 unknown（**不得凭推测赋值**）
+    _txt = rule_text(_payload)
+
+    _subj = Subject(type="header", name=name, qualifiers=_quals)
+    _val = Value(type="text", data=_txt)
+    # ★ 映射函数必须返回 **list**（与其它 kind 一致）
+    return [_make_fact(_subj, "definition", _val, "normative_unspecified", n)]
 RFC_KIND_MAP = {
     "transition": lambda n: [transition_norm_to_fact(n)],
     # ★ 2026-11-12（通道 I，E6）：**散文语义**（LLM 从纯散文 RFC 抽的）
@@ -565,38 +600,3 @@ def map_norm_to_facts(norm: dict[str, Any]) -> list[Fact]:
         return fn(norm)
     return []
 
-
-def prose_constraint_norm_to_facts(n: dict) -> list[dict]:
-    """散文约束 norm ⇒ ``legal_boundary`` fact（★ 通道 I，E6）。"""
-    name = str(n.get("name") or "").strip()
-    con = str(n.get("constraint") or "").strip()
-    if not name or not con:
-        return []
-    _src = str(n.get("source") or "")
-    return [{
-        "fact_key": {
-            "protocol": str(n.get('protocol') or ''),
-            "version": "1.0",
-            "subject": {"type": "header", "name": name,
-                        "qualifiers": {}, "path": []},
-            "aspect": "legal_boundary",
-            "condition": {"type": "always"},
-        },
-        "resolution": None,
-        "all_claims": [{
-            "claim_id": f"c2_prosec_{n.get('norm_id')}",
-            "fact_id": f"f2_prosec_{n.get('norm_id')}",
-            "value": {"type": "struct", "data": {
-                "target_field": name, "operator": "constrained",
-                "operand": [], "operand_source": "constant",
-                "operand_ref": None, "applies_to_state": [],
-                "applies_to_method": [], "expected_behavior": "protocol_error",
-                "sender_role": None, "receiver_role": None,
-                "precondition": None, "constraint_text": con}},
-            "epistemic_type": "normative_unspecified",
-            "authority": "rfc",
-            "scope": None,
-            "evidence_summary": [_src] if _src else [],
-            "confidence": None,
-        }],
-    }]

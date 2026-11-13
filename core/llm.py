@@ -206,7 +206,10 @@ class DeepSeekClient:
     def __init__(self, api_key: Optional[str] = None,
                  base_url: Optional[str] = None,
                  model: Optional[str] = None,
-                 timeout: float = 60.0,
+                 # ★ 2026-11-13：默认超时 60 → 300 秒
+                 #   （实测：推理模型的单次调用可达 27s+（reasoning 占 85%）
+                 #     ⇒ 60s 会**偶发** read timeout ⇒ 表现为「LLM 没返回」）
+                 timeout: float = 300.0,
                  env_file: Optional[Path] = None):
         # 读取 key 优先级: 构造参数 > 环境变量 > .env 文件
         self.api_key = (

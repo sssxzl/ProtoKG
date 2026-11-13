@@ -51,12 +51,21 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
 ★ 每段片段前有 `[文档 <文件名>]` 标记 ⇒ 你输出时**必须**带上该文件名（`doc` 字段）。
 ★ `span` 是**该文档内**的行号（1 起始）⇒ 无法给出确切行号的条目**不要输出**。
 ★ `entity` 必须是**该行原文里真实出现**的名字（否则会被判为幻觉而丢弃）。
-★ `meaning` 用一句话说明它是什么；若有强制约束，写进 `constraint`（否则留空）。
-★ 只输出 JSON，不要任何解释文字。
+★ `meaning` 用一句话说明它是什么。
+★ 若该段是**规范性要求**，额外给出：`action`（动作）/ `object`（对象）/
+  `strength`（MUST|SHOULD|MAY，★ **只取原文出现的等级词，不要推测**）/
+  `polarity`（positive|negative）/ `keyword_raw`（原文等级措辞）/
+  `condition`（生效条件原文）/ `exception`（例外原文）。
+★ 若**不是**规范性要求，上述字段**全部留空**。
+★ 只输出 JSON，不要解释文字。
 
 格式：
 {"items": [{"doc": "<文件名>", "entity": "<实体名>", "meaning": "<一句话含义>",
-   "constraint": "<强制约束或空串>", "span": <行号>}]}"""
+   "constraint": "<强制约束或空串>", "span": <行号>,
+   "action": "<动作或空串>", "object": "<对象或空串>",
+   "strength": "<MUST|SHOULD|MAY 或空串>", "polarity": "<positive|negative 或空串>",
+   "keyword_raw": "<原文等级措辞或空串>",
+   "condition": "<生效条件原文片段或空串>", "exception": "<例外原文片段或空串>"}]}"""
 
 
 def _hash_text(text: str) -> str:
@@ -89,6 +98,12 @@ def _cache_path(protocol: str) -> Path:
 
 
 def _load_cache(protocol: str, block_hash: str) -> Optional[dict]:
+    """读缓存（★ **只认「已完成」的缓存**）。
+
+    ★ 2026-11-13：曾出现「LLM 调用失败 ⇒ 仍把空/部分结果写进缓存」⇒
+      ⇒ 后续命中**空缓存** ⇒ **永不重跑** ⇒ 缺口被永久掩盖。
+      ⇒ ⇒ 现在缓存带 ``complete`` 标志；**未跑完的不算命中** ⇒ ⇒ 会重跑。
+    """
     p = _cache_path(protocol)
     if not p.is_file():
         return None
@@ -96,16 +111,22 @@ def _load_cache(protocol: str, block_hash: str) -> Optional[dict]:
         d = json.loads(p.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
-    if isinstance(d, dict) and d.get("block_hash") == block_hash:
-        return d
-    return None
+    if not isinstance(d, dict) or d.get("block_hash") != block_hash:
+        return None
+    # ★ 旧缓存没有 complete 标志 ⇒ 视为「已完成」（向后兼容）
+    if d.get("complete") is False:
+        return None
+    return d
 
 
-def _save_cache(protocol: str, block_hash: str, items: list[dict]) -> None:
+def _save_cache(protocol: str, block_hash: str, items: list[dict],
+                complete: bool = True) -> None:
+    """写缓存（★ ``complete=False`` ⇒ 未跑完 ⇒ **下次会重跑**）。"""
     p = _cache_path(protocol)
     p.parent.mkdir(parents=True, exist_ok=True)
     from core.fused.extraction.cache_key import key_manifest
     _payload = {"block_hash": block_hash, "items": items,
+                "complete": bool(complete),
                 "key_manifest": key_manifest(block_hash)}
     p.write_text(json.dumps(_payload, ensure_ascii=False, indent=2),
                  encoding="utf-8")
@@ -175,7 +196,11 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             try:
                 from core.llm import DeepSeekClient
                 llm = DeepSeekClient()
-            except Exception:                    # noqa: BLE001
+            except Exception as exc:            # noqa: BLE001
+                # ★ 2026-11-13：**不得静默返回空** ⇒ 记录原因（否则「无 key」
+                #   会被误读成「该文档没有散文语义」⇒ 缺口被掩盖）
+                stats["error"] = f"LLM 客户端不可用：{type(exc).__name__}: {exc}"
+                print(f"[通道I] {stats['error']}", file=sys.stderr)
                 return [], stats
         raw_items = []
         for i in range(0, len(blocks), _BATCH_BLOCKS):
@@ -228,9 +253,11 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                 ok = True
                 break
             if ok:
-                # ★ 分批增量落缓存（成功的批不重跑）
-                _save_cache(protocol, block_hash, raw_items)
-        _save_cache(protocol, block_hash, raw_items)
+                # ★ 分批增量落缓存（成功的批不重跑）；★ **未跑完 ⇒ complete=False**
+                _save_cache(protocol, block_hash, raw_items, complete=False)
+        # ★ 全部批次跑完 ⇒ complete=True（★ 失败留下的缓存会被忽略）
+        _save_cache(protocol, block_hash, raw_items,
+                    complete=(not stats.get("failures")))
 
     stats["raw_items"] = len(raw_items)
 
@@ -278,6 +305,14 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             "meaning": meaning,
             "constraint": con,
             "span_line": span_line,
+            # ★ **规范声明内容**（Assertion）⇒ 供 Rule Slot / 规则 fact 构造
+            "action": str(it.get("action") or "").strip(),
+            "object": str(it.get("object") or "").strip(),
+            "strength": str(it.get("strength") or "").strip() or None,
+            "polarity": str(it.get("polarity") or "").strip() or None,
+            "keyword_raw": str(it.get("keyword_raw") or "").strip(),
+            "condition": str(it.get("condition") or "").strip() or None,
+            "exception": str(it.get("exception") or "").strip() or None,
         })
     stats["norms"] = len(norms)
     try:
