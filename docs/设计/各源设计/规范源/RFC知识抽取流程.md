@@ -353,6 +353,22 @@ _extract_blocks(protocol, blocks, …)   ← 共享内核（缓存/批量化/LLM
 | 条件**归一化**（带开关） | 未确认 ⇒ **不强制合并**；可靠确认 ⇒ **允许**合并 |
 | **发布闸** | 主体可解析 + 强度已知 + 校验已证实 ⇒ 才进正式事实；否则**隔离** |
 
+⇒ ⇒ ★ **主体归属（P0-1）**：★ `entity` 只是**原文提及的实体**，**不等于**义务承担者
+⇒ ⇒ ★ 中间字段（★ **不扩展正式 fact 契约**）：`mentioned_entity` / `normative_subject` /
+　 `subject_status` / `subject_span`
+⇒ ⇒ ★ 主体须在**证据跨度内可核对** ⇒ 否则 `unresolved` ⇒ **不产 Rule Slot** ⇒ 归待审
+⇒ ⇒ ★ **禁止**为获得稳定 FactID 而**猜测主体**
+
+⇒ ⇒ ★ **L1 / L2 真实接入（P0-2）**：★ 流程 =
+　 **LLM 抽取 → 规范化映射 → L1 → L2 → 最终状态 → 影子产物**
+⇒ ⇒ ★ L2 **只对 L1 通过且字段齐备**的候选跑（成本控制）⇒ 独立 prompt + 独立上下文
+⇒ ⇒ ★ 影子产物落 `derived/per_source/<协议>/<源>/verify.jsonl` ⇒ ★ **不进 fact 空间**
+⇒ ⇒ ★ 最终状态：确认 / 待审 / 拒收（★ 影子模式下**不入正式事实**）
+
+⇒ ⇒ ★ **条件/例外的角色（P0-3）**：condition / exception / purpose / qualifier /
+　 alternative / concession / explanatory ⇒ ⇒ **让步（even if）/ 目的（in order to）/
+　 替代（or contain）** ⇒ **不是**条件/例外 ⇒ ⇒ 未获证据支持的**不得**留在确认规则里
+
 ⇒ ⇒ ★ **三态严格区分**（★ 不得混用）
 | 状态 | 含义 |
 |---|---|

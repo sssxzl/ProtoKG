@@ -473,8 +473,38 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
         stats["l2_guard"] = _l2_guard.to_dict()
         stats["final_states"] = dict(collections.Counter(
             n.get("final_state") for n in norms))
+        # ★ **影子产物落盘**（★ 任务书：L1/L2 结果可追溯 ⇒ 不只留在内存）
+        #   ⇒ 写 derived/per_source/<协议>/<源>/verify.jsonl ⇒ **不进 fact 空间**
+        try:
+            from core import paths as _paths
+            _vp = (_paths.per_source_facts_dir(protocol, "rfc").parent
+                   / "verify.jsonl")
+            _vp.parent.mkdir(parents=True, exist_ok=True)
+            with _vp.open("w", encoding="utf-8") as _vf:
+                for _n in norms:
+                    _vf.write(json.dumps({
+                        "kind": _n.get("kind"),
+                        "mentioned_entity": _n.get("mentioned_entity"),
+                        "normative_subject": _n.get("normative_subject"),
+                        "subject_status": _n.get("subject_status"),
+                        "strength": _n.get("strength"),
+                        "polarity": _n.get("polarity"),
+                        "condition": _n.get("condition"),
+                        "exception": _n.get("exception"),
+                        "cross_ref": _n.get("cross_ref"),
+                        "cross_ref_status": _n.get("cross_ref_status"),
+                        "source": _n.get("source"),
+                        "l1": _n.get("l1"), "l2": _n.get("l2"),
+                        "final_state": _n.get("final_state"),
+                        "rule_text": _n.get("rule_text"),
+                    }, ensure_ascii=False) + "\n")
+            stats["verify_file"] = str(_vp)
+        except Exception as _vex:
+            print(f"[通道I] 影子产物写入跳过：{_vex}", file=sys.stderr)
     except Exception as _exc:
-        print(f"[通道I] L1/L2 接入跳过：{_exc}", file=sys.stderr)
+        import traceback
+        print(f"[通道I] L1/L2 接入失败：{_exc}", file=sys.stderr)
+        traceback.print_exc()
         stats["verify_error"] = f"{type(_exc).__name__}: {_exc}"
 
 
@@ -563,6 +593,11 @@ def extract_window_norms(protocol: str, files: list, *,
                                          doc_lines=_doc_lines_map(list(files or [])))
         _stats["norms"] = len(_norms)
         _stats["inner"] = _istats
+        # ★ L1/L2 的结果提到**外层**（★ 便于观测；★ 内层在 _istats 里）
+        for _k in ("l2_calls", "l2_guard", "final_states", "verify_error",
+                   "verify_file"):
+            if _k in _istats:
+                _stats[_k] = _istats[_k]
     try:
         _stats["guard"] = _guard.to_dict()
     except Exception:                        # noqa: BLE001
