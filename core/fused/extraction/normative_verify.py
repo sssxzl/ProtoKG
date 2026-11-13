@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from core.fused.extraction.normative_rule import (
+    is_pronoun_subject,
     NON_SEMANTIC_FIELDS, SEMANTIC_FIELDS, is_rule_text, normalize_keyword, parse_rule_text,
 )
 
@@ -67,7 +68,8 @@ class VerificationResult:
 
 def l1_check(*, rule_text_value: str, quote: str = "",
              evidence_span: Optional[tuple] = None,
-             keyword_raw: str = "") -> VerificationResult:
+             keyword_raw: str = "",
+             subject: str = "") -> VerificationResult:
     """**L1 · 确定性检查**（★ 不调 LLM ⇒ 完全可复现）。
 
     Args:
@@ -75,6 +77,8 @@ def l1_check(*, rule_text_value: str, quote: str = "",
         quote: 原文引用（证据文本）⇒ 用于核对关键词/否定是否一致。
         evidence_span: 证据跨度（``(start, end)``）⇒ 存在性检查。
         keyword_raw: 原文规范关键词（如 ``MUST NOT``）⇒ 强度/极性一致性核对。
+        subject: 行为主体（★ 主体在 fact_key 里、不在 payload 里 ⇒ 需由调用方传入）
+            ⇒ ⇒ 用于**代词主体**判定（★ 人工核对 05）。
 
     Returns:
         :class:`VerificationResult`。
@@ -152,10 +156,37 @@ def l1_check(*, rule_text_value: str, quote: str = "",
             _reasons.append(f"{_f} 取值非法：{_v!r}")
             _fv[_f] = "invalid"
         elif _v == "stated" and not payload.get(_f.replace("_status", "")):
-            _reasons.append(f"{_f}=stated 但没有内容")
+            # ★ 2026-11-13（03b）：**输入不一致** ⇒ 判待审并留原因
+            #   （★ 不再在构造期静默回落 unknown ⇒ 否则本检查永不可达）
+            _reasons.append(f"{_f}=stated 但没有内容（输入不一致）")
+            _fv[_f] = "inconsistent"
             _fv[_f] = "inconsistent"
 
-    # ⑧ 非语义字段不得进 value
+    # ⑧ ★ **主体可解析性**（★ 人工核对 05）
+    #    代词主体 ⇒ 无法可靠确定主体 ⇒ **不进正式归并** ⇒ 判待审
+    _subject = str(subject or "").strip()
+    if not _subject:
+        _reasons.append("主体为空 ⇒ 无法确定行为主体")
+        _fv["subject"] = "missing"
+    elif is_pronoun_subject(_subject):
+        _reasons.append(f"主体是代词（{_subject}）⇒ 无法可靠确定主体 ⇒ 待审")
+        _fv["subject"] = "pronoun"
+
+    # ⑨ ★ **规范强度未知**（★ 人工核对 19）
+    #    无明确关键词时**不得**赋具体等级 ⇒ 强度未知 ⇒ 不得作为
+    #    「已证实的具体等级规则」正式入库 ⇒ 判待审
+    if not _st:
+        _reasons.append("规范强度未知 ⇒ 不得凭推测赋值 ⇒ 待审")
+
+    # ⑩ ★ **跨节引用**（★ 人工核对 04）
+    #    引用**独立于条件**；引用存在但无法定位 ⇒ 判待审
+    _xrs = payload.get("cross_ref_status")
+    if _xrs == "unresolved":
+        _reasons.append("存在跨节引用但无法定位 ⇒ 待审")
+        _fv["cross_ref"] = "unresolved"
+    elif _xrs == "resolved":
+        _fv["cross_ref"] = "resolved"
+
     for _f in NON_SEMANTIC_FIELDS:
         if _f in payload:
             _reasons.append(f"非语义字段混入了 value：{_f}")

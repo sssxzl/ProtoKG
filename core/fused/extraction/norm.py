@@ -555,6 +555,9 @@ def prose_constraint_norm_to_facts(n: dict) -> list[Fact]:
         exception=n.get("exception"),
         exception_status=n.get("exception_status"),
         scope=_scope,
+        # ★ 跨节引用**独立**（★ 04：引用 ≠ 条件）
+        cross_ref=n.get("cross_ref"),
+        cross_ref_status=n.get("cross_ref_status"),
     )
     # ★ 若 LLM 未给出强度/极性 ⇒ 记 unknown（**不得凭推测赋值**）
     _txt = rule_text(_payload)

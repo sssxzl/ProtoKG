@@ -11,22 +11,20 @@
 """
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from core.fused.extraction.normative_rule import (  # noqa: E402
-    RULE_KIND, RULE_PREFIX, compare_slots, is_rule_text, parse_rule_text,
+    RULE_KIND, compare_slots, is_rule_text, parse_rule_text,
     rule_slot, semantic_key,
 )
 from core.fused.extraction.normative_verify import (  # noqa: E402
-    CONFIRMED, REJECTED, detect_conflict, l1_check,
+    CONFIRMED, PENDING, REJECTED, detect_conflict, l1_check,
 )
 
 
@@ -93,11 +91,15 @@ def test_gate2b_non_semantic_fields_not_in_value():
 # ===========================================================================
 
 def test_gate3_evidence_locates_source():
-    """③ 每条规则都能定位原文证据（document + quote）。"""
+    """③ 每条规则都能定位**完整、真实**的原文证据（document + quote + 可回溯）。"""
     f = _facts(_norm(source="file:rfc.txt#@42"))[0]
     assert f.claims[0].evidence
     _ev = f.claims[0].evidence[0]
+    # ★ 文档位置可定位
     assert "rfc.txt" in _ev.document
+    # ★ 原文措辞落**证据侧**（不进 value）⇒ 便于核对
+    assert _ev.quote
+    assert "keyword_raw" not in f.claims[0].value.data
 
 
 # ===========================================================================
@@ -146,6 +148,19 @@ def test_gate4_same_fact_multiple_evidence_allowed():
 # ⑤ 旧消费者兼容
 # ===========================================================================
 
+def test_gate4_uncertain_candidate_not_published():
+    """★ 强度未定的候选 ⇒ **不得**作为「已证实的具体等级规则」进正式事实。"""
+    from core.fused.extraction.normative_rule import build_payload, rule_text
+    from core.fused.extraction.normative_verify import l1_check
+    _p = build_payload(subject="client", action="send", object_="ACK",
+                       strength=None, polarity=None)
+    _r = l1_check(rule_text_value=rule_text(_p),
+                  quote="The client should send ACK here.",
+                  evidence_span=(7, 7), subject="client")
+    assert _r.verdict == PENDING
+    assert _r.confirmed is False
+
+
 def test_gate5_aspect_count_unchanged():
     """⑤ aspect 数量**不变**（21）⇒ 旧消费者兼容。"""
     import json as _json
@@ -170,7 +185,8 @@ def test_l1_accepts_published_rule():
     f = _facts(_norm(strength="MUST", polarity="positive"))[0]
     r = l1_check(rule_text_value=f.claims[0].value.data,
                  quote="The client MUST send ACK.",
-                 evidence_span=(42, 42), keyword_raw="MUST")
+                 evidence_span=(42, 42), keyword_raw="MUST",
+                 subject="client")
     assert r.verdict == CONFIRMED
 
 
@@ -179,5 +195,6 @@ def test_l1_rejects_polarity_mismatch():
     f = _facts(_norm(strength="MUST", polarity="positive"))[0]
     r = l1_check(rule_text_value=f.claims[0].value.data,
                  quote="The client MUST NOT send ACK.",
-                 evidence_span=(42, 42), keyword_raw="MUST NOT")
+                 evidence_span=(42, 42), keyword_raw="MUST NOT",
+                 subject="client")
     assert r.verdict == REJECTED

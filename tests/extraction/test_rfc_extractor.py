@@ -4,7 +4,6 @@ from __future__ import annotations
 from core.fused.extraction.rfc_extractor import (
     extract_rfc_norms, _clean_body, _first_sentence,
     extract_constraint_candidates, infer_constraints,
-    extract_constraint_norms,
 )
 from core.fused.extraction.norm import (map_norm_to_facts, constraint_norm_to_facts,
                               parse_constraint_content)

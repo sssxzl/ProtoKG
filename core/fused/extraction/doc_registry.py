@@ -22,7 +22,6 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
 
 #: RFC 头部的月份
 _MONTHS = ("January", "February", "March", "April", "May", "June", "July",

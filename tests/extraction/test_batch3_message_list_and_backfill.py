@@ -103,7 +103,6 @@ def test_backfill_kinds_is_configurable():
 
 def test_backfill_only_when_config_judges_none():
     """★ 互补语义：**config 判出 ⇒ 不用 content**（config 优先）。"""
-    from core.fused.extraction import rfc_classifier as RC
     from core.fused.extraction import rfc_extractor as RX
     cfg = {"method_sections": ["4.3"], "field_sections": [],
            "status_sections": [], "transition_sections": [],

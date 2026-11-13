@@ -1,12 +1,8 @@
 """tests/test_source.py —— source 源（协议实现源码）→ Fact 映射。"""
 from __future__ import annotations
 
-import json
-from pathlib import Path
 
 from core.fused.extraction.source import source_norm_to_facts
-from core.fused.hub.registry import load_registry
-from core.fused.hub.validation import validate_fact
 
 SOURCE_NORM = {
     "norm_id": "rtsp.source.method.options",

@@ -65,12 +65,29 @@ SEMANTIC_FIELDS: tuple[str, ...] = (
     "condition", "condition_status",
     "exception", "exception_status",
     "scope", "action", "object",
+    # ★ 跨节引用：★ **参与语义比较**（它是规范内容的一部分）
+    #   ⇒ 但**不塞进 condition**（★ 引用 ≠ 条件）
+    "cross_ref", "cross_ref_status",
 )
 
 #: 原文 / 证据 / 校验元信息：不参与语义比较 ⇒ 不进 value
 NON_SEMANTIC_FIELDS: tuple[str, ...] = (
     "keyword_raw", "evidence_refs", "source", "verifier_version",
 )
+
+#: ★ **跨节引用的状态**
+#:   · ``unknown``    —— 未提及引用
+#:   · ``stated``     —— 片段里明确引用了某个章节
+#:   · ``resolved``   —— 该章节**已在本文档内定位到**
+#:   · ``unresolved`` —— 引用存在但**无法定位**（⇒ ⇒ L1 判待审）
+CROSS_REF_STATUSES: tuple[str, ...] = ("unknown", "stated", "resolved", "unresolved")
+
+#: ★ **代词表**（★ 主体用这些词 ⇒ **无法可靠确定主体** ⇒ 不进正式归并）
+PRONOUN_SUBJECTS: frozenset = frozenset({
+    "it", "they", "them", "this", "these", "those", "he", "she", "we", "you",
+    "its", "their", "该", "其", "此", "它", "他们", "它们", "这", "那",
+})
+
 
 #: 规则类型标识（进 Rule Slot ⇒ 降低与普通 definition 的身份混淆）
 RULE_KIND: str = "normative_rule"
@@ -106,6 +123,8 @@ def build_payload(*, subject: str, action: str, object_: str,
                   condition_status: Optional[str] = None,
                   exception: Optional[str] = None,
                   exception_status: Optional[str] = None,
+                  cross_ref: Optional[str] = None,
+                  cross_ref_status: Optional[str] = None,
                   scope: Optional[str] = None,
                   kind: str = RULE_KIND) -> dict:
     """构造规范语义 payload（只含 SEMANTIC_FIELDS）。
@@ -119,10 +138,11 @@ def build_payload(*, subject: str, action: str, object_: str,
     _po = polarity if polarity in POLARITIES else None
     _cs = condition_status if condition_status in STATUSES else DEFAULT_MISSING_STATUS
     _es = exception_status if exception_status in STATUSES else DEFAULT_MISSING_STATUS
-    if _cs == "stated" and not condition:
-        _cs = DEFAULT_MISSING_STATUS
-    if _es == "stated" and not exception:
-        _es = DEFAULT_MISSING_STATUS
+    _xr = cross_ref_status if cross_ref_status in CROSS_REF_STATUSES else "unknown"
+    # ★ 2026-11-13（人工核对 03b）：**不再静默改写**
+    #   「显式声明 stated 却缺内容」是**输入不一致** ⇒ 若在此静默回落 unknown
+    #   ⇒ ⇒ 会掩盖错误输入，并让 L1 的 ``inconsistent`` 检查**永不可达**
+    #   ⇒ ⇒ 现在**原样保留** ⇒ 由 L1 判「不一致」⇒ 拒收 / 待审并留原因
     payload = {
         "kind": kind,
         "strength": _st,
@@ -134,6 +154,9 @@ def build_payload(*, subject: str, action: str, object_: str,
         "scope": scope,
         "action": action,
         "object": object_,
+        # ★ 跨节引用**独立成字段**（★ 04：「引用本身不等于条件」）
+        "cross_ref": cross_ref,
+        "cross_ref_status": _xr,
     }
     return {k: payload[k] for k in SEMANTIC_FIELDS if k in payload}
 
@@ -172,6 +195,21 @@ def parse_rule_text(text: str) -> Optional[dict]:
     if not isinstance(_d, dict):
         return None
     return {k: _d[k] for k in SEMANTIC_FIELDS if k in _d}
+
+
+def is_pronoun_subject(name: str) -> bool:
+    """主体是否**代词**（★ 代词 ⇒ 无法可靠确定主体 ⇒ 不进正式归并）。
+
+    ★ 人工核对 05：代词指代未解析时**不得**参与正式归并；应解析出主体或转待审。
+    """
+    _n = " ".join(str(name or "").strip().lower().split())
+    return _n in PRONOUN_SUBJECTS
+
+
+def subject_resolvable(name: str) -> bool:
+    """主体是否**可可靠确定**（★ 非代词 ⇒ 可）。"""
+    return bool(str(name or "").strip()) and not is_pronoun_subject(name)
+
 
 
 def semantic_key(payload: dict) -> str:
@@ -221,6 +259,8 @@ def compare_slots(a: dict, b: dict) -> bool:
 __all__ = [
     "KEYWORD_NORMALIZATION", "STRENGTHS", "POLARITIES", "STATUSES",
     "DEFAULT_MISSING_STATUS", "SEMANTIC_FIELDS", "NON_SEMANTIC_FIELDS",
+    "CROSS_REF_STATUSES", "PRONOUN_SUBJECTS",
+    "is_pronoun_subject", "subject_resolvable",
     "RULE_KIND", "RULE_PREFIX", "RULE_SCHEMA_VERSION",
     "normalize_keyword", "build_payload", "serialize_payload", "rule_text",
     "is_rule_text", "parse_rule_text", "semantic_key",

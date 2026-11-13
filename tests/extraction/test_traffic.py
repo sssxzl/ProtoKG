@@ -1,8 +1,6 @@
 """tests/test_traffic.py —— traffic 源（pcap/raw 观测）→ Fact 映射。"""
 from __future__ import annotations
 
-import json
-from pathlib import Path
 
 from core.fused.extraction.traffic import (
     parse_message, parse_field_samples,

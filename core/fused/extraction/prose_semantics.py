@@ -55,7 +55,10 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
 ★ 若该段是**规范性要求**，额外给出：`action`（动作）/ `object`（对象）/
   `strength`（MUST|SHOULD|MAY，★ **只取原文出现的等级词，不要推测**）/
   `polarity`（positive|negative）/ `keyword_raw`（原文等级措辞）/
-  `condition`（生效条件原文）/ `exception`（例外原文）。
+  `condition`（生效条件原文）/ `exception`（例外原文）/
+  `cross_ref`（**跨节引用**，如 `section 4.2`；★ **与条件分开** ⇒ 引用不是条件）/
+  `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+  `unknown` 无引用）。
 ★ 若**不是**规范性要求，上述字段**全部留空**。
 ★ 只输出 JSON，不要解释文字。
 
@@ -65,7 +68,8 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
    "action": "<动作或空串>", "object": "<对象或空串>",
    "strength": "<MUST|SHOULD|MAY 或空串>", "polarity": "<positive|negative 或空串>",
    "keyword_raw": "<原文等级措辞或空串>",
-   "condition": "<生效条件原文片段或空串>", "exception": "<例外原文片段或空串>"}]}"""
+   "condition": "<生效条件原文片段或空串>", "exception": "<例外原文片段或空串>",
+   "cross_ref": "<跨节引用或空串>", "cross_ref_status": "<resolved|unresolved|unknown>"}]}"""
 
 
 def _hash_text(text: str) -> str:
@@ -313,6 +317,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             "keyword_raw": str(it.get("keyword_raw") or "").strip(),
             "condition": str(it.get("condition") or "").strip() or None,
             "exception": str(it.get("exception") or "").strip() or None,
+            # ★ 跨节引用（★ 独立于条件）
+            "cross_ref": str(it.get("cross_ref") or "").strip() or None,
+            "cross_ref_status": str(it.get("cross_ref_status") or "").strip() or None,
         })
     stats["norms"] = len(norms)
     try:

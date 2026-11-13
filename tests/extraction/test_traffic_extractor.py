@@ -34,7 +34,7 @@ def test_extract_client_log_kinds():
         "Cseq: 3\n"
         "Authorization: Digest username=\"admin\", nonce=\"abc\", response=\"def\"\n"
     )
-    import tempfile, os
+    import tempfile
     from pathlib import Path
     with tempfile.TemporaryDirectory() as d:
         p = Path(d) / "client.log"
@@ -59,7 +59,7 @@ def test_extract_client_log_kinds():
 
 
 def test_extract_rtsp_csv_fallback():
-    import tempfile, os
+    import tempfile
     from pathlib import Path
     csv_text = (
         "frame.number,rtsp.method,rtsp.status\n"
