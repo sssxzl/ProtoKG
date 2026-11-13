@@ -465,7 +465,8 @@ _extract_blocks(protocol, blocks, …)   ← 共享内核（缓存/批量化/LLM
 
 | 文件 | 内容 |
 |---|---|
-| `docs/实施/待办与勘误/RFC源可信度提升待办.md` | ★ 本流程的**改进计划**（四批实施记录与实测汇总） |
+| `docs/实施/路线与里程碑/RFC源可信度提升实施报告.md` | ★ 本流程的**改进计划**（四批实施记录与实测汇总） |
+| `docs/实施/待办与勘误/RFC源可信度提升待办.md` | ★ **未关闭项**（残余风险 / 待确定） |
 | `docs/实施/路线与里程碑/RFC抽取流程逐协议核查报告.md` | 4 协议 × 8 步的逐步核查数据 |
 | `core/fused/extraction/normative_rule.py` | 规范规则的**表示契约**（§十 的代码化） |
 | `core/fused/extraction/normative_verify.py` | **三级校验** L1/L2 与冲突判定（§十） |
