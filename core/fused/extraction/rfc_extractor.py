@@ -4080,7 +4080,14 @@ def extract_rfc_norms(protocol: str, llm=None) -> list[dict]:
         # ★ 窗口归属：rfc 源是**文件级抽取** ⇒ 该文件的**全部内容行**都进入了
         #   抽取窗口（章节树 + 窗口组织在文件内完成）⇒ ⇒ 计入 in_window
         #   ⇒ ⇒ 「有效正文窗口覆盖率」= 进入窗口的内容行 / 内容行
-        _cov_ledger.text.in_window.update(range(1, len(_content) + 1))
+        # ★ 2026-11-13 修正：**用全局行号偏移**记录窗口归属
+        #   ⇒ 旧写法按「文件内行号」入 set ⇒ **多文件时行号重复** ⇒
+        #   ⇒ set 大小远小于内容行总数 ⇒ 覆盖率被**严重低估**
+        #   ⇒ （rtsp 单文档 ⇒ 1.0；smtp 4 文档 ⇒ 0.54；DHCPv4 36 文档 ⇒ 0.11）
+        #   ⇒ ★ 基准须取**累加前**的 content_lines ⇒ 否则区间与前文件重叠
+        _w_base = _cov_ledger.text.content_lines - len(_content)
+        _cov_ledger.text.in_window.update(
+            range(_w_base + 1, _w_base + len(_content) + 1))
         # ---- 抽取覆盖：通道产出 ----
         _file_norms = _extract_rfc_file(f, protocol, cfg)
         if not _file_norms:
