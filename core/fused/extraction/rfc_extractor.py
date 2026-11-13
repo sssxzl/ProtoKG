@@ -4222,6 +4222,31 @@ def extract_rfc_norms(protocol: str, llm=None) -> list[dict]:
         except Exception as exc:                # noqa: BLE001
             print(f"[通道J] 跳过：{exc}", file=sys.stderr)
 
+    # ---- 文档级登记（★ 2026-11-13，第四批）--------------------------------
+    #   ⇒ ★ 只登记**文档自述**信息（Category / Updates / Obsoletes）
+    #   ⇒ ★ **不表示「当前生效」**（跨文档效力核查未做 ⇒ 时效性风险未关闭）
+    #   ⇒ ★ 走**元数据**（documents.json）⇒ **不进 fact 空间** ⇒ 中枢零影响
+    try:
+        from core.fused.extraction.doc_registry import (
+            parse_header as _parse_doc_header, write_registry as _write_registry,
+        )
+        _doc_records = []
+        for _f in sorted(spec_dir.glob("*.txt")):
+            try:
+                _txt = _f.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            _doc_records.append(_parse_doc_header(
+                _txt, protocol=protocol, source="rfc", filename=_f.name))
+        _write_registry(
+            _doc_records,
+            paths.per_source_facts_dir(protocol, "rfc").parent / "documents.json")
+        _known = [d for d in _doc_records if d.rfc_number]
+        print(f"[文档登记] {len(_doc_records)} 份文档（已识别编号 {len(_known)} 份）"
+              f"→ documents.json（★ 只标自述状态，不判定当前生效）")
+    except Exception as exc:                    # noqa: BLE001
+        print(f"[文档登记] 跳过：{exc}", file=sys.stderr)
+
     # ---- 写**覆盖台账**（★ 2026-11-12，第一批）----------------------------
     #   ⇒ ★ 走**元数据**（derived/per_source/<协议>/<源>/coverage.json）
     #   ⇒ ⇒ **不进 fact 空间** ⇒ 中枢零影响 / 契约零变化
