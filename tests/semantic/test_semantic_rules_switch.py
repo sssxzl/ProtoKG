@@ -1,6 +1,6 @@
 """tests/test_semantic_rules_switch.py —— D-6：语义规则参与生成的可关闭开关位。
 
-对应 docs/实施/路线与里程碑/RFC源里程碑路线图.md §5.2 任务表 **D-6**（文档任务号 D6）：
+对应 docs/实施/路线与里程碑/RFC源/方案与路线/RFC源里程碑路线图.md §5.2 任务表 **D-6**（文档任务号 D6）：
 "**投票保持可关闭** | 同上 + `scripts/build_hub.py` | 默认关闭；关闭时 bundle 的
 `semantic_rules` **不参与**任何生成 | 单测：关闭开关 → `semantic_rules` 消费路径
 0 次调用；`rules_only` 模式产物与 B-8 之前逐字节一致"。

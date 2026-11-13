@@ -2,7 +2,7 @@
 
 > 生成时间：2026-11-01
 > 适用代码库：`E:\科研\想法idea\ProtoKG`
-> 上游输入：`docs/实施/路线与里程碑/RFC源知识抽取改造方案.md`（当前版，951 行）、`改进.md`（8 个问题）、`ProtoKG RFC 源知识抽取改造方案——技术评审报告.md`
+> 上游输入：`docs/实施/路线与里程碑/RFC源/方案与路线/RFC源知识抽取改造方案.md`（当前版，951 行）、`改进.md`（8 个问题）、`ProtoKG RFC 源知识抽取改造方案——技术评审报告.md`
 > 本文档性质：**只读调研 + 设计规划**。撰写过程中未修改仓库任何文件（唯一写入为本文件）。
 > 运行环境：Python `C:/Users/13594/.workbuddy/binaries/python/versions/3.13.12/python.exe`（无 pytest）；pytest 用 `E:/app/Anaconda3/python.exe`。
 
@@ -70,7 +70,7 @@ smtp passed= True norms= 10 facts=  10 dup= 0 toc_out= 0 toc_only= 0 kinds= {'me
 | `test_edge_cover.py` | 1 | ❌ 无 |
 | **合计** | **37** | **全部与 rfc 源无关**——团队简报「全部是预存的研究契约脱节」的判断成立** |
 
-> ⚠️ **注意 `docs/实施/路线与里程碑/RFC源改造里程碑A实施报告.md:26` 写的是「37 failed / 633 passed / 20 errors」，:290 写「646 passed」，:331 写「644 passed」——三个数字互相矛盾，且都不是实测值。** 本文档以**实测**为准：**failed=37 / errors=20 恒定不变**（这是关键——回归护栏看的是这两个数），**passed 会随并行改动浮动**（749 → 760）。A 阶段报告的测试数字已过期，**不应作为后续基线引用**。
+> ⚠️ **注意 `docs/实施/路线与里程碑/RFC源/实施报告/RFC源改造里程碑A实施报告.md:26` 写的是「37 failed / 633 passed / 20 errors」，:290 写「646 passed」，:331 写「644 passed」——三个数字互相矛盾，且都不是实测值。** 本文档以**实测**为准：**failed=37 / errors=20 恒定不变**（这是关键——回归护栏看的是这两个数），**passed 会随并行改动浮动**（749 → 760）。A 阶段报告的测试数字已过期，**不应作为后续基线引用**。
 
 > 🔄 **并行改动提示（2026-11-01 09:0x）**：本文档撰写期间，有并行同事重写了 `core/fused/rfc_extractor.py`（1713 → 1890 行）。本文档的**所有实测数据已在改写后重新复测并同步更新**（三协议 norms/facts 计数、约束候选 TOC 污染率、无 span 比例、norm_id 冲突复现、B 阶段符号 0 命中——**全部与改写前一致**）。**行号引用已按改写后的版本全面校正**。若后续该文件再被改动，请以「附录 A 的复算命令」为准重新核对行号。
 
@@ -142,11 +142,11 @@ DUP norm_id => {'rtsp.constraint.content-length': 10, 'rtsp.constraint.max-forwa
 | 「新版投票写成 `voting_models = {r.model_id for r in g}`」 | **不成立**（已改为 `{c.model_id for c in g}`） | `:577` |
 | 「改进.md 说 `SemanticRule` 未定义 `model_id`」 | 仍然成立且**强化**：`SemanticRule` 在代码里**根本不存在** | 全仓 0 命中 |
 
-**净结论：改进.md 的 8 条对「文档早期版」的批评，已被 `实施/路线与里程碑/RFC源知识抽取改造方案.md` 全部吸收。团队简报里「文档已修订」的前提成立。本文档的工作重心因此转向「文档说要做的事，代码里怎么落地」。**
+**净结论：改进.md 的 8 条对「文档早期版」的批评，已被 `实施/路线与里程碑/RFC源/方案与路线/RFC源知识抽取改造方案.md` 全部吸收。团队简报里「文档已修订」的前提成立。本文档的工作重心因此转向「文档说要做的事，代码里怎么落地」。**
 
 ---
 
-## 2　接口一致性清理清单（对 `实施/路线与里程碑/RFC源知识抽取改造方案.md` 的六处审计）
+## 2　接口一致性清理清单（对 `实施/路线与里程碑/RFC源/方案与路线/RFC源知识抽取改造方案.md` 的六处审计）
 
 审计对象：修订说明（§0）/ 任务表（§2.0）/ 数据模型（§3.1）/ 伪代码（§3.2–3.5）/ bundle 示例（§3.6）/ 风险清单（§4）。
 
@@ -666,7 +666,7 @@ semantic_rules[i]  ──project──►  legal_boundary[subject_name] += {dim,
 
 ### 3.8　B 阶段任务分解（有序、含依赖、每项有验收标准）
 
-> **注意与 `实施/路线与里程碑/RFC源知识抽取改造方案.md` §2.0 的 B1~B7 的关系**：下表是**代码级**任务，与文档任务表一一映射。映射列给出文档任务号；I-5 / I-11 两条是文档**没有**的（来自 §2.6 审计）。
+> **注意与 `实施/路线与里程碑/RFC源/方案与路线/RFC源知识抽取改造方案.md` §2.0 的 B1~B7 的关系**：下表是**代码级**任务，与文档任务表一一映射。映射列给出文档任务号；I-5 / I-11 两条是文档**没有**的（来自 §2.6 审计）。
 
 | # | 任务 | 文档任务号 | 文件 | 依赖 | 验收标准 |
 |---|---|---|---|---|---|
@@ -882,7 +882,7 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    subgraph DOC["docs/实施/路线与里程碑/RFC源知识抽取改造方案.md"]
+    subgraph DOC["docs/实施/路线与里程碑/RFC源/方案与路线/RFC源知识抽取改造方案.md"]
         D1["§3.4 :636<br/>r.evidence.rule_id"]
         D2["§3.5 :741<br/>feedback.get(r.evidence.rule_id)"]
         D3["§3.6 :758<br/>扩展 seed_oracle_filter.py"]
@@ -1079,7 +1079,7 @@ KNOWN_DRIFT: dict[tuple[str, str], tuple[int, int]] = {
    rtsp: A 38→52 / B 50→65 / C 50→65 / D 50→65
    sip:  A 15→?  / B 25→20 / C 25→? / D 25→?
    smtp: A 76→?  / B 78→61 / C 78→? / D 78→?
-   根因（docs/实施/路线与里程碑/RFC源改造里程碑A实施报告.md §10.4 已实测）：source 源引入
+   根因（docs/实施/路线与里程碑/RFC源/实施报告/RFC源改造里程碑A实施报告.md §10.4 已实测）：source 源引入
    LIVE555 真实状态名，取代 expert_note 旧版的虚构状态名 → 状态机层与种子序列全变。
    ★ 与 rfc 源**零影响**（剔除 rfc 源后条数与 md5 完全相同）。
    本实验的判定指标中**不含任何种子条数**，故该漂移不影响结论。
@@ -1143,7 +1143,7 @@ derived/experiments/annotation/<实验ID>/
 | **C-4** | **reset/close 不进 crash** | 同上 | 无 | `trans ∈ {RESET, CLOSE}` → `Feedback(kind="connection_aborted")`（**不是** crash） | 单测：`trans=RESET, health=ALIVE` → `connection_aborted`，**不是** `crash` |
 | **C-5** | **timeout/crash 不作协议响应期望** | `profiles/<p>/rfc_config.json` | 已满足 | `expected_response_classes` 保持 4 类（实测三协议已是 `success/protocol_error/application_error/silence`）→ **无需改动**，只需**加一条断言**防止将来被加进 timeout/crash | 单测：读取三协议 `rfc_config.json`，断言 `set(classes) == {success, protocol_error, application_error, silence}` 且**不含** timeout/crash |
 | **C-6** | **`scripts/seed_oracle_filter.py` 定位澄清** | 同文件 | `:94-110 _filter_seed` | **不改其行为**（它服务 SIP 种子过滤，是另一职责）。仅在模块 docstring 加一句「本脚本是**种子有效性过滤器**；执行结果三轴判定在 `core/fused/downstream/response_oracle.py`」 | 文档检查项（非自动）；`pytest tests/test_seedgen.py` 保持通过 |
-| **C-7** | **落地表冲突修正** | `docs/实施/路线与里程碑/RFC源知识抽取改造方案.md` §3.6 `:758` | — | 把「扩展 `scripts/seed_oracle_filter.py`」改为「新建 `core/fused/downstream/response_oracle.py`」 | 与 §2.0 C5 `:267` 一致（审计 I-4） |
+| **C-7** | **落地表冲突修正** | `docs/实施/路线与里程碑/RFC源/方案与路线/RFC源知识抽取改造方案.md` §3.6 `:758` | — | 把「扩展 `scripts/seed_oracle_filter.py`」改为「新建 `core/fused/downstream/response_oracle.py`」 | 与 §2.0 C5 `:267` 一致（审计 I-4） |
 
 **C 阶段的前置依赖**：**C-2/C-3/C-4 需要 B 阶段产出的 `ExecutableConstraint.expected_behavior`**（C-2 的 `proto != expected` 比对要用它）。但 **C-1（枚举定义）、C-5（词表断言）、C-6/C-7（澄清与文档）可立即做，不依赖 B**。
 
@@ -1161,7 +1161,7 @@ derived/experiments/annotation/<实验ID>/
 | **D-4** | **对齐主判据 = 结构化字段全等** | 同上 | 无 | 逐项比对 subject/operator/operand/expected/证据位置；span 重叠仅辅助 | 单测：两条 span 重叠 0.9 但 operator 不同 → **不对齐**（span 重叠不具传递性，评审 T1 第三点） |
 | **D-5** | **单模型独有候选不静默丢弃** | 同上 | 无 | 保留文档 `:581` 的 `len(g)==1 and len(voting_models)==1` 分支，但改为**进 uncertain 队列**而非 `continue` 丢弃 | 单测：单模型独有候选 → 出现在 `uncertain` 中，**不在** `confirmed` 中 |
 | **D-6** | **投票保持可关闭** | 同上 + `scripts/build_hub.py` | 无 | 默认关闭；关闭时 bundle 的 `semantic_rules` **不参与**任何生成 | 单测：关闭开关 → `semantic_rules` 消费路径 0 次调用；`rules_only` 模式产物与 B-8 之前逐字节一致 |
-| **D-7** | **`_align_by_structural_equality` 的 `theta` 参数语义** | 同上 + `docs/实施/路线与里程碑/RFC源知识抽取改造方案.md` §3.3 `:571` | 无 | 明确 `theta` 为「span 重叠辅助阈值」，主判据是结构化全等 | 清理审计项 I-7：或去掉 `theta`，或写明其辅助语义 |
+| **D-7** | **`_align_by_structural_equality` 的 `theta` 参数语义** | 同上 + `docs/实施/路线与里程碑/RFC源/方案与路线/RFC源知识抽取改造方案.md` §3.3 `:571` | 无 | 明确 `theta` 为「span 重叠辅助阈值」，主判据是结构化全等 | 清理审计项 I-7：或去掉 `theta`，或写明其辅助语义 |
 
 **D 阶段的前置依赖**：**D-1~D-5 全部依赖 B 阶段的 `SemanticRule` 与 `rule_id`**。D-6（可关闭）可在 B 阶段完成时一并实现开关位。D 阶段**不依赖 C**（投票是抽取侧的，不是执行侧的）—— 但 D-5 的「进人工复核队列」需要 C 的复现机制才能最终闭环，故 **D 阶段整体应在 C 之后**。
 
@@ -1232,7 +1232,7 @@ derived/experiments/annotation/<实验ID>/
 | **P0** | **B-3 + B-4**（候选带 span、norm_id 修复） | 止血（阻断 bug）+ 解锁 B-2 + 解锁标注 | 0.5~1 人日 |
 | **P0** | **人工标注集启动**（先标 40 条 × 3 协议） | 全局关键路径，且**不依赖任何代码**；但需要 B-3 的候选输出才能标「准确」的版本 | 启动 0.5 人日 + 2~3 人日 |
 | **P1** | **B-1**（模型 + rule_id） | 一切的地基；但它不依赖 B-3，可与 B-3 并行 | 1 人日 |
-| **P1** | **审计 I-1~I-9 文档修正** | 纯文档，30 分钟；修正后 `实施/路线与里程碑/RFC源知识抽取改造方案.md` 才能作为实施的唯一真源 | 0.5 人日 |
+| **P1** | **审计 I-1~I-9 文档修正** | 纯文档，30 分钟；修正后 `实施/路线与里程碑/RFC源/方案与路线/RFC源知识抽取改造方案.md` 才能作为实施的唯一真源 | 0.5 人日 |
 | **P2** | **C-1 / C-5 / C-6** | 与 B 完全无依赖，可交给第二个人 | 0.5 人日 |
 
 **B 阶段的整体节奏建议**：
@@ -1285,7 +1285,7 @@ derived/experiments/annotation/<实验ID>/
      # Windows Git Bash
      cd "E:/科研/想法idea/ProtoKG"
      tar czf ../ProtoKG_snapshot_$(date +%Y%m%d_%H%M%S).tar.gz \
-         core/ scripts/ core/fused/hub/registry/ tests/ docs/实施/路线与里程碑/RFC源知识抽取改造方案.md
+         core/ scripts/ core/fused/hub/registry/ tests/ docs/实施/路线与里程碑/RFC源/方案与路线/RFC源知识抽取改造方案.md
      ```
    - 每个任务（T01~T05）**独立一个快照**，出问题时按任务回滚。
    - **强烈建议同时执行 `git init`**：B 阶段要新增 5+ 文件、改 7+ 文件，没有版本控制风险太高。`git init && git add -A && git commit -m "baseline before milestone B"` 一步就能消除这个风险（`.gitignore` 已就位，会自动排除 `derived/`、`.env`、`__pycache__`）。
@@ -1298,7 +1298,7 @@ derived/experiments/annotation/<实验ID>/
    E:/app/Anaconda3/python.exe -m pytest tests/ -q
    ```
    基线必须是 **failed=37 / errors=20**（passed 允许 ≥ 当时实测值）。
-   **注意**：`docs/实施/路线与里程碑/RFC源改造里程碑A实施报告.md` 里写的 633/646/644 三个数字**均已过期**；实测 passed 会在并行改动后浮动（749 → 760），**回归护栏只认 failed=37 / errors=20**。
+   **注意**：`docs/实施/路线与里程碑/RFC源/实施报告/RFC源改造里程碑A实施报告.md` 里写的 633/646/644 三个数字**均已过期**；实测 passed 会在并行改动后浮动（749 → 760），**回归护栏只认 failed=37 / errors=20**。
 
 4. **构建入口是「一次一个协议 × 一个知识源」**（`build_hub.py:385-390`：`--sources` 单值 + `choices` 限五源、`--protocol` `required=True` 必填）。`--sources rfc` **只清 rfc 一个源**，不牵连其他四源（A 阶段报告 §9 已修复的踩坑点）。
 

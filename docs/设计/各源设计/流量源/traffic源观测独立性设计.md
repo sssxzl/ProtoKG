@@ -1405,7 +1405,7 @@ condition = <semantic applicability scope>
 - §4 taxonomy 的 Packet 定义
 - Metadata Recon 的可用字段
 - `temporal_normalize_v1` 的实现（属 backlog，见
-  `docs/实施/路线与里程碑/归一化实现待办（已结案）.md`）
+  `docs/实施/路线与里程碑/中枢/留档/已完成项留档.md`）
 
 #### §6.6-C2 Observation Population Scope
 
@@ -1444,7 +1444,7 @@ concrete aggregate scope 内只形成一个 Packet measurement unit。
 
 注：具体 category 枚举由 temporal_normalize_v1 的
 deterministic 定义决定（正常化器实现属 Hub 独立议题，
-见 `docs/实施/路线与里程碑/归一化实现待办（已结案）.md`）。
+见 `docs/实施/路线与里程碑/中枢/留档/已完成项留档.md`）。
 §6.6 只冻结「outcome 是 category」这一形态。
 
 #### §6.6-F Aggregation Semantics
@@ -2641,7 +2641,7 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 **关联独立议题**（不属本设计范围）：
     - `docs/实施/立项提案/D9第三问类型扩展立项.md`（已 COMMITTED）
     - `docs/实施/立项提案/D9聚合载体立项.md`
-    - `docs/实施/路线与里程碑/归一化实现待办（已结案）.md`
+    - `docs/实施/路线与里程碑/中枢/留档/已完成项留档.md`
     - `docs/实施/待办与勘误/中枢契约勘误待办.md`
 
 **Freeze 依据**：
@@ -2681,7 +2681,7 @@ Lane B 仍为 no materialization，理由见该文件 §4.1 / §4.3 / §4.4。
 |---|---|---|
 | Q3 kind 扩展 | COMMITTED | `docs/实施/立项提案/D9第三问类型扩展立项.md` |
 | Aggregate Carrier | RESOLVED | `docs/实施/立项提案/D9聚合载体立项.md` |
-| Normalizer implementation | Backlog | `docs/实施/路线与里程碑/归一化实现待办（已结案）.md` |
+| Normalizer implementation | Backlog | `docs/实施/路线与里程碑/中枢/留档/已完成项留档.md` |
 | Hub Contract Errata | Backlog | `docs/实施/待办与勘误/中枢契约勘误待办.md` |
 
 **C. 已关闭**：

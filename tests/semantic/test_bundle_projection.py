@@ -1,6 +1,6 @@
 """tests/test_bundle_projection.py —— B-8 bundle 契约扩展 + 语义规则投影。
 
-对应 docs/实施/路线与里程碑/RFC源里程碑路线图.md §3.8 任务表 B-8（文档任务号 B7）与
+对应 docs/实施/路线与里程碑/RFC源/方案与路线/RFC源里程碑路线图.md §3.8 任务表 B-8（文档任务号 B7）与
 §3.6 选项 c（「影子实现升级为两层模型，`legal_boundary` 桶保留但由两层模型
 投影填充」）。
 
