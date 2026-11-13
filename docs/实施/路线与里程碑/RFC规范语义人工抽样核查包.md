@@ -10,20 +10,20 @@
 
 | 协议 | 真实条目总数 | 抽样数 |
 |---|---:|---:|
-| rtsp | 224 | 10 |
-| sip | 205 | 10 |
-| smtp | 177 | 10 |
-| DHCPv4 | 188 | 10 |
-| **合计** | **794** | **40** |
+| rtsp | 270 | 10 |
+| sip | 216 | 10 |
+| smtp | 164 | 10 |
+| DHCPv4 | 176 | 10 |
+| **合计** | **826** | **40** |
 
 **每协议的抽样构成**（按类别）：
 
-| 协议 | 已确认强度的规范规则 | 强度未知（被隔离）候选 | 含条件或例外的规则 | 跨章节引用规则 | 被 L1/L2 拒收的候选 | 发生去重或多证据归并的规则 |
-|---|---:|---:|---:|---:|---:|---:|
-| rtsp | 3 | 2 | 2 | 1 | 1 | 1 |
-| sip | 3 | 2 | 2 | 1 | 1 | 1 |
-| smtp | 3 | 2 | 2 | 1 | 1 | 1 |
-| DHCPv4 | 3 | 2 | 2 | 1 | 1 | 1 |
+| 协议 | 已确认强度的规范规则 | 强度未知（被隔离）候选 | 含条件或例外的规则 | 跨章节引用规则 | 被 L1/L2 拒收的候选 | 发生去重或多证据归并的规则 | ★ 描述性（不成规则：动作/对象缺失或为主体名占位） |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| rtsp | 3 | 0 | 2 | 1 | 1 | 0 | 3 |
+| sip | 3 | 2 | 2 | 1 | 1 | 0 | 1 |
+| smtp | 4 | 0 | 2 | 1 | 0 | 0 | 3 |
+| DHCPv4 | 3 | 1 | 2 | 1 | 1 | 0 | 2 |
 
 ## 一、逐条样本（★ 人工审阅区）
 
@@ -32,7 +32,7 @@
 
 ### 协议 rtsp
 
-#### S01 ｜ 已确认强度的规范规则 ｜ 最终状态：**确认**
+#### S01 ｜ 已确认强度的规范规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
@@ -43,7 +43,7 @@
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **confirmed** ｜  |
+| L1 验证 | **pending** ｜ 关键词无法归一：'must' |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
@@ -63,8 +63,8 @@
 {
   "doc": "rfc2326.txt",
   "entity": "presentation description",
-  "meaning": "The presentation description must contain at least one RTSP URI.",
-  "constraint": "the presentation description must contain at least one RTSP URI",
+  "meaning": "呈现描述必须包含至少一个 RTSP URI。",
+  "constraint": "呈现描述必须包含至少一个 RTSP URI。",
   "span": 518,
   "action": "contain",
   "object": "at least one RTSP URI",
@@ -241,9 +241,9 @@
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `rtsp` / `rfc2326.txt` |
-| 章节 | 3.4 Session Identifiers |
-| 原始行号 | 第 **874** 行 |
-| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`must`）|
+| 章节 | 3.8.1 Registering New Option Tags with IANA |
+| 原始行号 | 第 **1000** 行 |
+| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`MUST`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
@@ -252,13 +252,13 @@
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     871| 3.4 Session Identifiers
-     872| 
-     873|    Session identifiers are opaque strings of arbitrary length. Linear
->>   874|    white space must be URL-escaped. A session identifier MUST be chosen
-     875|    randomly and MUST be at least eight octets long to make guessing it
-     876|    more difficult. (See Section 16.)
-     877| 
+     997|    be provided:
+     998| 
+     999|      * Name and description of option. The name may be of any length,
+>>  1000|        but SHOULD be no more than twenty characters long. The name MUST
+    1001|        not contain any spaces, control characters or periods.
+    1002|      * Indication of who has change control over the option (for
+    1003|        example, IETF, ISO, ITU-T, other international standardization
 ```
 
 **② LLM 原始抽取结果**
@@ -266,51 +266,51 @@
 ```json
 {
   "doc": "rfc2326.txt",
-  "entity": "white space",
-  "meaning": "线性空白必须做 URL 转义。",
-  "constraint": "Linear white space must be URL-escaped",
-  "span": 874,
-  "action": "URL-escaped",
-  "object": "Linear white space",
+  "entity": "name",
+  "meaning": "选项名称不得包含任何空格、控制字符或句点。",
+  "constraint": "MUST not contain any spaces, control characters or periods",
+  "span": 1000,
+  "action": "contain",
+  "object": "any spaces, control characters or periods",
+  "strength": "MUST",
+  "polarity": "negative",
+  "keyword_raw": "MUST",
+  "condition": "",
+  "exception": "",
+  "cross_ref": "",
+  "cross_ref_status": "unknown"
+}
+```
+
+**③ 规范化 Rule Slot（身份）**
+
+```json
+{
+  "protocol": "rtsp",
+  "version": "1.0",
+  "kind": "normative_rule",
+  "subject": "name",
+  "action": "contain",
+  "object": "any spaces, control characters or periods",
+  "condition": null,
+  "scope": null
+}
+```
+
+**④ 规范化 Assertion（声明内容）**
+
+```json
+{
+  "kind": "normative_rule",
   "strength": "MUST",
   "polarity": "positive",
-  "keyword_raw": "must",
-  "condition": "",
-  "exception": "",
-  "cross_ref": "",
-  "cross_ref_status": "unknown"
-}
-```
-
-**③ 规范化 Rule Slot（身份）**
-
-```json
-{
-  "protocol": "rtsp",
-  "version": "1.0",
-  "kind": "normative_rule",
-  "subject": "white space",
-  "action": "URL-escaped",
-  "object": "Linear white space",
-  "condition": null,
-  "scope": null
-}
-```
-
-**④ 规范化 Assertion（声明内容）**
-
-```json
-{
-  "kind": "normative_rule",
-  "strength": "MUST",
-  "polarity": "positive",
   "condition": null,
   "condition_status": "unknown",
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "URL-escaped",
-  "object": "Linear white space",
+  "action": "contain",
+  "object": "any spaces, control characters or periods",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -338,233 +338,29 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S04 ｜ 强度未知（被隔离）候选 ｜ 最终状态：**待审**
+#### S04 ｜ 含条件或例外的规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `rtsp` / `rfc2326.txt` |
-| 章节 | 1.1 Purpose |
-| 原始行号 | 第 **238** 行 |
-| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
-| 条件 / 例外 | `（无）` / `（无）` |
+| 章节 | 1.4 Protocol Properties |
+| 原始行号 | 第 **536** 行 |
+| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`must`）|
+| 条件 / 例外 | `If a client can start a stream` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| L1 验证 | **pending** ｜ 关键词无法归一：'must' |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     235|    The Real-Time Streaming Protocol (RTSP) establishes and controls
-     236|    either a single or several time-synchronized streams of continuous
-     237|    media such as audio and video. It does not typically deliver the
->>   238|    continuous streams itself, although interleaving of the continuous
-     239|    media stream with the control stream is possible (see Section 10.12).
-     240|    In other words, RTSP acts as a "network remote control" for
-     241|    multimedia servers.
-```
-
-**② LLM 原始抽取结果**
-
-```json
-{
-  "doc": "rfc2326.txt",
-  "entity": "interleaving",
-  "meaning": "Interleaving of the continuous media stream with the control stream is possible.",
-  "constraint": "",
-  "span": 238,
-  "action": "",
-  "object": "",
-  "strength": "",
-  "polarity": "",
-  "keyword_raw": "",
-  "condition": "",
-  "exception": "",
-  "cross_ref": "",
-  "cross_ref_status": ""
-}
-```
-
-**③ 规范化 Rule Slot（身份）**
-
-```json
-{
-  "protocol": "rtsp",
-  "version": "1.0",
-  "kind": "normative_rule",
-  "subject": "interleaving",
-  "action": "interleaving",
-  "object": "interleaving",
-  "condition": null,
-  "scope": null
-}
-```
-
-**④ 规范化 Assertion（声明内容）**
-
-```json
-{
-  "kind": "normative_rule",
-  "strength": null,
-  "polarity": null,
-  "condition": null,
-  "condition_status": "unknown",
-  "exception": null,
-  "exception_status": "unknown",
-  "scope": null,
-  "action": "interleaving",
-  "object": "interleaving",
-  "cross_ref": null,
-  "cross_ref_status": "unknown"
-}
-```
-
-**⑥ 样本来源（可追溯）**
-
-```json
-{
-  "cache_file": "derived/cache/source_blocks/rtsp.prose.json",
-  "cache_key": "1709ccbd179a5c40eaea5902deadfffe6c74cd94588d3c0dfc8c18a39020cd32",
-  "manifest": {
-    "key": "1709ccbd179a5c40eaea5902deadfffe6c74cd94588d3c0dfc8c18a39020cd32",
-    "parser_version": "rfc-parser-v1",
-    "schema_version": "rfc-norm-schema-v1",
-    "verifier_version": "normative-verifier-v1",
-    "model": "deepseek-flash",
-    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
-  },
-  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
-}
-```
-
-| ★ 人工判定 | 错误原因 | 修改建议 |
-|---|---|---|
-| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
-
-#### S05 ｜ 强度未知（被隔离）候选 ｜ 最终状态：**待审**
-
-| 项 | 内容 |
-|---|---|
-| 协议 / 文件 | `rtsp` / `rfc2326.txt` |
-| 章节 | 1.1 Purpose |
-| 原始行号 | 第 **247** 行 |
-| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
-| 条件 / 例外 | `（无）` / `（无）` |
-| 作用域 | `（无）` |
-| 跨章节引用 | （无）|
-| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
-
-**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
-
-```
-     244|    description. This memorandum does not define a format for a
-     245|    presentation description.
-     246| 
->>   247|    There is no notion of an RTSP connection; instead, a server maintains
-     248|    a session labeled by an identifier. An RTSP session is in no way tied
-     249|    to a transport-level connection such as a TCP connection. During an
-     250|    RTSP session, an RTSP client may open and close many reliable
-```
-
-**② LLM 原始抽取结果**
-
-```json
-{
-  "doc": "rfc2326.txt",
-  "entity": "RTSP connection",
-  "meaning": "There is no notion of an RTSP connection.",
-  "constraint": "",
-  "span": 247,
-  "action": "",
-  "object": "",
-  "strength": "",
-  "polarity": "",
-  "keyword_raw": "",
-  "condition": "",
-  "exception": "",
-  "cross_ref": "",
-  "cross_ref_status": ""
-}
-```
-
-**③ 规范化 Rule Slot（身份）**
-
-```json
-{
-  "protocol": "rtsp",
-  "version": "1.0",
-  "kind": "normative_rule",
-  "subject": "RTSP connection",
-  "action": "RTSP connection",
-  "object": "RTSP connection",
-  "condition": null,
-  "scope": null
-}
-```
-
-**④ 规范化 Assertion（声明内容）**
-
-```json
-{
-  "kind": "normative_rule",
-  "strength": null,
-  "polarity": null,
-  "condition": null,
-  "condition_status": "unknown",
-  "exception": null,
-  "exception_status": "unknown",
-  "scope": null,
-  "action": "RTSP connection",
-  "object": "RTSP connection",
-  "cross_ref": null,
-  "cross_ref_status": "unknown"
-}
-```
-
-**⑥ 样本来源（可追溯）**
-
-```json
-{
-  "cache_file": "derived/cache/source_blocks/rtsp.prose.json",
-  "cache_key": "1709ccbd179a5c40eaea5902deadfffe6c74cd94588d3c0dfc8c18a39020cd32",
-  "manifest": {
-    "key": "1709ccbd179a5c40eaea5902deadfffe6c74cd94588d3c0dfc8c18a39020cd32",
-    "parser_version": "rfc-parser-v1",
-    "schema_version": "rfc-norm-schema-v1",
-    "verifier_version": "normative-verifier-v1",
-    "model": "deepseek-flash",
-    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
-  },
-  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
-}
-```
-
-| ★ 人工判定 | 错误原因 | 修改建议 |
-|---|---|---|
-| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
-
-#### S06 ｜ 含条件或例外的规则 ｜ 最终状态：**待审**
-
-| 项 | 内容 |
-|---|---|
-| 协议 / 文件 | `rtsp` / `rfc2326.txt` |
-| 章节 | 1.1 Purpose |
-| 原始行号 | 第 **294** 行 |
-| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
-| 条件 / 例外 | `If the presentation is to be sent only to the client via unicast` / `（无）` |
-| 作用域 | `（无）` |
-| 跨章节引用 | （无）|
-| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
-
-**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
-
-```
-     291|           some other method. If the presentation is being multicast, the
-     292|           presentation description contains the multicast addresses and
-     293|           ports to be used for the continuous media. If the presentation
->>   294|           is to be sent only to the client via unicast, the client
-     295|           provides the destination for security reasons.
-     296| 
-     297|    Invitation of a media server to a conference:
+     533|           continuous media requires server state in most cases.
+     534| 
+     535|    Appropriate server control:
+>>   536|           If a client can start a stream, it must be able to stop a
+     537|           stream. Servers should not start streaming to clients in such
+     538|           a way that clients cannot stop the stream.
+     539| 
 ```
 
 **② LLM 原始抽取结果**
@@ -573,15 +369,15 @@
 {
   "doc": "rfc2326.txt",
   "entity": "client",
-  "meaning": "当呈现仅以单播方式发送给客户端时，客户端出于安全原因提供目的地址。",
-  "constraint": "",
-  "span": 294,
-  "action": "",
-  "object": "",
-  "strength": "",
-  "polarity": "",
-  "keyword_raw": "",
-  "condition": "If the presentation is to be sent only to the client via unicast",
+  "meaning": "If a client can start a stream, it must be able to stop a stream.",
+  "constraint": "If a client can start a stream, it must be able to stop a stream.",
+  "span": 536,
+  "action": "be able to stop",
+  "object": "a stream",
+  "strength": "MUST",
+  "polarity": "positive",
+  "keyword_raw": "must",
+  "condition": "If a client can start a stream",
   "exception": "",
   "cross_ref": "",
   "cross_ref_status": "unknown"
@@ -596,9 +392,9 @@
   "version": "1.0",
   "kind": "normative_rule",
   "subject": "client",
-  "action": "client",
-  "object": "client",
-  "condition": "If the presentation is to be sent only to the client via unicast",
+  "action": "be able to stop",
+  "object": "a stream",
+  "condition": "If a client can start a stream",
   "scope": null
 }
 ```
@@ -608,15 +404,15 @@
 ```json
 {
   "kind": "normative_rule",
-  "strength": null,
-  "polarity": null,
-  "condition": "If the presentation is to be sent only to the client via unicast",
+  "strength": "MUST",
+  "polarity": "positive",
+  "condition": "If a client can start a stream",
   "condition_status": "stated",
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "client",
-  "object": "client",
+  "action": "be able to stop",
+  "object": "a stream",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -644,29 +440,29 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S07 ｜ 含条件或例外的规则 ｜ 最终状态：**待审**
+#### S05 ｜ 含条件或例外的规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `rtsp` / `rfc2326.txt` |
-| 章节 | 1.1 Purpose |
-| 原始行号 | 第 **307** 行 |
-| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
-| 条件 / 例外 | `Particularly for live presentations` / `（无）` |
+| 章节 | 1.4 Protocol Properties |
+| 原始行号 | 第 **546** 行 |
+| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`must`）|
+| 条件 / 例外 | `If basic features are disabled` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| L1 验证 | **pending** ｜ 关键词无法归一：'must' |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     304| 
-     305|    Addition of media to an existing presentation:
-     306|           Particularly for live presentations, it is useful if the
->>   307|           server can tell the client about additional media becoming
-     308|           available.
-     309| 
-     310|    RTSP requests may be handled by proxies, tunnels and caches as in
+     543| 
+     544|    Capability negotiation:
+     545|           If basic features are disabled, there must be some clean
+>>   546|           mechanism for the client to determine which methods are not
+     547|           going to be implemented. This allows clients to present the
+     548|           appropriate user interface. For example, if seeking is not
+     549|           allowed, the user interface must be able to disallow moving a
 ```
 
 **② LLM 原始抽取结果**
@@ -674,16 +470,16 @@
 ```json
 {
   "doc": "rfc2326.txt",
-  "entity": "server",
-  "meaning": "特别是在直播呈现中，服务器能够告知客户端有额外媒体变为可用是有用的。",
-  "constraint": "",
-  "span": 307,
-  "action": "",
-  "object": "",
-  "strength": "",
-  "polarity": "",
-  "keyword_raw": "",
-  "condition": "Particularly for live presentations",
+  "entity": "client",
+  "meaning": "If basic features are disabled, there must be some clean mechanism for the client to determine which methods are not going to be implemented.",
+  "constraint": "If basic features are disabled, there must be some clean mechanism for the client to determine which methods are not going to be implemented.",
+  "span": 546,
+  "action": "determine",
+  "object": "which methods are not going to be implemented",
+  "strength": "MUST",
+  "polarity": "positive",
+  "keyword_raw": "must",
+  "condition": "If basic features are disabled",
   "exception": "",
   "cross_ref": "",
   "cross_ref_status": "unknown"
@@ -697,10 +493,10 @@
   "protocol": "rtsp",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "server",
-  "action": "server",
-  "object": "server",
-  "condition": "Particularly for live presentations",
+  "subject": "client",
+  "action": "determine",
+  "object": "which methods are not going to be implemented",
+  "condition": "If basic features are disabled",
   "scope": null
 }
 ```
@@ -710,15 +506,15 @@
 ```json
 {
   "kind": "normative_rule",
-  "strength": null,
-  "polarity": null,
-  "condition": "Particularly for live presentations",
+  "strength": "MUST",
+  "polarity": "positive",
+  "condition": "If basic features are disabled",
   "condition_status": "stated",
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "server",
-  "object": "server",
+  "action": "determine",
+  "object": "which methods are not going to be implemented",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -746,7 +542,7 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S08 ｜ 跨章节引用规则 ｜ 最终状态：**待审**
+#### S06 ｜ 跨章节引用规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
@@ -777,8 +573,8 @@
 {
   "doc": "rfc2326.txt",
   "entity": "server",
-  "meaning": "服务器应当实现第 12 节描述的所有头字段",
-  "constraint": "A server SHOULD implement all header fields described in Section 12",
+  "meaning": "A server SHOULD implement all header fields described in Section 12.",
+  "constraint": "A server SHOULD implement all header fields described in Section 12.",
   "span": 582,
   "action": "implement",
   "object": "all header fields described in Section 12",
@@ -848,30 +644,30 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S09 ｜ 被 L1/L2 拒收的候选 ｜ 最终状态：**拒收**
+#### S07 ｜ 被 L1/L2 拒收的候选 ｜ 最终状态：**拒收**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `rtsp` / `rfc2326.txt` |
-| 章节 | 1.7 RTSP States |
-| 原始行号 | 第 **683** 行 |
+| 章节 | 3.6 Normal Play Time |
+| 原始行号 | 第 **923** 行 |
 | 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
-| 跨章节引用 | `Section A` ⇒ 定位 **unresolved**（章节 `None`）|
+| 跨章节引用 | （无）|
 | L1 验证 | （未进入 L1：已被拒收） |
-| 拒收原因 | ★ 可核对闸：span 所在行**不含**实体名「state transitions」（该行：transitions are described in Section A.） |
+| 拒收原因 | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「Negative values」（该行：The beginning of a presentation corresponds to 0.0 seconds. Negative） |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     680|    controlled by RTSP requests issued sequentially on different TCP
-     681|    connections. Therefore, the server needs to maintain "session state"
-     682|    to be able to correlate RTSP requests with a stream. The state
->>   683|    transitions are described in Section A.
-     684| 
-     685|    Many methods in RTSP do not contribute to state. However, the
-     686|    following play a central role in defining the allocation and usage of
+     920|    in either seconds or hours, minutes, and seconds. The part right of
+     921|    the decimal point measures fractions of a second.
+     922| 
+>>   923|    The beginning of a presentation corresponds to 0.0 seconds. Negative
+     924|    values are not defined. The special constant now is defined as the
+     925|    current instant of a live event. It may be used only for live events.
+     926| 
 ```
 
 **② LLM 原始抽取结果**
@@ -879,10 +675,10 @@
 ```json
 {
   "doc": "rfc2326.txt",
-  "entity": "state transitions",
-  "meaning": "状态转换在 Section A 中描述。",
-  "constraint": "",
-  "span": 683,
+  "entity": "Negative values",
+  "meaning": "负值未被定义。",
+  "constraint": "Negative values are not defined",
+  "span": 923,
   "action": "",
   "object": "",
   "strength": "",
@@ -890,8 +686,8 @@
   "keyword_raw": "",
   "condition": "",
   "exception": "",
-  "cross_ref": "Section A",
-  "cross_ref_status": "unresolved"
+  "cross_ref": "",
+  "cross_ref_status": "unknown"
 }
 ```
 
@@ -902,9 +698,9 @@
   "protocol": "rtsp",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "state transitions",
-  "action": "state transitions",
-  "object": "state transitions",
+  "subject": "Negative values",
+  "action": "",
+  "object": "",
   "condition": null,
   "scope": null
 }
@@ -922,10 +718,10 @@
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "state transitions",
-  "object": "state transitions",
-  "cross_ref": "Section A",
-  "cross_ref_status": "unresolved"
+  "action": "Negative values",
+  "object": "Negative values",
+  "cross_ref": null,
+  "cross_ref_status": "unknown"
 }
 ```
 
@@ -951,13 +747,13 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S10 ｜ 发生去重或多证据归并的规则 ｜ 最终状态：**待审**
+#### S08 ｜ ★ 描述性（不成规则：动作/对象缺失或为主体名占位） ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `rtsp` / `rfc2326.txt` |
-| 章节 | 1.1 Purpose |
-| 原始行号 | 第 **235** 行 |
+| 章节 | （未定位到章节标题） |
+| 原始行号 | 第 **63** 行 |
 | 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
@@ -967,13 +763,13 @@
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     232| 
-     233| 1.1 Purpose
-     234| 
->>   235|    The Real-Time Streaming Protocol (RTSP) establishes and controls
-     236|    either a single or several time-synchronized streams of continuous
-     237|    media such as audio and video. It does not typically deliver the
-     238|    continuous streams itself, although interleaving of the continuous
+      60| RFC 2326              Real Time Streaming Protocol            April 1998
+      61| 
+      62| 
+>>    63|         + 3.2 RTSP URL .............................................. 14
+      64|         + 3.3 Conference Identifiers ................................ 16
+      65|         + 3.4 Session Identifiers ................................... 16
+      66|         + 3.5 SMPTE Relative Timestamps ............................. 16
 ```
 
 **② LLM 原始抽取结果**
@@ -981,10 +777,10 @@
 ```json
 {
   "doc": "rfc2326.txt",
-  "entity": "RTSP",
-  "meaning": "RTSP establishes and controls either a single or several time-synchronized streams of continuous media such as audio and video.",
+  "entity": "RTSP URL",
+  "meaning": "文档 3.2 节标题，介绍 RTSP URL 的章节",
   "constraint": "",
-  "span": 235,
+  "span": 63,
   "action": "",
   "object": "",
   "strength": "",
@@ -1004,9 +800,9 @@
   "protocol": "rtsp",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "RTSP",
-  "action": "RTSP",
-  "object": "RTSP",
+  "subject": "RTSP URL",
+  "action": "",
+  "object": "",
   "condition": null,
   "scope": null
 }
@@ -1024,8 +820,212 @@
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "RTSP",
-  "object": "RTSP",
+  "action": "RTSP URL",
+  "object": "RTSP URL",
+  "cross_ref": null,
+  "cross_ref_status": "unknown"
+}
+```
+
+**⑥ 样本来源（可追溯）**
+
+```json
+{
+  "cache_file": "derived/cache/source_blocks/rtsp.prose.json",
+  "cache_key": "1709ccbd179a5c40eaea5902deadfffe6c74cd94588d3c0dfc8c18a39020cd32",
+  "manifest": {
+    "key": "1709ccbd179a5c40eaea5902deadfffe6c74cd94588d3c0dfc8c18a39020cd32",
+    "parser_version": "rfc-parser-v1",
+    "schema_version": "rfc-norm-schema-v1",
+    "verifier_version": "normative-verifier-v1",
+    "model": "deepseek-flash",
+    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
+  },
+  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
+}
+```
+
+| ★ 人工判定 | 错误原因 | 修改建议 |
+|---|---|---|
+| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
+
+#### S09 ｜ ★ 描述性（不成规则：动作/对象缺失或为主体名占位） ｜ 最终状态：**待审**
+
+| 项 | 内容 |
+|---|---|
+| 协议 / 文件 | `rtsp` / `rfc2326.txt` |
+| 章节 | （未定位到章节标题） |
+| 原始行号 | 第 **64** 行 |
+| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
+| 条件 / 例外 | `（无）` / `（无）` |
+| 作用域 | `（无）` |
+| 跨章节引用 | （无）|
+| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+
+**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
+
+```
+      61| 
+      62| 
+      63|         + 3.2 RTSP URL .............................................. 14
+>>    64|         + 3.3 Conference Identifiers ................................ 16
+      65|         + 3.4 Session Identifiers ................................... 16
+      66|         + 3.5 SMPTE Relative Timestamps ............................. 16
+      67|         + 3.6 Normal Play Time ...................................... 17
+```
+
+**② LLM 原始抽取结果**
+
+```json
+{
+  "doc": "rfc2326.txt",
+  "entity": "Conference Identifiers",
+  "meaning": "文档 3.3 节标题，介绍会议标识符的章节",
+  "constraint": "",
+  "span": 64,
+  "action": "",
+  "object": "",
+  "strength": "",
+  "polarity": "",
+  "keyword_raw": "",
+  "condition": "",
+  "exception": "",
+  "cross_ref": "",
+  "cross_ref_status": ""
+}
+```
+
+**③ 规范化 Rule Slot（身份）**
+
+```json
+{
+  "protocol": "rtsp",
+  "version": "1.0",
+  "kind": "normative_rule",
+  "subject": "Conference Identifiers",
+  "action": "",
+  "object": "",
+  "condition": null,
+  "scope": null
+}
+```
+
+**④ 规范化 Assertion（声明内容）**
+
+```json
+{
+  "kind": "normative_rule",
+  "strength": null,
+  "polarity": null,
+  "condition": null,
+  "condition_status": "unknown",
+  "exception": null,
+  "exception_status": "unknown",
+  "scope": null,
+  "action": "Conference Identifiers",
+  "object": "Conference Identifiers",
+  "cross_ref": null,
+  "cross_ref_status": "unknown"
+}
+```
+
+**⑥ 样本来源（可追溯）**
+
+```json
+{
+  "cache_file": "derived/cache/source_blocks/rtsp.prose.json",
+  "cache_key": "1709ccbd179a5c40eaea5902deadfffe6c74cd94588d3c0dfc8c18a39020cd32",
+  "manifest": {
+    "key": "1709ccbd179a5c40eaea5902deadfffe6c74cd94588d3c0dfc8c18a39020cd32",
+    "parser_version": "rfc-parser-v1",
+    "schema_version": "rfc-norm-schema-v1",
+    "verifier_version": "normative-verifier-v1",
+    "model": "deepseek-flash",
+    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
+  },
+  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
+}
+```
+
+| ★ 人工判定 | 错误原因 | 修改建议 |
+|---|---|---|
+| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
+
+#### S10 ｜ ★ 描述性（不成规则：动作/对象缺失或为主体名占位） ｜ 最终状态：**待审**
+
+| 项 | 内容 |
+|---|---|
+| 协议 / 文件 | `rtsp` / `rfc2326.txt` |
+| 章节 | （未定位到章节标题） |
+| 原始行号 | 第 **65** 行 |
+| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
+| 条件 / 例外 | `（无）` / `（无）` |
+| 作用域 | `（无）` |
+| 跨章节引用 | （无）|
+| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+
+**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
+
+```
+      62| 
+      63|         + 3.2 RTSP URL .............................................. 14
+      64|         + 3.3 Conference Identifiers ................................ 16
+>>    65|         + 3.4 Session Identifiers ................................... 16
+      66|         + 3.5 SMPTE Relative Timestamps ............................. 16
+      67|         + 3.6 Normal Play Time ...................................... 17
+      68|         + 3.7 Absolute Time ......................................... 18
+```
+
+**② LLM 原始抽取结果**
+
+```json
+{
+  "doc": "rfc2326.txt",
+  "entity": "Session Identifiers",
+  "meaning": "文档 3.4 节标题，介绍会话标识符的章节",
+  "constraint": "",
+  "span": 65,
+  "action": "",
+  "object": "",
+  "strength": "",
+  "polarity": "",
+  "keyword_raw": "",
+  "condition": "",
+  "exception": "",
+  "cross_ref": "",
+  "cross_ref_status": ""
+}
+```
+
+**③ 规范化 Rule Slot（身份）**
+
+```json
+{
+  "protocol": "rtsp",
+  "version": "1.0",
+  "kind": "normative_rule",
+  "subject": "Session Identifiers",
+  "action": "",
+  "object": "",
+  "condition": null,
+  "scope": null
+}
+```
+
+**④ 规范化 Assertion（声明内容）**
+
+```json
+{
+  "kind": "normative_rule",
+  "strength": null,
+  "polarity": null,
+  "condition": null,
+  "condition_status": "unknown",
+  "exception": null,
+  "exception_status": "unknown",
+  "scope": null,
+  "action": "Session Identifiers",
+  "object": "Session Identifiers",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -1061,9 +1061,9 @@
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `sip` / `rfc3261.txt` |
-| 章节 | 6 Definitions |
-| 原始行号 | 第 **1113** 行 |
-| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`must`）|
+| 章节 | 7 SIP Messages |
+| 原始行号 | 第 **1480** 行 |
+| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`MUST`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
@@ -1072,13 +1072,13 @@
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-    1110|          user agent server (UAS).  In order to determine how the request
-    1111|          should be answered, it acts as a user agent client (UAC) and
-    1112|          generates requests.  Unlike a proxy server, it maintains dialog
->>  1113|          state and must participate in all requests sent on the dialogs
-    1114|          it has established.  Since it is a concatenation of a UAC and
-    1115|          UAS, no explicit definitions are needed for its behavior.
-    1116| 
+    1477|                              [ message-body ]
+    1478|          start-line       =  Request-Line / Status-Line
+    1479| 
+>>  1480|    The start-line, each message-header line, and the empty line MUST be
+    1481|    terminated by a carriage-return line-feed sequence (CRLF).  Note that
+    1482|    the empty line MUST be present even if the message-body is not.
+    1483| 
 ```
 
 **② LLM 原始抽取结果**
@@ -1086,15 +1086,15 @@
 ```json
 {
   "doc": "rfc3261.txt",
-  "entity": "dialogs",
-  "meaning": "B2BUA 必须参与它已建立的 dialog 上发送的所有请求",
-  "constraint": "B2BUA 必须参与它已建立的 dialog 上发送的所有请求",
-  "span": 1113,
-  "action": "participate in",
-  "object": "all requests sent on the dialogs it has established",
+  "entity": "start-line",
+  "meaning": "The start-line, each message-header line, and the empty line MUST be terminated by a carriage-return line-feed sequence (CRLF).",
+  "constraint": "The start-line, each message-header line, and the empty line MUST be terminated by a carriage-return line-feed sequence (CRLF)",
+  "span": 1480,
+  "action": "be terminated by",
+  "object": "carriage-return line-feed sequence (CRLF)",
   "strength": "MUST",
   "polarity": "positive",
-  "keyword_raw": "must",
+  "keyword_raw": "MUST",
   "condition": "",
   "exception": "",
   "cross_ref": "",
@@ -1109,9 +1109,9 @@
   "protocol": "sip",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "dialogs",
-  "action": "participate in",
-  "object": "all requests sent on the dialogs it has established",
+  "subject": "start-line",
+  "action": "be terminated by",
+  "object": "carriage-return line-feed sequence (CRLF)",
   "condition": null,
   "scope": null
 }
@@ -1129,8 +1129,8 @@
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "participate in",
-  "object": "all requests sent on the dialogs it has established",
+  "action": "be terminated by",
+  "object": "carriage-return line-feed sequence (CRLF)",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -1163,108 +1163,6 @@
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `sip` / `rfc3261.txt` |
-| 章节 | 7 SIP Messages |
-| 原始行号 | 第 **1480** 行 |
-| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`MUST`）|
-| 条件 / 例外 | `（无）` / `（无）` |
-| 作用域 | `（无）` |
-| 跨章节引用 | （无）|
-| L1 验证 | **confirmed** ｜  |
-
-**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
-
-```
-    1477|                              [ message-body ]
-    1478|          start-line       =  Request-Line / Status-Line
-    1479| 
->>  1480|    The start-line, each message-header line, and the empty line MUST be
-    1481|    terminated by a carriage-return line-feed sequence (CRLF).  Note that
-    1482|    the empty line MUST be present even if the message-body is not.
-    1483| 
-```
-
-**② LLM 原始抽取结果**
-
-```json
-{
-  "doc": "rfc3261.txt",
-  "entity": "start-line",
-  "meaning": "The start-line, each message-header line, and the empty line MUST be terminated by a carriage-return line-feed sequence (CRLF).",
-  "constraint": "MUST be terminated by a carriage-return line-feed sequence (CRLF)",
-  "span": 1480,
-  "action": "terminated by",
-  "object": "carriage-return line-feed sequence (CRLF)",
-  "strength": "MUST",
-  "polarity": "positive",
-  "keyword_raw": "MUST",
-  "condition": "",
-  "exception": "",
-  "cross_ref": "",
-  "cross_ref_status": "unknown"
-}
-```
-
-**③ 规范化 Rule Slot（身份）**
-
-```json
-{
-  "protocol": "sip",
-  "version": "1.0",
-  "kind": "normative_rule",
-  "subject": "start-line",
-  "action": "terminated by",
-  "object": "carriage-return line-feed sequence (CRLF)",
-  "condition": null,
-  "scope": null
-}
-```
-
-**④ 规范化 Assertion（声明内容）**
-
-```json
-{
-  "kind": "normative_rule",
-  "strength": "MUST",
-  "polarity": "positive",
-  "condition": null,
-  "condition_status": "unknown",
-  "exception": null,
-  "exception_status": "unknown",
-  "scope": null,
-  "action": "terminated by",
-  "object": "carriage-return line-feed sequence (CRLF)",
-  "cross_ref": null,
-  "cross_ref_status": "unknown"
-}
-```
-
-**⑥ 样本来源（可追溯）**
-
-```json
-{
-  "cache_file": "derived/cache/source_blocks/sip.prose.json",
-  "cache_key": "0dbd6a25bf72ddc41ebb56fe3f9deed124d3c813aba8d2c627e327bd92b62c66",
-  "manifest": {
-    "key": "0dbd6a25bf72ddc41ebb56fe3f9deed124d3c813aba8d2c627e327bd92b62c66",
-    "parser_version": "rfc-parser-v1",
-    "schema_version": "rfc-norm-schema-v1",
-    "verifier_version": "normative-verifier-v1",
-    "model": "deepseek-flash",
-    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
-  },
-  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
-}
-```
-
-| ★ 人工判定 | 错误原因 | 修改建议 |
-|---|---|---|
-| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
-
-#### S13 ｜ 已确认强度的规范规则 ｜ 最终状态：**确认**
-
-| 项 | 内容 |
-|---|---|
-| 协议 / 文件 | `sip` / `rfc3261.txt` |
 | 章节 | 7.1 Requests |
 | 原始行号 | 第 **1538** 行 |
 | 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`MUST`）|
@@ -1291,7 +1189,7 @@
 {
   "doc": "rfc3261.txt",
   "entity": "implementations",
-  "meaning": "实现必须发送大写的 SIP-Version。",
+  "meaning": "实现必须发送大写的 SIP-Version 字符串。",
   "constraint": "implementations MUST send upper-case.",
   "span": 1538,
   "action": "send",
@@ -1362,29 +1260,29 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S14 ｜ 强度未知（被隔离）候选 ｜ 最终状态：**待审**
+#### S13 ｜ 已确认强度的规范规则 ｜ 最终状态：**确认**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `sip` / `rfc3261.txt` |
-| 章节 | 2 Overview of SIP Functionality |
-| 原始行号 | 第 **511** 行 |
-| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
+| 章节 | 7.3.1 Header Field Format |
+| 原始行号 | 第 **1691** 行 |
+| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`MUST`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| L1 验证 | **confirmed** ｜  |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     508| RFC 3261            SIP: Session Initiation Protocol           June 2002
-     509| 
-     510| 
->>   511|    Gateway Control Protocol (MEGACO) (RFC 3015 [30]) for controlling
-     512|    gateways to the Public Switched Telephone Network (PSTN), and the
-     513|    Session Description Protocol (SDP) (RFC 2327 [1]) for describing
-     514|    multimedia sessions.  Therefore, SIP should be used in conjunction
+    1688|    their grammar does not follow the general form listed in Section 7.3,
+    1689|    they MUST NOT be combined into a single header field row.
+    1690| 
+>>  1691|    Implementations MUST be able to process multiple header field rows
+    1692|    with the same name in any combination of the single-value-per-line or
+    1693|    comma-separated value forms.
+    1694| 
 ```
 
 **② LLM 原始抽取结果**
@@ -1392,19 +1290,19 @@
 ```json
 {
   "doc": "rfc3261.txt",
-  "entity": "MEGACO",
-  "meaning": "Gateway Control Protocol used for controlling gateways to the PSTN.",
-  "constraint": "",
-  "span": 511,
-  "action": "",
-  "object": "",
-  "strength": "",
-  "polarity": "",
-  "keyword_raw": "",
+  "entity": "Implementations",
+  "meaning": "实现必须能处理同名且任意混合使用单值每行与逗号分隔值形式的多个头域行",
+  "constraint": "MUST be able to process multiple header field rows with the same name in any combination of the single-value-per-line or comma-separated value forms",
+  "span": 1691,
+  "action": "process",
+  "object": "multiple header field rows with the same name in any combination of the single-value-per-line or comma-separated value forms",
+  "strength": "MUST",
+  "polarity": "positive",
+  "keyword_raw": "MUST",
   "condition": "",
   "exception": "",
   "cross_ref": "",
-  "cross_ref_status": ""
+  "cross_ref_status": "unknown"
 }
 ```
 
@@ -1415,9 +1313,111 @@
   "protocol": "sip",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "MEGACO",
-  "action": "MEGACO",
-  "object": "MEGACO",
+  "subject": "Implementations",
+  "action": "process",
+  "object": "multiple header field rows with the same name in any combination of the single-value-per-line or comma-separated value forms",
+  "condition": null,
+  "scope": null
+}
+```
+
+**④ 规范化 Assertion（声明内容）**
+
+```json
+{
+  "kind": "normative_rule",
+  "strength": "MUST",
+  "polarity": "positive",
+  "condition": null,
+  "condition_status": "unknown",
+  "exception": null,
+  "exception_status": "unknown",
+  "scope": null,
+  "action": "process",
+  "object": "multiple header field rows with the same name in any combination of the single-value-per-line or comma-separated value forms",
+  "cross_ref": null,
+  "cross_ref_status": "unknown"
+}
+```
+
+**⑥ 样本来源（可追溯）**
+
+```json
+{
+  "cache_file": "derived/cache/source_blocks/sip.prose.json",
+  "cache_key": "0dbd6a25bf72ddc41ebb56fe3f9deed124d3c813aba8d2c627e327bd92b62c66",
+  "manifest": {
+    "key": "0dbd6a25bf72ddc41ebb56fe3f9deed124d3c813aba8d2c627e327bd92b62c66",
+    "parser_version": "rfc-parser-v1",
+    "schema_version": "rfc-norm-schema-v1",
+    "verifier_version": "normative-verifier-v1",
+    "model": "deepseek-flash",
+    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
+  },
+  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
+}
+```
+
+| ★ 人工判定 | 错误原因 | 修改建议 |
+|---|---|---|
+| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
+
+#### S14 ｜ 强度未知（被隔离）候选 ｜ 最终状态：**待审**
+
+| 项 | 内容 |
+|---|---|
+| 协议 / 文件 | `sip` / `rfc3261.txt` |
+| 章节 | 7.1 Requests |
+| 原始行号 | 第 **1498** 行 |
+| 强度 / 极性 | `None` / `negative`（原文等级措辞：`（无）`）|
+| 条件 / 例外 | `（无）` / `（无）` |
+| 作用域 | `（无）` |
+| 跨章节引用 | （无）|
+| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性为 negative，但证据文本里没有否定词 |
+
+**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
+
+```
+    1495|    protocol version separated by a single space (SP) character.
+    1496| 
+    1497|    The Request-Line ends with CRLF.  No CR or LF are allowed except in
+>>  1498|    the end-of-line CRLF sequence.  No linear whitespace (LWS) is allowed
+    1499|    in any of the elements.
+    1500| 
+    1501|          Request-Line  =  Method SP Request-URI SP SIP-Version CRLF
+```
+
+**② LLM 原始抽取结果**
+
+```json
+{
+  "doc": "rfc3261.txt",
+  "entity": "LWS",
+  "meaning": "线性空白（LWS）在请求行各元素中都不允许出现。",
+  "constraint": "No linear whitespace (LWS) is allowed in any of the elements.",
+  "span": 1498,
+  "action": "be allowed",
+  "object": "linear whitespace (LWS) in any of the elements",
+  "strength": "",
+  "polarity": "negative",
+  "keyword_raw": "",
+  "condition": "",
+  "exception": "",
+  "cross_ref": "",
+  "cross_ref_status": "unknown"
+}
+```
+
+**③ 规范化 Rule Slot（身份）**
+
+```json
+{
+  "protocol": "sip",
+  "version": "1.0",
+  "kind": "normative_rule",
+  "subject": "LWS",
+  "action": "be allowed",
+  "object": "linear whitespace (LWS) in any of the elements",
   "condition": null,
   "scope": null
 }
@@ -1429,14 +1429,14 @@
 {
   "kind": "normative_rule",
   "strength": null,
-  "polarity": null,
+  "polarity": "negative",
   "condition": null,
   "condition_status": "unknown",
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "MEGACO",
-  "object": "MEGACO",
+  "action": "be allowed",
+  "object": "linear whitespace (LWS) in any of the elements",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -1469,24 +1469,24 @@
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `sip` / `rfc3261.txt` |
-| 章节 | 2 Overview of SIP Functionality |
-| 原始行号 | 第 **526** 行 |
-| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
+| 章节 | 7.2 Responses |
+| 原始行号 | 第 **1559** 行 |
+| 强度 / 极性 | `None` / `negative`（原文等级措辞：`（无）`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；规范强度未知 ⇒ 不得凭推测赋值 ⇒ 待审 |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     523|    SDP, for instance, the endpoints can agree on the parameters of a
-     524|    session.  If the same primitive is used to deliver a photo of the
-     525|    caller as well as the session description, a "caller ID" service can
->>   526|    be easily implemented.  As this example shows, a single primitive is
-     527|    typically used to provide several different services.
-     528| 
-     529|    SIP does not offer conference control services such as floor control
+    1556|    Reason-Phrase is intended to give a short textual description of the
+    1557|    Status-Code.  The Status-Code is intended for use by automata,
+    1558|    whereas the Reason-Phrase is intended for the human user.  A client
+>>  1559|    is not required to examine or display the Reason-Phrase.
+    1560| 
+    1561|    While this specification suggests specific wording for the reason
+    1562|    phrase, implementations MAY choose other text, for example, in the
 ```
 
 **② LLM 原始抽取结果**
@@ -1494,19 +1494,19 @@
 ```json
 {
   "doc": "rfc3261.txt",
-  "entity": "primitive",
-  "meaning": "A single primitive is typically used to provide several different services.",
-  "constraint": "",
-  "span": 526,
-  "action": "",
-  "object": "",
+  "entity": "client",
+  "meaning": "A client is not required to examine or display the Reason-Phrase.",
+  "constraint": "A client is not required to examine or display the Reason-Phrase.",
+  "span": 1559,
+  "action": "examine or display",
+  "object": "Reason-Phrase",
   "strength": "",
-  "polarity": "",
+  "polarity": "negative",
   "keyword_raw": "",
   "condition": "",
   "exception": "",
   "cross_ref": "",
-  "cross_ref_status": ""
+  "cross_ref_status": "unknown"
 }
 ```
 
@@ -1517,9 +1517,9 @@
   "protocol": "sip",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "primitive",
-  "action": "primitive",
-  "object": "primitive",
+  "subject": "client",
+  "action": "examine or display",
+  "object": "Reason-Phrase",
   "condition": null,
   "scope": null
 }
@@ -1531,14 +1531,14 @@
 {
   "kind": "normative_rule",
   "strength": null,
-  "polarity": null,
+  "polarity": "negative",
   "condition": null,
   "condition_status": "unknown",
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "primitive",
-  "object": "primitive",
+  "action": "examine or display",
+  "object": "Reason-Phrase",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -1598,10 +1598,10 @@
   "doc": "rfc3261.txt",
   "entity": "empty line",
   "meaning": "The empty line MUST be present even if the message-body is not.",
-  "constraint": "MUST be present even if the message-body is not",
+  "constraint": "the empty line MUST be present even if the message-body is not",
   "span": 1482,
   "action": "be present",
-  "object": "empty line",
+  "object": "the empty line",
   "strength": "MUST",
   "polarity": "positive",
   "keyword_raw": "MUST",
@@ -1621,7 +1621,7 @@
   "kind": "normative_rule",
   "subject": "empty line",
   "action": "be present",
-  "object": "empty line",
+  "object": "the empty line",
   "condition": "even if the message-body is not",
   "scope": null
 }
@@ -1640,7 +1640,7 @@
   "exception_status": "unknown",
   "scope": null,
   "action": "be present",
-  "object": "empty line",
+  "object": "the empty line",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -1668,29 +1668,29 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S17 ｜ 含条件或例外的规则 ｜ 最终状态：**确认**
+#### S17 ｜ 含条件或例外的规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `sip` / `rfc3261.txt` |
 | 章节 | 7.1 Requests |
-| 原始行号 | 第 **1507** 行 |
-| 强度 / 极性 | `MAY` / `positive`（原文等级措辞：`may`）|
-| 条件 / 例外 | `documented in standards track RFCs` / `（无）` |
+| 原始行号 | 第 **1497** 行 |
+| 强度 / 极性 | `None` / `negative`（原文等级措辞：`（无）`）|
+| 条件 / 例外 | `（无）` / `except in the end-of-line CRLF sequence` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **confirmed** ｜  |
+| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性为 negative，但证据文本里没有否定词 |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-    1504|            registering contact information, INVITE, ACK, and CANCEL for
-    1505|            setting up sessions, BYE for terminating sessions, and
-    1506|            OPTIONS for querying servers about their capabilities.  SIP
->>  1507|            extensions, documented in standards track RFCs, may define
-    1508|            additional methods.
-    1509| 
-    1510| 
+    1494|    line.  A Request-Line contains a method name, a Request-URI, and the
+    1495|    protocol version separated by a single space (SP) character.
+    1496| 
+>>  1497|    The Request-Line ends with CRLF.  No CR or LF are allowed except in
+    1498|    the end-of-line CRLF sequence.  No linear whitespace (LWS) is allowed
+    1499|    in any of the elements.
+    1500| 
 ```
 
 **② LLM 原始抽取结果**
@@ -1698,17 +1698,17 @@
 ```json
 {
   "doc": "rfc3261.txt",
-  "entity": "extensions",
-  "meaning": "记录在标准轨道 RFC 中的 SIP 扩展可以定义额外的方法。",
-  "constraint": "",
-  "span": 1507,
-  "action": "define",
-  "object": "additional methods",
-  "strength": "MAY",
-  "polarity": "positive",
-  "keyword_raw": "may",
-  "condition": "documented in standards track RFCs",
-  "exception": "",
+  "entity": "Request-Line",
+  "meaning": "请求行以 CRLF 结尾，且除行尾 CRLF 序列外不得包含 CR 或 LF，元素中不得出现线性空白（LWS）。",
+  "constraint": "No CR or LF are allowed except in the end-of-line CRLF sequence. No linear whitespace (LWS) is allowed in any of the elements.",
+  "span": 1497,
+  "action": "contain",
+  "object": "CR or LF",
+  "strength": "",
+  "polarity": "negative",
+  "keyword_raw": "",
+  "condition": "",
+  "exception": "except in the end-of-line CRLF sequence",
   "cross_ref": "",
   "cross_ref_status": "unknown"
 }
@@ -1721,10 +1721,10 @@
   "protocol": "sip",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "extensions",
-  "action": "define",
-  "object": "additional methods",
-  "condition": "documented in standards track RFCs",
+  "subject": "Request-Line",
+  "action": "contain",
+  "object": "CR or LF",
+  "condition": null,
   "scope": null
 }
 ```
@@ -1734,15 +1734,15 @@
 ```json
 {
   "kind": "normative_rule",
-  "strength": "MAY",
-  "polarity": "positive",
-  "condition": "documented in standards track RFCs",
-  "condition_status": "stated",
-  "exception": null,
-  "exception_status": "unknown",
+  "strength": null,
+  "polarity": "negative",
+  "condition": null,
+  "condition_status": "unknown",
+  "exception": "except in the end-of-line CRLF sequence",
+  "exception_status": "stated",
   "scope": null,
-  "action": "define",
-  "object": "additional methods",
+  "action": "contain",
+  "object": "CR or LF",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -1778,7 +1778,7 @@
 | 章节 | 7.3.1 Header Field Format |
 | 原始行号 | 第 **1670** 行 |
 | 强度 / 极性 | `MAY` / `positive`（原文等级措辞：`MAY`）|
-| 条件 / 例外 | `if and only if the entire field-value for that header field is defined as a comma-separated list` / `WWW-Authenticate, Authorization, Proxy-Authenticate, and Proxy-Authorization header fields` |
+| 条件 / 例外 | `if and only if the entire field-value for that header field is defined as a comma-separated list (that is, if follows the grammar defined in Section 7.3)` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | `Section 7.3` ⇒ 定位 **resolved**（章节 `7.3`）|
 | L1 验证 | **pending** ｜ 存在跨节引用但无法定位 ⇒ 待审 |
@@ -1800,17 +1800,17 @@
 ```json
 {
   "doc": "rfc3261.txt",
-  "entity": "header field rows",
-  "meaning": "Multiple header field rows with the same field-name MAY be present in a message if and only if the entire field-value for that header field is defined as a comma-separated list.",
-  "constraint": "Multiple header field rows with the same field-name MAY be present in a message if and only if the entire field-value for that header field is defined as a comma-separated list.",
+  "entity": "Multiple header field rows",
+  "meaning": "Multiple header field rows with the same field-name MAY be present in a message if and only if the entire field-value for that header field is defined as a comma-separated list following the grammar in Section 7.3.",
+  "constraint": "may be present only if the entire field-value is defined as a comma-separated list",
   "span": 1670,
-  "action": "be present",
-  "object": "in a message",
+  "action": "be present in a message",
+  "object": "Multiple header field rows with the same field-name",
   "strength": "MAY",
   "polarity": "positive",
   "keyword_raw": "MAY",
-  "condition": "if and only if the entire field-value for that header field is defined as a comma-separated list",
-  "exception": "WWW-Authenticate, Authorization, Proxy-Authenticate, and Proxy-Authorization header fields",
+  "condition": "if and only if the entire field-value for that header field is defined as a comma-separated list (that is, if follows the grammar defined in Section 7.3)",
+  "exception": "",
   "cross_ref": "Section 7.3",
   "cross_ref_status": "unresolved"
 }
@@ -1823,10 +1823,10 @@
   "protocol": "sip",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "header field rows",
-  "action": "be present",
-  "object": "in a message",
-  "condition": "if and only if the entire field-value for that header field is defined as a comma-separated list",
+  "subject": "Multiple header field rows",
+  "action": "be present in a message",
+  "object": "Multiple header field rows with the same field-name",
+  "condition": "if and only if the entire field-value for that header field is defined as a comma-separated list (that is, if follows the grammar defined in Section 7.3)",
   "scope": null
 }
 ```
@@ -1838,13 +1838,13 @@
   "kind": "normative_rule",
   "strength": "MAY",
   "polarity": "positive",
-  "condition": "if and only if the entire field-value for that header field is defined as a comma-separated list",
+  "condition": "if and only if the entire field-value for that header field is defined as a comma-separated list (that is, if follows the grammar defined in Section 7.3)",
   "condition_status": "stated",
-  "exception": "WWW-Authenticate, Authorization, Proxy-Authenticate, and Proxy-Authorization header fields",
-  "exception_status": "stated",
+  "exception": null,
+  "exception_status": "unknown",
   "scope": null,
-  "action": "be present",
-  "object": "in a message",
+  "action": "be present in a message",
+  "object": "Multiple header field rows with the same field-name",
   "cross_ref": "Section 7.3",
   "cross_ref_status": "unresolved"
 }
@@ -1877,25 +1877,25 @@
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `sip` / `rfc3261.txt` |
-| 章节 | 5 Structure of the Protocol |
-| 原始行号 | 第 **1072** 行 |
+| 章节 | 1 Introduction |
+| 原始行号 | 第 **446** 行 |
 | 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
 | L1 验证 | （未进入 L1：已被拒收） |
-| 拒收原因 | ★ 可核对闸：span 所在行**不含**实体名「dialog」（该行：peer-to-peer SIP relationship between two user agents that persists） |
+| 拒收原因 | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「Session Initiation Protocol (SIP)」（该行：Initiation Protocol (SIP) works in concert with these protocols by） |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-    1069| 
-    1070| 
-    1071|    Certain other requests are sent within a dialog.  A dialog is a
->>  1072|    peer-to-peer SIP relationship between two user agents that persists
-    1073|    for some time.  The dialog facilitates sequencing of messages and
-    1074|    proper routing of requests between the user agents.  The INVITE
-    1075|    method is the only way defined in this specification to establish a
+     443|    different media - sometimes simultaneously.  Numerous protocols have
+     444|    been authored that carry various forms of real-time multimedia
+     445|    session data such as voice, video, or text messages.  The Session
+>>   446|    Initiation Protocol (SIP) works in concert with these protocols by
+     447| 
+     448| 
+     449| 
 ```
 
 **② LLM 原始抽取结果**
@@ -1903,10 +1903,10 @@
 ```json
 {
   "doc": "rfc3261.txt",
-  "entity": "dialog",
-  "meaning": "dialog 是两个用户代理之间点对点的 SIP 关系，并会持续一段时间",
+  "entity": "Session Initiation Protocol (SIP)",
+  "meaning": "Session Initiation Protocol (SIP) 与承载实时多媒体会话数据的其他协议协同工作",
   "constraint": "",
-  "span": 1072,
+  "span": 446,
   "action": "",
   "object": "",
   "strength": "",
@@ -1926,9 +1926,9 @@
   "protocol": "sip",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "dialog",
-  "action": "dialog",
-  "object": "dialog",
+  "subject": "Session Initiation Protocol (SIP)",
+  "action": "",
+  "object": "",
   "condition": null,
   "scope": null
 }
@@ -1946,8 +1946,8 @@
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "dialog",
-  "object": "dialog",
+  "action": "Session Initiation Protocol (SIP)",
+  "object": "Session Initiation Protocol (SIP)",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -1975,13 +1975,13 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S20 ｜ 发生去重或多证据归并的规则 ｜ 最终状态：**待审**
+#### S20 ｜ ★ 描述性（不成规则：动作/对象缺失或为主体名占位） ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `sip` / `rfc3261.txt` |
 | 章节 | 1 Introduction |
-| 原始行号 | 第 **446** 行 |
+| 原始行号 | 第 **438** 行 |
 | 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
@@ -1991,13 +1991,13 @@
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     443|    different media - sometimes simultaneously.  Numerous protocols have
-     444|    been authored that carry various forms of real-time multimedia
-     445|    session data such as voice, video, or text messages.  The Session
->>   446|    Initiation Protocol (SIP) works in concert with these protocols by
-     447| 
-     448| 
-     449| 
+     435| 1 Introduction
+     436| 
+     437|    There are many applications of the Internet that require the creation
+>>   438|    and management of a session, where a session is considered an
+     439|    exchange of data between an association of participants.  The
+     440|    implementation of these applications is complicated by the practices
+     441|    of participants: users may move between endpoints, they may be
 ```
 
 **② LLM 原始抽取结果**
@@ -2005,10 +2005,10 @@
 ```json
 {
   "doc": "rfc3261.txt",
-  "entity": "SIP",
-  "meaning": "SIP works in concert with protocols that carry real-time multimedia session data such as voice, video, or text messages.",
+  "entity": "session",
+  "meaning": "片段将 session 描述为参与者关联之间的一次数据交换",
   "constraint": "",
-  "span": 446,
+  "span": 438,
   "action": "",
   "object": "",
   "strength": "",
@@ -2017,7 +2017,7 @@
   "condition": "",
   "exception": "",
   "cross_ref": "",
-  "cross_ref_status": ""
+  "cross_ref_status": "unknown"
 }
 ```
 
@@ -2028,9 +2028,9 @@
   "protocol": "sip",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "SIP",
-  "action": "SIP",
-  "object": "SIP",
+  "subject": "session",
+  "action": "",
+  "object": "",
   "condition": null,
   "scope": null
 }
@@ -2048,8 +2048,8 @@
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "SIP",
-  "object": "SIP",
+  "action": "session",
+  "object": "session",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -2111,7 +2111,7 @@
 {
   "doc": "rfc3207.txt",
   "entity": "client",
-  "meaning": "The client and server MUST know whether a TLS session is active.",
+  "meaning": "客户端与服务器都必须知道当前是否有活动的 TLS 会话。",
   "constraint": "Both the client and the server MUST know if there is a TLS session active.",
   "span": 235,
   "action": "know",
@@ -2182,7 +2182,7 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S22 ｜ 已确认强度的规范规则 ｜ 最终状态：**确认**
+#### S22 ｜ 已确认强度的规范规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
@@ -2193,7 +2193,7 @@
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **confirmed** ｜  |
+| L1 验证 | **pending** ｜ 关键词无法归一：'must' |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
@@ -2213,7 +2213,7 @@
 {
   "doc": "rfc3207.txt",
   "entity": "SMTP client",
-  "meaning": "The SMTP client and server must check the result of TLS negotiation to see whether an acceptable degree of authentication and privacy was achieved.",
+  "meaning": "SMTP 客户端与服务器都必须检查 TLS 协商结果，以确认是否达到可接受的认证与隐私程度。",
   "constraint": "Both the SMTP client and server must check the result of the TLS negotiation to see whether an acceptable degree of authentication and privacy was achieved.",
   "span": 292,
   "action": "check",
@@ -2288,9 +2288,9 @@
 
 | 项 | 内容 |
 |---|---|
-| 协议 / 文件 | `smtp` / `rfc3207.txt` |
-| 章节 | 4.3 STARTTLS on the Submission Port |
-| 原始行号 | 第 **313** 行 |
+| 协议 / 文件 | `smtp` / `rfc4954.txt` |
+| 章节 | （未定位到章节标题） |
+| 原始行号 | 第 **247** 行 |
 | 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`MUST`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
@@ -2300,26 +2300,26 @@
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     310|    to allow the server to announce its STARTTLS capability, but to alter
-     311|    the client's request to start TLS and the server's response.  In
-     312|    order to defend against such attacks both clients and servers MUST be
->>   313|    able to be configured to require successful TLS negotiation of an
-     314|    appropriate cipher suite for selected hosts before messages can be
-     315|    successfully transferred.  The additional option of using TLS when
-     316|    possible SHOULD also be provided.  An implementation MAY provide the
+     244|           "AAA=BBB" are not allowed).
+     245| 
+     246|           Note that these [BASE64] strings can be much longer than
+>>   247|           normal SMTP commands.  Clients and servers MUST be able to
+     248|           handle the maximum encoded size of challenges and responses
+     249|           generated by their supported authentication mechanisms.  This
+     250|           requirement is independent of any line length limitations the
 ```
 
 **② LLM 原始抽取结果**
 
 ```json
 {
-  "doc": "rfc3207.txt",
-  "entity": "TLS negotiation",
-  "meaning": "为防御此类攻击，客户端与服务器必须能够被配置为：在消息成功传输前，要求对选定主机完成适当密码套件的成功 TLS 协商",
-  "constraint": "both clients and servers MUST be able to be configured to require successful TLS negotiation of an appropriate cipher suite for selected hosts before messages can be successfully transferred",
-  "span": 313,
-  "action": "be able to be configured to require",
-  "object": "successful TLS negotiation of an appropriate cipher suite for selected hosts before messages can be successfully transferred",
+  "doc": "rfc4954.txt",
+  "entity": "Clients and servers",
+  "meaning": "Clients and servers must handle the maximum encoded size of challenges and responses generated by their supported authentication mechanisms.",
+  "constraint": "MUST be able to handle the maximum encoded size of challenges and responses generated by their supported authentication mechanisms",
+  "span": 247,
+  "action": "handle",
+  "object": "the maximum encoded size of challenges and responses generated by their supported authentication mechanisms",
   "strength": "MUST",
   "polarity": "positive",
   "keyword_raw": "MUST",
@@ -2337,9 +2337,9 @@
   "protocol": "smtp",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "TLS negotiation",
-  "action": "be able to be configured to require",
-  "object": "successful TLS negotiation of an appropriate cipher suite for selected hosts before messages can be successfully transferred",
+  "subject": "Clients and servers",
+  "action": "handle",
+  "object": "the maximum encoded size of challenges and responses generated by their supported authentication mechanisms",
   "condition": null,
   "scope": null
 }
@@ -2357,8 +2357,8 @@
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "be able to be configured to require",
-  "object": "successful TLS negotiation of an appropriate cipher suite for selected hosts before messages can be successfully transferred",
+  "action": "handle",
+  "object": "the maximum encoded size of challenges and responses generated by their supported authentication mechanisms",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -2386,7 +2386,313 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S24 ｜ 强度未知（被隔离）候选 ｜ 最终状态：**待审**
+#### S24 ｜ 含条件或例外的规则 ｜ 最终状态：**待审**
+
+| 项 | 内容 |
+|---|---|
+| 协议 / 文件 | `smtp` / `rfc3207.txt` |
+| 章节 | 454 TLS not available due to temporary reason |
+| 原始行号 | 第 **119** 行 |
+| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`must`）|
+| 条件 / 例外 | `If the client receives the 454 response` / `（无）` |
+| 作用域 | `（无）` |
+| 跨章节引用 | （无）|
+| L1 验证 | **pending** ｜ 关键词无法归一：'must' |
+
+**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
+
+```
+     116| RFC 3207     SMTP Service Extension - Secure SMTP over TLS February 2002
+     117| 
+     118| 
+>>   119|    If the client receives the 454 response, the client must decide
+     120|    whether or not to continue the SMTP session.  Such a decision is
+     121|    based on local policy.  For instance, if TLS was being used for
+     122|    client authentication, the client might try to continue the session,
+```
+
+**② LLM 原始抽取结果**
+
+```json
+{
+  "doc": "rfc3207.txt",
+  "entity": "client",
+  "meaning": "Upon receiving a 454 response, the client must decide whether or not to continue the SMTP session.",
+  "constraint": "must decide whether or not to continue the SMTP session",
+  "span": 119,
+  "action": "decide whether or not to continue",
+  "object": "the SMTP session",
+  "strength": "MUST",
+  "polarity": "positive",
+  "keyword_raw": "must",
+  "condition": "If the client receives the 454 response",
+  "exception": "",
+  "cross_ref": "",
+  "cross_ref_status": "unknown"
+}
+```
+
+**③ 规范化 Rule Slot（身份）**
+
+```json
+{
+  "protocol": "smtp",
+  "version": "1.0",
+  "kind": "normative_rule",
+  "subject": "client",
+  "action": "decide whether or not to continue",
+  "object": "the SMTP session",
+  "condition": "If the client receives the 454 response",
+  "scope": null
+}
+```
+
+**④ 规范化 Assertion（声明内容）**
+
+```json
+{
+  "kind": "normative_rule",
+  "strength": "MUST",
+  "polarity": "positive",
+  "condition": "If the client receives the 454 response",
+  "condition_status": "stated",
+  "exception": null,
+  "exception_status": "unknown",
+  "scope": null,
+  "action": "decide whether or not to continue",
+  "object": "the SMTP session",
+  "cross_ref": null,
+  "cross_ref_status": "unknown"
+}
+```
+
+**⑥ 样本来源（可追溯）**
+
+```json
+{
+  "cache_file": "derived/cache/source_blocks/smtp.prose.json",
+  "cache_key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
+  "manifest": {
+    "key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
+    "parser_version": "rfc-parser-v1",
+    "schema_version": "rfc-norm-schema-v1",
+    "verifier_version": "normative-verifier-v1",
+    "model": "deepseek-flash",
+    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
+  },
+  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
+}
+```
+
+| ★ 人工判定 | 错误原因 | 修改建议 |
+|---|---|---|
+| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
+
+#### S25 ｜ 含条件或例外的规则 ｜ 最终状态：**待审**
+
+| 项 | 内容 |
+|---|---|
+| 协议 / 文件 | `smtp` / `rfc3207.txt` |
+| 章节 | 454 TLS not available due to temporary reason |
+| 原始行号 | 第 **139** 行 |
+| 强度 / 极性 | `MAY` / `positive`（原文等级措辞：`may`）|
+| 条件 / 例外 | `that is not publicly referenced` / `（无）` |
+| 作用域 | `（无）` |
+| 跨章节引用 | （无）|
+| L1 验证 | **pending** ｜ 关键词无法归一：'may' |
+
+**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
+
+```
+     136|    address.
+     137| 
+     138|    Any SMTP server may refuse to accept messages for relay based on
+>>   139|    authentication supplied during the TLS negotiation.  An SMTP server
+     140|    that is not publicly referenced may refuse to accept any messages for
+     141|    relay or local delivery based on authentication supplied during the
+     142|    TLS negotiation.
+```
+
+**② LLM 原始抽取结果**
+
+```json
+{
+  "doc": "rfc3207.txt",
+  "entity": "SMTP server",
+  "meaning": "An SMTP server that is not publicly referenced may refuse to accept any messages for relay or local delivery based on authentication supplied during TLS negotiation.",
+  "constraint": "may refuse to accept any messages for relay or local delivery based on authentication supplied during the TLS negotiation",
+  "span": 139,
+  "action": "refuse",
+  "object": "to accept any messages for relay or local delivery based on authentication supplied during the TLS negotiation",
+  "strength": "MAY",
+  "polarity": "positive",
+  "keyword_raw": "may",
+  "condition": "that is not publicly referenced",
+  "exception": "",
+  "cross_ref": "",
+  "cross_ref_status": "unknown"
+}
+```
+
+**③ 规范化 Rule Slot（身份）**
+
+```json
+{
+  "protocol": "smtp",
+  "version": "1.0",
+  "kind": "normative_rule",
+  "subject": "SMTP server",
+  "action": "refuse",
+  "object": "to accept any messages for relay or local delivery based on authentication supplied during the TLS negotiation",
+  "condition": "that is not publicly referenced",
+  "scope": null
+}
+```
+
+**④ 规范化 Assertion（声明内容）**
+
+```json
+{
+  "kind": "normative_rule",
+  "strength": "MAY",
+  "polarity": "positive",
+  "condition": "that is not publicly referenced",
+  "condition_status": "stated",
+  "exception": null,
+  "exception_status": "unknown",
+  "scope": null,
+  "action": "refuse",
+  "object": "to accept any messages for relay or local delivery based on authentication supplied during the TLS negotiation",
+  "cross_ref": null,
+  "cross_ref_status": "unknown"
+}
+```
+
+**⑥ 样本来源（可追溯）**
+
+```json
+{
+  "cache_file": "derived/cache/source_blocks/smtp.prose.json",
+  "cache_key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
+  "manifest": {
+    "key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
+    "parser_version": "rfc-parser-v1",
+    "schema_version": "rfc-norm-schema-v1",
+    "verifier_version": "normative-verifier-v1",
+    "model": "deepseek-flash",
+    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
+  },
+  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
+}
+```
+
+| ★ 人工判定 | 错误原因 | 修改建议 |
+|---|---|---|
+| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
+
+#### S26 ｜ 跨章节引用规则 ｜ 最终状态：**待审**
+
+| 项 | 内容 |
+|---|---|
+| 协议 / 文件 | `smtp` / `rfc4954.txt` |
+| 章节 | （未定位到章节标题） |
+| 原始行号 | 第 **147** 行 |
+| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`MUST`）|
+| 条件 / 例外 | `If present` / `（无）` |
+| 作用域 | `（无）` |
+| 跨章节引用 | `Section 4 of [BASE64]` ⇒ 定位 **unresolved**（章节 `None`）|
+| L1 验证 | **pending** ｜ 存在跨节引用但无法定位 ⇒ 待审 |
+
+**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
+
+```
+     144|           mechanism: A string identifying a [SASL] authentication
+     145|           mechanism.
+     146| 
+>>   147|           initial-response: An optional initial client response.  If
+     148|           present, this response MUST be encoded as described in Section
+     149|           4 of [BASE64] or contain a single character "=".
+     150| 
+```
+
+**② LLM 原始抽取结果**
+
+```json
+{
+  "doc": "rfc4954.txt",
+  "entity": "initial-response",
+  "meaning": "initial-response 是可选的初始客户端响应。",
+  "constraint": "If present, this response MUST be encoded as described in Section 4 of [BASE64] or contain a single character \"=\".",
+  "span": 147,
+  "action": "encoded as described in Section 4 of [BASE64] or contain a single character \"=\"",
+  "object": "initial-response",
+  "strength": "MUST",
+  "polarity": "positive",
+  "keyword_raw": "MUST",
+  "condition": "If present",
+  "exception": "",
+  "cross_ref": "Section 4 of [BASE64]",
+  "cross_ref_status": "unresolved"
+}
+```
+
+**③ 规范化 Rule Slot（身份）**
+
+```json
+{
+  "protocol": "smtp",
+  "version": "1.0",
+  "kind": "normative_rule",
+  "subject": "initial-response",
+  "action": "encoded as described in Section 4 of [BASE64] or contain a single character \"=\"",
+  "object": "initial-response",
+  "condition": "If present",
+  "scope": null
+}
+```
+
+**④ 规范化 Assertion（声明内容）**
+
+```json
+{
+  "kind": "normative_rule",
+  "strength": "MUST",
+  "polarity": "positive",
+  "condition": "If present",
+  "condition_status": "stated",
+  "exception": null,
+  "exception_status": "unknown",
+  "scope": null,
+  "action": "encoded as described in Section 4 of [BASE64] or contain a single character \"=\"",
+  "object": "initial-response",
+  "cross_ref": "Section 4 of [BASE64]",
+  "cross_ref_status": "unresolved"
+}
+```
+
+**⑥ 样本来源（可追溯）**
+
+```json
+{
+  "cache_file": "derived/cache/source_blocks/smtp.prose.json",
+  "cache_key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
+  "manifest": {
+    "key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
+    "parser_version": "rfc-parser-v1",
+    "schema_version": "rfc-norm-schema-v1",
+    "verifier_version": "normative-verifier-v1",
+    "model": "deepseek-flash",
+    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
+  },
+  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
+}
+```
+
+| ★ 人工判定 | 错误原因 | 修改建议 |
+|---|---|---|
+| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
+
+#### S27 ｜ ★ 描述性（不成规则：动作/对象缺失或为主体名占位） ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
@@ -2417,7 +2723,7 @@
 {
   "doc": "rfc3207.txt",
   "entity": "220",
-  "meaning": "220 响应表示已准备好开始 TLS。",
+  "meaning": "SMTP response code indicating readiness to start TLS.",
   "constraint": "",
   "span": 107,
   "action": "",
@@ -2428,7 +2734,7 @@
   "condition": "",
   "exception": "",
   "cross_ref": "",
-  "cross_ref_status": "unknown"
+  "cross_ref_status": ""
 }
 ```
 
@@ -2440,8 +2746,8 @@
   "version": "1.0",
   "kind": "normative_rule",
   "subject": "220",
-  "action": "220",
-  "object": "220",
+  "action": "",
+  "object": "",
   "condition": null,
   "scope": null
 }
@@ -2488,7 +2794,7 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S25 ｜ 强度未知（被隔离）候选 ｜ 最终状态：**待审**
+#### S28 ｜ ★ 描述性（不成规则：动作/对象缺失或为主体名占位） ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
@@ -2519,7 +2825,7 @@
 {
   "doc": "rfc3207.txt",
   "entity": "501",
-  "meaning": "501 响应表示语法错误，且不允许携带参数。",
+  "meaning": "SMTP response code for a syntax error with no parameters allowed.",
   "constraint": "",
   "span": 108,
   "action": "",
@@ -2530,7 +2836,7 @@
   "condition": "",
   "exception": "",
   "cross_ref": "",
-  "cross_ref_status": "unknown"
+  "cross_ref_status": ""
 }
 ```
 
@@ -2542,8 +2848,8 @@
   "version": "1.0",
   "kind": "normative_rule",
   "subject": "501",
-  "action": "501",
-  "object": "501",
+  "action": "",
+  "object": "",
   "condition": null,
   "scope": null
 }
@@ -2590,29 +2896,29 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S26 ｜ 含条件或例外的规则 ｜ 最终状态：**确认**
+#### S29 ｜ ★ 描述性（不成规则：动作/对象缺失或为主体名占位） ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `smtp` / `rfc3207.txt` |
 | 章节 | 454 TLS not available due to temporary reason |
-| 原始行号 | 第 **119** 行 |
-| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`must`）|
-| 条件 / 例外 | `If the client receives the 454 response` / `（无）` |
+| 原始行号 | 第 **109** 行 |
+| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
+| 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **confirmed** ｜  |
+| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     116| RFC 3207     SMTP Service Extension - Secure SMTP over TLS February 2002
-     117| 
-     118| 
->>   119|    If the client receives the 454 response, the client must decide
-     120|    whether or not to continue the SMTP session.  Such a decision is
-     121|    based on local policy.  For instance, if TLS was being used for
-     122|    client authentication, the client might try to continue the session,
+     106| 
+     107|    220 Ready to start TLS
+     108|    501 Syntax error (no parameters allowed)
+>>   109|    454 TLS not available due to temporary reason
+     110| 
+     111| 
+     112| 
 ```
 
 **② LLM 原始抽取结果**
@@ -2621,18 +2927,18 @@
 {
   "doc": "rfc3207.txt",
   "entity": "454",
-  "meaning": "如果客户端收到 454 响应，客户端必须决定是否继续 SMTP 会话。",
-  "constraint": "客户端必须决定是否继续 SMTP 会话。",
-  "span": 119,
-  "action": "决定是否继续",
-  "object": "SMTP 会话",
-  "strength": "MUST",
-  "polarity": "positive",
-  "keyword_raw": "must",
-  "condition": "If the client receives the 454 response",
+  "meaning": "SMTP response code indicating TLS is not available due to a temporary reason.",
+  "constraint": "",
+  "span": 109,
+  "action": "",
+  "object": "",
+  "strength": "",
+  "polarity": "",
+  "keyword_raw": "",
+  "condition": "",
   "exception": "",
   "cross_ref": "",
-  "cross_ref_status": "unknown"
+  "cross_ref_status": ""
 }
 ```
 
@@ -2644,9 +2950,9 @@
   "version": "1.0",
   "kind": "normative_rule",
   "subject": "454",
-  "action": "决定是否继续",
-  "object": "SMTP 会话",
-  "condition": "If the client receives the 454 response",
+  "action": "",
+  "object": "",
+  "condition": null,
   "scope": null
 }
 ```
@@ -2656,15 +2962,15 @@
 ```json
 {
   "kind": "normative_rule",
-  "strength": "MUST",
-  "polarity": "positive",
-  "condition": "If the client receives the 454 response",
-  "condition_status": "stated",
+  "strength": null,
+  "polarity": null,
+  "condition": null,
+  "condition_status": "unknown",
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "决定是否继续",
-  "object": "SMTP 会话",
+  "action": "454",
+  "object": "454",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -2692,7 +2998,7 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S27 ｜ 含条件或例外的规则 ｜ 最终状态：**确认**
+#### S30 ｜ 已确认强度的规范规则 ｜ 最终状态：**确认**
 
 | 项 | 内容 |
 |---|---|
@@ -2700,7 +3006,7 @@
 | 章节 | 454 TLS not available due to temporary reason |
 | 原始行号 | 第 **129** 行 |
 | 强度 / 极性 | `MUST` / `negative`（原文等级措辞：`MUST NOT`）|
-| 条件 / 例外 | `in order to deliver mail locally` / `（无）` |
+| 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
 | L1 验证 | **confirmed** ｜  |
@@ -2723,15 +3029,15 @@
 {
   "doc": "rfc3207.txt",
   "entity": "publicly-referenced SMTP server",
-  "meaning": "面向公众引用的 SMTP 服务器不得要求使用 STARTTLS 扩展才能在本地投递邮件。",
-  "constraint": "不得要求使用 STARTTLS 扩展才能在本地投递邮件。",
+  "meaning": "A publicly-referenced SMTP server is prohibited from requiring STARTTLS to deliver mail locally.",
+  "constraint": "MUST NOT require use of the STARTTLS extension in order to deliver mail locally",
   "span": 129,
-  "action": "要求使用",
-  "object": "STARTTLS 扩展以便在本地投递邮件",
+  "action": "require",
+  "object": "use of the STARTTLS extension in order to deliver mail locally",
   "strength": "MUST",
   "polarity": "negative",
   "keyword_raw": "MUST NOT",
-  "condition": "in order to deliver mail locally",
+  "condition": "",
   "exception": "",
   "cross_ref": "",
   "cross_ref_status": "unknown"
@@ -2746,9 +3052,9 @@
   "version": "1.0",
   "kind": "normative_rule",
   "subject": "publicly-referenced SMTP server",
-  "action": "要求使用",
-  "object": "STARTTLS 扩展以便在本地投递邮件",
-  "condition": "in order to deliver mail locally",
+  "action": "require",
+  "object": "use of the STARTTLS extension in order to deliver mail locally",
+  "condition": null,
   "scope": null
 }
 ```
@@ -2760,320 +3066,13 @@
   "kind": "normative_rule",
   "strength": "MUST",
   "polarity": "negative",
-  "condition": "in order to deliver mail locally",
-  "condition_status": "stated",
-  "exception": null,
-  "exception_status": "unknown",
-  "scope": null,
-  "action": "要求使用",
-  "object": "STARTTLS 扩展以便在本地投递邮件",
-  "cross_ref": null,
-  "cross_ref_status": "unknown"
-}
-```
-
-**⑥ 样本来源（可追溯）**
-
-```json
-{
-  "cache_file": "derived/cache/source_blocks/smtp.prose.json",
-  "cache_key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
-  "manifest": {
-    "key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
-    "parser_version": "rfc-parser-v1",
-    "schema_version": "rfc-norm-schema-v1",
-    "verifier_version": "normative-verifier-v1",
-    "model": "deepseek-flash",
-    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
-  },
-  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
-}
-```
-
-| ★ 人工判定 | 错误原因 | 修改建议 |
-|---|---|---|
-| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
-
-#### S28 ｜ 跨章节引用规则 ｜ 最终状态：**待审**
-
-| 项 | 内容 |
-|---|---|
-| 协议 / 文件 | `smtp` / `rfc4954.txt` |
-| 章节 | （未定位到章节标题） |
-| 原始行号 | 第 **147** 行 |
-| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`MUST`）|
-| 条件 / 例外 | `If present` / `or contain a single character "="` |
-| 作用域 | `（无）` |
-| 跨章节引用 | `Section 4 of [BASE64]` ⇒ 定位 **resolved**（章节 `4`）|
-| L1 验证 | **pending** ｜ 存在跨节引用但无法定位 ⇒ 待审 |
-
-**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
-
-```
-     144|           mechanism: A string identifying a [SASL] authentication
-     145|           mechanism.
-     146| 
->>   147|           initial-response: An optional initial client response.  If
-     148|           present, this response MUST be encoded as described in Section
-     149|           4 of [BASE64] or contain a single character "=".
-     150| 
-```
-
-**② LLM 原始抽取结果**
-
-```json
-{
-  "doc": "rfc4954.txt",
-  "entity": "initial-response",
-  "meaning": "可选的客户端初始响应；若存在，则必须按 [BASE64] 第 4 节所述编码，或包含单个字符 \"=\"。",
-  "constraint": "若存在，该响应 MUST 按 [BASE64] Section 4 编码，或包含单个字符 \"=\"",
-  "span": 147,
-  "action": "encoded",
-  "object": "this response",
-  "strength": "MUST",
-  "polarity": "positive",
-  "keyword_raw": "MUST",
-  "condition": "If present",
-  "exception": "or contain a single character \"=\"",
-  "cross_ref": "Section 4 of [BASE64]",
-  "cross_ref_status": "unresolved"
-}
-```
-
-**③ 规范化 Rule Slot（身份）**
-
-```json
-{
-  "protocol": "smtp",
-  "version": "1.0",
-  "kind": "normative_rule",
-  "subject": "initial-response",
-  "action": "encoded",
-  "object": "this response",
-  "condition": "If present",
-  "scope": null
-}
-```
-
-**④ 规范化 Assertion（声明内容）**
-
-```json
-{
-  "kind": "normative_rule",
-  "strength": "MUST",
-  "polarity": "positive",
-  "condition": "If present",
-  "condition_status": "stated",
-  "exception": "or contain a single character \"=\"",
-  "exception_status": "stated",
-  "scope": null,
-  "action": "encoded",
-  "object": "this response",
-  "cross_ref": "Section 4 of [BASE64]",
-  "cross_ref_status": "unresolved"
-}
-```
-
-**⑥ 样本来源（可追溯）**
-
-```json
-{
-  "cache_file": "derived/cache/source_blocks/smtp.prose.json",
-  "cache_key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
-  "manifest": {
-    "key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
-    "parser_version": "rfc-parser-v1",
-    "schema_version": "rfc-norm-schema-v1",
-    "verifier_version": "normative-verifier-v1",
-    "model": "deepseek-flash",
-    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
-  },
-  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
-}
-```
-
-| ★ 人工判定 | 错误原因 | 修改建议 |
-|---|---|---|
-| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
-
-#### S29 ｜ 被 L1/L2 拒收的候选 ｜ 最终状态：**拒收**
-
-| 项 | 内容 |
-|---|---|
-| 协议 / 文件 | `smtp` / `rfc3207.txt` |
-| 章节 | 4.3 STARTTLS on the Submission Port |
-| 原始行号 | 第 **299** 行 |
-| 强度 / 极性 | `SHOULD` / `positive`（原文等级措辞：`should`）|
-| 条件 / 例外 | `（无）` / `（无）` |
-| 作用域 | `（无）` |
-| 跨章节引用 | （无）|
-| L1 验证 | （未进入 L1：已被拒收） |
-| 拒收原因 | ★ 可核对闸：span 所在行**不含**实体名「TLS negotiation」（该行：The SMTP client and server should note carefully the result of the） |
-
-**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
-
-```
-     296|    authentication or privacy was achieved is made locally, is
-     297|    implementation-dependent, and is beyond the scope of this document.
-     298| 
->>   299|    The SMTP client and server should note carefully the result of the
-     300|    TLS negotiation.  If the negotiation results in no privacy, or if it
-     301|    results in privacy using algorithms or key lengths that are deemed
-     302|    not strong enough, or if the authentication is not good enough for
-```
-
-**② LLM 原始抽取结果**
-
-```json
-{
-  "doc": "rfc3207.txt",
-  "entity": "TLS negotiation",
-  "meaning": "SMTP 客户端与服务器应当仔细注意 TLS 协商的结果",
-  "constraint": "The SMTP client and server should note carefully the result of the TLS negotiation.",
-  "span": 299,
-  "action": "note carefully",
-  "object": "the result of the TLS negotiation",
-  "strength": "SHOULD",
-  "polarity": "positive",
-  "keyword_raw": "should",
-  "condition": "",
-  "exception": "",
-  "cross_ref": "",
-  "cross_ref_status": "unknown"
-}
-```
-
-**③ 规范化 Rule Slot（身份）**
-
-```json
-{
-  "protocol": "smtp",
-  "version": "1.0",
-  "kind": "normative_rule",
-  "subject": "TLS negotiation",
-  "action": "note carefully",
-  "object": "the result of the TLS negotiation",
-  "condition": null,
-  "scope": null
-}
-```
-
-**④ 规范化 Assertion（声明内容）**
-
-```json
-{
-  "kind": "normative_rule",
-  "strength": "SHOULD",
-  "polarity": "positive",
   "condition": null,
   "condition_status": "unknown",
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "note carefully",
-  "object": "the result of the TLS negotiation",
-  "cross_ref": null,
-  "cross_ref_status": "unknown"
-}
-```
-
-**⑥ 样本来源（可追溯）**
-
-```json
-{
-  "cache_file": "derived/cache/source_blocks/smtp.prose.json",
-  "cache_key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
-  "manifest": {
-    "key": "9b2395036ca84d0953de16034216422ed34e04e0ac83f7d920550f65e8ec9139",
-    "parser_version": "rfc-parser-v1",
-    "schema_version": "rfc-norm-schema-v1",
-    "verifier_version": "normative-verifier-v1",
-    "model": "deepseek-flash",
-    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
-  },
-  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
-}
-```
-
-| ★ 人工判定 | 错误原因 | 修改建议 |
-|---|---|---|
-| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
-
-#### S30 ｜ 发生去重或多证据归并的规则 ｜ 最终状态：**待审**
-
-| 项 | 内容 |
-|---|---|
-| 协议 / 文件 | `smtp` / `rfc3207.txt` |
-| 章节 | 1.1 Terminology |
-| 原始行号 | 第 **72** 行 |
-| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
-| 条件 / 例外 | `（无）` / `（无）` |
-| 作用域 | `（无）` |
-| 跨章节引用 | （无）|
-| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
-
-**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
-
-```
-      69| 
-      70| 1.1 Terminology
-      71| 
->>    72|    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-      73|    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
-      74|    document are to be interpreted as described in [RFC2119].
-      75| 
-```
-
-**② LLM 原始抽取结果**
-
-```json
-{
-  "doc": "rfc3207.txt",
-  "entity": "MUST",
-  "meaning": "关键词 MUST 应按 RFC2119 中的描述解释。",
-  "constraint": "",
-  "span": 72,
-  "action": "",
-  "object": "",
-  "strength": "",
-  "polarity": "",
-  "keyword_raw": "",
-  "condition": "",
-  "exception": "",
-  "cross_ref": "",
-  "cross_ref_status": "unknown"
-}
-```
-
-**③ 规范化 Rule Slot（身份）**
-
-```json
-{
-  "protocol": "smtp",
-  "version": "1.0",
-  "kind": "normative_rule",
-  "subject": "MUST",
-  "action": "MUST",
-  "object": "MUST",
-  "condition": null,
-  "scope": null
-}
-```
-
-**④ 规范化 Assertion（声明内容）**
-
-```json
-{
-  "kind": "normative_rule",
-  "strength": null,
-  "polarity": null,
-  "condition": null,
-  "condition_status": "unknown",
-  "exception": null,
-  "exception_status": "unknown",
-  "scope": null,
-  "action": "MUST",
-  "object": "MUST",
+  "action": "require",
+  "object": "use of the STARTTLS extension in order to deliver mail locally",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -3104,7 +3103,7 @@
 
 ### 协议 DHCPv4
 
-#### S31 ｜ 已确认强度的规范规则 ｜ 最终状态：**确认**
+#### S31 ｜ 已确认强度的规范规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
@@ -3115,7 +3114,7 @@
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **confirmed** ｜  |
+| L1 验证 | **pending** ｜ 关键词无法归一：'must' |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
@@ -3135,11 +3134,11 @@
 {
   "doc": "rfc1534.txt",
   "entity": "system administrator",
-  "meaning": "The decision to allow a DHCP server to return automatic addresses must be under the control of the system administrator.",
+  "meaning": "允许 DHCP 服务器返回自动地址的决定必须由系统管理员掌控。",
   "constraint": "the decision to allow a DHCP server to return automatic addresses must be under the control of the system administrator",
   "span": 86,
   "action": "be under the control of",
-  "object": "the system administrator",
+  "object": "the decision to allow a DHCP server to return automatic addresses",
   "strength": "MUST",
   "polarity": "positive",
   "keyword_raw": "must",
@@ -3159,7 +3158,7 @@
   "kind": "normative_rule",
   "subject": "system administrator",
   "action": "be under the control of",
-  "object": "the system administrator",
+  "object": "the decision to allow a DHCP server to return automatic addresses",
   "condition": null,
   "scope": null
 }
@@ -3178,7 +3177,7 @@
   "exception_status": "unknown",
   "scope": null,
   "action": "be under the control of",
-  "object": "the system administrator",
+  "object": "the decision to allow a DHCP server to return automatic addresses",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -3206,7 +3205,7 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S32 ｜ 已确认强度的规范规则 ｜ 最终状态：**确认**
+#### S32 ｜ 已确认强度的规范规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
@@ -3217,7 +3216,7 @@
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **confirmed** ｜  |
+| L1 验证 | **pending** ｜ 关键词无法归一：'must' |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
@@ -3236,12 +3235,12 @@
 ```json
 {
   "doc": "rfc1534.txt",
-  "entity": "Enabling of the feature",
-  "meaning": "Enabling of the feature must be the result of an active decision by the system administrator.",
+  "entity": "feature",
+  "meaning": "启用该特性必须是系统管理员主动决定的结果。",
   "constraint": "Enabling of the feature must be the result of an active decision by the system administrator",
   "span": 89,
-  "action": "be the result of an active decision by",
-  "object": "the system administrator",
+  "action": "be the result of an active decision by the system administrator",
+  "object": "Enabling of the feature",
   "strength": "MUST",
   "polarity": "positive",
   "keyword_raw": "must",
@@ -3259,9 +3258,9 @@
   "protocol": "DHCPv4",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "Enabling of the feature",
-  "action": "be the result of an active decision by",
-  "object": "the system administrator",
+  "subject": "feature",
+  "action": "be the result of an active decision by the system administrator",
+  "object": "Enabling of the feature",
   "condition": null,
   "scope": null
 }
@@ -3279,8 +3278,8 @@
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "be the result of an active decision by",
-  "object": "the system administrator",
+  "action": "be the result of an active decision by the system administrator",
+  "object": "Enabling of the feature",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -3314,7 +3313,7 @@
 |---|---|
 | 协议 / 文件 | `DHCPv4` / `rfc1534.txt` |
 | 章节 | （未定位到章节标题） |
-| 原始行号 | 第 **102** 行 |
+| 原始行号 | 第 **100** 行 |
 | 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`MUST`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
@@ -3324,13 +3323,13 @@
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
+      97|    The local system administrator may choose to manually release network
+      98|    addresses assigned to BOOTP clients.
       99| 
-     100|    A DHCP server that supports BOOTP clients MUST interact with BOOTP
+>>   100|    A DHCP server that supports BOOTP clients MUST interact with BOOTP
      101|    clients according to the BOOTP protocol.  The server MUST formulate a
->>   102|    BOOTP BOOTREPLY message rather than a DHCP DHCPOFFER message (i.e.,
+     102|    BOOTP BOOTREPLY message rather than a DHCP DHCPOFFER message (i.e.,
      103|    the server MUST NOT include the 'DHCP message type' option and MUST
-     104|    NOT exceed the size limit for BOOTREPLY messages).  The server marks
-     105|    a binding for a BOOTP client as BOUND after sending the BOOTP
 ```
 
 **② LLM 原始抽取结果**
@@ -3338,12 +3337,12 @@
 ```json
 {
   "doc": "rfc1534.txt",
-  "entity": "BOOTP BOOTREPLY message",
-  "meaning": "服务器必须构造 BOOTP BOOTREPLY 消息而不是 DHCP DHCPOFFER 消息。",
-  "constraint": "服务器 MUST 构造 BOOTP BOOTREPLY 消息而非 DHCP DHCPOFFER 消息",
-  "span": 102,
-  "action": "formulate",
-  "object": "BOOTP BOOTREPLY message rather than a DHCP DHCPOFFER message",
+  "entity": "DHCP server",
+  "meaning": "支持 BOOTP 客户端的 DHCP 服务器必须按 BOOTP 协议与 BOOTP 客户端交互。",
+  "constraint": "支持 BOOTP 客户端的 DHCP 服务器必须按 BOOTP 协议与 BOOTP 客户端交互",
+  "span": 100,
+  "action": "interact",
+  "object": "BOOTP clients",
   "strength": "MUST",
   "polarity": "positive",
   "keyword_raw": "MUST",
@@ -3361,9 +3360,9 @@
   "protocol": "DHCPv4",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "BOOTP BOOTREPLY message",
-  "action": "formulate",
-  "object": "BOOTP BOOTREPLY message rather than a DHCP DHCPOFFER message",
+  "subject": "DHCP server",
+  "action": "interact",
+  "object": "BOOTP clients",
   "condition": null,
   "scope": null
 }
@@ -3381,8 +3380,8 @@
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "formulate",
-  "object": "BOOTP BOOTREPLY message rather than a DHCP DHCPOFFER message",
+  "action": "interact",
+  "object": "BOOTP clients",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -3416,23 +3415,23 @@
 |---|---|
 | 协议 / 文件 | `DHCPv4` / `rfc1534.txt` |
 | 章节 | （未定位到章节标题） |
-| 原始行号 | 第 **30** 行 |
-| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
+| 原始行号 | 第 **96** 行 |
+| 强度 / 极性 | `None` / `negative`（原文等级措辞：`cannot`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；关键词无法归一：'cannot' |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-      27| 
-      28| 1. Introduction
-      29| 
->>    30|    The Dynamic Host Configuration Protocol (DHCP) provides a mechanism
-      31|    for transmitting configuration parameters to hosts using the TCP/IP
-      32|    protocol suite.  The format of DHCP messages is based on the format
-      33|    of BOOTP messages, so that, in certain circumstances, DHCP and BOOTP
+      93|    not be aware of the DHCP lease mechanism for network address
+      94|    assignment.  Thus the DHCP server must assign an infinite lease
+      95|    duration to for automatic addresses assigned to BOOTP clients.  Such
+>>    96|    network addresses cannot be automatically reassigned by the server.
+      97|    The local system administrator may choose to manually release network
+      98|    addresses assigned to BOOTP clients.
+      99| 
 ```
 
 **② LLM 原始抽取结果**
@@ -3440,19 +3439,19 @@
 ```json
 {
   "doc": "rfc1534.txt",
-  "entity": "DHCP",
-  "meaning": "DHCP provides a mechanism for transmitting configuration parameters to hosts using the TCP/IP protocol suite.",
-  "constraint": "",
-  "span": 30,
-  "action": "",
-  "object": "",
+  "entity": "server",
+  "meaning": "分配给 BOOTP 客户端的此类网络地址不能被服务器自动重新分配。",
+  "constraint": "Such network addresses cannot be automatically reassigned by the server",
+  "span": 96,
+  "action": "be automatically reassigned by the server",
+  "object": "Such network addresses",
   "strength": "",
-  "polarity": "",
-  "keyword_raw": "",
+  "polarity": "negative",
+  "keyword_raw": "cannot",
   "condition": "",
   "exception": "",
   "cross_ref": "",
-  "cross_ref_status": ""
+  "cross_ref_status": "unknown"
 }
 ```
 
@@ -3463,9 +3462,9 @@
   "protocol": "DHCPv4",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "DHCP",
-  "action": "DHCP",
-  "object": "DHCP",
+  "subject": "server",
+  "action": "be automatically reassigned by the server",
+  "object": "Such network addresses",
   "condition": null,
   "scope": null
 }
@@ -3477,14 +3476,14 @@
 {
   "kind": "normative_rule",
   "strength": null,
-  "polarity": null,
+  "polarity": "negative",
   "condition": null,
   "condition_status": "unknown",
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "DHCP",
-  "object": "DHCP",
+  "action": "be automatically reassigned by the server",
+  "object": "Such network addresses",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -3512,29 +3511,29 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S35 ｜ 强度未知（被隔离）候选 ｜ 最终状态：**待审**
+#### S35 ｜ 含条件或例外的规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `DHCPv4` / `rfc1534.txt` |
 | 章节 | （未定位到章节标题） |
-| 原始行号 | 第 **34** 行 |
-| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
-| 条件 / 例外 | `（无）` / `（无）` |
+| 原始行号 | 第 **74** 行 |
+| 强度 / 极性 | `None` / `negative`（原文等级措辞：`（无）`）|
+| 条件 / 例外 | `If a DHCP server that is not configured to support BOOTP clients receives a BOOTREQUEST message from a BOOTP client` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性为 negative，但证据文本里没有否定词 |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-      31|    for transmitting configuration parameters to hosts using the TCP/IP
-      32|    protocol suite.  The format of DHCP messages is based on the format
-      33|    of BOOTP messages, so that, in certain circumstances, DHCP and BOOTP
->>    34|    participants may exchange messages.  This document specifies the ways
-      35|    in which DHCP and BOOTP participants may interoperate.
-      36| 
-      37|    DHCP introduces a small change in terminology intended to clarify the
+      71|    of BOOTP clients by a DHCP server is optional at the discretion of
+      72|    the local system administrator.  If a DHCP server that is not
+      73|    configured to support BOOTP clients receives a BOOTREQUEST message
+>>    74|    from a BOOTP client, that server silently discards the BOOTREQUEST
+      75|    message.
+      76| 
+      77|    If a DHCP server is configured to support BOOTP clients, it may be
 ```
 
 **② LLM 原始抽取结果**
@@ -3542,19 +3541,19 @@
 ```json
 {
   "doc": "rfc1534.txt",
-  "entity": "participants",
-  "meaning": "DHCP and BOOTP participants may exchange messages in certain circumstances.",
-  "constraint": "",
-  "span": 34,
-  "action": "",
-  "object": "",
+  "entity": "BOOTREQUEST",
+  "meaning": "BOOTP 客户端发来的请求报文，未配置支持 BOOTP 客户端的 DHCP 服务器收到后会静默丢弃它。",
+  "constraint": "that server silently discards the BOOTREQUEST message",
+  "span": 74,
+  "action": "silently discards",
+  "object": "the BOOTREQUEST message",
   "strength": "",
-  "polarity": "",
+  "polarity": "negative",
   "keyword_raw": "",
-  "condition": "",
+  "condition": "If a DHCP server that is not configured to support BOOTP clients receives a BOOTREQUEST message from a BOOTP client",
   "exception": "",
   "cross_ref": "",
-  "cross_ref_status": ""
+  "cross_ref_status": "unknown"
 }
 ```
 
@@ -3565,10 +3564,10 @@
   "protocol": "DHCPv4",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "participants",
-  "action": "participants",
-  "object": "participants",
-  "condition": null,
+  "subject": "BOOTREQUEST",
+  "action": "silently discards",
+  "object": "the BOOTREQUEST message",
+  "condition": "If a DHCP server that is not configured to support BOOTP clients receives a BOOTREQUEST message from a BOOTP client",
   "scope": null
 }
 ```
@@ -3579,14 +3578,14 @@
 {
   "kind": "normative_rule",
   "strength": null,
-  "polarity": null,
-  "condition": null,
-  "condition_status": "unknown",
+  "polarity": "negative",
+  "condition": "If a DHCP server that is not configured to support BOOTP clients receives a BOOTREQUEST message from a BOOTP client",
+  "condition_status": "stated",
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "participants",
-  "object": "participants",
+  "action": "silently discards",
+  "object": "the BOOTREQUEST message",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -3614,7 +3613,7 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S36 ｜ 含条件或例外的规则 ｜ 最终状态：**确认**
+#### S36 ｜ 含条件或例外的规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
@@ -3625,7 +3624,7 @@
 | 条件 / 例外 | `If a DHCP server is configured to support BOOTP clients` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
-| L1 验证 | **confirmed** ｜  |
+| L1 验证 | **pending** ｜ 关键词无法归一：'may' |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
@@ -3645,8 +3644,8 @@
 {
   "doc": "rfc1534.txt",
   "entity": "DHCP server",
-  "meaning": "If a DHCP server is configured to support BOOTP clients, it may be configured to supply static addresses, automatic addresses or both.",
-  "constraint": "may be configured to supply static addresses, automatic addresses or both",
+  "meaning": "已配置支持 BOOTP 客户端的 DHCP 服务器，可以被配置为提供静态地址、自动地址或两者。",
+  "constraint": "it may be configured to supply static addresses, automatic addresses or both",
   "span": 77,
   "action": "be configured to supply",
   "object": "static addresses, automatic addresses or both",
@@ -3716,131 +3715,29 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S37 ｜ 含条件或例外的规则 ｜ 最终状态：**确认**
-
-| 项 | 内容 |
-|---|---|
-| 协议 / 文件 | `DHCPv4` / `rfc1534.txt` |
-| 章节 | （未定位到章节标题） |
-| 原始行号 | 第 **88** 行 |
-| 强度 / 极性 | `MUST` / `positive`（原文等级措辞：`must`）|
-| 条件 / 例外 | `If a DHCP server supports supplying automatic addresses to BOOTP clients` / `（无）` |
-| 作用域 | `（无）` |
-| 跨章节引用 | （无）|
-| L1 验证 | **confirmed** ｜  |
-
-**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
-
-```
-      85|    addresses, the decision to allow a DHCP server to return automatic
-      86|    addresses must be under the control of the system administrator.  If
-      87|    a DHCP server supports supplying automatic addresses to BOOTP
->>    88|    clients, this feature must be configurable, and the feature must
-      89|    default off.  Enabling of the feature must be the result of an active
-      90|    decision by the system administrator.
-      91| 
-```
-
-**② LLM 原始抽取结果**
-
-```json
-{
-  "doc": "rfc1534.txt",
-  "entity": "feature",
-  "meaning": "If a DHCP server supports supplying automatic addresses to BOOTP clients, this feature must be configurable.",
-  "constraint": "this feature must be configurable",
-  "span": 88,
-  "action": "be configurable",
-  "object": "this feature",
-  "strength": "MUST",
-  "polarity": "positive",
-  "keyword_raw": "must",
-  "condition": "If a DHCP server supports supplying automatic addresses to BOOTP clients",
-  "exception": "",
-  "cross_ref": "",
-  "cross_ref_status": "unknown"
-}
-```
-
-**③ 规范化 Rule Slot（身份）**
-
-```json
-{
-  "protocol": "DHCPv4",
-  "version": "1.0",
-  "kind": "normative_rule",
-  "subject": "feature",
-  "action": "be configurable",
-  "object": "this feature",
-  "condition": "If a DHCP server supports supplying automatic addresses to BOOTP clients",
-  "scope": null
-}
-```
-
-**④ 规范化 Assertion（声明内容）**
-
-```json
-{
-  "kind": "normative_rule",
-  "strength": "MUST",
-  "polarity": "positive",
-  "condition": "If a DHCP server supports supplying automatic addresses to BOOTP clients",
-  "condition_status": "stated",
-  "exception": null,
-  "exception_status": "unknown",
-  "scope": null,
-  "action": "be configurable",
-  "object": "this feature",
-  "cross_ref": null,
-  "cross_ref_status": "unknown"
-}
-```
-
-**⑥ 样本来源（可追溯）**
-
-```json
-{
-  "cache_file": "derived/cache/source_blocks/DHCPv4.prose.json",
-  "cache_key": "9991c94c8ac812ee066d303f19ff0085012aac5fb5f8a274441c2c44e087628d",
-  "manifest": {
-    "key": "9991c94c8ac812ee066d303f19ff0085012aac5fb5f8a274441c2c44e087628d",
-    "parser_version": "rfc-parser-v1",
-    "schema_version": "rfc-norm-schema-v1",
-    "verifier_version": "normative-verifier-v1",
-    "model": "deepseek-flash",
-    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
-  },
-  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
-}
-```
-
-| ★ 人工判定 | 错误原因 | 修改建议 |
-|---|---|---|
-| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
-
-#### S38 ｜ 跨章节引用规则 ｜ 最终状态：**待审**
+#### S37 ｜ 跨章节引用规则 ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `DHCPv4` / `rfc1542.txt` |
-| 章节 | 4.1.1 BOOTREQUEST Messages |
-| 原始行号 | 第 **816** 行 |
-| 强度 / 极性 | `MUST` / `negative`（原文等级措辞：`MUST NOT`）|
+| 章节 | 4.1 General BOOTP Processing for Relay Agents |
+| 原始行号 | 第 **773** 行 |
+| 强度 / 极性 | `SHOULD` / `positive`（原文等级措辞：`SHOULD`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
-| 跨章节引用 | `[1] (Section 8, sixth paragraph)` ⇒ 定位 **resolved**（章节 `1`）|
+| 跨章节引用 | `Section 2.1` ⇒ 定位 **resolved**（章节 `2.1`）|
 | L1 验证 | **pending** ｜ 存在跨节引用但无法定位 ⇒ 待审 |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     813|    agent SHOULD choose one IP address associated with that interface and
-     814|    use it consistently for all BOOTP messages it relays.  If the
-     815|    'giaddr' field contains some non-zero value, the 'giaddr' field MUST
->>   816|    NOT be modified.  The relay agent MUST NOT, under any circumstances,
-     817|    fill the 'giaddr' field with a broadcast address as is suggested in
-     818|    [1] (Section 8, sixth paragraph).
-     819| 
+     770|          BOOTP specification [1] will show this.  Nevertheless, some
+     771|          relay agent implementations incorrectly relay such messages.
+     772| 
+>>   773|    The consistency checks specified in Section 2.1 SHOULD be performed
+     774|    by the relay agent.  BOOTP messages not meeting these consistency
+     775|    checks MUST be silently discarded.
+     776| 
 ```
 
 **② LLM 原始抽取结果**
@@ -3848,18 +3745,18 @@
 ```json
 {
   "doc": "rfc1542.txt",
-  "entity": "relay agent",
-  "meaning": "中继代理在任何情况下都不得用广播地址填充 'giaddr' 字段。",
-  "constraint": "不得用广播地址填充 giaddr",
-  "span": 816,
-  "action": "fill",
-  "object": "the 'giaddr' field with a broadcast address",
-  "strength": "MUST",
-  "polarity": "negative",
-  "keyword_raw": "MUST NOT",
+  "entity": "consistency checks",
+  "meaning": "The consistency checks specified in Section 2.1 should be performed by the relay agent.",
+  "constraint": "SHOULD be performed by the relay agent",
+  "span": 773,
+  "action": "performed",
+  "object": "The consistency checks specified in Section 2.1",
+  "strength": "SHOULD",
+  "polarity": "positive",
+  "keyword_raw": "SHOULD",
   "condition": "",
   "exception": "",
-  "cross_ref": "[1] (Section 8, sixth paragraph)",
+  "cross_ref": "Section 2.1",
   "cross_ref_status": "unresolved"
 }
 ```
@@ -3871,9 +3768,9 @@
   "protocol": "DHCPv4",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "relay agent",
-  "action": "fill",
-  "object": "the 'giaddr' field with a broadcast address",
+  "subject": "consistency checks",
+  "action": "performed",
+  "object": "The consistency checks specified in Section 2.1",
   "condition": null,
   "scope": null
 }
@@ -3884,16 +3781,16 @@
 ```json
 {
   "kind": "normative_rule",
-  "strength": "MUST",
-  "polarity": "negative",
+  "strength": "SHOULD",
+  "polarity": "positive",
   "condition": null,
   "condition_status": "unknown",
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "fill",
-  "object": "the 'giaddr' field with a broadcast address",
-  "cross_ref": "[1] (Section 8, sixth paragraph)",
+  "action": "performed",
+  "object": "The consistency checks specified in Section 2.1",
+  "cross_ref": "Section 2.1",
   "cross_ref_status": "unresolved"
 }
 ```
@@ -3920,30 +3817,30 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S39 ｜ 被 L1/L2 拒收的候选 ｜ 最终状态：**拒收**
+#### S38 ｜ 被 L1/L2 拒收的候选 ｜ 最终状态：**拒收**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `DHCPv4` / `rfc1542.txt` |
-| 章节 | 3.3 Use of the 'ciaddr' and 'yiaddr' fields |
-| 原始行号 | 第 **594** 行 |
+| 章节 | 5.4 Strategy for Delivery of BOOTREPLY Messages................. 20 |
+| 原始行号 | 第 **93** 行 |
 | 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
 | L1 验证 | （未进入 L1：已被拒收） |
-| 拒收原因 | ★ 可核对闸：span 所在行**不含**实体名「ciaddr」（该行：The last interpretation is incorrect as it may prevent the） |
+| 拒收原因 | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「BOOTP relay agents」（该行：agents formerly called "BOOTP forwarding agents") was not clearly） |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
-     591|          never used that address before or is not currently using that
-     592|          address.
-     593| 
->>   594|          The last interpretation is incorrect as it may prevent the
-     595|          BOOTREPLY from reaching the client.  The server will usually
-     596|          unicast the reply to the address given in 'ciaddr' but the
-     597|          client may not be listening on that address yet, or the client
+      90| 
+      91|    Unfortunately, the original BOOTP specification [1] left some issues
+      92|    of the protocol open to question.  The exact behavior of BOOTP relay
+>>    93|    agents formerly called "BOOTP forwarding agents") was not clearly
+      94|    specified.  Some parts of the overall protocol specification actually
+      95|    conflict, while other parts have been subject to misinterpretation,
+      96|    indicating that clarification is needed.  This memo addresses these
 ```
 
 **② LLM 原始抽取结果**
@@ -3951,10 +3848,10 @@
 ```json
 {
   "doc": "rfc1542.txt",
-  "entity": "ciaddr",
-  "meaning": "把 'ciaddr' 用于表达从未使用或当前未使用的期望地址的解释是错误的，可能使 BOOTREPLY 无法到达客户端；服务器通常将回复单播到 'ciaddr' 给出的地址",
+  "entity": "BOOTP relay agents",
+  "meaning": "原 BOOTP 规范未明确规定该类中继代理的精确行为。",
   "constraint": "",
-  "span": 594,
+  "span": 93,
   "action": "",
   "object": "",
   "strength": "",
@@ -3974,9 +3871,9 @@
   "protocol": "DHCPv4",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "ciaddr",
-  "action": "ciaddr",
-  "object": "ciaddr",
+  "subject": "BOOTP relay agents",
+  "action": "",
+  "object": "",
   "condition": null,
   "scope": null
 }
@@ -3994,8 +3891,8 @@
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "ciaddr",
-  "object": "ciaddr",
+  "action": "BOOTP relay agents",
+  "object": "BOOTP relay agents",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
@@ -4023,31 +3920,29 @@
 |---|---|---|
 | ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
 
-#### S40 ｜ 发生去重或多证据归并的规则 ｜ 最终状态：**待审**
+#### S39 ｜ ★ 描述性（不成规则：动作/对象缺失或为主体名占位） ｜ 最终状态：**待审**
 
 | 项 | 内容 |
 |---|---|
 | 协议 / 文件 | `DHCPv4` / `rfc1534.txt` |
 | 章节 | （未定位到章节标题） |
-| 原始行号 | 第 **32** 行 |
+| 原始行号 | 第 **30** 行 |
 | 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
 | 条件 / 例外 | `（无）` / `（无）` |
 | 作用域 | `（无）` |
 | 跨章节引用 | （无）|
 | L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
-| 归并前 | 槽位 `DHCP messages | DHCP messages | DHCP messages | None`，同槽位 **2** 条声明 |
-| 归并后 | `method=consensus`；采纳 `1` 条；保留（superseded）`1` 条 |
 
 **① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
 
 ```
+      27| 
+      28| 1. Introduction
       29| 
-      30|    The Dynamic Host Configuration Protocol (DHCP) provides a mechanism
+>>    30|    The Dynamic Host Configuration Protocol (DHCP) provides a mechanism
       31|    for transmitting configuration parameters to hosts using the TCP/IP
->>    32|    protocol suite.  The format of DHCP messages is based on the format
+      32|    protocol suite.  The format of DHCP messages is based on the format
       33|    of BOOTP messages, so that, in certain circumstances, DHCP and BOOTP
-      34|    participants may exchange messages.  This document specifies the ways
-      35|    in which DHCP and BOOTP participants may interoperate.
 ```
 
 **② LLM 原始抽取结果**
@@ -4055,10 +3950,10 @@
 ```json
 {
   "doc": "rfc1534.txt",
-  "entity": "DHCP messages",
-  "meaning": "The format of DHCP messages is based on the format of BOOTP messages.",
+  "entity": "DHCP",
+  "meaning": "动态主机配置协议，提供一种使用 TCP/IP 协议族向主机传送配置参数的机制。",
   "constraint": "",
-  "span": 32,
+  "span": 30,
   "action": "",
   "object": "",
   "strength": "",
@@ -4078,9 +3973,9 @@
   "protocol": "DHCPv4",
   "version": "1.0",
   "kind": "normative_rule",
-  "subject": "DHCP messages",
-  "action": "DHCP messages",
-  "object": "DHCP messages",
+  "subject": "DHCP",
+  "action": "",
+  "object": "",
   "condition": null,
   "scope": null
 }
@@ -4098,53 +3993,112 @@
   "exception": null,
   "exception_status": "unknown",
   "scope": null,
-  "action": "DHCP messages",
-  "object": "DHCP messages",
+  "action": "DHCP",
+  "object": "DHCP",
   "cross_ref": null,
   "cross_ref_status": "unknown"
 }
 ```
 
-**⑤ 去重/归并前后**
+**⑥ 样本来源（可追溯）**
 
 ```json
 {
-  "slot_key": "DHCP messages | DHCP messages | DHCP messages | None",
-  "group_size": 2,
-  "members": [
-    {
-      "doc": "rfc1534.txt",
-      "span": 32,
-      "entity": "DHCP messages",
-      "strength": null,
-      "polarity": null,
-      "keyword_raw": "",
-      "evidence": "      29| \n      30|    The Dynamic Host Configuration Protocol (DHCP) provides a mechanism\n      31|    for transmitting configuration parameters to hosts using the TCP/IP\n>>    32|    protocol suite.  The format of DHCP messages is based on the format\n      33|    of BOOTP messages, so that, in certain circumstances, DHCP and BOOTP\n      34|    participants may exchange messages.  This document specifies the ways\n      35|    in which DHCP and BOOTP participants may interoperate."
-    },
-    {
-      "doc": "rfc1534.txt",
-      "span": 65,
-      "entity": "DHCP messages",
-      "strength": null,
-      "polarity": null,
-      "keyword_raw": "",
-      "evidence": "      62| \n      63| 2. BOOTP clients and DHCP servers\n      64| \n>>    65|    The format of DHCP messages is defined to be compatible with the\n      66|    format of BOOTP messages, so that existing BOOTP clients can\n      67|    interoperate with DHCP servers.  Any message received by a DHCP\n      68|    server that includes a 'DHCP message type' (51) option is assumed to"
-    }
-  ],
-  "resolver": {
-    "method": "consensus",
-    "value": {
-      "meaning": "The format of DHCP messages is based on the format of BOOTP messages."
-    },
-    "epistemic": "normative_unspecified",
-    "authority": "rfc",
-    "basis_claim_ids": [
-      "c2_4ccb61795c6fecbe"
-    ],
-    "superseded": [
-      "c2_44ffd86e5ffc2cbc"
-    ]
-  }
+  "cache_file": "derived/cache/source_blocks/DHCPv4.prose.json",
+  "cache_key": "9991c94c8ac812ee066d303f19ff0085012aac5fb5f8a274441c2c44e087628d",
+  "manifest": {
+    "key": "9991c94c8ac812ee066d303f19ff0085012aac5fb5f8a274441c2c44e087628d",
+    "parser_version": "rfc-parser-v1",
+    "schema_version": "rfc-norm-schema-v1",
+    "verifier_version": "normative-verifier-v1",
+    "model": "deepseek-flash",
+    "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
+  },
+  "extraction_channel": "通道 J（窗口级散文补漏 · 段落粒度）"
+}
+```
+
+| ★ 人工判定 | 错误原因 | 修改建议 |
+|---|---|---|
+| ☐ 正确 ☐ 部分正确 ☐ 错误 ☐ 无法判断 |  |  |
+
+#### S40 ｜ ★ 描述性（不成规则：动作/对象缺失或为主体名占位） ｜ 最终状态：**待审**
+
+| 项 | 内容 |
+|---|---|
+| 协议 / 文件 | `DHCPv4` / `rfc1534.txt` |
+| 章节 | （未定位到章节标题） |
+| 原始行号 | 第 **33** 行 |
+| 强度 / 极性 | `None` / `None`（原文等级措辞：`（无）`）|
+| 条件 / 例外 | `（无）` / `（无）` |
+| 作用域 | `（无）` |
+| 跨章节引用 | （无）|
+| L1 验证 | **pending** ｜ 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+
+**① RFC 原文证据 + 前后上下文**（`>>` 为抽取所在行）
+
+```
+      30|    The Dynamic Host Configuration Protocol (DHCP) provides a mechanism
+      31|    for transmitting configuration parameters to hosts using the TCP/IP
+      32|    protocol suite.  The format of DHCP messages is based on the format
+>>    33|    of BOOTP messages, so that, in certain circumstances, DHCP and BOOTP
+      34|    participants may exchange messages.  This document specifies the ways
+      35|    in which DHCP and BOOTP participants may interoperate.
+      36| 
+```
+
+**② LLM 原始抽取结果**
+
+```json
+{
+  "doc": "rfc1534.txt",
+  "entity": "BOOTP",
+  "meaning": "其报文格式被 DHCP 报文格式所基于的协议，从而使 DHCP 与 BOOTP 参与方在特定情形下可以交换报文。",
+  "constraint": "",
+  "span": 33,
+  "action": "",
+  "object": "",
+  "strength": "",
+  "polarity": "",
+  "keyword_raw": "",
+  "condition": "",
+  "exception": "",
+  "cross_ref": "",
+  "cross_ref_status": ""
+}
+```
+
+**③ 规范化 Rule Slot（身份）**
+
+```json
+{
+  "protocol": "DHCPv4",
+  "version": "1.0",
+  "kind": "normative_rule",
+  "subject": "BOOTP",
+  "action": "",
+  "object": "",
+  "condition": null,
+  "scope": null
+}
+```
+
+**④ 规范化 Assertion（声明内容）**
+
+```json
+{
+  "kind": "normative_rule",
+  "strength": null,
+  "polarity": null,
+  "condition": null,
+  "condition_status": "unknown",
+  "exception": null,
+  "exception_status": "unknown",
+  "scope": null,
+  "action": "BOOTP",
+  "object": "BOOTP",
+  "cross_ref": null,
+  "cross_ref_status": "unknown"
 }
 ```
 
@@ -4175,117 +4129,76 @@
 
 ### A. 强度未知分析
 
-**总量**：强度未知 **436** 条（已确认强度 314 条）
+**总量**：强度未知 **495** 条（已确认强度 320 条）
 
 | 原因分类 | 条数 | 占比 |
 |---|---:|---:|
-| ★ 原文确实没有明确规范强度（非抽取缺陷） | 376 | 86.2% |
-| 原文有等级词但**模型漏抽**（证据行有等级词） | 58 | 13.3% |
-| 原文有等级词但**模型漏抽** | 2 | 0.5% |
+| ★ 证据行未见等级词（★ 不等于原文无强度 ⇒ **待人工重判**） | 436 | 88.1% |
+| ★ 证据行含等级词但**模型漏抽**（真缺陷） | 58 | 11.7% |
+| 原文为**小写**等级词（★ RFC 8174：普通英语 ⇒ **不构成**规范强度） | 1 | 0.2% |
 
 > ★ **结论**：绝大多数强度未知是「**原文确实没有明确规范强度**」⇒ ⇒ **不是抽取缺陷**
 > ⇒ ⇒ ★ **不得**为提高正式入库率而**强行补充强度**
 
 **每类的真实样例（各 3 条）**
 
-**★ 原文确实没有明确规范强度（非抽取缺陷）**
+**★ 证据行未见等级词（★ 不等于原文无强度 ⇒ **待人工重判**）**
 
 | 协议 | 文件 | 行 | 实体 | 原文等级措辞 | 证据行含等级词 | L1 原因 |
 |---|---|---:|---|---|---|---|
-| rtsp | rfc2326.txt | 235 | RTSP | `（无）` | False | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
-| rtsp | rfc2326.txt | 238 | interleaving | `（无）` | False | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
-| rtsp | rfc2326.txt | 247 | RTSP connection | `（无）` | False | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| rtsp | rfc2326.txt | 63 | RTSP URL | `（无）` | False | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| rtsp | rfc2326.txt | 64 | Conference Identifiers | `（无）` | False | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| rtsp | rfc2326.txt | 65 | Session Identifiers | `（无）` | False | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
 
-**原文有等级词但**模型漏抽**（证据行有等级词）**
-
-| 协议 | 文件 | 行 | 实体 | 原文等级措辞 | 证据行含等级词 | L1 原因 |
-|---|---|---:|---|---|---|---|
-| rtsp | rfc2326.txt | 250 | RTSP client | `（无）` | True | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
-| rtsp | rfc2326.txt | 252 | connectionless transport protocol | `（无）` | True | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
-| rtsp | rfc2326.txt | 255 | RTSP | `（无）` | True | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
-
-**原文有等级词但**模型漏抽****
+**★ 证据行含等级词但**模型漏抽**（真缺陷）**
 
 | 协议 | 文件 | 行 | 实体 | 原文等级措辞 | 证据行含等级词 | L1 原因 |
 |---|---|---:|---|---|---|---|
-| rtsp | rfc2326.txt | 1188 | Request-URI | `is only allowed` | False | 规范强度未定（不得凭推测赋值）；关键词无法归一：'is only allowed' |
-| sip | rfc3261.txt | 1550 | CR | `No CR or LF is allowed` | False | 规范强度未定（不得凭推测赋值）；关键词无法归一：'No CR or LF is allowed' |
+| rtsp | rfc2326.txt | 302 | parties in the conference | `（无）` | True | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| rtsp | rfc2326.txt | 310 | RTSP requests | `（无）` | True | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+| rtsp | rfc2326.txt | 315 | key words | `（无）` | True | 规范强度未定（不得凭推测赋值）；极性未定（不得凭推测赋值） |
+
+**原文为**小写**等级词（★ RFC 8174：普通英语 ⇒ **不构成**规范强度）**
+
+| 协议 | 文件 | 行 | 实体 | 原文等级措辞 | 证据行含等级词 | L1 原因 |
+|---|---|---:|---|---|---|---|
+| DHCPv4 | rfc1534.txt | 96 | server | `cannot` | False | 规范强度未定（不得凭推测赋值）；关键词无法归一：'cannot' |
 
 ### B. 拒收质量分析
 
-**总拒收**：44 条
+**总拒收**：11 条
 
 | 拒收原因分类 | 条数 | 判定 |
 |---|---:|---|
-| ★ 真无证据支持（span 行不含实体名） | 44 | ★ 真无证据支持（**正确拒收**） |
+| 按 span **单行**同现未命中（★ 跨行是否真无支持**待人工重判**） | 11 | ⚠ **可能是误拒收**（需人工判断） |
 
 **全部拒收样本（供逐条判断是否误拒收）**
 
 | 协议 | 文件 | 行 | 实体 | 拒收原因 |
 |---|---|---:|---|---|
-| rtsp | rfc2326.txt | 683 | state transitions | ★ 可核对闸：span 所在行**不含**实体名「state transitions」（该行：transitions are described in Section A.） |
-| rtsp | rfc2326.txt | 806 | rtspu | ★ 可核对闸：span 所在行**不含**实体名「rtspu」（该行：server listening for TCP (scheme "rtsp") connections or UDP (scheme） |
-| rtsp | rfc2326.txt | 875 | session identifier | ★ 可核对闸：span 所在行**不含**实体名「session identifier」（该行：randomly and MUST be at least eight octets long to make guessing it） |
-| rtsp | rfc2326.txt | 905 | smpte-time | ★ 可核对闸：span 所在行**不含**实体名「smpte-time」（该行：; other timecodes may be added） |
-| rtsp | rfc2326.txt | 1217 | Status-Line | ★ 可核对闸：span 所在行**不含**实体名「Status-Line」（该行：separated by SP characters. No CR or LF is allowed except in the） |
-| rtsp | rfc2326.txt | 1229 | Reason-Phrase | ★ 可核对闸：span 所在行**不含**实体名「Reason-Phrase」（该行：user. The client is not required to examine or display the Reason-） |
-| rtsp | rfc2326.txt | 1245 | 3xx | ★ 可核对闸：span 所在行**不含**实体名「3xx」（该行：and accepted） |
-| rtsp | rfc2326.txt | 1246 | 4xx | ★ 可核对闸：span 所在行**不含**实体名「4xx」（该行：* 3xx: Redirection - Further action must be taken in order to） |
-| rtsp | rfc2326.txt | 1247 | 5xx | ★ 可核对闸：span 所在行**不含**实体名「5xx」（该行：complete the request） |
-| rtsp | rfc2326.txt | 1358 | unrecognized response | ★ 可核对闸：span 所在行**不含**实体名「unrecognized response」（该行：understand the class of any status code, as indicated by the first） |
-| rtsp | rfc2326.txt | 1509 | Unrecognized header fields | ★ 可核对闸：span 所在行**不含**实体名「Unrecognized header fields」（该行：fields SHOULD be ignored by the recipient and forwarded by proxi |
-| rtsp | rfc2326.txt | 1657 | OPTIONS | ★ 可核对闸：span 所在行**不含**实体名「OPTIONS」（该行：request may be issued at any time, e.g., if the client is about to） |
-| rtsp | rfc2326.txt | 1690 | Accept header | ★ 可核对闸：span 所在行**不含**实体名「Accept header」（该行：media object identified by the request URL from a server. It may use） |
-| rtsp | rfc2326.txt | 1732 | DESCRIBE | ★ 可核对闸：span 所在行**不含**实体名「DESCRIBE」（该行：Clear ground rules need to be established so that clients have an） |
-| rtsp | rfc2326.txt | 1748 | DESCRIBE | ★ 可核对闸：span 所在行**不含**实体名「DESCRIBE」（该行：Media initialization is a requirement for any RTSP-based system,） |
-| rtsp | rfc2326.txt | 1759 | DESCRIBE | ★ 可核对闸：span 所在行**不含**实体名「DESCRIBE」（该行：In the interest of practical interoperability, it is highly） |
-| sip | rfc3261.txt | 1072 | dialog | ★ 可核对闸：span 所在行**不含**实体名「dialog」（该行：peer-to-peer SIP relationship between two user agents that persists） |
-| sip | rfc3261.txt | 1075 | INVITE | ★ 可核对闸：span 所在行**不含**实体名「INVITE」（该行：method is the only way defined in this specification to establish a） |
-| sip | rfc3261.txt | 1523 | Request-URI | ★ 可核对闸：span 所在行**不含**实体名「Request-URI」（该行：characters and MUST NOT be enclosed in "<>".） |
-| sip | rfc3261.txt | 1748 | field values | ★ 可核对闸：span 所在行**不含**实体名「field values」（该行：insensitive.  Unless otherwise stated in the definition of a） |
-| sip | rfc3261.txt | 1748 | parameter names | ★ 可核对闸：span 所在行**不含**实体名「parameter names」（该行：insensitive.  Unless otherwise stated in the definition of a） |
-| sip | rfc3261.txt | 1749 | Tokens | ★ 可核对闸：span 所在行**不含**实体名「Tokens」（该行：particular header field, field values, parameter names, and parameter） |
-| sip | rfc3261.txt | 1750 | quoted strings | ★ 可核对闸：span 所在行**不含**实体名「quoted strings」（该行：values are case-insensitive.  Tokens are always case-insensitive.） |
-| sip | rfc3261.txt | 1789 | compact form | ★ 可核对闸：span 所在行**不含**实体名「compact form」（该行：form MAY be substituted for the longer form of a header field name at） |
-| sip | rfc3261.txt | 2061 | Call-ID header field | ★ 可核对闸：span 所在行**不含**实体名「Call-ID header field」（该行：together a series of messages.  It MUST be the same for all requests） |
-| sip | rfc3261.txt | 2062 | Call-ID header field | ★ 可核对闸：span 所在行**不含**实体名「Call-ID header field」（该行：and responses sent by either UA in a dialog.  It SHOULD be the same） |
-| sip | rfc3261.txt | 2065 | Call-ID header field | ★ 可核对闸：span 所在行**不含**实体名「Call-ID header field」（该行：In a new request created by a UAC outside of any dialog, the Call-ID） |
-| smtp | rfc3207.txt | 299 | TLS negotiation | ★ 可核对闸：span 所在行**不含**实体名「TLS negotiation」（该行：The SMTP client and server should note carefully the result of the） |
-| smtp | rfc4954.txt | 161 | AUTH | ★ 可核对闸：span 所在行**不含**实体名「AUTH」（该行：Discussion:） |
-| smtp | rfc4954.txt | 241 | BASE64 characters | ★ 可核对闸：span 所在行**不含**实体名「BASE64 characters」（该行：allowed by the BASE64 alphabet, and MUST reject any sequence） |
-| smtp | rfc4954.txt | 268 | server | ★ 可核对闸：span 所在行**不含**实体名「server」（该行：MUST fail the authentication.） |
-| smtp | rfc4954.txt | 276 | SMTP server | ★ 可核对闸：span 所在行**不含**实体名「SMTP server」（该行：is appropriate.  Should the client successfully complete the） |
-| smtp | rfc4954.txt | 331 | Server sites | ★ 可核对闸：span 所在行**不含**实体名「Server sites」（该行：permits a plaintext password mechanism without such a protection） |
-| smtp | rfc4954.txt | 819 | Authentication SMTP service extension | ★ 可核对闸：span 所在行**不含**实体名「Authentication SMTP service extension」（该行：IANA updated the registration of the Authentication S |
-| smtp | rfc4954.txt | 942 | SASL PLAIN | ★ 可核对闸：span 所在行**不含**实体名「SASL PLAIN」（该行：man-in-the-middle attacks.  If the match fails, the client MUST NOT） |
-| DHCPv4 | rfc1542.txt | 594 | ciaddr | ★ 可核对闸：span 所在行**不含**实体名「ciaddr」（该行：The last interpretation is incorrect as it may prevent the） |
-| DHCPv4 | rfc1542.txt | 643 | giaddr | ★ 可核对闸：span 所在行**不含**实体名「giaddr」（该行：relay agent that is not itself an IP router (according to [1],） |
-| DHCPv4 | rfc1542.txt | 773 | relay agent | ★ 可核对闸：span 所在行**不含**实体名「relay agent」（该行：The consistency checks specified in Section 2.1 SHOULD be performed） |
-| DHCPv4 | rfc1542.txt | 889 | BOOTREQUEST | ★ 可核对闸：span 所在行**不含**实体名「BOOTREQUEST」（该行：preferable to use the decremented TTL from the original） |
-| DHCPv4 | rfc1542.txt | 933 | BROADCAST flag | ★ 可核对闸：span 所在行**不含**实体名「BROADCAST flag」（该行：Sections 2.2 and 3.1.1 for more information).  If this flag is set to） |
-| DHCPv4 | rfc1542.txt | 965 | BROADCAST flag | ★ 可核对闸：span 所在行**不含**实体名「BROADCAST flag」（该行：implementations must nevertheless be considered.  If an old） |
-| DHCPv4 | rfc1542.txt | 979 | relay agent | ★ 可核对闸：span 所在行**不含**实体名「relay agent」（该行：MUST NOT modify any BOOTP field of the BOOTREPLY message when） |
-| DHCPv4 | rfc1542.txt | 1024 | BOOTP server | ★ 可核对闸：span 所在行**不含**实体名「BOOTP server」（该行：The consistency checks specified in Section 2.1 SHOULD be） |
-| DHCPv4 | rfc1542.txt | 1026 | BOOTP messages | ★ 可核对闸：span 所在行**不含**实体名「BOOTP messages」（该行：these consistency checks MUST be silently discarded.） |
+| rtsp | rfc2326.txt | 923 | Negative values | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「Negative values」（该行：The beginning of a presentation corresponds to 0.0 seconds. Negative） |
+| rtsp | rfc2326.txt | 1610 | New methods | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「New methods」（该行：methods may be defined in the future. Method names may not start with） |
+| sip | rfc3261.txt | 446 | Session Initiation Protocol (SIP) | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「Session Initiation Protocol (SIP)」（该行：Initiation Protocol (SIP) works in concert with these  |
+| sip | rfc3261.txt | 1114 | B2BUA | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「B2BUA」（该行：it has established.  Since it is a concatenation of a UAC and） |
+| sip | rfc3261.txt | 1749 | field values, parameter names, and parameter values | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「field values, parameter names, and parameter values」（该行：particular header field, field value |
+| DHCPv4 | rfc1542.txt | 93 | BOOTP relay agents | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「BOOTP relay agents」（该行：agents formerly called "BOOTP forwarding agents") was not clearly） |
+| DHCPv4 | rfc1542.txt | 106 | Dynamic Host Configuration Protocol (DHCP) | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「Dynamic Host Configuration Protocol (DHCP)」（该行：document also apply to extensions to BOOTP su |
+| DHCPv4 | rfc1542.txt | 725 | Any Internet host or router which provides BOOTP relay-agent capability | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「Any Internet host or router which provides BOOTP relay-agent capability」（该行：Any Internet hos |
+| DHCPv4 | rfc1542.txt | 746 | unicast datagram with an IP destination not matching any of the router's IP addresses | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「unicast datagram with an IP destination not matching any of the router's IP addresses」（该行：In |
+| DHCPv4 | rfc1542.txt | 754 | hosts or routers which support a BOOTP relay agent | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「hosts or routers which support a BOOTP relay agent」（该行：Hosts and routers are usually require |
+| DHCPv4 | rfc1542.txt | 754 | BOOTREQUEST messages from legal IP source addresses | ★ 可核对闸：**证据跨度（±3 行）内**不含实体名「BOOTREQUEST messages from legal IP source addresses」（该行：Hosts and routers are usually requir |
 
 ### C. 归并正确性
 
 #### C1 · 同一 Rule Slot 的多声明（真实）
 
+> ★ **N/A**：★ 在「**占位禁止 + 描述分流**」生效后，真实数据里**不存在**同一 Rule Slot 的多条声明
+> ⇒ ⇒ 此前统计到的 61 组归并，**主要是占位式 Rule Slot 造成的假归并**
+> ⇒ ⇒ **不人工制造样本**（★ 按要求）
+
 | 协议 | 主体 | 动作 | 对象 | 条件 | 同槽位声明数 | 行号 |
 |---|---|---|---|---|---:|---|
-| rtsp | RTSP | RTSP | RTSP | — | 13 | 235, 255, 256, 259, 667, 711, 724, 805, 1024, 1580, 1595, 1598, 1602 |
-| rtsp | media server | media server | media server | — | 3 | 298, 624, 1049 |
-| rtsp | RTSP requests | RTSP requests | RTSP requests | — | 3 | 310, 670, 725 |
-| rtsp | presentation description | presentation description | presentation description | — | 5 | 612, 626, 716, 835, 837 |
-| rtsp | TCP | TCP | TCP | — | 2 | 669, 1563 |
-| rtsp | Requests | Requests | Requests | — | 2 | 1046, 1552 |
-| rtsp | Status-Code | Status-Code | Status-Code | — | 2 | 1224, 1295 |
-| rtsp | DESCRIBE | DESCRIBE | DESCRIBE | — | 2 | 1632, 1689 |
-| rtsp | ANNOUNCE | ANNOUNCE | ANNOUNCE | — | 2 | 1633, 1770 |
-| rtsp | PAUSE | PAUSE | PAUSE | — | 2 | 1637, 1648 |
-| sip | SIP | SIP | SIP | — | 9 | 446, 514, 516, 519, 520, 751, 986, 1468, 1540 |
-| sip | SDP | SDP | SDP | — | 3 | 513, 523, 802 |
+| （无） | — | — | — | — | 0 | — |
 
 #### C2 · 相反极性声明（同一槽位）
 
@@ -4296,15 +4209,17 @@
 
 | 协议 | 文件 | 行 | 实体 | 引用 | 原文 |
 |---|---|---:|---|---|---|
-| rtsp | rfc2326.txt | 683 | state transitions | `Section A` | >>   683|    transitions are described in Section A. |
-| sip | rfc3261.txt | 1531 | SIP-Version | `[H3.1]` | >>  1531|       SIP-Version: Both request and response messages include the |
-| sip | rfc3261.txt | 1863 | CRLF | `[H4.1]` | >>  1863|    transports MUST ignore any CRLF appearing before the start-line |
+| rtsp | rfc2326.txt | 1024 | ISO 10646 | `RFC 2279` | >>  1024|    RTSP is a text-based protocol and uses the ISO 10646 character set in |
+| smtp | rfc4954.txt | 147 | initial-response | `Section 4 of [BASE64]` | >>   147|           initial-response: An optional initial client response.  If |
+| smtp | rfc4954.txt | 202 | server | `Section 5.1 of [SASL]` | >>   202|           an initial client response, the server MUST proceed as defined |
+| smtp | rfc4954.txt | 211 | client | `Section 5.1 of [SASL]` | >>   211|           the client MUST NOT use the initial response parameter (and |
+| DHCPv4 | rfc1542.txt | 816 | relay agent | `[1] (Section 8, sixth paragraph)` | >>   816|    NOT be modified.  The relay agent MUST NOT, under any circumstances, |
 
 ## 四、专项核查：代词主体隔离（全部）
 
 | 协议 | 文件 | 行 | 实体 | 发布闸 | L1 |
 |---|---|---:|---|---|---|
-| smtp | rfc4954.txt | 772 | they | 隔离 （主体不可靠（they）；校验结论非已证实（pending））| pending |
+| smtp | rfc4954.txt | 517 | it | 隔离 （主体不可靠（it）；校验结论非已证实（pending））| pending |
 
 ## 五、运行配置与可追溯性
 
@@ -4322,43 +4237,43 @@
 
 | 样本 | 协议 | 类别 | 最终状态 | 人工判定 | 错误原因 / 修改建议 |
 |---|---|---|---|---|---|
-| S01 | rtsp | 已确认强度的规范规则 | 确认 |  |  |
+| S01 | rtsp | 已确认强度的规范规则 | 待审 |  |  |
 | S02 | rtsp | 已确认强度的规范规则 | 确认 |  |  |
 | S03 | rtsp | 已确认强度的规范规则 | 确认 |  |  |
-| S04 | rtsp | 强度未知（被隔离）候选 | 待审 |  |  |
-| S05 | rtsp | 强度未知（被隔离）候选 | 待审 |  |  |
-| S06 | rtsp | 含条件或例外的规则 | 待审 |  |  |
-| S07 | rtsp | 含条件或例外的规则 | 待审 |  |  |
-| S08 | rtsp | 跨章节引用规则 | 待审 |  |  |
-| S09 | rtsp | 被 L1/L2 拒收的候选 | 拒收 |  |  |
-| S10 | rtsp | 发生去重或多证据归并的规则 | 待审 |  |  |
+| S04 | rtsp | 含条件或例外的规则 | 待审 |  |  |
+| S05 | rtsp | 含条件或例外的规则 | 待审 |  |  |
+| S06 | rtsp | 跨章节引用规则 | 待审 |  |  |
+| S07 | rtsp | 被 L1/L2 拒收的候选 | 拒收 |  |  |
+| S08 | rtsp | ★ 描述性（不成规则：动作/对象缺失或为主体名占位） | 待审 |  |  |
+| S09 | rtsp | ★ 描述性（不成规则：动作/对象缺失或为主体名占位） | 待审 |  |  |
+| S10 | rtsp | ★ 描述性（不成规则：动作/对象缺失或为主体名占位） | 待审 |  |  |
 | S11 | sip | 已确认强度的规范规则 | 确认 |  |  |
 | S12 | sip | 已确认强度的规范规则 | 确认 |  |  |
 | S13 | sip | 已确认强度的规范规则 | 确认 |  |  |
 | S14 | sip | 强度未知（被隔离）候选 | 待审 |  |  |
 | S15 | sip | 强度未知（被隔离）候选 | 待审 |  |  |
 | S16 | sip | 含条件或例外的规则 | 确认 |  |  |
-| S17 | sip | 含条件或例外的规则 | 确认 |  |  |
+| S17 | sip | 含条件或例外的规则 | 待审 |  |  |
 | S18 | sip | 跨章节引用规则 | 待审 |  |  |
 | S19 | sip | 被 L1/L2 拒收的候选 | 拒收 |  |  |
-| S20 | sip | 发生去重或多证据归并的规则 | 待审 |  |  |
+| S20 | sip | ★ 描述性（不成规则：动作/对象缺失或为主体名占位） | 待审 |  |  |
 | S21 | smtp | 已确认强度的规范规则 | 确认 |  |  |
-| S22 | smtp | 已确认强度的规范规则 | 确认 |  |  |
+| S22 | smtp | 已确认强度的规范规则 | 待审 |  |  |
 | S23 | smtp | 已确认强度的规范规则 | 确认 |  |  |
-| S24 | smtp | 强度未知（被隔离）候选 | 待审 |  |  |
-| S25 | smtp | 强度未知（被隔离）候选 | 待审 |  |  |
-| S26 | smtp | 含条件或例外的规则 | 确认 |  |  |
-| S27 | smtp | 含条件或例外的规则 | 确认 |  |  |
-| S28 | smtp | 跨章节引用规则 | 待审 |  |  |
-| S29 | smtp | 被 L1/L2 拒收的候选 | 拒收 |  |  |
-| S30 | smtp | 发生去重或多证据归并的规则 | 待审 |  |  |
-| S31 | DHCPv4 | 已确认强度的规范规则 | 确认 |  |  |
-| S32 | DHCPv4 | 已确认强度的规范规则 | 确认 |  |  |
+| S24 | smtp | 含条件或例外的规则 | 待审 |  |  |
+| S25 | smtp | 含条件或例外的规则 | 待审 |  |  |
+| S26 | smtp | 跨章节引用规则 | 待审 |  |  |
+| S27 | smtp | ★ 描述性（不成规则：动作/对象缺失或为主体名占位） | 待审 |  |  |
+| S28 | smtp | ★ 描述性（不成规则：动作/对象缺失或为主体名占位） | 待审 |  |  |
+| S29 | smtp | ★ 描述性（不成规则：动作/对象缺失或为主体名占位） | 待审 |  |  |
+| S30 | smtp | 已确认强度的规范规则 | 确认 |  |  |
+| S31 | DHCPv4 | 已确认强度的规范规则 | 待审 |  |  |
+| S32 | DHCPv4 | 已确认强度的规范规则 | 待审 |  |  |
 | S33 | DHCPv4 | 已确认强度的规范规则 | 确认 |  |  |
 | S34 | DHCPv4 | 强度未知（被隔离）候选 | 待审 |  |  |
-| S35 | DHCPv4 | 强度未知（被隔离）候选 | 待审 |  |  |
-| S36 | DHCPv4 | 含条件或例外的规则 | 确认 |  |  |
-| S37 | DHCPv4 | 含条件或例外的规则 | 确认 |  |  |
-| S38 | DHCPv4 | 跨章节引用规则 | 待审 |  |  |
-| S39 | DHCPv4 | 被 L1/L2 拒收的候选 | 拒收 |  |  |
-| S40 | DHCPv4 | 发生去重或多证据归并的规则 | 待审 |  |  |
+| S35 | DHCPv4 | 含条件或例外的规则 | 待审 |  |  |
+| S36 | DHCPv4 | 含条件或例外的规则 | 待审 |  |  |
+| S37 | DHCPv4 | 跨章节引用规则 | 待审 |  |  |
+| S38 | DHCPv4 | 被 L1/L2 拒收的候选 | 拒收 |  |  |
+| S39 | DHCPv4 | ★ 描述性（不成规则：动作/对象缺失或为主体名占位） | 待审 |  |  |
+| S40 | DHCPv4 | ★ 描述性（不成规则：动作/对象缺失或为主体名占位） | 待审 |  |  |

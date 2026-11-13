@@ -105,25 +105,83 @@ def extract_cross_ref(text: str) -> tuple[Optional[str], str]:
     return f"section {_m.group(1)}", "stated"
 
 
+#: ★ **外部文档引用**的模式（★ 跨文档 ⇒ 不能靠本地数字匹配）
+#:   如 ``Section 4 of [BASE64]`` / ``[1] (Section 8, ...)`` / ``RFC 2119 Section 3``
+_EXTERNAL_REF = re.compile(
+    r"(?:\bof\s*\[([A-Za-z0-9_.-]+)\]\b)|(?:\[([A-Za-z0-9_.-]+)\])|"
+    r"(?:\bRFC\s*(\d{3,5})\b)", re.I)
+
+
+def parse_reference(ref: str) -> dict:
+    """解析跨节引用 ⇒ ``{"section":…, "target_doc":…, "kind":…}``。
+
+    ★ **关键**（2026-11-13 独立复核意见 P0-3）：
+      · ``[BASE64] Section 4`` ⇒ ``target_doc="BASE64"`` ⇒ **外部文档**
+        ⇒ ⇒ **不能**靠本地数字匹配 ⇒ ⇒ 必须解析目标文档
+      · ``[1] (Section 8, sixth paragraph)`` ⇒ ``target_doc="1"``（参考文献编号）
+        ⇒ ⇒ 同样**不能**当本地章节
+      · ``Section 12`` ⇒ 无目标文档 ⇒ ⇒ **本地**引用 ⇒ 可在本地定位
+    """
+    _r = str(ref or "").strip()
+    _m = re.search(r"([0-9]+(?:\.[0-9]+)*)", _r)
+    _section = _m.group(1) if _m else None
+    _doc = None
+    _kind = "local"
+    _ext = _EXTERNAL_REF.search(_r)
+    if _ext:
+        _doc = next((g for g in _ext.groups() if g), None)
+        if _doc:
+            _kind = "external"
+    # ★ 「Section 4 of [BASE64]」里的 4 是**外部文档**的章节 ⇒ 本地无意义
+    return {"section": _section, "target_doc": _doc, "kind": _kind,
+            "raw": _r}
+
+
 def locate_section_ref(doc_text: str, ref: str) -> tuple[Optional[str], str]:
     """**真实定位**跨节引用的目标章节（★ 不是测试手工指定）。
 
-    在文档里找形如 ``4.2`` / ``4.2.1`` 的**章节标题行**。
+    ★ **外部引用不返回 resolved**（★ 独立复核意见 P0-3）：
+      ``[BASE64] Section 4`` / ``[1] (Section 8)`` 指向**别的文档** ⇒ ⇒
+      本地定位没有意义 ⇒ ⇒ 一律 ``unresolved``（⇒ 待审）。
 
     Returns:
         ``(定位到的章节号, 状态)``；状态 ∈ ``resolved`` / ``unresolved``。
     """
-    _ref = str(ref or "").strip()
-    _m = re.search(r"([0-9]+(?:\.[0-9]+)*)", _ref)
-    if not _m:
+    _parsed = parse_reference(ref)
+    if _parsed["kind"] == "external":
+        # ★ 外部文档引用 ⇒ **不得**用本地数字匹配 ⇒ ⇒ 未解析目标文档前不算定位
         return None, "unresolved"
-    _num = _m.group(1)
+    _num = _parsed["section"]
+    if not _num:
+        return None, "unresolved"
     _pattern = re.compile(r"^\s*(\d+(?:\.\d+)*)\b")
     for _line in str(doc_text or "").split("\n"):
         _mm = _pattern.match(_line)
         if _mm and _mm.group(1) == _num:
             return _num, "resolved"
     return None, "unresolved"
+
+
+def entity_in_span(lines: list[str], span: int, entity: str,
+                   window: int = 3) -> Optional[int]:
+    """★ **跨行**找实体名（★ 独立复核意见 P0-2）。
+
+    旧逻辑只看 span **单行** ⇒ ⇒ 实体名在**相邻行**时会被**误拒**（如 S09/S19/S29/S39）。
+
+    Returns:
+        命中行号（1 起始）；未命中 ⇒ ``None``。
+    """
+    _ent = str(entity or "").strip().lower()
+    if not _ent:
+        return None
+    if not lines:
+        return None
+    _lo = max(0, span - 1 - window)
+    _hi = min(len(lines), span + window)
+    for _i in range(_lo, _hi):
+        if _ent in str(lines[_i]).lower():
+            return _i + 1
+    return None
 
 
 def normalize_condition(text: str) -> tuple[str, bool]:
@@ -196,5 +254,6 @@ __all__ = [
     "CONDITION_MARKERS", "EXCEPTION_MARKERS", "XREF_PATTERN",
     "ENABLE_CONDITION_NORMALIZATION",
     "extract_condition", "extract_exception", "extract_cross_ref",
-    "locate_section_ref", "normalize_condition", "semantic_support",
+    "parse_reference", "locate_section_ref", "normalize_condition",
+    "semantic_support", "entity_in_span",
 ]

@@ -172,6 +172,7 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     ★ 两个入口（按文档 / 按段落）都委托到这里 ⇒ ⇒ 缓存 / 批量化 / 运行保护**同源**。
     """
     from core.fused.extraction.cache_key import cache_key as _cache_key
+    from core.fused.extraction.normative_extract import entity_in_span
 
     stats = {"protocol": protocol, "blocks": len(blocks or []),
              "calls": 0, "retries": 0, "failures": 0, "raw_items": 0,
@@ -290,12 +291,24 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             idx = span_line - 1
             if not (0 <= idx < len(lines)):
                 continue                     # span 越界 ⇒ 拒收
-            # ★ 可核对：span 所在原文行必须出现该实体名 ⇒ 否则判幻觉、拒收
-            if ent.lower() not in lines[idx].lower():
+            # ★ 可核对：实体名须在**证据跨度内**（含前后若干行）出现
+            #   ★ 2026-11-13（独立复核意见 P0-2）：旧逻辑只看 **span 单行**
+            #     ⇒ 实体名在**相邻行**时被**误拒**（如 S09/S19/S29/S39）
+            if entity_in_span(lines, span_line, ent) is None:
                 stats["rejected"] += 1
                 continue
         con = str(it.get("constraint") or "").strip()
-        kind = "prose_constraint" if con else "prose_semantics"
+        # ★ ④ **描述 / 规范分流**（★ 独立复核意见 P0-4）
+        #   ⇒ 若「动作/对象」缺失或**就是主体名本身**（占位）⇒ ⇒ 该条**不是**
+        #     行为性规范义务 ⇒ ⇒ 归**描述性知识**（prose_semantics）
+        #     ⇒ ⇒ 杜绝 `RTSP/RTSP/RTSP`、`220/220/220` 这类**虚假 Rule Slot**
+        _act = str(it.get("action") or "").strip()
+        _obj = str(it.get("object") or "").strip()
+        _is_placeholder = (not _act or not _obj
+                           or (_act.lower() == ent.lower()
+                               and _obj.lower() == ent.lower()))
+        kind = ("prose_semantics" if _is_placeholder
+                else ("prose_constraint" if con else "prose_semantics"))
         # ★ 按「实体 + 类别」去重（fact_key 不含 span ⇒ 同实体必撞）
         _dedup_key = (kind, ent.lower())
         if _dedup_key in seen:

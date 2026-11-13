@@ -113,8 +113,14 @@ def normalize_keyword(raw: str) -> Optional[tuple[str, str]]:
     """
     if not raw:
         return None
-    key = " ".join(str(raw).strip().upper().split())
-    return KEYWORD_NORMALIZATION.get(key)
+    # ★ 2026-11-13（独立复核意见 P1-5）：★ **只认全大写**（RFC 8174）
+    #   ⇒ 「只有**全大写**的 BCP 14 关键词才有特殊含义」；小写 must/should/may
+    #     是**普通英语** ⇒ ⇒ **不得**无条件提升为 MUST/SHOULD/MAY
+    #   ⇒ ★ 小写 ⇒ 返回 None ⇒ 强度保持**未知** ⇒ 归「待审」⇒ 不误赋强度
+    _raw = " ".join(str(raw).strip().split())
+    if _raw != _raw.upper():
+        return None
+    return KEYWORD_NORMALIZATION.get(_raw)
 
 
 def build_payload(*, subject: str, action: str, object_: str,

@@ -537,8 +537,18 @@ def prose_constraint_norm_to_facts(n: dict) -> list[Fact]:
         return []
 
     # ---- Rule Slot：行为位置（★ 进身份）----
-    _action = str(n.get("action") or "").strip() or name
-    _object = str(n.get("object") or "").strip() or name
+    _action = str(n.get("action") or "").strip()
+    _object = str(n.get("object") or "").strip()
+    # ★ 2026-11-13（独立复核意见 P0-4）：★ **禁止主体名占位**
+    #   ⇒ 「动作/对象」缺失或**就是主体名本身** ⇒ ⇒ 不是行为性规范义务
+    #   ⇒ ⇒ **不产 Rule Slot** ⇒ 落回普通 definition（描述性知识）
+    if (not _action or not _object
+            or (_action.lower() == name.lower()
+                and _object.lower() == name.lower())):
+        _subj = Subject(type="header", name=name)
+        _val = Value(type="text", data=str(con))
+        return [_make_fact(_subj, "definition", _val,
+                           "normative_unspecified", n)]
     _condition = n.get("condition")
     _scope = n.get("scope")
     _quals = {"action": _action, "object": _object, "kind": RULE_KIND}
