@@ -20,6 +20,8 @@
 """
 from __future__ import annotations
 
+import re
+
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -162,6 +164,20 @@ def l1_check(*, rule_text_value: str, quote: str = "",
             _fv[_f] = "inconsistent"
             _fv[_f] = "inconsistent"
 
+    # ⑦b ★ **证据充分性**（★ 人工核对 04）
+    #   ★ 证据若**只有引用/元话语**（没有对行为本身的陈述）⇒ 不足以确认
+    _quote_flat = " ".join(str(quote or "").lower().split())
+    if _quote_flat:
+        _meta_only = (
+            ("see " in _quote_flat or "refer to " in _quote_flat
+             or "as defined in " in _quote_flat)
+            and not re.search(r"\b(must|shall|should|required|may)\b",
+                                _quote_flat))
+        if _meta_only:
+            # ★ 证据**不足**（≠ 证据**错误**）⇒ ⇒ 判**待审**，不判拒收
+            _reasons.append("证据仅含引用/元话语，未陈述行为本身 ⇒ 不足确认")
+            _fv["evidence"] = "insufficient"
+
     # ⑧ ★ **主体可解析性**（★ 人工核对 05）
     #    代词主体 ⇒ 无法可靠确定主体 ⇒ **不进正式归并** ⇒ 判待审
     _subject = str(subject or "").strip()
@@ -228,6 +244,23 @@ _L2_USER = """候选声明（JSON）：
   "reason": "<整体判定依据>"}}"""
 
 
+def l2_deterministic_check(*, payload: dict, quote: str) -> tuple[str, str]:
+    """**确定性的语义支持检查**（★ LLM 之前的廉价前置）。
+
+    ★ 人工核对 07：★ 验证器必须**能识别不受支持的结论**
+    ⇒ ⇒ 这一步是**确定性**的（不依赖 LLM 的自证）
+    ⇒ ⇒ LLM 只在确定性检查**通过**后才需要跑。
+
+    Returns:
+        ``(verdict, reason)``；verdict ∈ 支持 / 不支持 / 不确定。
+    """
+    from core.fused.extraction.normative_extract import semantic_support
+    return semantic_support(
+        quote, str(payload.get("action") or ""),
+        str(payload.get("object") or ""),
+        strength=str(payload.get("strength") or ""))
+
+
 def l2_check(*, payload: dict, quote: str, llm=None,
              model_hint: str = "") -> VerificationResult:
     """**L2 · 语义支持检查**（★ 独立核验）。
@@ -249,6 +282,13 @@ def l2_check(*, payload: dict, quote: str, llm=None,
     Returns:
         :class:`VerificationResult`（verifier_version 记为 ``l2-v1``）。
     """
+    # ★ **确定性语义支持前置**（★ 07）⇒ 命中即拒收（不依赖 LLM）
+    _det_v, _det_r = l2_deterministic_check(payload=payload, quote=quote)
+    if _det_v == "不支持":
+        return VerificationResult(REJECTED, [f"确定性检查：{_det_r}"],
+                                  {"action": "不支持"},
+                                  verifier_version="l2-det-v1")
+
     if llm is None:
         try:
             from core.llm import DeepSeekClient
@@ -350,4 +390,38 @@ def detect_conflict(claims: list[dict]) -> Optional[dict]:
 __all__ = [
     "CONFIRMED", "PENDING", "REJECTED", "CONFLICT",
     "VerificationResult", "l1_check", "l2_check", "detect_conflict",
+    "publish_gate", "l2_deterministic_check",
 ]
+
+
+# ===========================================================================
+# 发布闸（★ 正式发布流程的**隔离**判定）
+# ===========================================================================
+
+def publish_gate(*, payload: dict, subject: str = "",
+                 verdict: str = "") -> tuple[bool, str]:
+    """判定一条候选规则**能否进入正式事实库**（★ 隔离机制）。
+
+    ★ 人工核对 05 / 06 / 16：★ 测试必须验证「**正式发布流程**确实隔离」
+      ⇒ ⇒ 不能只测 L1 的判定 ⇒ ⇒ 需要一个**发布闸**被真实路径调用。
+
+    规则（★ 全部可解释、可复现）：
+      · 主体必须**可解析**（★ 代词主体 ⇒ 隔离 ⇒ 待审）
+      · 规范强度必须**已知**（★ 未知 ⇒ 隔离 ⇒ 待审）
+      · 校验结论必须是**已证实**（待审 / 拒收 ⇒ 隔离）
+
+    Returns:
+        ``(可发布, 原因)``。
+    """
+    from core.fused.extraction.normative_rule import subject_resolvable
+    _reasons: list[str] = []
+    _subj = str(subject or "").strip()
+    if not subject_resolvable(_subj):
+        _reasons.append(f"主体不可靠（{_subj or '空'}）")
+    if not (payload or {}).get("strength"):
+        _reasons.append("规范强度未知")
+    if verdict and verdict != CONFIRMED:
+        _reasons.append(f"校验结论非已证实（{verdict}）")
+    if _reasons:
+        return False, "；".join(_reasons)
+    return True, "可进入正式事实库"
