@@ -68,6 +68,7 @@ def cache_key(*, prompt_version: str, input_fingerprint: str,
               max_tokens: Optional[int] = None,
               model: Optional[str] = None,
               model_snapshot: Optional[str] = None,
+              prompt_digest: str = "",
               parser_version: str = PARSER_VERSION,
               schema_version: str = SCHEMA_VERSION,
               verifier_version: str = VERIFIER_VERSION) -> str:
@@ -79,6 +80,8 @@ def cache_key(*, prompt_version: str, input_fingerprint: str,
     """
     _parts = {
         "prompt_version": str(prompt_version),
+        # ★ prompt **内容**指纹（★ 改 prompt ⇒ 键变 ⇒ 旧缓存自动失效）
+        "prompt_digest": str(prompt_digest or ""),
         "model": str(model or model_identity()),
         "model_snapshot": str(model_snapshot or ""),
         "inference": inference_config(temperature, max_tokens),

@@ -189,7 +189,12 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
          for b in blocks]).encode("utf-8")).hexdigest()
     block_hash = _cache_key(prompt_version=PROSE_SEMANTICS_PROMPT_VERSION,
                             input_fingerprint=_block_hash,
-                            temperature=0.1, max_tokens=_MAX_TOKENS)
+                            temperature=0.1, max_tokens=_MAX_TOKENS,
+                            # ★ 2026-11-13（实现验收发现）：prompt **内容**指纹
+                            #   ⇒ 改 prompt ⇒ 键变 ⇒ **旧缓存自动失效**
+                            #   ⇒ 否则「改了 prompt 但没改版本号」⇒ 命中旧缓存
+                            #   ⇒ ⇒ **用旧结果冒充新结果**
+                            prompt_digest=_hash_text(_PROMPT))
     cached = _load_cache(protocol, block_hash)
     if cached is not None:
         raw_items = list(cached.get("items") or [])
