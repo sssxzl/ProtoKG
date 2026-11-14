@@ -669,7 +669,7 @@ Finalization 后需验证：
 
 **检查点 1：Repository Semantic Cleanliness Gate**
 
-`kb/`、`（已移除）`、``、`core/`、正式 tests source files、Registry、Schema 不存在非预期 diff。
+`kb/`、`（已移除）、``、`core/`、正式 tests source files、Registry、Schema 不存在非预期 diff。
 
 **检查点 2：Generated Fixture Output Gate**
 

@@ -272,7 +272,7 @@ def extract_rtsp_messages(text):
 
 ChatAFL 的 C 代码（`chat-llm.c`）、prompt、`format_request_message()` **全部不改**。它只把 LLM 回答原样写进 `.raw`，对空 content 已有 `continue` 保护——这正好被我们的「置空 content 丢弃」策略复用。
 
-唯一需要确认的是 ChatAFL 的 LLM endpoint 指向代理。当前链路已打通（`docs/test_proxy.py（已移除）`（已移除） 与 `docs/chat_afl_enrich.py（已移除）`（已移除） 均用 `http://192.168.37.1:18080/chat/completions` 验证过），即：
+唯一需要确认的是 ChatAFL 的 LLM endpoint 指向代理。当前链路已打通（`docs/test_proxy.py`（已移除） 与 `docs/chat_afl_enrich.py`（已移除） 均用 `http://192.168.37.1:18080/chat/completions` 验证过），即：
 
 ```
 LLM endpoint = http://192.168.37.1:18080/chat/completions
@@ -397,7 +397,7 @@ E:/app/Anaconda3/python.exe scripts/llm_proxy.py
 ### 7.4 本机连通性冒烟（可选，先确认转发正常）
 
 ```bash
-E:/app/Anaconda3/python.exe docs/test_proxy.py（已移除）
+E:/app/Anaconda3/python.exe docs/test_proxy.py`（已移除）
 # 期望打印 content = OK（普通调用，无增强特征，改写层透传）
 ```
 
@@ -439,7 +439,7 @@ curl -s http://192.168.37.1:18080/chat/completions \
 ### 7.7 重启 RQ 实验验证语料干净
 
 1. 确认代理已带改写开启运行。
-2. 重新触发 RQ1.2 的 ChatAFL 增强流程（或先小规模跑一轮 `docs/chat_afl_enrich.py（已移除）`（已移除） 复现路径）。
+2. 重新触发 RQ1.2 的 ChatAFL 增强流程（或先小规模跑一轮 `docs/chat_afl_enrich.py`（已移除） 复现路径）。
 3. 检查产出的 `.raw` 种子：`grep -lE "Explanation|Here is|^\`\`\`" <seed_dir>/*.raw` 应**无命中**（或命中数从 96% 降到接近 0）。
 4. 统计被丢弃的增强条数（代理日志 `改写[...] 丢弃(无合法报文)` 的计数），确认丢弃率可接受。
 5. 复核语法抽取路径仍正常：确认生成的模板仍为 `COMMAND: ["..."]` 格式、未被改写层破坏。
