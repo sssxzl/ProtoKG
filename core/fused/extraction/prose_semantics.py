@@ -140,36 +140,87 @@ def _cache_path(protocol: str) -> Path:
 
 
 def _load_cache(protocol: str, block_hash: str) -> Optional[dict]:
-    """读缓存（★ **只认「已完成」的缓存**）。
+    """读缓存（★ M1-①：**四类状态 + 旧格式兼容**）。
 
     ★ 2026-11-13：曾出现「LLM 调用失败 ⇒ 仍把空/部分结果写进缓存」⇒
       ⇒ 后续命中**空缓存** ⇒ **永不重跑** ⇒ 缺口被永久掩盖。
       ⇒ ⇒ 现在缓存带 ``complete`` 标志；**未跑完的不算命中** ⇒ ⇒ 会重跑。
+
+    ★ **M1-① 的状态语义**（★ 四类 + 旧格式）：
+      · ``success_nonempty`` ⇒ 正常命中
+      · ``success_empty``    ⇒ 正常命中（★ 合法空结果，不是失败）
+      · ``filtered_zero``    ⇒ 正常命中（★ 映射阶段全拒收 ⇒ **不自动重试**，
+        但**必须**带拒收原因 ⇒ 进入质量观察）
+      · ``failed_incomplete`` ⇒ **不命中**（★ 失败不得复用）
+      · ``legacy_unknown``   ⇒ 正常命中（★ 旧缓存无状态字段 ⇒ **不得假装成功**，
+        但也**不得无差别删除** ⇒ 标记为未知）
     """
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FAILED_INCOMPLETE, CACHE_STATUS_LEGACY_UNKNOWN,
+    )
     p = _cache_path(protocol)
     if not p.is_file():
         return None
     try:
         d = json.loads(p.read_text(encoding="utf-8"))
     except (OSError, ValueError):
+        # ★ 缓存文件损坏 / 写入中断 ⇒ **不命中**（★ 不得误认为成功）
         return None
     if not isinstance(d, dict) or d.get("block_hash") != block_hash:
         return None
     # ★ 旧缓存没有 complete 标志 ⇒ 视为「已完成」（向后兼容）
     if d.get("complete") is False:
         return None
+    # ★ M1-①：**状态缺失 ⇒ 标记 legacy_unknown**（★ 不假装成功，也不删除）
+    _st = d.get("status")
+    if not _st:
+        d["status"] = CACHE_STATUS_LEGACY_UNKNOWN
+        d["legacy_unknown"] = True
+    elif _st == CACHE_STATUS_FAILED_INCOMPLETE:
+        # ★ 明确标记为失败不完整 ⇒ **不命中**（★ 双保险：complete 标志之外）
+        return None
     return d
 
 
 def _save_cache(protocol: str, block_hash: str, items: list[dict],
-                complete: bool = True) -> None:
-    """写缓存（★ ``complete=False`` ⇒ 未跑完 ⇒ **下次会重跑**）。"""
+                complete: bool = True, *,
+                status: Optional[str] = None,
+                drop_reasons: Optional[dict] = None,
+                mapped_count: Optional[int] = None,
+                llm_calls: Optional[int] = None) -> None:
+    """写缓存（★ M1-①：**显式状态 + 拒收原因 + 诊断计数**）。
+
+    ★ ``complete=False`` ⇒ 未跑完 ⇒ **下次会重跑**（★ 失败不固化）
+    ★ ``status`` 缺省时按「complete + items 是否为空」推导：
+      · complete=False ⇒ ``failed_incomplete``
+      · complete=True 且 items 为空 ⇒ ``success_empty``
+      · complete=True 且 items 非空 ⇒ ``success_nonempty``
+    ★ ``filtered_zero`` 只能由**映射后**的调用方显式传入（★ 因为要等拒收原因）
+    """
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FAILED_INCOMPLETE, CACHE_STATUS_SUCCESS_EMPTY,
+        CACHE_STATUS_SUCCESS_NONEMPTY, key_manifest,
+    )
+    if not status:
+        if not complete:
+            status = CACHE_STATUS_FAILED_INCOMPLETE
+        elif not items:
+            status = CACHE_STATUS_SUCCESS_EMPTY
+        else:
+            status = CACHE_STATUS_SUCCESS_NONEMPTY
     p = _cache_path(protocol)
     p.parent.mkdir(parents=True, exist_ok=True)
-    from core.fused.extraction.cache_key import key_manifest
     _payload = {"block_hash": block_hash, "items": items,
                 "complete": bool(complete),
+                "status": status,
                 "key_manifest": key_manifest(block_hash)}
+    # ★ M1-③ 的诊断计数（★ 只增 ⇒ 不影响既有解析）
+    if drop_reasons is not None:
+        _payload["drop_reasons"] = dict(drop_reasons)
+    if mapped_count is not None:
+        _payload["mapped_count"] = int(mapped_count)
+    if llm_calls is not None:
+        _payload["llm_calls"] = int(llm_calls)
     p.write_text(json.dumps(_payload, ensure_ascii=False, indent=2),
                  encoding="utf-8")
 
@@ -308,6 +359,18 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                     f"（起始行号 {b.get('start')}）=====\n{b.get('text', '')}")
             user = _PROMPT + "".join(body_parts)
             _dedup_key = _hash_text("".join(body_parts))
+            # ★ M1-①：**模型身份一致性检查**（★ 只统计，不改行为、不占诊断记录）
+            #   缓存键里的 model 取自 env（`model_identity()`）⇒ 若**实际 client**
+            #   用了别的模型 ⇒ 键与实际模型不一致 ⇒ ⇒ 记进 stats（不静默）
+            #   ★ 生产场景下 `DeepSeekClient` 读的也是同一 env ⇒ ⇒ 二者同源；
+            #   ★ 仅当调用方传入**显式指定模型**的 client 时才会不一致。
+            _client_model = str(getattr(llm, "model", "") or "")
+            if _client_model:
+                from core.fused.extraction.cache_key import model_identity
+                _env_model = model_identity()
+                if _client_model != _env_model:
+                    stats.setdefault("model_identity_mismatch", []).append({
+                        "client_model": _client_model, "env_model": _env_model})
             _reject = guard.before_call(_dedup_key)
             if _reject:
                 stats.setdefault("blocked", []).append(_reject)
@@ -643,8 +706,29 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     stats["raw_items_dropped"] = sum(_drop.values())
     stats["drop_reasons"] = dict(_drop)
     stats["input_blocks"] = len(blocks or [])
+    # ★ M1-①：**回写缓存状态**（★ 区分「合法空」/「全被拒收」/「失败不完整」）
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FILTERED_ZERO, CACHE_STATUS_SUCCESS_EMPTY,
+        CACHE_STATUS_SUCCESS_NONEMPTY,
+    )
+    if stats.get("failures"):
+        _cache_status = None            # ★ 失败 ⇒ 保持 complete=False（不固化）
+    elif not raw_items:
+        _cache_status = CACHE_STATUS_SUCCESS_EMPTY
+    elif not norms:
+        # ★ LLM 返回了候选，但**全部被映射校验拒收** ⇒ ⇒
+        #   保留缓存 + 记录全部拒收原因 ⇒ **不自动重试**（★ 用户规则三）
+        _cache_status = CACHE_STATUS_FILTERED_ZERO
+    else:
+        _cache_status = CACHE_STATUS_SUCCESS_NONEMPTY
+    # ★ **命中时也回写**（★ 只更新状态与诊断元数据 ⇒ 旧缓存命中后即获得真实状态；
+    #   ★ items 与 block_hash 原样保留 ⇒ **不无差别删除历史缓存**）
+    _save_cache(protocol, block_hash, raw_items,
+                complete=(not stats.get("failures")),
+                status=_cache_status, drop_reasons=dict(_drop),
+                mapped_count=len(norms), llm_calls=stats.get("calls"))
+    stats["cache_status"] = _cache_status
     if _diag is not None:
-        _diag.input_blocks = len(blocks or [])
         _diag.input_blocks = len(blocks or [])
         _mrec = _diag.new_record(
             document=(blocks[0].get("doc") if blocks else None),

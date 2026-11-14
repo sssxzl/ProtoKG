@@ -116,6 +116,39 @@ def key_manifest(key: str) -> dict:
     }
 
 
+# ════════════════════════════════════════════════════════════════════
+# ★ M1-① 缓存状态分类（★ 四类 + 旧格式）
+# ════════════════════════════════════════════════════════════════════
+#: LLM 成功、解析成功、有有效候选 ⇒ 正常缓存
+CACHE_STATUS_SUCCESS_NONEMPTY = "success_nonempty"
+#: LLM 成功、解析成功、**合法返回空结果** ⇒ 正常缓存（★ 不是失败）
+CACHE_STATUS_SUCCESS_EMPTY = "success_empty"
+#: LLM 返回候选，但**全部被映射校验拒收** ⇒ ★ 保留缓存 + 记录全部拒收原因，
+#:   **进入质量观察，不自动重试**（★ 用户规则三）
+CACHE_STATUS_FILTERED_ZERO = "filtered_zero"
+#: 请求失败 / 输出截断 / JSON 或 Schema 解析失败 ⇒ ★ **不得**作为成功缓存命中
+CACHE_STATUS_FAILED_INCOMPLETE = "failed_incomplete"
+#: 旧缓存**没有状态字段** ⇒ 状态不可判断 ⇒ 标记为未知（★ 不得假装成功）
+CACHE_STATUS_LEGACY_UNKNOWN = "legacy_unknown"
+
+#: ★ 全部合法状态集合
+CACHE_STATUSES = (
+    CACHE_STATUS_SUCCESS_NONEMPTY,
+    CACHE_STATUS_SUCCESS_EMPTY,
+    CACHE_STATUS_FILTERED_ZERO,
+    CACHE_STATUS_FAILED_INCOMPLETE,
+    CACHE_STATUS_LEGACY_UNKNOWN,
+)
+
+#: ★ **可作为「成功命中」的状态**（★ failed_incomplete 明确排除）
+CACHE_HITTABLE_STATUSES = (
+    CACHE_STATUS_SUCCESS_NONEMPTY,
+    CACHE_STATUS_SUCCESS_EMPTY,
+    CACHE_STATUS_FILTERED_ZERO,
+    CACHE_STATUS_LEGACY_UNKNOWN,
+)
+
+
 __all__ = [
     "PARSER_VERSION", "SCHEMA_VERSION", "VERIFIER_VERSION",
     "DEFAULT_TEMPERATURE", "DEFAULT_MAX_TOKENS",
