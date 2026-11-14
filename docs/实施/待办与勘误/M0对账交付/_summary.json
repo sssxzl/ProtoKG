@@ -1,0 +1,22 @@
+{
+  "stat": {
+    "pending_semantics|待审隔离": 399,
+    "kind:prose_semantics": 349,
+    "kind:prose_constraint": 130,
+    "rejected_unsupported|正确排除": 68,
+    "hub_or_consumer_invisible|消费未命中": 8,
+    "shadow_only|影子未发布": 4
+  },
+  "kind_stat": {
+    "prose_semantics|pending": 349,
+    "prose_constraint|pending": 58,
+    "prose_constraint|rejected": 68,
+    "prose_constraint|confirmed": 4
+  },
+  "map_stat": {
+    "映射产出 fact 数 > 0": 479,
+    "非 canonical（普通文本）": 349,
+    "未进中枢": 479,
+    "是 canonical 规范规则([RULE:v1])": 130
+  }
+}
