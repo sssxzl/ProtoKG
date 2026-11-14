@@ -11,7 +11,7 @@
 | **知识源层** | [知识源层/](知识源层/README.md) | `core/fused/extraction/`（各源） | 18 |
 | **抽取层** | [抽取层/](抽取层/README.md) | `core/fused/extraction/`（通用） | 4 |
 | **中枢层** | [中枢层/](中枢层/README.md) | `core/fused/hub/` | 7 |
-| **知识图层** | [知识图层/](知识图层/README.md) | `core/fused/graph/` | 2 |
+| **知识整理层** | [知识整理层/](知识整理层/README.md) | `core/fused/graph/` | 2 |
 | **种子生成层** | [种子生成层/](种子生成层/README.md) | `core/fused/downstream/` | 5 |
 | **种子校验层** | [种子校验层/](种子校验层/README.md) | `core/fused/downstream/`（校验） | 1 |
 | **护栏与质量** | [护栏与质量/](护栏与质量/README.md) | `guard/` | 1 |
@@ -26,7 +26,7 @@
 3. 顶层与契约/值形态与比较语义.md         value 形态与比较规则
 4. 知识源层/（五个源各一份）               知识从哪来
 5. 抽取层/                                 怎么抽
-6. 知识图层/                               怎么组织
+6. 知识整理层/                             怎么组织
 7. 种子生成层/                             怎么用
 8. 种子校验层/                             是否合规
 9. 护栏与质量/护栏体系.md                  怎么判对错
