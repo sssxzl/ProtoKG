@@ -315,6 +315,7 @@ class DeepSeekClient:
           [LLM]   ← 200 OK in 6.42s | resp N chars | tokens X in / Y out
         """
         import time
+        import hashlib          # ★ M1-③：原始响应指纹（★ 局部导入，与本文件风格一致）
         payload = {
             "model": self.model,
             "messages": [
@@ -351,6 +352,11 @@ class DeepSeekClient:
         usage = resp_dict.get("usage", {}) or {}
         in_tok = usage.get("prompt_tokens", 0) or 0
         out_tok = usage.get("completion_tokens", 0) or 0
+        # ★ M1-③：`finish_reason` 此前**从未被取过** ⇒ 推理模型把 max_tokens 吃光时
+        #   （实测 `finish_reason="length"` ⇒ 正式输出为空串 ⇒ JSON 解析必失败）
+        #   **无法归因** ⇒ ⇒ 这里补取（★ 只读取，不改任何行为）
+        _choice0 = (resp_dict.get("choices") or [{}])[0] or {}
+        _finish_reason = _choice0.get("finish_reason")
         log.info("[LLM]   ← %d in %.2fs | resp %d chars | tokens %d in / %d out",
                  status, elapsed, len(text), in_tok, out_tok)
 
@@ -361,6 +367,11 @@ class DeepSeekClient:
             "input_tokens": in_tok,
             "output_tokens": out_tok,
             "response_chars": len(text),
+            # ★ M1-③：以下为**观测字段**（★ 不影响任何现有调用方）
+            "model": self.model,
+            "finish_reason": _finish_reason,
+            "raw_response_sha256": hashlib.sha256(
+                str(text or "").encode("utf-8")).hexdigest(),
         }
         return _safe_json_parse(text)
 

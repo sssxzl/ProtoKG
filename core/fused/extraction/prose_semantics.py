@@ -199,12 +199,40 @@ def _doc_lines_map(files: list[Path]) -> dict:
     return out
 
 
+def _chunk_id(blocks: list[dict]) -> Optional[str]:
+    """★ M1-③：批次的稳定标识（★ 文档名 + 起始行）。"""
+    if not blocks:
+        return None
+    _b = blocks[0]
+    return f"{_b.get('doc', '')}@{_b.get('start', '')}"
+
+
+def _chunk_span(blocks: list[dict]) -> Optional[str]:
+    """★ M1-③：批次的原始证据跨度（★ 起始行 ~ 结束行）。"""
+    if not blocks:
+        return None
+    _starts = [int(b.get("start") or 0) for b in blocks]
+    _ends = [int(b.get("start") or 0) + len(str(b.get("text") or "")) for b in blocks]
+    return f"L{min(_starts)}-L{max(_ends)}"
+
+
+def _model_of(llm) -> Optional[str]:
+    """★ M1-③：模型标识（★ 取不到 ⇒ None，不编造）。"""
+    return str(getattr(llm, "model", None) or "") or None
+
+
+def _cache_key_str(block_hash: str) -> Optional[str]:
+    """★ M1-③：缓存键（★ 与 :func:`cache_key` 同源计算）。"""
+    return f"prose-semantics-v2:{block_hash}"
+
+
 def _extract_blocks(protocol: str, blocks: list[dict], *,
                     entities: Optional[list] = None,
                     llm=None,
                     max_items: int = _MAX_ITEMS,
                     guard=None,
-                    doc_lines: Optional[dict] = None) -> tuple[list[dict], dict]:
+                    doc_lines: Optional[dict] = None,
+                    diagnostics=None) -> tuple[list[dict], dict]:
     """**共享内核**：对一批已切好的块做 LLM 抽取 ⇒ ``(norms, stats)``。
 
     ★ 两个入口（按文档 / 按段落）都委托到这里 ⇒ ⇒ 缓存 / 批量化 / 运行保护**同源**。
@@ -215,6 +243,7 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     stats = {"protocol": protocol, "blocks": len(blocks or []),
              "calls": 0, "retries": 0, "failures": 0, "raw_items": 0,
              "norms": 0, "rejected": 0, "triggers": {}}
+    _diag = diagnostics      # ★ M1-③：诊断收集器（★ None ⇒ 完全不记录）
     if not blocks:
         return [], stats
 
@@ -238,6 +267,16 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     if cached is not None:
         raw_items = list(cached.get("items") or [])
         stats["cache_hit"] = True
+        # ★ M1-③：缓存命中也留痕（★ 区分「缓存命中」与「真实调用」）
+        if _diag is not None:
+            _rec = _diag.new_record(
+                document=(blocks[0].get("doc") if blocks else None),
+                chunk_id=_chunk_id(blocks), source_span=_chunk_span(blocks),
+                chunk_hash=block_hash, cache_hit=True,
+                cache_key=_cache_key_str(block_hash),
+                outcome="success", error_stage=None,
+            )
+            _rec.blocks_without_candidate = 0
     else:
         stats["cache_hit"] = False
         if llm is None:
@@ -249,6 +288,15 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                 #   会被误读成「该文档没有散文语义」⇒ 缺口被掩盖）
                 stats["error"] = f"LLM 客户端不可用：{type(exc).__name__}: {exc}"
                 print(f"[通道I] {stats['error']}", file=sys.stderr)
+                if _diag is not None:
+                    _diag.new_record(
+                        document=(blocks[0].get("doc") if blocks else None),
+                        chunk_id=_chunk_id(blocks), source_span=_chunk_span(blocks),
+                        chunk_hash=block_hash, cache_hit=False,
+                        cache_key=_cache_key_str(block_hash),
+                        error_stage="request", error_type=type(exc).__name__,
+                        error_message=str(exc), outcome="abandoned",
+                    )
                 return [], stats
         raw_items = []
         for i in range(0, len(blocks), _BATCH_BLOCKS):
@@ -263,10 +311,33 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             _reject = guard.before_call(_dedup_key)
             if _reject:
                 stats.setdefault("blocked", []).append(_reject)
+                if _diag is not None:
+                    _diag.new_record(
+                        document=(batch[0].get("doc") if batch else None),
+                        chunk_id=_chunk_id(batch), source_span=_chunk_span(batch),
+                        chunk_hash=block_hash, cache_hit=False,
+                        cache_key=_cache_key_str(block_hash),
+                        error_stage="request", error_type="GuardRejected",
+                        error_message=str(_reject), outcome="abandoned",
+                    )
                 break
             ok = False
+            _batch_failed = False
             for _attempt in (1, 2):
                 stats["calls"] += 1
+                # ★ M1-③：每次调用一条结构化记录（★ 阶段可区分）
+                _rec = None
+                if _diag is not None:
+                    _rec = _diag.new_record(
+                        document=(batch[0].get("doc") if batch else None),
+                        chunk_id=_chunk_id(batch), source_span=_chunk_span(batch),
+                        chunk_hash=block_hash, cache_hit=False,
+                        cache_key=_cache_key_str(block_hash),
+                        model=_model_of(llm),
+                        prompt_digest=_hash_text(_PROMPT),
+                        parser_version=PROSE_SEMANTICS_PROMPT_VERSION,
+                        attempt=_attempt,
+                    )
                 try:
                     # ★ chat_json 的签名是 keyword-only（system= / user=）
                     # ★ max_tokens 须留足推理空间（推理模型先吃 reasoning 预算）
@@ -279,15 +350,51 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                     guard.on_failure()
                     print(f"[通道I] LLM 调用失败（第 {_attempt} 次，"
                           f"{type(exc).__name__}: {exc}）", file=sys.stderr)
+                    # ★ 区分失败阶段：JSONDecodeError ⇒ 解析阶段；其余 ⇒ 请求阶段
+                    _stage = ("json_parse"
+                              if type(exc).__name__ == "JSONDecodeError"
+                              else "request")
+                    _batch_failed = True
+                    if _rec is not None:
+                        _rec.error_stage = _stage
+                        _rec.error_type = type(exc).__name__
+                        _rec.error_message = str(exc)
+                        _rec.outcome = "failed"
+                        _meta = getattr(llm, "last_call_meta", None) or {}
+                        _rec.input_tokens = _meta.get("input_tokens")
+                        _rec.output_tokens = _meta.get("output_tokens")
+                        _rec.finish_reason = _meta.get("finish_reason")
+                        _rec.raw_response_sha256 = _meta.get("raw_response_sha256")
+                        _rec.elapsed_s = _meta.get("elapsed_s")
                     continue
+                # ★ 解析成功 ⇒ 把调用侧元数据（usage / finish_reason）补进记录
+                _meta = getattr(llm, "last_call_meta", None) or {}
+                if _rec is not None:
+                    _rec.input_tokens = _meta.get("input_tokens")
+                    _rec.output_tokens = _meta.get("output_tokens")
+                    _rec.finish_reason = _meta.get("finish_reason")
+                    _rec.raw_response_sha256 = _meta.get("raw_response_sha256")
+                    _rec.elapsed_s = _meta.get("elapsed_s")
                 if isinstance(out, str):
                     try:
                         out = json.loads(out)
-                    except (ValueError, TypeError):
+                    except (ValueError, TypeError) as exc:
                         guard.on_failure()
+                        _batch_failed = True
+                        if _rec is not None:
+                            _rec.error_stage = "json_parse"
+                            _rec.error_type = type(exc).__name__
+                            _rec.error_message = str(exc)
+                            _rec.outcome = "failed"
                         continue
                 if not isinstance(out, dict):
                     guard.on_failure()
+                    _batch_failed = True
+                    if _rec is not None:
+                        _rec.error_stage = "schema_validation"
+                        _rec.error_type = "NotDictPayload"
+                        _rec.error_message = f"payload type={type(out).__name__}"
+                        _rec.outcome = "failed"
                     continue
                 got = 0
                 for it in (out.get("items") or []):
@@ -299,10 +406,18 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                         break
                 guard.on_success()
                 ok = True
+                if _rec is not None:
+                    _rec.outcome = "success"
+                    _rec.blocks_without_candidate = got
                 break
             if ok:
                 # ★ 分批增量落缓存（成功的批不重跑）；★ **未跑完 ⇒ complete=False**
                 _save_cache(protocol, block_hash, raw_items, complete=False)
+            elif _batch_failed and _diag is not None:
+                # ★ 重试后仍失败 ⇒ 标记「放弃」（★ 与「重试恢复」区分）
+                _last = _diag.records[-1] if _diag.records else None
+                if _last is not None and _last.outcome == "failed":
+                    _last.outcome = "abandoned"
         # ★ 全部批次跑完 ⇒ complete=True（★ 失败留下的缓存会被忽略）
         _save_cache(protocol, block_hash, raw_items,
                     complete=(not stats.get("failures")))
@@ -312,28 +427,43 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     # ---- ② 过滤 + 产 norm ----
     norms: list[dict] = []
     seen: set = set()
+    # ★ M1-③：**产物映射阶段的丢弃也要留痕**（★ 此前完全静默）
+    _drop = {"missing_entity": 0, "missing_meaning": 0, "missing_doc": 0,
+             "duplicate": 0, "missing_span": 0, "span_out_of_range": 0,
+             "entity_not_in_span": 0, "subject_unresolved": 0,
+             "kind_not_mapped": 0}
     for it in raw_items:
         ent = str(it.get("entity") or "").strip()
         meaning = str(it.get("meaning") or "").strip()
         doc = str(it.get("doc") or "").strip()
         if not ent or not meaning or not doc:
+            if not ent:
+                _drop["missing_entity"] += 1
+            if not meaning:
+                _drop["missing_meaning"] += 1
+            if not doc:
+                _drop["missing_doc"] += 1
             continue
         try:
             span_line = int(it.get("span"))
         except (TypeError, ValueError):
+            _drop["missing_span"] += 1       # ★ M1-③：静默拒收留痕
             continue                         # ★ span 必填 ⇒ 无 span 直接拒收
         if span_line <= 0:
+            _drop["missing_span"] += 1       # ★ M1-③
             continue
         lines = (doc_lines or {}).get(doc)
         if lines is not None:
             idx = span_line - 1
             if not (0 <= idx < len(lines)):
+                _drop["span_out_of_range"] += 1   # ★ M1-③
                 continue                     # span 越界 ⇒ 拒收
             # ★ 可核对：实体名须在**证据跨度内**（含前后若干行）出现
             #   ★ 2026-11-13（独立复核意见 P0-2）：旧逻辑只看 **span 单行**
             #     ⇒ 实体名在**相邻行**时被**误拒**（如 S09/S19/S29/S39）
             if entity_in_span(lines, span_line, ent) is None:
                 stats["rejected"] += 1
+                _drop["entity_not_in_span"] += 1   # ★ M1-③
                 continue
         con = str(it.get("constraint") or "").strip()
         # ★ ★ **主体归属核验**（★ P0-1）：★ `entity` 只是**原文提及的实体**
@@ -509,6 +639,24 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
 
 
     stats["norms"] = len(norms)
+    # ★ M1-③：**产物映射阶段的丢弃统计**（★ 此前完全静默 ⇒ 无法解释产出量差异）
+    stats["raw_items_dropped"] = sum(_drop.values())
+    stats["drop_reasons"] = dict(_drop)
+    stats["input_blocks"] = len(blocks or [])
+    if _diag is not None:
+        _diag.input_blocks = len(blocks or [])
+        _diag.input_blocks = len(blocks or [])
+        _mrec = _diag.new_record(
+            document=(blocks[0].get("doc") if blocks else None),
+            chunk_id=_chunk_id(blocks), source_span=_chunk_span(blocks),
+            chunk_hash=block_hash, cache_hit=bool(stats.get("cache_hit")),
+            cache_key=_cache_key_str(block_hash),
+            outcome="success", error_stage="mapping",
+            blocks_without_candidate=sum(_drop.values()),
+        )
+        _mrec.error_message = (
+            f"raw_items={len(raw_items)} → norms={len(norms)}；"
+            f"丢弃 {json.dumps(_drop, ensure_ascii=False)}")
     try:
         stats["guard"] = guard.to_dict()
     except Exception:                        # noqa: BLE001
@@ -519,14 +667,20 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
 def extract_prose_norms(protocol: str, files: list[Path], *,
                          entities: Optional[list] = None,
                          llm=None,
-                         max_items: int = _MAX_ITEMS) -> list[dict]:
-    """对**一批未命中文档**抽散文语义 ⇒ 返回 norm 列表（★ 按文档切块）。"""
+                         max_items: int = _MAX_ITEMS,
+                         diagnostics=None) -> list[dict]:
+    """对**一批未命中文档**抽散文语义 ⇒ 返回 norm 列表（★ 按文档切块）。
+
+    ★ M1-③：``diagnostics`` 传入 :class:`LLMDiagnostics` ⇒ 记录每次调用与失败
+      （★ 不传 ⇒ 完全不记录 ⇒ **行为与改前逐字节一致**）。
+    """
     _blocks = _collect_blocks(list(files or []))
     if not _blocks:
         return []
     _norms, _stats = _extract_blocks(protocol, _blocks, entities=entities,
                                     llm=llm, max_items=max_items,
-                                    doc_lines=_doc_lines_map(list(files or [])))
+                                    doc_lines=_doc_lines_map(list(files or [])),
+                                    diagnostics=diagnostics)
     return _norms
 
 
@@ -535,7 +689,8 @@ def extract_window_norms(protocol: str, files: list, *,
                          llm=None,
                          max_items: int = 5,
                          guard=None,
-                         shadow: bool = True) -> dict:
+                         shadow: bool = True,
+                         diagnostics=None) -> dict:
     """**窗口级**散文语义抽取（★ 第二批）。
 
     ★ 与 :func:`extract_prose_norms` 的**唯一差异**是**切块粒度**：
@@ -590,7 +745,8 @@ def extract_window_norms(protocol: str, files: list, *,
         _norms, _istats = _extract_blocks(protocol, _blocks, entities=entities,
                                          llm=llm, max_items=max_items,
                                          guard=_guard,
-                                         doc_lines=_doc_lines_map(list(files or [])))
+                                         doc_lines=_doc_lines_map(list(files or [])),
+                                         diagnostics=diagnostics)
         _stats["norms"] = len(_norms)
         _stats["inner"] = _istats
         # ★ L1/L2 的结果提到**外层**（★ 便于观测；★ 内层在 _istats 里）
