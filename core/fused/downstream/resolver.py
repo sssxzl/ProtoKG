@@ -71,7 +71,7 @@ def _claim_key(claim: dict) -> str:
 #:     ④ ``{"target_field":…, "operator":…, "operand": [...]}`` —— 语义算子 ⇒ 逐字段定
 #:   ⇒ 对 ③④ 无序化会**破坏语义**（序列被当成集合）⇒ 只对 ①② 无序化。
 #:
-#: ★ 规范见 ``docs/设计/顶层设计/值形态与比较语义.md``
+#: ★ 规范见 ``docs/设计/顶层与契约/值形态与比较语义.md``
 UNORDERED_STRUCT_FIELDS = ("fields", "headers")
 
 

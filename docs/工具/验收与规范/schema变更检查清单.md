@@ -6,7 +6,7 @@
 - [ ] 抽取器产出的 aspect 名（core/fused/extraction/）
 - [ ] 消费端桶映射（core/fused/hub/hub_view.py 的 _BUCKET_BY_*）
 - [ ] resolver 的消解语义（core/fused/downstream/resolver.py 的 _ASPECT_SEMANTICS）
-- [ ] 契约文档（docs/设计/顶层设计/结构化知识中枢设计.md）
+- [ ] 契约文档（docs/设计/中枢层/结构化知识中枢设计.md）
 
 ## 改 `subject_type_registry.json` 时 ⇒ 必须同步检查
 

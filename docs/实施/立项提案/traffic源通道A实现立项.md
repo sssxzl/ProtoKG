@@ -1,9 +1,9 @@
 # Traffic Lane A 实现立项
 
 > 状态：**Implemented**（2026-10-04；阶段 I / II / III 全部完成）
-> 上游：`docs/设计/各源设计/流量源/traffic源规则集设计.md`（Final Frozen）
-> 　　　`docs/设计/各源设计/流量源/traffic源溯源接口.md`（Final Frozen，§0–§6 全部转正）
-> 　　　`docs/设计/各源设计/流量源/traffic源观测独立性设计.md` §14 E38
+> 上游：`docs/设计/知识源层/流量源/traffic源规则集设计.md`（Final Frozen）
+> 　　　`docs/设计/知识源层/流量源/traffic源溯源接口.md`（Final Frozen，§0–§6 全部转正）
+> 　　　`docs/设计/知识源层/流量源/traffic源观测独立性设计.md` §14 E38
 > 本文件为 Lane A 实现阶段的立项书。**Lane A v1 实现已完成。**
 
 **实现产出（2026-10-04）**
@@ -85,7 +85,7 @@ Hub protocol Fact，**不产生任何 Hub Candidate / Claim / Fact**。
 - G5 / G7 的 extraction coverage 修复（Hub Contract 侧，见 §2.2）
 - G6（已按 D18 移出，见 §2.1）
 - §8 扩展（独立议题）
-- **`core/fused/validation.py` 的 validator invariant**——§3.2 已裁定为「不做」
+- **`core/fused/hub/validation.py` 的 validator invariant**——§3.2 已裁定为「不做」
 - `derived/hub/` 下任何写入（含测试；`fused_canonical_spec.md` L664 契约）
 
 ---

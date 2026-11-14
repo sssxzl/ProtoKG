@@ -1,7 +1,7 @@
 """core/fused/expert_note.py —— expert_note 维度 JSON → Fact 的原生映射（v3 专家判断）。
 
 从 kb/<protocol>/expert_note/*.json（schema v3, 4 维度）直接映射到 Fact。
-v3 定位（对齐 docs/设计/各源设计/专家注记源/专家注记重新设计.md v3）：expert_note 是「专家的判断和引导」，
+v3 定位（对齐 docs/设计/知识源层/专家注记源/专家注记重新设计.md v3）：expert_note 是「专家的判断和引导」，
 回答「哪里危险、怎么进入深层、该往哪使劲」，不重复客观源（rfc/source/traffic/vuln）
 能给的客观事实。
 

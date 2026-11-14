@@ -145,7 +145,7 @@ def check(seed: SeedRecord, k: Knowledge) -> list[Violation]:
             #     ⇒ 无法用模式替代。
             #   ⇒ ★ 因此：**只统计、不判违规**（保留信息，不污染「合规/越界」分级）。
             #   ⇒ ★ 要恢复这项判定 ⇒ 中枢需补：① **封闭取值域声明**（区别于示例）
-            #     或 ② **头的语法模式**（ABNF/BNF 片段）⇒ 见 docs/设计/顶层设计/值形态与比较语义.md
+            #     或 ② **头的语法模式**（ABNF/BNF 片段）⇒ 见 docs/设计/顶层与契约/值形态与比较语义.md
             _value_mismatch.append((fn, hname, hval[:40]))
 
     # ---- 跨报文 ----

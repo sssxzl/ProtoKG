@@ -4,7 +4,7 @@
 ★ 为什么需要它
   勘误待办 §2 指出一个**结构性缺口**：
 
-    「``core/fused/hub/registry/*.json`` 与 ``docs/设计/顶层设计/*.md`` 是
+    「``core/fused/hub/registry/*.json`` 与 ``docs/设计/顶层与契约/*.md`` 是
       **并行维护**的；schema 可被变更，而冻结文档无变更流程
       ⇒ **schema 变更后文档陈旧是结构性必然，不是偶然**。」
 
@@ -94,16 +94,16 @@ D1_ALLOW_DIRS = (
 D1_ALLOW_FILES = (
     "docs/实施/路线与里程碑/全局/调试计划.md",
     "docs/实施/待办与勘误/中枢契约勘误待办.md",
-    "docs/设计/顶层设计/协议知识中枢架构调整方案.md",
-    "docs/设计/顶层设计/协议知识中枢架构调整方案评审.md",
-    "docs/设计/知识图/知识图整理层整合方案.md",
-    "docs/设计/顶层设计/跨源污染修复方案.md",
-    "docs/设计/抽取与形态/RFC形态分类与通用抽取落地方案.md",
-    "docs/设计/知识图/状态机抽取方法谱系与落地方案.md",
-    "docs/设计/抽取与形态/二进制协议处理流程设计.md",
-    "docs/设计/顶层设计/结构化知识中枢设计.md",
-    "docs/设计/顶层设计/设计思想与设计方案.md",
-    "docs/设计/顶层设计/中枢重设计改造方案.md",
+    "docs/设计/中枢层/协议知识中枢架构调整方案.md",
+    "docs/设计/中枢层/协议知识中枢架构调整方案评审.md",
+    "docs/设计/知识图层/知识图整理层整合方案.md",
+    "docs/设计/顶层与契约/跨源污染修复方案.md",
+    "docs/设计/抽取层/RFC形态分类与通用抽取落地方案.md",
+    "docs/设计/知识图层/状态机抽取方法谱系与落地方案.md",
+    "docs/设计/抽取层/二进制协议处理流程设计.md",
+    "docs/设计/中枢层/结构化知识中枢设计.md",
+    "docs/设计/顶层与契约/设计思想与设计方案.md",
+    "docs/设计/中枢层/中枢重设计改造方案.md",
     "docs/工具/决策记录/已决事项.md",
     # ★ 历史交接/标注类文档（**过程记录** ⇒ 引用旧路径是如实记录）
     "docs/工具/交接文档.md",
@@ -139,8 +139,21 @@ D3_SCOPE_FILES = (
 )
 D3_SCOPE_DIRS = (
     "docs/工具/验收与规范/",     # 验收与规范（当前生效）
-    "docs/设计/顶层设计/",       # 顶层设计（当前生效）
+    "docs/设计/顶层与契约/",       # 顶层契约（当前生效）
+    "docs/设计/中枢层/",           # 中枢层（当前生效）
+    "docs/设计/护栏与质量/",       # 护栏与质量（当前生效）
 )
+
+
+#: ★ **历史稿标记**（★ 文件头含这些词 ⇒ 跳过 D3「文档引用的路径」检查）
+#:   ⇒ 理由：历史设计稿里的代码路径**必然**随重构失效 ⇒ 不应判为「文档-代码不一致」
+HISTORY_MARKERS = ("历史稿", "状态：历史", "状态: 历史")
+
+
+def _is_history_doc(text: str) -> bool:
+    """是否为历史稿（★ 只看文件头前 40 行 ⇒ 避免正文误判）。"""
+    _head = "\n".join(text.split("\n")[:40])
+    return any(_m in _head for _m in HISTORY_MARKERS)
 
 
 def _iter_text_files(roots: tuple[str, ...], exts: tuple[str, ...]):
@@ -212,9 +225,9 @@ def _registry_names(filename: str, key: str = "name") -> list[str]:
 def check_d2() -> list[dict]:
     """D2 契约↔文档：注册表的集合在契约文档里对得上。"""
     problems: list[dict] = []
-    contract_doc = ROOT / "docs" / "设计" / "顶层设计" / "结构化知识中枢设计.md"
+    contract_doc = ROOT / "docs" / "设计" / "中枢层" / "结构化知识中枢设计.md"
     if not contract_doc.is_file():
-        return [{"code": "D2", "path": "docs/设计/顶层设计/结构化知识中枢设计.md",
+        return [{"code": "D2", "path": "docs/设计/中枢层/结构化知识中枢设计.md",
                  "line": 0, "detail": "契约文档缺失"}]
     text = contract_doc.read_text(encoding="utf-8")
 
@@ -227,7 +240,7 @@ def check_d2() -> list[dict]:
     for cid in cats:
         if cid not in text:
             problems.append({
-                "code": "D2", "path": "docs/设计/顶层设计/结构化知识中枢设计.md", "line": 0,
+                "code": "D2", "path": "docs/设计/中枢层/结构化知识中枢设计.md", "line": 0,
                 "detail": f"知识分类「{cid}」在契约（knowledge_slots.json）里有，但契约文档里没提到",
             })
 
@@ -245,7 +258,7 @@ def check_d2() -> list[dict]:
         missing = [n for n in names if n not in text]
         if missing and len(missing) <= 3:
             problems.append({
-                "code": "D2", "path": "docs/设计/顶层设计/结构化知识中枢设计.md", "line": 0,
+                "code": "D2", "path": "docs/设计/中枢层/结构化知识中枢设计.md", "line": 0,
                 "detail": f"{fn} 的 {len(missing)} 个条目未在契约文档出现：{missing}",
             })
     return problems
@@ -279,6 +292,11 @@ def check_d3() -> list[dict]:
             continue
         if rel in D3_ALLOW_FILES:
             continue
+        try:
+            if _is_history_doc(p.read_text(encoding="utf-8", errors="replace")):
+                continue      # ★ 历史稿 ⇒ 跳过路径存活检查
+        except OSError:
+            pass
         try:
             text = p.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
@@ -332,7 +350,7 @@ def schema_change_checklist() -> str:
             "抽取器产出的 aspect 名（core/fused/extraction/）",
             "消费端桶映射（core/fused/hub/hub_view.py 的 _BUCKET_BY_*）",
             "resolver 的消解语义（core/fused/downstream/resolver.py 的 _ASPECT_SEMANTICS）",
-            "契约文档（docs/设计/顶层设计/结构化知识中枢设计.md）",
+            "契约文档（docs/设计/中枢层/结构化知识中枢设计.md）",
         ],
         "subject_type_registry.json": [
             "hub_view 的桶映射与主体类型判断",

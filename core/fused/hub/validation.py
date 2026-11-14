@@ -1,4 +1,4 @@
-"""core/fused/validation.py —— fail-closed 验证。
+"""core/fused/hub/validation.py —— fail-closed 验证。
 
 失败即抛错, 不静默。
 """

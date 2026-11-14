@@ -203,10 +203,10 @@
 |---|---|---|---|---|
 | A0.1 补 4 个缺失协议 Profile | `profiles/{dns,dtls,ssh,tls}/profile.json` | `allowed_methods` / `canonical_flow` / `transport` / `message_schema` | 无 | 4 个 profile 存在且被 `paths.target_profile` 解析成功 |
 | A0.2 Profile 拆分（评审 R3）| 新建 `profiles/<协议>/rfc_config.json` | `method_sections` / `field_sections` / `status_sections` / `method_excludes` | A0.1 | **不动现有 `profile.json` 结构**；`_load_rfc_config` 在缺失时**显式警告**（不再静默返回空默认）|
-| A0.3 **消除重复抽取**（评审 T5 的真解）| `core/fused/rfc_extractor.py` | 同 fact_key 多次命中时：**正文 claim 进入正式 Fact**；**TOC claim 只进审计/诊断信息，不进 `all_claims` 有效证据集合** | A1.2 | SIP 冲突数 **68 → 0**；且**TOC 内容不污染规范证据**（改进.md 问题②：否则只是「重复 ID 归零」，知识污染仍在）|
+| A0.3 **消除重复抽取**（评审 T5 的真解）| `core/fused/extraction/rfc_extractor.py` | 同 fact_key 多次命中时：**正文 claim 进入正式 Fact**；**TOC claim 只进审计/诊断信息，不进 `all_claims` 有效证据集合** | A1.2 | SIP 冲突数 **68 → 0**；且**TOC 内容不污染规范证据**（改进.md 问题②：否则只是「重复 ID 归零」，知识污染仍在）|
 | A0.4 rfc 源质量闸（**拆成两类**，改进.md 问题③）| `scripts/build_hub.py` | 新增 `rfc_quality_report(facts, profile)` | A0.1 | ① **构建质量闸**（**阻断构建**）：schema 合法 / 重复 fact_id / TOC 残留 / 结构完整性 —— **不依赖人工真值集**，新增协议也能构建<br>② **离线评测**（**发布准入**，不阻断构建）：P/R/F1 / 章节层级准确率 / 人工真值对比 —— 需要真值集，缺失时**跳过而非失败** |
 | A0.5 幂等与快照（评审 M2/F5）| `scripts/build_hub.py` | `build_id = hash(输入+配置版本+模型版本)`；产物写**独立快照**后原子切换 | 无 | 同输入两次 build 产出字节一致；并发 build 不互相覆盖 |
-| A0.6 错误分类（评审 M3）| `core/fused/rfc_extractor.py` | 区分「文档解析失败 / 块分类失败 / 证据不匹配」三类，**不都变成空结果** | 无 | 报告能区分「没抽到规则」与「解析失败」|
+| A0.6 错误分类（评审 M3）| `core/fused/extraction/rfc_extractor.py` | 区分「文档解析失败 / 块分类失败 / 证据不匹配」三类，**不都变成空结果** | 无 | 报告能区分「没抽到规则」与「解析失败」|
 
 #### A1　抽取器重写（核心）
 
@@ -224,7 +224,7 @@
 
 | 任务 | 涉及文件 | 接口 | 依赖 | 验收标准 |
 |---|---|---|---|---|
-| A1.1 文档清洗 | `core/fused/rfc_extractor.py` | 复用已有 `_clean_body`；补 TOC 标记 | 无 | 清洗前后行数差可解释 |
+| A1.1 文档清洗 | `core/fused/extraction/rfc_extractor.py` | 复用已有 `_clean_body`；补 TOC 标记 | 无 | 清洗前后行数差可解释 |
 | A1.2 **TOC 过滤前置**（评审 T7）| 同上 | 新增 `_is_toc_line()`（点线 `\.{3,}` / 行尾页码）；**与 `infer_structures` 合并为同一函数**（消除两处不一致）| A1.1 | TOC 残留 **50 → 0**（SIP 口径）；**正文含数字的行不被误删** |
 | A1.3 **标题放宽 + 语义判定**（改进.md 问题①：**前移到 A1.4 之前**）| 同上 | `_RE_ANY_SECTION` 标题组改 `(.+?)`；kind 由 `rfc_config` 的 `*_sections` 判定，替代形态猜测 | A0.2 + A1.2 | `4.1.  Basic Structure`、`10.1 The OPTIONS method`、`3.1.  DATA REPRESENTATION` 均被捕获且 kind 不误判 |
 | A1.4 章节树 + **有预算的自底向上合并**（评审 F2，改进.md 问题①：**后移到 A1.3 之后**）| 同上（新增 `_parse_section_tree` / `_merge_leaf_windows`）| A1.3 | 父节内容进入窗口；**展开深度有上限、去重、引用环检测**；章节召回 ≥95% **且 precision 不低于当前基线** |
@@ -242,12 +242,12 @@
 
 | 任务 | 涉及文件 | 接口 | 依赖 | 验收标准 |
 |---|---|---|---|---|
-| B1 **两层语义模型重设计**（评审 T2）| `core/fused/models.py` | `SemanticRule` 拆为**证据层**（原文 span / 章节 / 规范版本 / source_anchor）+ **可执行层**（target_field / operator / operand / precondition / expected_behavior）；新增唯一 `rule_id` | A1 | **不可转换为可执行规则的内容只作知识候选，不进自动生成链路** |
+| B1 **两层语义模型重设计**（评审 T2）| `core/fused/hub/models.py` | `SemanticRule` 拆为**证据层**（原文 span / 章节 / 规范版本 / source_anchor）+ **可执行层**（target_field / operator / operand / precondition / expected_behavior）；新增唯一 `rule_id` | A1 | **不可转换为可执行规则的内容只作知识候选，不进自动生成链路** |
 | B2 证据有效性校验 | 同上 | 在来源窗口中**验证引用的字符区间真实存在**（评审 T6）| B1 | 引用不存在 → 规则被拒；`MUST`/`SHOULD`/`MAY`/ABNF **区分约束强度** |
 | B3 期望响应词表 | `profiles/<协议>/rfc_config.json` | `expected_response_classes`；提示词内固化该词表，**禁止 LLM 自由生成** | B1 | 抽出的期望值只允许取词表内值；词表由配置提供而非硬编码 |
-| B4 规范版本与冲突模型（评审 M1）| `core/fused/models.py` + registry | 区分**规范证据 / 实际观察 / 模型推断 / 人工确认**四类来源；支持规则撤销、替代、版本隔离 | B1 | `normative > observed` **不足以**完成消解；同字段多版本约束可共存 |
+| B4 规范版本与冲突模型（评审 M1）| `core/fused/hub/models.py` + registry | 区分**规范证据 / 实际观察 / 模型推断 / 人工确认**四类来源；支持规则撤销、替代、版本隔离 | B1 | `normative > observed` **不足以**完成消解；同字段多版本约束可共存 |
 | B5 **四库分离**（评审 T9）| `core/fused/downstream/rule_store.py` | 权威规则 / 候选规则 / 已撤销规则 / 实验反馈**分库存储** | B1 | 覆盖率**只调选择优先级**，不修改规则内容；错误规则可撤回 |
-| B6 置信度判定重写（评审 T6）| `core/fused/rfc_extractor.py` | 见 §3.2 末段（修 `replace()` 不写回、类型契约矛盾、`and` 漏标）| B2 | 显式程度 / 证据有效性 / 模型置信度**三者分开记录** |
+| B6 置信度判定重写（评审 T6）| `core/fused/extraction/rfc_extractor.py` | 见 §3.2 末段（修 `replace()` 不写回、类型契约矛盾、`and` 漏标）| B2 | 显式程度 / 证据有效性 / 模型置信度**三者分开记录** |
 | B7 `bundle` 契约扩展 | `core/fused/downstream/rag_seedgen.py:assemble_bundle` | 新增 `semantic_rules` 键（**唯一破坏性改动**，四层签名不变，向后兼容）| B1 | 旧消费者读旧 bundle 不受影响 |
 
 **里程碑 B 退出条件**：规则 **P/R/F1**（对独立真值集）、**可执行率**、**人工复核成本**达到预先设定门槛；且 `semantic_enhanced` 模式下每条规则可追溯到原文证据。
@@ -347,7 +347,7 @@
 **只做一件事的话**：**里程碑 A**（评审「有条件通过」）。
 
 理由：
-- 改动集中在 `core/fused/rfc_extractor.py` 一个文件 + `scripts/build_hub.py` 两处，**不依赖 LLM、不改 ID 算法、不改下游契约、不增成本**
+- 改动集中在 `core/fused/extraction/rfc_extractor.py` 一个文件 + `scripts/build_hub.py` 两处，**不依赖 LLM、不改 ID 算法、不改下游契约、不增成本**
 - 直接命中已实测的四个问题（15.2% 召回 / 50 条 TOC 垃圾 / 68 个 fact_id 冲突 / 父节信息丢失）
 - 完成后 rfc 源从「6/8 协议不可用」变成「方法名可召回」，下游三层检索才有东西可用
 - **先固化 golden md5**（8 协议 × 2 次抽取）作为回归护栏 —— 语义允许变，但「非预期行为变化」必须为零
@@ -392,7 +392,7 @@ class EvidenceAnchor:
     span_end: int | None                # 源文件**字符区间**终点（**半开区间**：raw[start:end] == span_text）
     # ★ 行锚点口径：RFC 原文含换页符 `\x0c`，`str.splitlines()` 会把它当行边界而
     #   `text.count("\n")` 不会 ⇒ **两种口径的行号相差 9~11 行**。本项目的行锚点
-    #   一律采用 **splitlines() 口径**（与 core/fused/rfc_extractor.py 一致）；
+    #   一律采用 **splitlines() 口径**（与 core/fused/extraction/rfc_extractor.py 一致）；
     #   按 `\n` 口径核对将**全部对不上**。
     evidence_kind: str                  # "normative" | "abnf" | "table" | "prose"
                                       #   ★ 区分约束强度：MUST/SHOULD/MAY/ABNF 各不相同
@@ -797,10 +797,10 @@ def reflow_rules(rules: list[SemanticRule],
 
 | 新能力 | 落点 | 复用现有 |
 |---|---|---|
-| `SpecWindow` / 章节树 | `core/fused/rfc_extractor.py`（新增函数）| 复用 `_clean_body`（已能清页眉页脚）|
-| `SemanticRule` | `core/fused/models.py`（新增 dataclass）+ `core/fused/registry.py`（注册 aspect）| 复用 `Subject` / `Fact` / `ConditionAlways` / `ConditionPredicate` |
-| `map_norm_to_facts` 扩展 | `core/fused/norm.py`（`RFC_KIND_MAP` 增 "constraint" / "expectation"）| 复用现有 kind→Fact 分派 |
-| 期望响应词表 | `profiles/<协议>/profile.json`（新增段）+ `core/fused/rfc_extractor.py` | 复用 `profile.seedgen` 的 per-protocol 配置模式 |
+| `SpecWindow` / 章节树 | `core/fused/extraction/rfc_extractor.py`（新增函数）| 复用 `_clean_body`（已能清页眉页脚）|
+| `SemanticRule` | `core/fused/hub/models.py`（新增 dataclass）+ `core/fused/hub/registry.py`（注册 aspect）| 复用 `Subject` / `Fact` / `ConditionAlways` / `ConditionPredicate` |
+| `map_norm_to_facts` 扩展 | `core/fused/extraction/norm.py`（`RFC_KIND_MAP` 增 "constraint" / "expectation"）| 复用现有 kind→Fact 分派 |
+| 期望响应词表 | `profiles/<协议>/profile.json`（新增段）+ `core/fused/extraction/rfc_extractor.py` | 复用 `profile.seedgen` 的 per-protocol 配置模式 |
 | 投票层 | 新建 `core/fused/semantic/llm_ensemble.py` | 复用 `core/llm.py` 的 `chat_json` |
 | 字段路径树 | 新建 `core/fused/downstream/field_mutation.py` | 复用 traffic 源已抽出的真实字段值（P4 成果）|
 | 变异引擎 | 同上 | 复用 `core/fused/downstream/edge_cover.py` 的 `build_message` |

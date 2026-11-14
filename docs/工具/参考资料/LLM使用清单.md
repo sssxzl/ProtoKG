@@ -24,7 +24,7 @@
 
 | 环节 | 位置 | 用途 | 现状 |
 |---|---|---|---|
-| 状态机兜底抽取（P1b） | `core/fused/rfc_extractor.py::infer_transitions` | RFC 散文段落里的状态转移 | 已实现，**默认关闭**（`rfc_config.enable_transitions`） |
+| 状态机兜底抽取（P1b） | `core/fused/extraction/rfc_extractor.py::infer_transitions` | RFC 散文段落里的状态转移 | 已实现，**默认关闭**（`rfc_config.enable_transitions`） |
 | 约束抽取（语义规则） | `rfc_extractor.py::infer_constraints` | RFC 原句 → operator/operand | 已实现（B-10 实验在用） |
 | 结构推断 | `rfc_extractor.py::infer_structures` | 章节结构识别 | 已实现 |
 | ⑤ 层动作规划兜底 | `core/fused/downstream/action_seq.py::plan_actions(llm=...)` | 字段级动作序列 | 接口在，**生产路径不调** |

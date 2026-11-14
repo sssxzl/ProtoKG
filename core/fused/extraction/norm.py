@@ -2,9 +2,9 @@
 
 rfc 源的 5 种 kind 映射已全部实现（transition / field / outcome / method / constraint，见 RFC_KIND_MAP）。
 
-设计依据: docs/设计/顶层设计/知识中枢设计总纲.md +
+设计依据: docs/设计/中枢层/知识中枢设计总纲.md +
            profiles/rtsp/RTSP协议档案草案.md +
-           docs/设计/抽取与形态/抽取层方法借鉴.md（LLM 增强部分留 -m llm 钩子）。
+           docs/设计/抽取层/抽取层方法借鉴.md（LLM 增强部分留 -m llm 钩子）。
 """
 from __future__ import annotations
 

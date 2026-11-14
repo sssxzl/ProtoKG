@@ -17,9 +17,9 @@
 
 ```
 ① 知识源层   kb/<协议>/<源>/                  只读（规范 / 源码 / 流量 / 漏洞 / 专家注记）
-      ↓ ② 抽取层   core/fused/rfc_extractor.py 等 20 个模块   → fact
+      ↓ ② 抽取层   core/fused/extraction/rfc_extractor.py 等 20 个模块   → fact
       ↓ ③ 中枢层   core/fused/{models,canonical,knowledge_slots,hub_entities,hub_layout}.py
-      ↓ ③' 视图层  core/fused/hub_view.py         读中枢 ⇒ 组装视图（16 桶 + 分类视图 + 实体视图）
+      ↓ ③' 视图层  core/fused/hub/hub_view.py         读中枢 ⇒ 组装视图（16 桶 + 分类视图 + 实体视图）
       ↓ ④ 知识图层 core/fused/graph_*.py          实体图 + 社区 + 社区报告
       ↓ ⑤ 消费层   core/fused/downstream/ + scripts/seedgen.py   → 种子
 ⑥ 护栏层      guard/ + tests/                期望集比对 / 编码卫生 / 分布校验
@@ -73,7 +73,7 @@
 | 中枢契约（分类/槽位/属性/图/判据） | `core/fused/hub/registry/*.json` |
 | 协议档案 | `profiles/<协议>/profile.json` |
 | 项目结构逐文件说明 | `docs/工具/项目结构说明.md` |
-| 中枢重设计实施总纲 + 进度 | `docs/设计/顶层设计/顶层设计/中枢重设计改造方案.md` |
+| 中枢重设计实施总纲 + 进度 | `docs/设计/中枢层/中枢重设计改造方案.md` |
 | agent 长期约束 | `docs/工具/验收与规范/agent长期工作约束.md` |
 | 交接入口 | `docs/工具/交接文档.md` |
 | 验收口径 | `docs/工具/验收与规范/CI与验收说明.md` |

@@ -61,7 +61,7 @@
 
 | 文件 | 改动 | 任务 |
 |---|---|---|
-| `core/fused/rfc_extractor.py` | **重写抽取主路径**（+约 700 行） | A1.1~A1.7, A0.4, A0.5 |
+| `core/fused/extraction/rfc_extractor.py` | **重写抽取主路径**（+约 700 行） | A1.1~A1.7, A0.4, A0.5 |
 | `core/paths.py` | 新增 `target_rfc_config(protocol)` 并导出 | A0.2 |
 | `scripts/build_hub.py` | 质量闸接入 + 幂等快照原子切换 | A0.4, A0.5 |
 | `profiles/*/rfc_config.json` | **8 个新建** | A0.2 |
@@ -260,12 +260,12 @@ DNS 的字段（QNAME/QTYPE/QCLASS/RDLENGTH）是**表格 + ABNF 形态**，需 
 四协议（rtsp/sip/ftp/smtp）五源完整性全部 ✅，下游 `seedgen.py --protocol rtsp` 正常出种子。
 
 ### 9.5 未受影响的显式设计
-`core/fused/vuln_vector.py` 的**跨协议漏洞迁移**（`migrate_vuln_patterns` / `retrieve_cross_protocol`）保持不变 —— 那是**显式 opt-in 的知识迁移能力**（新协议无漏洞库时从其他协议迁移），调用者必须显式传 protocols 列表，主路径（build_hub / seedgen）不触及。它与「一次处理一个协议 × 一个源」不冲突：前者是**知识检索**，后者是**知识抽取**。
+`core/fused/extraction/vuln_vector.py` 的**跨协议漏洞迁移**（`migrate_vuln_patterns` / `retrieve_cross_protocol`）保持不变 —— 那是**显式 opt-in 的知识迁移能力**（新协议无漏洞库时从其他协议迁移），调用者必须显式传 protocols 列表，主路径（build_hub / seedgen）不触及。它与「一次处理一个协议 × 一个源」不冲突：前者是**知识检索**，后者是**知识抽取**。
 
 ### 9.6 契约文档同步
 - `profiles/README.md`：入口改为单协议单源写法
 - `scripts/gen_docs.py`、`scripts/seedgen.py` 的提示文案同步
-- 新增 `docs/设计/顶层设计/顶层设计/单协议单源契约.md` 作为契约的独立说明
+- 新增 `docs/设计/顶层与契约/单协议单源契约.md` 作为契约的独立说明
 
 ---
 
@@ -319,8 +319,8 @@ python -m pytest tests/hub/test_single_protocol_single_source.py -q  # 13 passed
 | 位置 | 保留理由 |
 |---|---|
 | `profiles/ftp/{profile.json, ftp_base.dict}` | **仓库原有文件**（非本次新建）；`load_base_dict_tokens` 按协议名**动态查找**，留着零成本零风险；项目非 git 仓库，删除不可逆 |
-| `core/fused/protocol_patterns.py` 的 8 协议条目 | 属**协议知识层、不依赖 kb 存在**；删除会破坏 `source_fsm.py` 的 import |
-| `core/fused/source_probe.py` / `scripts/run_boundary_probe.py` 的 `SSH = ["ssh","-i",...]` | 那是**连接虚拟机的 SSH 客户端命令**，不是协议知识 |
+| `core/fused/extraction/protocol_patterns.py` 的 8 协议条目 | 属**协议知识层、不依赖 kb 存在**；删除会破坏 `source_fsm.py` 的 import |
+| `core/fused/extraction/source_probe.py` / `scripts/run_boundary_probe.py` 的 `SSH = ["ssh","-i",...]` | 那是**连接虚拟机的 SSH 客户端命令**，不是协议知识 |
 | `kb/sip/_bak_pjproject`（51MB） | 用户自留的 pjproject 备份；所有扫描锚定 `kb/<协议>/<源目录>/`，**不参与抽取、不污染结果** |
 
 **测试收敛**（11 处引用 → 收敛到 3 个目标协议）：详见 `tests/<层>/` 下 5 个文件的改动。

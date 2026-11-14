@@ -7,7 +7,7 @@ norm.content 形如：
 映射：method → definition（text，去「定义处」后缀的语义描述）+ epistemic=descriptive
       （源码实现是描述性陈述，非规范结论）。「定义处 path:line」提取为 evidence locator。
 
-设计依据: docs/设计/抽取与形态/抽取层方法借鉴.md §三 source 行（ProtocolGPT 借鉴，
+设计依据: docs/设计/抽取层/抽取层方法借鉴.md §三 source 行（ProtocolGPT 借鉴，
            rule 抽固定字段，LLM 侧 RAG 推断状态机 —— 本模块只做 rule 部分）。
 """
 from __future__ import annotations

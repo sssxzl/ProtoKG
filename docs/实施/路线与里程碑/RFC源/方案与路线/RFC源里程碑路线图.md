@@ -57,7 +57,7 @@ smtp passed= True norms= 10 facts=  10 dup= 0 toc_out= 0 toc_only= 0 kinds= {'me
 37 failed, 760 passed, 20 errors in 55.45s        ← 2026-11-01 09:0x 复测（并行同事改写 rfc_extractor.py 后）
 ```
 
-**与团队简报的「37 failed / 749 passed / 20 errors」完全一致**（首测）。复测时 `passed` 变为 **760**（+11），因并行同事在期间重写了 `core/fused/rfc_extractor.py`（1713 → 1890 行，新增间隔点线 TOC 判定与目录块兜底），并新增了对应测试；**`failed` 恒为 37、`errors` 恒为 20**，失败构成未变。失败分布（按文件）：
+**与团队简报的「37 failed / 749 passed / 20 errors」完全一致**（首测）。复测时 `passed` 变为 **760**（+11），因并行同事在期间重写了 `core/fused/extraction/rfc_extractor.py`（1713 → 1890 行，新增间隔点线 TOC 判定与目录块兜底），并新增了对应测试；**`failed` 恒为 37、`errors` 恒为 20**，失败构成未变。失败分布（按文件）：
 
 | 文件 | 失败数 | 与 rfc 源的关系 |
 |---|---|---|
@@ -72,7 +72,7 @@ smtp passed= True norms= 10 facts=  10 dup= 0 toc_out= 0 toc_only= 0 kinds= {'me
 
 > ⚠️ **注意 `docs/实施/路线与里程碑/RFC源/实施报告/RFC源改造里程碑A实施报告.md:26` 写的是「37 failed / 633 passed / 20 errors」，:290 写「646 passed」，:331 写「644 passed」——三个数字互相矛盾，且都不是实测值。** 本文档以**实测**为准：**failed=37 / errors=20 恒定不变**（这是关键——回归护栏看的是这两个数），**passed 会随并行改动浮动**（749 → 760）。A 阶段报告的测试数字已过期，**不应作为后续基线引用**。
 
-> 🔄 **并行改动提示（2026-11-01 09:0x）**：本文档撰写期间，有并行同事重写了 `core/fused/rfc_extractor.py`（1713 → 1890 行）。本文档的**所有实测数据已在改写后重新复测并同步更新**（三协议 norms/facts 计数、约束候选 TOC 污染率、无 span 比例、norm_id 冲突复现、B 阶段符号 0 命中——**全部与改写前一致**）。**行号引用已按改写后的版本全面校正**。若后续该文件再被改动，请以「附录 A 的复算命令」为准重新核对行号。
+> 🔄 **并行改动提示（2026-11-01 09:0x）**：本文档撰写期间，有并行同事重写了 `core/fused/extraction/rfc_extractor.py`（1713 → 1890 行）。本文档的**所有实测数据已在改写后重新复测并同步更新**（三协议 norms/facts 计数、约束候选 TOC 污染率、无 span 比例、norm_id 冲突复现、B 阶段符号 0 命中——**全部与改写前一致**）。**行号引用已按改写后的版本全面校正**。若后续该文件再被改动，请以「附录 A 的复算命令」为准重新核对行号。
 
 ### 1.3　问题④ 的代码级现状 —— 一个改进.md 完全没提到的关键事实
 
@@ -239,10 +239,10 @@ DUP norm_id => {'rtsp.constraint.content-length': 10, 'rtsp.constraint.max-forwa
 
 ### 3.1　两层模型的具体字段
 
-落点：**新建 `core/fused/semantic.py`**（不塞进 `core/fused/models.py`——后者是 Fact/Claim/Evidence 的中枢模型，语义规则是**派生知识产物**，混入会破坏 `models.py` 的单一职责；也避免 `models.py` 的 `Fact`/`Claim` 与新模型在 import 上形成环）。
+落点：**新建 `core/fused/semantic/semantic.py`**（不塞进 `core/fused/hub/models.py`——后者是 Fact/Claim/Evidence 的中枢模型，语义规则是**派生知识产物**，混入会破坏 `models.py` 的单一职责；也避免 `models.py` 的 `Fact`/`Claim` 与新模型在 import 上形成环）。
 
 ```python
-# core/fused/semantic.py
+# core/fused/semantic/semantic.py
 """语义规则两层模型（里程碑 B1）。
 
 两层分离（评审 T2）：
@@ -297,7 +297,7 @@ class EvidenceAnchor:
     span_end: Optional[int]           # 同上终点（**半开区间** [start, end)）
     # ★ 行锚点口径：RFC 原文含换页符 `\x0c`，`str.splitlines()` 会把它当行边界而
     #   `text.count("\n")` 不会 ⇒ **两种口径的行号相差 9~11 行**。本项目的行锚点
-    #   一律采用 **splitlines() 口径**（与 core/fused/rfc_extractor.py 一致）；
+    #   一律采用 **splitlines() 口径**（与 core/fused/extraction/rfc_extractor.py 一致）；
     #   按 `\n` 口径核对将**全部对不上**。
     evidence_kind: str                # normative|abnf|table|prose
     explicitness: str                 # explicit|quoted|paraphrased（由 B2/B6 计算写入）
@@ -584,9 +584,9 @@ C4/C5 是整个 B 阶段最难的一环（评审 T2 明确指出「缺少真正�
 3. **匹配不上 → `reject_reason="field_unbound"`**（不做模糊匹配——模糊匹配是幻觉的主要来源）。
 4. **消息级约束**（`target_field=""`）：只在 operator ∈ {present, absent} 时允许（构造校验强制机制 2 已挡）。
 
-### 3.6　与现有 `core/fused/models.py` 的关系
+### 3.6　与现有 `core/fused/hub/models.py` 的关系
 
-**结论：不修改 `models.py` 的数据结构；新增独立模块 `core/fused/semantic.py`，两者通过「转换器」相连。**
+**结论：不修改 `models.py` 的数据结构；新增独立模块 `core/fused/semantic/semantic.py`，两者通过「转换器」相连。**
 
 理由：`models.py` 是 中枢的**核心数据模型**（文件头 docstring 自称「③ 中枢层数据结构的唯一实现」），`Fact`/`Claim`/`Evidence` 有 `canonical.py` 的 `compute_fact_id`/`compute_claim_id`/`compute_evidence_id` 三套哈希依赖，任何改动都会波及**已落盘的 `derived/per_source/*/facts/*.jsonl`**（实测 rtsp 116 / sip 148 / smtp 10 行）与跨源去重。**B 阶段不应该动它。**
 
@@ -594,7 +594,7 @@ C4/C5 是整个 B 阶段最难的一环（评审 T2 明确指出「缺少真正�
 
 ```
                     ┌─────────────────────────────┐
-                    │  core/fused/semantic.py      │   ← 新增（B 阶段）
+                    │  core/fused/semantic/semantic.py      │   ← 新增（B 阶段）
                     │  EvidenceAnchor              │
                     │  ExecutableConstraint        │
                     │  SemanticRule                │
@@ -603,7 +603,7 @@ C4/C5 是整个 B 阶段最难的一环（评审 T2 明确指出「缺少真正�
                                │ semantic_to_facts()
                                ▼
                     ┌─────────────────────────────┐
-                    │  core/fused/models.py        │   ← 不改
+                    │  core/fused/hub/models.py        │   ← 不改
                     │  Fact / Claim / Evidence     │
                     └──────────┬──────────────────┘
                                │ map_norm_to_facts()
@@ -644,15 +644,15 @@ semantic_rules[i]  ──project──►  legal_boundary[subject_name] += {dim,
 
 | 文件 | 动作 | 内容 | 依赖 |
 |---|---|---|---|
-| `core/fused/semantic.py` | **新增** | `EvidenceAnchor` / `ExecutableConstraint` / `SemanticRule` / `KnowledgeCandidate` + `compute_rule_id` / `compute_evidence_id` / `try_convert` / `semantic_to_facts`（投影） | — |
-| `core/fused/semantic_rules.py` | **新增** | 模式表（operator 抽取）+ 字段绑定 + 章节上下文推导。**与 `semantic.py` 分开**：模式表是「规则资产」，独立文件便于版本化与回归 | `semantic.py` |
+| `core/fused/semantic/semantic.py` | **新增** | `EvidenceAnchor` / `ExecutableConstraint` / `SemanticRule` / `KnowledgeCandidate` + `compute_rule_id` / `compute_evidence_id` / `try_convert` / `semantic_to_facts`（投影） | — |
+| `core/fused/semantic/semantic_rules.py` | **新增** | 模式表（operator 抽取）+ 字段绑定 + 章节上下文推导。**与 `semantic.py` 分开**：模式表是「规则资产」，独立文件便于版本化与回归 | `semantic.py` |
 | `core/fused/downstream/rule_store.py` | **新增** | 四库分离（authoritative / candidate / revoked / feedback）+ `reflow_rules()`（纯排序） | `semantic.py` |
-| `core/fused/rfc_extractor.py` | **修改** | ① `extract_constraint_candidates`（`:1660`）改为**经章节窗口**产出候选（携带 `span_start`/`span_end`/`section_path`/`spec_version`），修 TOC 污染与无 span 两个缺陷；② `extract_constraint_norms`（`:1761`）的 `norm_id` 加唯一后缀，修 dup 阻断 bug | `semantic.py` |
-| `core/fused/norm.py` | **修改** | `constraint_norm_to_facts` 改为**消费两层模型**（或标记 deprecated）；保留 key 不删 | `semantic.py` |
+| `core/fused/extraction/rfc_extractor.py` | **修改** | ① `extract_constraint_candidates`（`:1660`）改为**经章节窗口**产出候选（携带 `span_start`/`span_end`/`section_path`/`spec_version`），修 TOC 污染与无 span 两个缺陷；② `extract_constraint_norms`（`:1761`）的 `norm_id` 加唯一后缀，修 dup 阻断 bug | `semantic.py` |
+| `core/fused/extraction/norm.py` | **修改** | `constraint_norm_to_facts` 改为**消费两层模型**（或标记 deprecated）；保留 key 不删 | `semantic.py` |
 | `core/fused/downstream/rag_seedgen.py` | **修改** | `assemble_bundle` 新增 `semantic_rules` 键 + `bundle_schema_version`；`legal_boundary`/`response_expectation` 改为由 `semantic_rules` 投影填充 | `semantic.py` |
 | `core/fused/downstream/boundary_probe.py` | **修改** | 探测回写路径（`:419-437`）改为写 `rule_state="feedback"` 库，**不再直接改权威 fact**（问题⑤ 的代码级等价物） | `rule_store.py` |
 | `scripts/build_hub.py` | **修改** | `--semantic` 开关（默认关，保持 `rules_only` 确定性）；构建期加 §3.3 强制机制 4 的阻断检查 | `semantic.py` |
-| `core/fused/rfc_extractor.py`（质量闸） | **修改** | `rfc_quality_report` 增加：语义规则条数、可执行率、候选拒绝原因分布、`rules.jsonl` 中 `constraint is None` 计数（必须为 0，阻断） | `semantic.py` |
+| `core/fused/extraction/rfc_extractor.py`（质量闸） | **修改** | `rfc_quality_report` 增加：语义规则条数、可执行率、候选拒绝原因分布、`rules.jsonl` 中 `constraint is None` 计数（必须为 0，阻断） | `semantic.py` |
 | `profiles/<协议>/rfc_config.json` | **修改** | `expected_response_classes` **已存在**（实测三协议齐备），无需新增；仅需确认词表不含 timeout/crash | — |
 | `tests/test_semantic.py` | **新增** | 两层模型 + 转换判定 + rule_id 幂等 + 强制机制的单测 | — |
 | `tests/test_semantic_patterns.py` | **新增** | 模式表逐条的可执行样例测试 | — |
@@ -670,22 +670,22 @@ semantic_rules[i]  ──project──►  legal_boundary[subject_name] += {dim,
 
 | # | 任务 | 文档任务号 | 文件 | 依赖 | 验收标准 |
 |---|---|---|---|---|---|
-| **B-1** | 两层模型 + `rule_id` 派生 | B1 | 新增 `core/fused/semantic.py` | — | ① 四个 dataclass 定义齐全，字段与 §3.1 逐项一致<br>② `ExecutableConstraint.__post_init__` 的 6 条校验各有 1 个正例 + 1 个反例单测<br>③ `compute_rule_id` 对**同一结构化身份**重复调用 100 次得**同一 id**；对 operator/operand/section_path 任一变更得**不同 id**<br>④ `compute_rule_id` 的输入**不含** `span_text`/`span_start`/LLM 输出顺序（单测断言：仅改 span_text → id 不变） |
-| **B-2** | 转换判定（证据 → 可执行） | B2 | `core/fused/semantic.py` | B-1 | ① `try_convert` 实现 C1~C7 七步，**顺序为「先验证区间（C2）后判 explicitness（C3）」**<br>② 每个 reject_reason 至少 1 个用例（C1~C7 共 7 个）<br>③ 单测：给一条 `evidence_kind="normative"` + 可验证 span + MAY 动词的规则 → 产出 `KnowledgeCandidate(reject_reason="optional_modality")`，**不得**产出 `ExecutableConstraint`<br>④ 单测：区间故意改错 → `reject_reason="span_unverified"`（而非 explicit） |
-| **B-3** | **约束候选带 span**（审计 I-5，文档缺） | — | `core/fused/rfc_extractor.py` | B-1 | ① `extract_constraint_candidates`（`:1660`）改为经章节窗口产出，候选含 `span_start`/`span_end`/`section_path`/`spec_version`<br>② **TOC 污染率实测归零**：rtsp/sip/smtp 三协议 `toc_contaminated=0`（当前 5/2/1）<br>③ **span 覆盖率 100%**：所有候选的 `span_start` 非空且能在源文件中定位（当前 0%）<br>④ 单测：`source` 格式统一为 `file:<name>#@<line>` + 字符区间，**两种 anchor 语义不再并存**（消除 §2.5 的不一致） |
-| **B-4** | **norm_id 冲突修复**（实测阻断 bug） | — | `core/fused/rfc_extractor.py` | B-3 | ① `extract_constraint_norms`（`:1775`）的 `norm_id` 加唯一后缀<br>② 用 Stub LLM 复现「同字段 3 条约束」→ `dup_norm_ids == 0`（当前 13）<br>③ 该场景下 `rfc_quality_report(...).passed == True`（当前阻断构建）<br>④ `--constraints` 模式端到端跑通三协议 |
-| **B-5** | operator/operand 模式表 + 字段绑定 | B1 | 新增 `core/fused/semantic_rules.py` | B-2 | ① ≥12 条有序模式，每条配 ≥1 个**最小可执行样例**单测<br>② MUST/SHALL/SHOULD/MAY 四档动词 → `evidence_kind`/`expected_behavior` 可断言性 映射正确（**MAY 必须落到候选**）<br>③ 单位归一：`octets/bytes`→字节；`bits`→位；`seconds`→**拒绝转换**<br>④ 字段绑定：命中候选集 → 精确绑定；未命中 → `field_unbound`，**无模糊匹配**（单测：相似但不同的字段名必须绑不上） |
-| **B-6** | LLM 兜底 + 词表校验 | B3 | `core/fused/semantic_rules.py` | B-5 | ① LLM 输出 operator 不在词表 → `reject_reason="llm_out_of_vocab"`，**不得**默默接受<br>② `expected_behavior` 不在 `rfc_config.expected_response_classes` → 拒绝<br>③ LLM 不可用/超时 → **降级为只保留规则表命中项**，不抛出、不阻断（保持 `rules_only` 确定性） |
+| **B-1** | 两层模型 + `rule_id` 派生 | B1 | 新增 `core/fused/semantic/semantic.py` | — | ① 四个 dataclass 定义齐全，字段与 §3.1 逐项一致<br>② `ExecutableConstraint.__post_init__` 的 6 条校验各有 1 个正例 + 1 个反例单测<br>③ `compute_rule_id` 对**同一结构化身份**重复调用 100 次得**同一 id**；对 operator/operand/section_path 任一变更得**不同 id**<br>④ `compute_rule_id` 的输入**不含** `span_text`/`span_start`/LLM 输出顺序（单测断言：仅改 span_text → id 不变） |
+| **B-2** | 转换判定（证据 → 可执行） | B2 | `core/fused/semantic/semantic.py` | B-1 | ① `try_convert` 实现 C1~C7 七步，**顺序为「先验证区间（C2）后判 explicitness（C3）」**<br>② 每个 reject_reason 至少 1 个用例（C1~C7 共 7 个）<br>③ 单测：给一条 `evidence_kind="normative"` + 可验证 span + MAY 动词的规则 → 产出 `KnowledgeCandidate(reject_reason="optional_modality")`，**不得**产出 `ExecutableConstraint`<br>④ 单测：区间故意改错 → `reject_reason="span_unverified"`（而非 explicit） |
+| **B-3** | **约束候选带 span**（审计 I-5，文档缺） | — | `core/fused/extraction/rfc_extractor.py` | B-1 | ① `extract_constraint_candidates`（`:1660`）改为经章节窗口产出，候选含 `span_start`/`span_end`/`section_path`/`spec_version`<br>② **TOC 污染率实测归零**：rtsp/sip/smtp 三协议 `toc_contaminated=0`（当前 5/2/1）<br>③ **span 覆盖率 100%**：所有候选的 `span_start` 非空且能在源文件中定位（当前 0%）<br>④ 单测：`source` 格式统一为 `file:<name>#@<line>` + 字符区间，**两种 anchor 语义不再并存**（消除 §2.5 的不一致） |
+| **B-4** | **norm_id 冲突修复**（实测阻断 bug） | — | `core/fused/extraction/rfc_extractor.py` | B-3 | ① `extract_constraint_norms`（`:1775`）的 `norm_id` 加唯一后缀<br>② 用 Stub LLM 复现「同字段 3 条约束」→ `dup_norm_ids == 0`（当前 13）<br>③ 该场景下 `rfc_quality_report(...).passed == True`（当前阻断构建）<br>④ `--constraints` 模式端到端跑通三协议 |
+| **B-5** | operator/operand 模式表 + 字段绑定 | B1 | 新增 `core/fused/semantic/semantic_rules.py` | B-2 | ① ≥12 条有序模式，每条配 ≥1 个**最小可执行样例**单测<br>② MUST/SHALL/SHOULD/MAY 四档动词 → `evidence_kind`/`expected_behavior` 可断言性 映射正确（**MAY 必须落到候选**）<br>③ 单位归一：`octets/bytes`→字节；`bits`→位；`seconds`→**拒绝转换**<br>④ 字段绑定：命中候选集 → 精确绑定；未命中 → `field_unbound`，**无模糊匹配**（单测：相似但不同的字段名必须绑不上） |
+| **B-6** | LLM 兜底 + 词表校验 | B3 | `core/fused/semantic/semantic_rules.py` | B-5 | ① LLM 输出 operator 不在词表 → `reject_reason="llm_out_of_vocab"`，**不得**默默接受<br>② `expected_behavior` 不在 `rfc_config.expected_response_classes` → 拒绝<br>③ LLM 不可用/超时 → **降级为只保留规则表命中项**，不抛出、不阻断（保持 `rules_only` 确定性） |
 | **B-7** | 四库分离 + `reflow_rules` | B5 | 新增 `core/fused/downstream/rule_store.py` | B-1 | ① 四库文件独立落盘<br>② `reflow_rules()` 单测：输入规则 + 反馈表 → 输出**仅顺序变化**，`rule` 对象逐字段相等（**用 `==` 断言整个 dataclass 相等**，而非只断言 id 集合）<br>③ 反馈写入后 `rule_id` 与规则内容**均不变**（评审 T9/R23）<br>④ `boundary_probe` 的探测回写改道 `feedback` 库：单测断言原 `legal_boundary` fact **未被修改** |
 | **B-8** | bundle 契约扩展 + 投影 | B7 | `core/fused/downstream/rag_seedgen.py` | B-2, B-5 | ① bundle 新增 `semantic_rules` + `bundle_schema_version="2.0"`<br>② `legal_boundary`/`response_expectation` 两桶**由 `semantic_rules` 投影填充**（§3.6 选项 c）<br>③ **投影幂等**：对同一 bundle 投影两次得逐字节相同的两个桶<br>④ **旧 bundle 兼容**：无 `semantic_rules` 键的旧 bundle → `bundle.get("semantic_rules") or []`，**不得** `bundle["semantic_rules"]` 直接索引<br>⑤ `boundary_probe.py:558` 与 `strategy.py:320` **零改动**仍能工作（回归护栏） |
-| **B-9** | 质量闸扩展 | B6 | `core/fused/rfc_extractor.py` | B-2, B-8 | ① 报告新增：语义规则总数 / **可执行率** / 候选拒绝原因直方图 / `constraint is None` 计数<br>② `constraint is None` 计数 > 0 → **阻断构建**（强制机制 4）<br>③ 候选文件里 `convertible=true` 计数 > 0 → **阻断构建**<br>④ 三协议 `rules_only` 模式跑完，`pytest tests/ -q` 仍是 **failed=37 / errors=20**（passed 允许 ≥ 当时的实测值，不得下降） |
+| **B-9** | 质量闸扩展 | B6 | `core/fused/extraction/rfc_extractor.py` | B-2, B-8 | ① 报告新增：语义规则总数 / **可执行率** / 候选拒绝原因直方图 / `constraint is None` 计数<br>② `constraint is None` 计数 > 0 → **阻断构建**（强制机制 4）<br>③ 候选文件里 `convertible=true` 计数 > 0 → **阻断构建**<br>④ 三协议 `rules_only` 模式跑完，`pytest tests/ -q` 仍是 **failed=37 / errors=20**（passed 允许 ≥ 当时的实测值，不得下降） |
 | **B-10** | 独立实验（见 §4） | — | 新增 `scripts/exp_semantic_gain.py` + `docs/实验/语义增益实验预登记.md` | B-9 | 见 §4.5 的判定标准表 |
 
 **依赖图**：
 
 ```mermaid
 graph TD
-    B1["B-1 两层模型 + rule_id 派生<br/>core/fused/semantic.py"]
+    B1["B-1 两层模型 + rule_id 派生<br/>core/fused/semantic/semantic.py"]
     B2["B-2 转换判定 C1~C7<br/>先验证区间 再判显式"]
     B3["B-3 约束候选带 span<br/>修 TOC 污染 + 无 offset"]
     B4["B-4 norm_id 冲突修复<br/>解除构建阻断"]
@@ -890,7 +890,7 @@ graph LR
     end
 
     subgraph B["B 阶段（本设计 §3）"]
-        SEM["core/fused/semantic.py<br/>rule_id 在 SemanticRule 顶层"]
+        SEM["core/fused/semantic/semantic.py<br/>rule_id 在 SemanticRule 顶层"]
         RO["core/fused/downstream/rule_store.py<br/>四库 + reflow_rules"]
         ORC["core/fused/downstream/response_oracle.py<br/>三轴枚举 + close_loop"]
         ENS["core/fused/semantic/llm_ensemble.py<br/>Candidate(rule,model_id,run_id)"]
@@ -967,10 +967,10 @@ B 阶段要验证的核心命题必须**窄且可证伪**：
 |---|---|---|---|
 | RFC 原文 | `kb/rtsp/spec/rfc2326.txt`、`kb/sip/spec/rfc3261.txt`、`kb/smtp/spec/{rfc3207,rfc4954,rfc5321,rfc5322}.txt` | 抽取输入 | ✅ 就绪（ftp **无 spec 文件**，dns 已删） |
 | 三协议事实库 | `derived/per_source/{rtsp,sip,smtp}/rfc/facts/rfc.jsonl` | C0 组基线 | ✅ rtsp 116 / sip 148 / smtp 10 行 |
-| 约束候选生成器 | `core/fused/rfc_extractor.py:1660` | 候选来源（B-3 后会带 span） | ⚠️ 需先过 B-3 |
+| 约束候选生成器 | `core/fused/extraction/rfc_extractor.py:1660` | 候选来源（B-3 后会带 span） | ⚠️ 需先过 B-3 |
 | LLM 客户端 | `core/llm.py` `DeepSeekClient.chat_json` | E1/E2 的 LLM 兜底 | ✅ 有 API key（`.env`） |
 | 期望响应词表 | `profiles/<p>/rfc_config.json` 的 `expected_response_classes` | C7 校验 | ✅ 三协议齐备 |
-| 质量闸 | `core/fused/rfc_extractor.py:1362 rfc_quality_report` | 构建阻断 + 指标来源 | ✅ 可扩展 |
+| 质量闸 | `core/fused/extraction/rfc_extractor.py:1362 rfc_quality_report` | 构建阻断 + 指标来源 | ✅ 可扩展 |
 | 构建入口 | `scripts/build_hub.py --sources rfc --protocol X [--semantic]` | 产物生成 | ✅ |
 | 语料闸 | `scripts/corpus_gate.py`（★ 2026-11 已随论文实验层移除） G1/G2/G5 | 种子层校验（仅在需要时） | ⚠️ G5 有已知漂移（见 §4.6） |
 | rq3/rq4 语料与结果 | `derived/experiments/rq3/{A,B,C,D}`、`derived/experiments/rq4/*`、`derived/seeds/<p>/rq4_B/`（39/25/78） | **仅作参考，不作实验输入** | ⚠️ 见 §4.6 |
@@ -1289,9 +1289,9 @@ derived/experiments/annotation/<实验ID>/
      ```
    - 每个任务（T01~T05）**独立一个快照**，出问题时按任务回滚。
    - **强烈建议同时执行 `git init`**：B 阶段要新增 5+ 文件、改 7+ 文件，没有版本控制风险太高。`git init && git add -A && git commit -m "baseline before milestone B"` 一步就能消除这个风险（`.gitignore` 已就位，会自动排除 `derived/`、`.env`、`__pycache__`）。
-   - **注意**：`.gitignore` 里 `derived/` 被排除——这意味着**落盘产物不会进版本控制**。B 阶段新增的 `derived/per_source/<p>/rfc/semantic/*.jsonl` 属于再生数据，符合该策略；但**规则模式表在 `core/fused/semantic_rules.py`（源码）→ 会进版本控制** ✅。
+   - **注意**：`.gitignore` 里 `derived/` 被排除——这意味着**落盘产物不会进版本控制**。B 阶段新增的 `derived/per_source/<p>/rfc/semantic/*.jsonl` 属于再生数据，符合该策略；但**规则模式表在 `core/fused/semantic/semantic_rules.py`（源码）→ 会进版本控制** ✅。
 
-2. **改 `core/fused/models.py` 前先三思**。它是 中枢的核心数据模型，`canonical.py` 的三套哈希（`compute_fact_id`/`compute_claim_id`/`compute_evidence_id`）依赖它的字段结构。任何字段变动 → `fact_id` 全变 → **已落盘的 `derived/per_source/*/facts/*.jsonl`（rtsp 116 / sip 148 / smtp 10 行）与跨源去重全部失效**。本设计**不改 `models.py`**（见 §3.6）。
+2. **改 `core/fused/hub/models.py` 前先三思**。它是 中枢的核心数据模型，`canonical.py` 的三套哈希（`compute_fact_id`/`compute_claim_id`/`compute_evidence_id`）依赖它的字段结构。任何字段变动 → `fact_id` 全变 → **已落盘的 `derived/per_source/*/facts/*.jsonl`（rtsp 116 / sip 148 / smtp 10 行）与跨源去重全部失效**。本设计**不改 `models.py`**（见 §3.6）。
 
 3. **每次改动后立刻跑基线测试**：
    ```bash
