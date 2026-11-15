@@ -1896,6 +1896,21 @@ def _collect_blocks(files: list[Path], max_blocks: Optional[int] = None,
     """
     out: list[dict] = []
     _mpd = max_blocks if max_blocks is not None else _blocks_per_doc()
+    # ★ ★ M1-Q3-P0.9：★ **实验性块级选择**（★ 默认关闭 ⇒ 走既有路径）
+    _mode = _block_selection_mode()
+    if _mode == "block_density" and not block_starts:
+        from core.fused.extraction.block_selection import select_block_density
+        _all: list[dict] = []
+        for _f in files:
+            try:
+                _t = _f.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            for _s, _tx in _split_blocks(_t, 10 ** 6):
+                _all.append({"doc": _f.name, "start": _s, "text": _tx})
+        _sel = select_block_density(_all, budget=_mpd)
+        _sel.sort(key=lambda r: (r.get("doc") or "", int(r.get("start") or 0)))
+        return _sel
     # ★ 白名单模式下需切出**全文**再过滤（★ 顺序切块 ⇒ 起始行由切分决定
     #   ⇒ ⇒ 只切前 N 块会漏掉靠后的目标块 ⇒ ⇒ 必须切足量）
     if block_starts:
