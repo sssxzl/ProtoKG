@@ -179,7 +179,8 @@ def confusion(complete_rows, tag, models, label="A"):
             "★ 模型相对标签分布": dict(_derived)}
 
 
-def main(csv_a, csv_b=None, model_state=None, arbitration=None):
+def main(csv_a, csv_b=None, model_state=None, arbitration=None,
+         population_file=None):
     rows_a = _read(csv_a)
     rows_b = _read(csv_b) if csv_b else None
     models = {}
@@ -210,6 +211,22 @@ def main(csv_a, csv_b=None, model_state=None, arbitration=None):
         "K（★ 风险富集）": group_stats([r for r in rows_a if r["_grp"] == "K"],
                                        "A", _ids_a),
     }
+    # ★ ★ 总体口径（★ 防止「无声消失」）
+    if population_file and pathlib.Path(population_file).is_file():
+        _pop = [json.loads(l) for l in
+                pathlib.Path(population_file).read_text(encoding="utf-8").splitlines()
+                if l.strip()]
+        _pc = collections.Counter(p.get("★ 类别") for p in _pop)
+        _audited = _pc.get("audited", 0)
+        out["★ 总体口径（★ 分母含全部，★ 不得无声消失）"] = {
+            "★ 总体候选数": len(_pop),
+            "★ 类别分布": dict(_pc),
+            "★ 本次已审核（盲审样本）": _audited,
+            "★ 未纳入本次审核": len(_pop) - _audited,
+            "★ ★ 说明": ("★ 误确认/误拒收/精确率的分母 = **本次完整标注的盲审样本**；"
+                      "★ 但总体分母 = 全部候选；★ 未纳入者按类别单列，★ 不计入质量率、"
+                      "★ 也**不隐藏**"),
+        }
     out["★ 适用总体说明"] = (
         "★ **R 组**为分层随机样本，★ **可**用于估计总体（★ 需按分层加权）；"
         "★ **K 组**为风险富集样本，★ **不可**用于估计总体错误率；"
@@ -265,6 +282,7 @@ def main(csv_a, csv_b=None, model_state=None, arbitration=None):
             "★ 说明": "★ 盲审阶段本就看不到模型状态；★ 冻结后才可计算",
         }
     else:
+        # ★ ★ 混淆矩阵**只在冻结人工标签后**计算（★ 盲审阶段不读模型状态）
         _conf = confusion(complete_a, "A", models)
         _derived = _conf["★ 模型相对标签分布"]
         _c_cnt = _derived.get("valid_confirmed", 0) + _derived.get("false_confirmation", 0)
@@ -289,4 +307,5 @@ if __name__ == "__main__":
     _b = sys.argv[2] if len(sys.argv) > 2 else None
     _m = sys.argv[3] if len(sys.argv) > 3 else None
     _ar = sys.argv[4] if len(sys.argv) > 4 else None
-    main(_a, _b, _m, _ar)
+    _pop = sys.argv[5] if len(sys.argv) > 5 else None
+    main(_a, _b, _m, _ar, _pop)

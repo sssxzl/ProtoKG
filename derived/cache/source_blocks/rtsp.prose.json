@@ -1,14 +1,14 @@
 {
-  "block_hash": "a1e0defff6f1f3fde1626296af5688983c0bde4e1b80631d060f0cb663a4d8b0",
+  "block_hash": "9d01ee2799627f77331718da4ba41be3b90b746796c0ab51db24e2c0964dba24",
   "items": [],
   "complete": true,
   "status": "success_empty",
   "key_manifest": {
-    "key": "a1e0defff6f1f3fde1626296af5688983c0bde4e1b80631d060f0cb663a4d8b0",
+    "key": "9d01ee2799627f77331718da4ba41be3b90b746796c0ab51db24e2c0964dba24",
     "parser_version": "rfc-parser-v1",
     "schema_version": "rfc-norm-schema-v1",
     "verifier_version": "normative-verifier-v1",
-    "model": "deepseek-chat",
+    "model": "deepseek-flash",
     "note": "★ 「缓存命中时产物可复现」可保证；★ 「重新调用同一模型能否逐字节相同」**不一定成立**"
   },
   "drop_reasons": {

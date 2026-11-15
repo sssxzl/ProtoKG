@@ -297,3 +297,80 @@ def test_dual_reviewers_have_full_blind_columns():
         for _r in _rows_:
             for _f in n1.BLIND_FIELDS:
                 assert f"★ {_tag}:{_f}" in _r
+
+
+# ══ ⑩ 发放前一致性检查（★ 三文件 + 台账）══
+def test_three_files_same_ids_and_groups():
+    """★ A / B / 仲裁表必须同一批 50 条、★ R=30 / K=20。"""
+    _names = ("N1_盲审标注表_A.csv", "N1_盲审标注表_B.csv", "N1_仲裁表.csv")
+    _ids, _grps = [], []
+    for _n in _names:
+        _rows_ = list(csv.DictReader((DELIV / _n).open(encoding="utf-8")))
+        _ids.append({r["sample_id"] for r in _rows_})
+        _grps.append(_grp_count(_rows_))
+    assert _ids[0] == _ids[1] == _ids[2]
+    assert len(_ids[0]) == 50
+    assert _grps[0] == {"R": 30, "K": 20}
+    assert _grps[1] == _grps[0] and _grps[2] == _grps[0]
+
+
+def _grp_count(rows):
+    _c = {}
+    for r in rows:
+        _c[r.get("分组", "")] = _c.get(r.get("分组", ""), 0) + 1
+    return _c
+
+
+def test_no_legacy_final_label_table():
+    """★ 旧版 final_label 表必须不存在。"""
+    for _old in ("N1_人工标注表.csv", "N1_人工标注表.md"):
+        assert not (DELIV / _old).exists(), _old
+
+
+def test_delivered_files_match_span_ledger():
+    """★ 每条 resolved_span / chunk_id / span_mode 必须与跨度台账一致。"""
+    _led = ROOT / "guard/_out/n1r2/n1r2_span_ledger.jsonl"
+    if not _led.is_file():
+        pytest.skip("★ 跨度台账不在入库范围")
+    import json as _J
+    _sp = {_J.loads(l)["sample_id"]: _J.loads(l) for l in
+           _led.read_text(encoding="utf-8").splitlines() if l.strip()}
+    _rows_ = list(csv.DictReader((DELIV / "N1_盲审标注表_A.csv")
+                                 .open(encoding="utf-8")))
+    for _r in _rows_:
+        _L = _sp.get(_r["sample_id"])
+        assert _L, _r["sample_id"]
+        assert str(_L["resolved_span"]) == _r["★ resolved_span"].strip()
+        assert _L["span_mode"] == _r["★ span_mode"].strip()
+        assert _r["chunk_id"].strip() == f"{_L['★ document']}@{_L['chunk_start']}"
+
+
+def test_population_ledger_balances():
+    """★ 总体清单必须 156 条，且四类合计平衡（★ 不得无声消失）。"""
+    import collections
+    import json as _J
+    _p = ROOT / "guard/_out/n1r2/n1r2_population.jsonl"
+    if not _p.is_file():
+        pytest.skip("★ 总体清单不在入库范围")
+    _rows_ = [_J.loads(l) for l in
+              _p.read_text(encoding="utf-8").splitlines() if l.strip()]
+    assert len(_rows_) == 156
+    _c = collections.Counter(r["★ 类别"] for r in _rows_)
+    assert _c["audited"] == 50
+    assert sum(v for k, v in _c.items() if k != "audited") == 106
+    assert _c["unlocatable"] == 23
+
+
+def test_summary_reports_population_scope(tmp_path):
+    """★ 汇总脚本必须输出总体口径（★ 含未纳入分类）。"""
+    import json as _J
+    _pop = ROOT / "guard/_out/n1r2/n1r2_population.jsonl"
+    if not _pop.is_file():
+        pytest.skip("★ 总体清单不在入库范围")
+    _rs = [_base_row(0)]
+    _p = _write(tmp_path, _rs)
+    _out = n1.main(_p, None, None, None, str(_pop))
+    _g = _out.get("★ 总体口径（★ 分母含全部，★ 不得无声消失）")
+    assert _g is not None
+    assert _g["★ 总体候选数"] == 156
+    assert _g["★ 未纳入本次审核"] == 106
