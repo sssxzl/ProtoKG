@@ -244,6 +244,1646 @@ def _batch_blocks() -> int:
         return _BATCH_BLOCKS
 
 
+def _block_selection_mode() -> str:
+    """★ M1-Q3-P0.9：★ 块选择模式（★ **默认空 ⇒ 既有行为不变**）。"""
+    return str(os.environ.get("PROSE_BLOCK_SELECTION", "") or "").strip()
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _collect_blocks(files: list[Path], max_blocks: Optional[int] = None,
+                    budget=None, block_starts: Optional[list] = None) -> list[dict]:
+    """按**文档**切块 ⇒ ``[{"doc":…, "start":…, "text":…}, …]``。
+
+    ★ M1-Q3：``max_blocks`` 可按文档覆盖；``budget`` 为块预算（★ 记录未处理块与原因）。
+    ★ ★ ``block_starts``：**可选的**块起始行白名单（★ 供测试/实验**指定非首块**）。
+      · ★ **不硬编码任何行号** ⇒ 由调用方传入
+      · ★ 默认 ``None`` ⇒ ⇒ **行为与改前完全一致**（★ 可回滚）
+      · ★ 仅取**该文档**内的块；★ 不在白名单的块一律不产出
+    """
+    out: list[dict] = []
+    _mpd = max_blocks if max_blocks is not None else _blocks_per_doc()
+# -*- coding: utf-8 -*-
+"""core/fused/extraction/prose_semantics.py —— **通道 I：LLM 语义切片**。
+
+★ 为什么需要（2026-11-12 跨协议实测）
+  rfc 源的 10 个结构化通道（A0/A0b/A0c/A0d/A/B/C/D/E/F）覆盖的是
+  **结构化形态**（ABNF / 表格 / 命令列表 / 状态转移表 / 消息清单表）
+  ⇒ ⇒ 对「**纯散文**的扩展 RFC」**完全无能为力**
+  （实测 DHCPv4 的 36 个 spec 文档 ⇒ 结构化通道只触及 5 个 ⇒ 31 个丢失）。
+
+★ 结构：**切块 + 共享内核**（★ 2026-11-12 第二批重构）
+  · `_extract_blocks(protocol, blocks, ...)` —— 共享内核（缓存 / 批量化 /
+    LLM 调用 / 运行保护 / 过滤 / 产 norm 全在这里）
+  · `extract_prose_norms(protocol, files, ...)` —— **按文档**切块
+  · `extract_window_norms(protocol, files, ...)` —— **按段落**切块
+  ⇒ ⇒ 两个入口**只在切块粒度上不同** ⇒ ⇒ 缓存 / 批处理 / 运行保护完全同源。
+
+★ 四条硬约束
+  ① **只喂未充分覆盖的文档 / 段落** ⇒ 不重复劳动
+  ② **只产已有 aspect** ⇒ 契约面不变（aspect 数量仍是 21）
+  ③ **证据必须可核对**：span 必填 **且** 该行原文必须出现所声称的实体名
+  ④ **磁盘缓存**（版本化缓存键）⇒ 命中缓存 ⇒ 不调 LLM ⇒ 逐字节可复现
+"""
+import collections
+import hashlib
+import json
+import os
+import os
+import sys
+from pathlib import Path
+from typing import Optional
+
+#: ★ prompt 版本（改动 ⇒ 缓存键变 ⇒ 自动失效）
+PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v2"
+
+#: 每块的最大字符数（喂给 LLM 的上限 ⇒ 控制 token）
+_MAX_BLOCK_CHARS = 3500
+
+#: 每文档最多取几块（按文档入口）
+_MAX_BLOCKS_PER_DOC = 1
+
+#: 一次调用最多合并几个块（★ 批量化 ⇒ 控制调用次数）
+_BATCH_BLOCKS = 5
+
+#: 每块最多几条
+_MAX_ITEMS = 6
+
+#: LLM 的输出预算（★ 推理模型会把 reasoning 计入此预算 ⇒ 须留足）
+_MAX_TOKENS = 16000
+
+#: LLM prompt（要求结构化 JSON + 强制 span + 强制 doc）
+_PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**片段**。
+请只抽取**片段中明确写出的**协议语义事实（不要推测、不要补充文档外知识）。
+
+★ 每段片段前有 `[文档 <文件名>]` 标记 ⇒ 你输出时**必须**带上该文件名（`doc` 字段）。
+★ `span` 是**该文档内**的行号（1 起始）⇒ 无法给出确切行号的条目**不要输出**。
+★ `entity` 必须是**该行原文里真实出现**的名字（否则会被判为幻觉而丢弃）。
+★ `meaning` 用一句话说明它是什么。
+★ ★ `normative_subject`：**真正承担义务的主体**（★ **不是** `entity`！
+  `entity` 只是原文**提及**的实体；义务主体可能是它，也可能是别的（如 client / server /
+  B2BUA / DHCP server）。★ 若主体是代词或**无法确定** ⇒ **留空**（★ **不要猜**）。
+★ ★ `subject_span`：`normative_subject` 在原文中的行号（★ 用于核对；不确定就留 0）。
+★ 若该段是**规范性要求**，额外给出：`action`（动作）/ `object`（对象）/
+  `strength`（MUST|SHOULD|MAY，★ **只取原文出现的等级词，不要推测**）/
+  `polarity`（positive|negative）/ `keyword_raw`（原文等级措辞）/
+  `condition`（生效条件原文）/ `exception`（例外原文）/
+  `cross_ref`（**跨节引用**，如 `section 4.2`；★ **与条件分开** ⇒ 引用不是条件）/
+  `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+  `unknown` 无引用）。
+★ 若**不是**规范性要求，上述字段**全部留空**。
+★ 只输出 JSON，不要解释文字。
+
+格式：
+{"items": [{"doc": "<文件名>", "entity": "<实体名>", "meaning": "<一句话含义>",
+   "constraint": "<强制约束或空串>", "span": <行号>,
+   "action": "<动作或空串>", "object": "<对象或空串>",
+   "strength": "<MUST|SHOULD|MAY 或空串>", "polarity": "<positive|negative 或空串>",
+   "keyword_raw": "<原文等级措辞或空串>",
+   "condition": "<生效条件原文片段或空串>", "exception": "<例外原文片段或空串>",
+   "cross_ref": "<跨节引用或空串>", "cross_ref_status": "<resolved|unresolved|unknown>",
+   "normative_subject": "<义务承担主体或空串>", "subject_span": <主体行号或 0>}]}"""
+
+
+def _hash_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+def _rule_text_of(item: dict) -> str:
+    """由 LLM 原始项构造**规则文本**（★ 与 norm 映射同源 ⇒ 字段一致）。"""
+    from core.fused.extraction.normative_rule import (
+        build_payload, normalize_keyword, rule_text,
+    )
+    _kw = str(item.get("keyword_raw") or "").strip()
+    _st = _pol = None
+    if _kw:
+        _n = normalize_keyword(_kw)          # ★ 只认全大写（RFC 8174）
+        if _n:
+            _st, _pol = _n
+    if not _st:
+        _st = str(item.get("strength") or "").strip() or None
+    if not _pol:
+        _pol = str(item.get("polarity") or "").strip() or None
+    _ent = str(item.get("entity") or "").strip()
+    _con = str(item.get("condition") or "").strip() or None
+    _exc = str(item.get("exception") or "").strip() or None
+    _payload = build_payload(
+        subject=str(item.get("normative_subject") or "").strip() or _ent,
+        action=str(item.get("action") or "").strip() or _ent,
+        object_=str(item.get("object") or "").strip() or _ent,
+        strength=_st, polarity=_pol,
+        condition=_con, condition_status=("stated" if _con else "unknown"),
+        exception=_exc, exception_status=("stated" if _exc else "unknown"),
+        scope=None,
+        cross_ref=str(item.get("cross_ref") or "").strip() or None,
+        cross_ref_status=str(item.get("cross_ref_status") or "").strip() or None,
+    )
+    return rule_text(_payload)
+
+
+
+def _split_blocks(text: str, max_blocks: int) -> list[tuple[int, str]]:
+    """把文档切成若干块 ⇒ ``[(起始行号, 块文本), ...]``（行号可追溯 ⇒ span 的基础）。"""
+    lines = text.replace("\r\n", "\n").split("\n")
+    blocks: list[tuple[int, str]] = []
+    cur: list[str] = []
+    cur_start = 1
+    for i, ln in enumerate(lines, start=1):
+        if not cur:
+            cur_start = i
+        cur.append(ln)
+        if sum(len(x) + 1 for x in cur) >= _MAX_BLOCK_CHARS:
+            blocks.append((cur_start, "\n".join(cur)))
+            cur = []
+            if len(blocks) >= max_blocks:
+                return blocks
+    if cur and len(blocks) < max_blocks:
+        blocks.append((cur_start, "\n".join(cur)))
+    return blocks
+
+
+def _cache_path(protocol: str) -> Path:
+    from core.fused.extraction.source_retrieval import CACHE_DIR
+    return Path(CACHE_DIR) / f"{protocol}.prose.json"
+
+
+def _load_cache(protocol: str, block_hash: str) -> Optional[dict]:
+    """读缓存（★ M1-①：**四类状态 + 旧格式兼容**）。
+
+    ★ 2026-11-13：曾出现「LLM 调用失败 ⇒ 仍把空/部分结果写进缓存」⇒
+      ⇒ 后续命中**空缓存** ⇒ **永不重跑** ⇒ 缺口被永久掩盖。
+      ⇒ ⇒ 现在缓存带 ``complete`` 标志；**未跑完的不算命中** ⇒ ⇒ 会重跑。
+
+    ★ **M1-① 的状态语义**（★ 四类 + 旧格式）：
+      · ``success_nonempty`` ⇒ 正常命中
+      · ``success_empty``    ⇒ 正常命中（★ 合法空结果，不是失败）
+      · ``filtered_zero``    ⇒ 正常命中（★ 映射阶段全拒收 ⇒ **不自动重试**，
+        但**必须**带拒收原因 ⇒ 进入质量观察）
+      · ``failed_incomplete`` ⇒ **不命中**（★ 失败不得复用）
+      · ``legacy_unknown``   ⇒ 正常命中（★ 旧缓存无状态字段 ⇒ **不得假装成功**，
+        但也**不得无差别删除** ⇒ 标记为未知）
+    """
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FAILED_INCOMPLETE, CACHE_STATUS_LEGACY_UNKNOWN,
+    )
+    p = _cache_path(protocol)
+    if not p.is_file():
+        return None
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        # ★ 缓存文件损坏 / 写入中断 ⇒ **不命中**（★ 不得误认为成功）
+        return None
+    if not isinstance(d, dict) or d.get("block_hash") != block_hash:
+        return None
+    # ★ 旧缓存没有 complete 标志 ⇒ 视为「已完成」（向后兼容）
+    if d.get("complete") is False:
+        return None
+    # ★ M1-①：**状态缺失 ⇒ 标记 legacy_unknown**（★ 不假装成功，也不删除）
+    _st = d.get("status")
+    if not _st:
+        d["status"] = CACHE_STATUS_LEGACY_UNKNOWN
+        d["legacy_unknown"] = True
+    elif _st == CACHE_STATUS_FAILED_INCOMPLETE:
+        # ★ 明确标记为失败不完整 ⇒ **不命中**（★ 双保险：complete 标志之外）
+        return None
+    return d
+
+
+def _save_cache(protocol: str, block_hash: str, items: list[dict],
+                complete: bool = True, *,
+                status: Optional[str] = None,
+                drop_reasons: Optional[dict] = None,
+                mapped_count: Optional[int] = None,
+                llm_calls: Optional[int] = None) -> None:
+    """写缓存（★ M1-①：**显式状态 + 拒收原因 + 诊断计数**）。
+
+    ★ ``complete=False`` ⇒ 未跑完 ⇒ **下次会重跑**（★ 失败不固化）
+    ★ ``status`` 缺省时按「complete + items 是否为空」推导：
+      · complete=False ⇒ ``failed_incomplete``
+      · complete=True 且 items 为空 ⇒ ``success_empty``
+      · complete=True 且 items 非空 ⇒ ``success_nonempty``
+    ★ ``filtered_zero`` 只能由**映射后**的调用方显式传入（★ 因为要等拒收原因）
+    """
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FAILED_INCOMPLETE, CACHE_STATUS_SUCCESS_EMPTY,
+        CACHE_STATUS_SUCCESS_NONEMPTY, key_manifest,
+    )
+    if not status:
+        if not complete:
+            status = CACHE_STATUS_FAILED_INCOMPLETE
+        elif not items:
+            status = CACHE_STATUS_SUCCESS_EMPTY
+        else:
+            status = CACHE_STATUS_SUCCESS_NONEMPTY
+    p = _cache_path(protocol)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    _payload = {"block_hash": block_hash, "items": items,
+                "complete": bool(complete),
+                "status": status,
+                "key_manifest": key_manifest(block_hash)}
+    # ★ M1-③ 的诊断计数（★ 只增 ⇒ 不影响既有解析）
+    if drop_reasons is not None:
+        _payload["drop_reasons"] = dict(drop_reasons)
+    if mapped_count is not None:
+        _payload["mapped_count"] = int(mapped_count)
+    if llm_calls is not None:
+        _payload["llm_calls"] = int(llm_calls)
+    p.write_text(json.dumps(_payload, ensure_ascii=False, indent=2),
+                 encoding="utf-8")
+
+
+def _blocks_per_doc() -> int:
+    """★ M1-Q3：**每文档块数**（★ 默认 1 ⇒ ★ 行为与改前一致 ⇒ 不触发历史重抽）。"""
+    try:
+        return max(1, int(os.environ.get("PROSE_BLOCKS_PER_DOC",
+                                        _MAX_BLOCKS_PER_DOC)))
+    except (TypeError, ValueError):
+        return _MAX_BLOCKS_PER_DOC
+
+
+def _batch_blocks() -> int:
+    """★ M1-Q3：**每批块数**（★ 默认 5 ⇒ ★ 单块调用须显式启用）。"""
+    try:
+        return max(1, int(os.environ.get("PROSE_BATCH_BLOCKS", _BATCH_BLOCKS)))
+    except (TypeError, ValueError):
+        return _BATCH_BLOCKS
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _collect_blocks(files: list[Path], max_blocks: Optional[int] = None,
+                    budget=None, block_starts: Optional[list] = None) -> list[dict]:
+    """按**文档**切块 ⇒ ``[{"doc":…, "start":…, "text":…}, …]``。
+
+    ★ M1-Q3：``max_blocks`` 可按文档覆盖；``budget`` 为块预算（★ 记录未处理块与原因）。
+    ★ ★ ``block_starts``：**可选的**块起始行白名单（★ 供测试/实验**指定非首块**）。
+      · ★ **不硬编码任何行号** ⇒ 由调用方传入
+      · ★ 默认 ``None`` ⇒ ⇒ **行为与改前完全一致**（★ 可回滚）
+      · ★ 仅取**该文档**内的块；★ 不在白名单的块一律不产出
+    """
+    out: list[dict] = []
+    _mpd = max_blocks if max_blocks is not None else _blocks_per_doc()
+    _mpd = max_blocks if max_blocks is not None else _blocks_per_doc()
+# -*- coding: utf-8 -*-
+"""core/fused/extraction/prose_semantics.py —— **通道 I：LLM 语义切片**。
+
+★ 为什么需要（2026-11-12 跨协议实测）
+  rfc 源的 10 个结构化通道（A0/A0b/A0c/A0d/A/B/C/D/E/F）覆盖的是
+  **结构化形态**（ABNF / 表格 / 命令列表 / 状态转移表 / 消息清单表）
+  ⇒ ⇒ 对「**纯散文**的扩展 RFC」**完全无能为力**
+  （实测 DHCPv4 的 36 个 spec 文档 ⇒ 结构化通道只触及 5 个 ⇒ 31 个丢失）。
+
+★ 结构：**切块 + 共享内核**（★ 2026-11-12 第二批重构）
+  · `_extract_blocks(protocol, blocks, ...)` —— 共享内核（缓存 / 批量化 /
+    LLM 调用 / 运行保护 / 过滤 / 产 norm 全在这里）
+  · `extract_prose_norms(protocol, files, ...)` —— **按文档**切块
+  · `extract_window_norms(protocol, files, ...)` —— **按段落**切块
+  ⇒ ⇒ 两个入口**只在切块粒度上不同** ⇒ ⇒ 缓存 / 批处理 / 运行保护完全同源。
+
+★ 四条硬约束
+  ① **只喂未充分覆盖的文档 / 段落** ⇒ 不重复劳动
+  ② **只产已有 aspect** ⇒ 契约面不变（aspect 数量仍是 21）
+  ③ **证据必须可核对**：span 必填 **且** 该行原文必须出现所声称的实体名
+  ④ **磁盘缓存**（版本化缓存键）⇒ 命中缓存 ⇒ 不调 LLM ⇒ 逐字节可复现
+"""
+import collections
+import hashlib
+import json
+import os
+import os
+import sys
+from pathlib import Path
+from typing import Optional
+
+#: ★ prompt 版本（改动 ⇒ 缓存键变 ⇒ 自动失效）
+PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v2"
+
+#: 每块的最大字符数（喂给 LLM 的上限 ⇒ 控制 token）
+_MAX_BLOCK_CHARS = 3500
+
+#: 每文档最多取几块（按文档入口）
+_MAX_BLOCKS_PER_DOC = 1
+
+#: 一次调用最多合并几个块（★ 批量化 ⇒ 控制调用次数）
+_BATCH_BLOCKS = 5
+
+#: 每块最多几条
+_MAX_ITEMS = 6
+
+#: LLM 的输出预算（★ 推理模型会把 reasoning 计入此预算 ⇒ 须留足）
+_MAX_TOKENS = 16000
+
+#: LLM prompt（要求结构化 JSON + 强制 span + 强制 doc）
+_PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**片段**。
+请只抽取**片段中明确写出的**协议语义事实（不要推测、不要补充文档外知识）。
+
+★ 每段片段前有 `[文档 <文件名>]` 标记 ⇒ 你输出时**必须**带上该文件名（`doc` 字段）。
+★ `span` 是**该文档内**的行号（1 起始）⇒ 无法给出确切行号的条目**不要输出**。
+★ `entity` 必须是**该行原文里真实出现**的名字（否则会被判为幻觉而丢弃）。
+★ `meaning` 用一句话说明它是什么。
+★ ★ `normative_subject`：**真正承担义务的主体**（★ **不是** `entity`！
+  `entity` 只是原文**提及**的实体；义务主体可能是它，也可能是别的（如 client / server /
+  B2BUA / DHCP server）。★ 若主体是代词或**无法确定** ⇒ **留空**（★ **不要猜**）。
+★ ★ `subject_span`：`normative_subject` 在原文中的行号（★ 用于核对；不确定就留 0）。
+★ 若该段是**规范性要求**，额外给出：`action`（动作）/ `object`（对象）/
+  `strength`（MUST|SHOULD|MAY，★ **只取原文出现的等级词，不要推测**）/
+  `polarity`（positive|negative）/ `keyword_raw`（原文等级措辞）/
+  `condition`（生效条件原文）/ `exception`（例外原文）/
+  `cross_ref`（**跨节引用**，如 `section 4.2`；★ **与条件分开** ⇒ 引用不是条件）/
+  `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+  `unknown` 无引用）。
+★ 若**不是**规范性要求，上述字段**全部留空**。
+★ 只输出 JSON，不要解释文字。
+
+格式：
+{"items": [{"doc": "<文件名>", "entity": "<实体名>", "meaning": "<一句话含义>",
+   "constraint": "<强制约束或空串>", "span": <行号>,
+   "action": "<动作或空串>", "object": "<对象或空串>",
+   "strength": "<MUST|SHOULD|MAY 或空串>", "polarity": "<positive|negative 或空串>",
+   "keyword_raw": "<原文等级措辞或空串>",
+   "condition": "<生效条件原文片段或空串>", "exception": "<例外原文片段或空串>",
+   "cross_ref": "<跨节引用或空串>", "cross_ref_status": "<resolved|unresolved|unknown>",
+   "normative_subject": "<义务承担主体或空串>", "subject_span": <主体行号或 0>}]}"""
+
+
+def _hash_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+def _rule_text_of(item: dict) -> str:
+    """由 LLM 原始项构造**规则文本**（★ 与 norm 映射同源 ⇒ 字段一致）。"""
+    from core.fused.extraction.normative_rule import (
+        build_payload, normalize_keyword, rule_text,
+    )
+    _kw = str(item.get("keyword_raw") or "").strip()
+    _st = _pol = None
+    if _kw:
+        _n = normalize_keyword(_kw)          # ★ 只认全大写（RFC 8174）
+        if _n:
+            _st, _pol = _n
+    if not _st:
+        _st = str(item.get("strength") or "").strip() or None
+    if not _pol:
+        _pol = str(item.get("polarity") or "").strip() or None
+    _ent = str(item.get("entity") or "").strip()
+    _con = str(item.get("condition") or "").strip() or None
+    _exc = str(item.get("exception") or "").strip() or None
+    _payload = build_payload(
+        subject=str(item.get("normative_subject") or "").strip() or _ent,
+        action=str(item.get("action") or "").strip() or _ent,
+        object_=str(item.get("object") or "").strip() or _ent,
+        strength=_st, polarity=_pol,
+        condition=_con, condition_status=("stated" if _con else "unknown"),
+        exception=_exc, exception_status=("stated" if _exc else "unknown"),
+        scope=None,
+        cross_ref=str(item.get("cross_ref") or "").strip() or None,
+        cross_ref_status=str(item.get("cross_ref_status") or "").strip() or None,
+    )
+    return rule_text(_payload)
+
+
+
+def _split_blocks(text: str, max_blocks: int) -> list[tuple[int, str]]:
+    """把文档切成若干块 ⇒ ``[(起始行号, 块文本), ...]``（行号可追溯 ⇒ span 的基础）。"""
+    lines = text.replace("\r\n", "\n").split("\n")
+    blocks: list[tuple[int, str]] = []
+    cur: list[str] = []
+    cur_start = 1
+    for i, ln in enumerate(lines, start=1):
+        if not cur:
+            cur_start = i
+        cur.append(ln)
+        if sum(len(x) + 1 for x in cur) >= _MAX_BLOCK_CHARS:
+            blocks.append((cur_start, "\n".join(cur)))
+            cur = []
+            if len(blocks) >= max_blocks:
+                return blocks
+    if cur and len(blocks) < max_blocks:
+        blocks.append((cur_start, "\n".join(cur)))
+    return blocks
+
+
+def _cache_path(protocol: str) -> Path:
+    from core.fused.extraction.source_retrieval import CACHE_DIR
+    return Path(CACHE_DIR) / f"{protocol}.prose.json"
+
+
+def _load_cache(protocol: str, block_hash: str) -> Optional[dict]:
+    """读缓存（★ M1-①：**四类状态 + 旧格式兼容**）。
+
+    ★ 2026-11-13：曾出现「LLM 调用失败 ⇒ 仍把空/部分结果写进缓存」⇒
+      ⇒ 后续命中**空缓存** ⇒ **永不重跑** ⇒ 缺口被永久掩盖。
+      ⇒ ⇒ 现在缓存带 ``complete`` 标志；**未跑完的不算命中** ⇒ ⇒ 会重跑。
+
+    ★ **M1-① 的状态语义**（★ 四类 + 旧格式）：
+      · ``success_nonempty`` ⇒ 正常命中
+      · ``success_empty``    ⇒ 正常命中（★ 合法空结果，不是失败）
+      · ``filtered_zero``    ⇒ 正常命中（★ 映射阶段全拒收 ⇒ **不自动重试**，
+        但**必须**带拒收原因 ⇒ 进入质量观察）
+      · ``failed_incomplete`` ⇒ **不命中**（★ 失败不得复用）
+      · ``legacy_unknown``   ⇒ 正常命中（★ 旧缓存无状态字段 ⇒ **不得假装成功**，
+        但也**不得无差别删除** ⇒ 标记为未知）
+    """
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FAILED_INCOMPLETE, CACHE_STATUS_LEGACY_UNKNOWN,
+    )
+    p = _cache_path(protocol)
+    if not p.is_file():
+        return None
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        # ★ 缓存文件损坏 / 写入中断 ⇒ **不命中**（★ 不得误认为成功）
+        return None
+    if not isinstance(d, dict) or d.get("block_hash") != block_hash:
+        return None
+    # ★ 旧缓存没有 complete 标志 ⇒ 视为「已完成」（向后兼容）
+    if d.get("complete") is False:
+        return None
+    # ★ M1-①：**状态缺失 ⇒ 标记 legacy_unknown**（★ 不假装成功，也不删除）
+    _st = d.get("status")
+    if not _st:
+        d["status"] = CACHE_STATUS_LEGACY_UNKNOWN
+        d["legacy_unknown"] = True
+    elif _st == CACHE_STATUS_FAILED_INCOMPLETE:
+        # ★ 明确标记为失败不完整 ⇒ **不命中**（★ 双保险：complete 标志之外）
+        return None
+    return d
+
+
+def _save_cache(protocol: str, block_hash: str, items: list[dict],
+                complete: bool = True, *,
+                status: Optional[str] = None,
+                drop_reasons: Optional[dict] = None,
+                mapped_count: Optional[int] = None,
+                llm_calls: Optional[int] = None) -> None:
+    """写缓存（★ M1-①：**显式状态 + 拒收原因 + 诊断计数**）。
+
+    ★ ``complete=False`` ⇒ 未跑完 ⇒ **下次会重跑**（★ 失败不固化）
+    ★ ``status`` 缺省时按「complete + items 是否为空」推导：
+      · complete=False ⇒ ``failed_incomplete``
+      · complete=True 且 items 为空 ⇒ ``success_empty``
+      · complete=True 且 items 非空 ⇒ ``success_nonempty``
+    ★ ``filtered_zero`` 只能由**映射后**的调用方显式传入（★ 因为要等拒收原因）
+    """
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FAILED_INCOMPLETE, CACHE_STATUS_SUCCESS_EMPTY,
+        CACHE_STATUS_SUCCESS_NONEMPTY, key_manifest,
+    )
+    if not status:
+        if not complete:
+            status = CACHE_STATUS_FAILED_INCOMPLETE
+        elif not items:
+            status = CACHE_STATUS_SUCCESS_EMPTY
+        else:
+            status = CACHE_STATUS_SUCCESS_NONEMPTY
+    p = _cache_path(protocol)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    _payload = {"block_hash": block_hash, "items": items,
+                "complete": bool(complete),
+                "status": status,
+                "key_manifest": key_manifest(block_hash)}
+    # ★ M1-③ 的诊断计数（★ 只增 ⇒ 不影响既有解析）
+    if drop_reasons is not None:
+        _payload["drop_reasons"] = dict(drop_reasons)
+    if mapped_count is not None:
+        _payload["mapped_count"] = int(mapped_count)
+    if llm_calls is not None:
+        _payload["llm_calls"] = int(llm_calls)
+    p.write_text(json.dumps(_payload, ensure_ascii=False, indent=2),
+                 encoding="utf-8")
+
+
+def _blocks_per_doc() -> int:
+    """★ M1-Q3：**每文档块数**（★ 默认 1 ⇒ ★ 行为与改前一致 ⇒ 不触发历史重抽）。"""
+    try:
+        return max(1, int(os.environ.get("PROSE_BLOCKS_PER_DOC",
+                                        _MAX_BLOCKS_PER_DOC)))
+    except (TypeError, ValueError):
+        return _MAX_BLOCKS_PER_DOC
+
+
+def _batch_blocks() -> int:
+    """★ M1-Q3：**每批块数**（★ 默认 5 ⇒ ★ 单块调用须显式启用）。"""
+    try:
+        return max(1, int(os.environ.get("PROSE_BATCH_BLOCKS", _BATCH_BLOCKS)))
+    except (TypeError, ValueError):
+        return _BATCH_BLOCKS
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _collect_blocks(files: list[Path], max_blocks: Optional[int] = None,
+                    budget=None, block_starts: Optional[list] = None) -> list[dict]:
+    """按**文档**切块 ⇒ ``[{"doc":…, "start":…, "text":…}, …]``。
+
+    ★ M1-Q3：``max_blocks`` 可按文档覆盖；``budget`` 为块预算（★ 记录未处理块与原因）。
+    ★ ★ ``block_starts``：**可选的**块起始行白名单（★ 供测试/实验**指定非首块**）。
+      · ★ **不硬编码任何行号** ⇒ 由调用方传入
+      · ★ 默认 ``None`` ⇒ ⇒ **行为与改前完全一致**（★ 可回滚）
+      · ★ 仅取**该文档**内的块；★ 不在白名单的块一律不产出
+    """
+    out: list[dict] = []
+    _mpd = max_blocks if max_blocks is not None else _blocks_per_doc()
+    _mpd = max_blocks if max_blocks is not None else _blocks_per_doc()
+# -*- coding: utf-8 -*-
+"""core/fused/extraction/prose_semantics.py —— **通道 I：LLM 语义切片**。
+
+★ 为什么需要（2026-11-12 跨协议实测）
+  rfc 源的 10 个结构化通道（A0/A0b/A0c/A0d/A/B/C/D/E/F）覆盖的是
+  **结构化形态**（ABNF / 表格 / 命令列表 / 状态转移表 / 消息清单表）
+  ⇒ ⇒ 对「**纯散文**的扩展 RFC」**完全无能为力**
+  （实测 DHCPv4 的 36 个 spec 文档 ⇒ 结构化通道只触及 5 个 ⇒ 31 个丢失）。
+
+★ 结构：**切块 + 共享内核**（★ 2026-11-12 第二批重构）
+  · `_extract_blocks(protocol, blocks, ...)` —— 共享内核（缓存 / 批量化 /
+    LLM 调用 / 运行保护 / 过滤 / 产 norm 全在这里）
+  · `extract_prose_norms(protocol, files, ...)` —— **按文档**切块
+  · `extract_window_norms(protocol, files, ...)` —— **按段落**切块
+  ⇒ ⇒ 两个入口**只在切块粒度上不同** ⇒ ⇒ 缓存 / 批处理 / 运行保护完全同源。
+
+★ 四条硬约束
+  ① **只喂未充分覆盖的文档 / 段落** ⇒ 不重复劳动
+  ② **只产已有 aspect** ⇒ 契约面不变（aspect 数量仍是 21）
+  ③ **证据必须可核对**：span 必填 **且** 该行原文必须出现所声称的实体名
+  ④ **磁盘缓存**（版本化缓存键）⇒ 命中缓存 ⇒ 不调 LLM ⇒ 逐字节可复现
+"""
+import collections
+import hashlib
+import json
+import os
+import os
+import sys
+from pathlib import Path
+from typing import Optional
+
+#: ★ prompt 版本（改动 ⇒ 缓存键变 ⇒ 自动失效）
+PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v2"
+
+#: 每块的最大字符数（喂给 LLM 的上限 ⇒ 控制 token）
+_MAX_BLOCK_CHARS = 3500
+
+#: 每文档最多取几块（按文档入口）
+_MAX_BLOCKS_PER_DOC = 1
+
+#: 一次调用最多合并几个块（★ 批量化 ⇒ 控制调用次数）
+_BATCH_BLOCKS = 5
+
+#: 每块最多几条
+_MAX_ITEMS = 6
+
+#: LLM 的输出预算（★ 推理模型会把 reasoning 计入此预算 ⇒ 须留足）
+_MAX_TOKENS = 16000
+
+#: LLM prompt（要求结构化 JSON + 强制 span + 强制 doc）
+_PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**片段**。
+请只抽取**片段中明确写出的**协议语义事实（不要推测、不要补充文档外知识）。
+
+★ 每段片段前有 `[文档 <文件名>]` 标记 ⇒ 你输出时**必须**带上该文件名（`doc` 字段）。
+★ `span` 是**该文档内**的行号（1 起始）⇒ 无法给出确切行号的条目**不要输出**。
+★ `entity` 必须是**该行原文里真实出现**的名字（否则会被判为幻觉而丢弃）。
+★ `meaning` 用一句话说明它是什么。
+★ ★ `normative_subject`：**真正承担义务的主体**（★ **不是** `entity`！
+  `entity` 只是原文**提及**的实体；义务主体可能是它，也可能是别的（如 client / server /
+  B2BUA / DHCP server）。★ 若主体是代词或**无法确定** ⇒ **留空**（★ **不要猜**）。
+★ ★ `subject_span`：`normative_subject` 在原文中的行号（★ 用于核对；不确定就留 0）。
+★ 若该段是**规范性要求**，额外给出：`action`（动作）/ `object`（对象）/
+  `strength`（MUST|SHOULD|MAY，★ **只取原文出现的等级词，不要推测**）/
+  `polarity`（positive|negative）/ `keyword_raw`（原文等级措辞）/
+  `condition`（生效条件原文）/ `exception`（例外原文）/
+  `cross_ref`（**跨节引用**，如 `section 4.2`；★ **与条件分开** ⇒ 引用不是条件）/
+  `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+  `unknown` 无引用）。
+★ 若**不是**规范性要求，上述字段**全部留空**。
+★ 只输出 JSON，不要解释文字。
+
+格式：
+{"items": [{"doc": "<文件名>", "entity": "<实体名>", "meaning": "<一句话含义>",
+   "constraint": "<强制约束或空串>", "span": <行号>,
+   "action": "<动作或空串>", "object": "<对象或空串>",
+   "strength": "<MUST|SHOULD|MAY 或空串>", "polarity": "<positive|negative 或空串>",
+   "keyword_raw": "<原文等级措辞或空串>",
+   "condition": "<生效条件原文片段或空串>", "exception": "<例外原文片段或空串>",
+   "cross_ref": "<跨节引用或空串>", "cross_ref_status": "<resolved|unresolved|unknown>",
+   "normative_subject": "<义务承担主体或空串>", "subject_span": <主体行号或 0>}]}"""
+
+
+def _hash_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+def _rule_text_of(item: dict) -> str:
+    """由 LLM 原始项构造**规则文本**（★ 与 norm 映射同源 ⇒ 字段一致）。"""
+    from core.fused.extraction.normative_rule import (
+        build_payload, normalize_keyword, rule_text,
+    )
+    _kw = str(item.get("keyword_raw") or "").strip()
+    _st = _pol = None
+    if _kw:
+        _n = normalize_keyword(_kw)          # ★ 只认全大写（RFC 8174）
+        if _n:
+            _st, _pol = _n
+    if not _st:
+        _st = str(item.get("strength") or "").strip() or None
+    if not _pol:
+        _pol = str(item.get("polarity") or "").strip() or None
+    _ent = str(item.get("entity") or "").strip()
+    _con = str(item.get("condition") or "").strip() or None
+    _exc = str(item.get("exception") or "").strip() or None
+    _payload = build_payload(
+        subject=str(item.get("normative_subject") or "").strip() or _ent,
+        action=str(item.get("action") or "").strip() or _ent,
+        object_=str(item.get("object") or "").strip() or _ent,
+        strength=_st, polarity=_pol,
+        condition=_con, condition_status=("stated" if _con else "unknown"),
+        exception=_exc, exception_status=("stated" if _exc else "unknown"),
+        scope=None,
+        cross_ref=str(item.get("cross_ref") or "").strip() or None,
+        cross_ref_status=str(item.get("cross_ref_status") or "").strip() or None,
+    )
+    return rule_text(_payload)
+
+
+
+def _split_blocks(text: str, max_blocks: int) -> list[tuple[int, str]]:
+    """把文档切成若干块 ⇒ ``[(起始行号, 块文本), ...]``（行号可追溯 ⇒ span 的基础）。"""
+    lines = text.replace("\r\n", "\n").split("\n")
+    blocks: list[tuple[int, str]] = []
+    cur: list[str] = []
+    cur_start = 1
+    for i, ln in enumerate(lines, start=1):
+        if not cur:
+            cur_start = i
+        cur.append(ln)
+        if sum(len(x) + 1 for x in cur) >= _MAX_BLOCK_CHARS:
+            blocks.append((cur_start, "\n".join(cur)))
+            cur = []
+            if len(blocks) >= max_blocks:
+                return blocks
+    if cur and len(blocks) < max_blocks:
+        blocks.append((cur_start, "\n".join(cur)))
+    return blocks
+
+
+def _cache_path(protocol: str) -> Path:
+    from core.fused.extraction.source_retrieval import CACHE_DIR
+    return Path(CACHE_DIR) / f"{protocol}.prose.json"
+
+
+def _load_cache(protocol: str, block_hash: str) -> Optional[dict]:
+    """读缓存（★ M1-①：**四类状态 + 旧格式兼容**）。
+
+    ★ 2026-11-13：曾出现「LLM 调用失败 ⇒ 仍把空/部分结果写进缓存」⇒
+      ⇒ 后续命中**空缓存** ⇒ **永不重跑** ⇒ 缺口被永久掩盖。
+      ⇒ ⇒ 现在缓存带 ``complete`` 标志；**未跑完的不算命中** ⇒ ⇒ 会重跑。
+
+    ★ **M1-① 的状态语义**（★ 四类 + 旧格式）：
+      · ``success_nonempty`` ⇒ 正常命中
+      · ``success_empty``    ⇒ 正常命中（★ 合法空结果，不是失败）
+      · ``filtered_zero``    ⇒ 正常命中（★ 映射阶段全拒收 ⇒ **不自动重试**，
+        但**必须**带拒收原因 ⇒ 进入质量观察）
+      · ``failed_incomplete`` ⇒ **不命中**（★ 失败不得复用）
+      · ``legacy_unknown``   ⇒ 正常命中（★ 旧缓存无状态字段 ⇒ **不得假装成功**，
+        但也**不得无差别删除** ⇒ 标记为未知）
+    """
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FAILED_INCOMPLETE, CACHE_STATUS_LEGACY_UNKNOWN,
+    )
+    p = _cache_path(protocol)
+    if not p.is_file():
+        return None
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        # ★ 缓存文件损坏 / 写入中断 ⇒ **不命中**（★ 不得误认为成功）
+        return None
+    if not isinstance(d, dict) or d.get("block_hash") != block_hash:
+        return None
+    # ★ 旧缓存没有 complete 标志 ⇒ 视为「已完成」（向后兼容）
+    if d.get("complete") is False:
+        return None
+    # ★ M1-①：**状态缺失 ⇒ 标记 legacy_unknown**（★ 不假装成功，也不删除）
+    _st = d.get("status")
+    if not _st:
+        d["status"] = CACHE_STATUS_LEGACY_UNKNOWN
+        d["legacy_unknown"] = True
+    elif _st == CACHE_STATUS_FAILED_INCOMPLETE:
+        # ★ 明确标记为失败不完整 ⇒ **不命中**（★ 双保险：complete 标志之外）
+        return None
+    return d
+
+
+def _save_cache(protocol: str, block_hash: str, items: list[dict],
+                complete: bool = True, *,
+                status: Optional[str] = None,
+                drop_reasons: Optional[dict] = None,
+                mapped_count: Optional[int] = None,
+                llm_calls: Optional[int] = None) -> None:
+    """写缓存（★ M1-①：**显式状态 + 拒收原因 + 诊断计数**）。
+
+    ★ ``complete=False`` ⇒ 未跑完 ⇒ **下次会重跑**（★ 失败不固化）
+    ★ ``status`` 缺省时按「complete + items 是否为空」推导：
+      · complete=False ⇒ ``failed_incomplete``
+      · complete=True 且 items 为空 ⇒ ``success_empty``
+      · complete=True 且 items 非空 ⇒ ``success_nonempty``
+    ★ ``filtered_zero`` 只能由**映射后**的调用方显式传入（★ 因为要等拒收原因）
+    """
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FAILED_INCOMPLETE, CACHE_STATUS_SUCCESS_EMPTY,
+        CACHE_STATUS_SUCCESS_NONEMPTY, key_manifest,
+    )
+    if not status:
+        if not complete:
+            status = CACHE_STATUS_FAILED_INCOMPLETE
+        elif not items:
+            status = CACHE_STATUS_SUCCESS_EMPTY
+        else:
+            status = CACHE_STATUS_SUCCESS_NONEMPTY
+    p = _cache_path(protocol)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    _payload = {"block_hash": block_hash, "items": items,
+                "complete": bool(complete),
+                "status": status,
+                "key_manifest": key_manifest(block_hash)}
+    # ★ M1-③ 的诊断计数（★ 只增 ⇒ 不影响既有解析）
+    if drop_reasons is not None:
+        _payload["drop_reasons"] = dict(drop_reasons)
+    if mapped_count is not None:
+        _payload["mapped_count"] = int(mapped_count)
+    if llm_calls is not None:
+        _payload["llm_calls"] = int(llm_calls)
+    p.write_text(json.dumps(_payload, ensure_ascii=False, indent=2),
+                 encoding="utf-8")
+
+
+def _blocks_per_doc() -> int:
+    """★ M1-Q3：**每文档块数**（★ 默认 1 ⇒ ★ 行为与改前一致 ⇒ 不触发历史重抽）。"""
+    try:
+        return max(1, int(os.environ.get("PROSE_BLOCKS_PER_DOC",
+                                        _MAX_BLOCKS_PER_DOC)))
+    except (TypeError, ValueError):
+        return _MAX_BLOCKS_PER_DOC
+
+
+def _batch_blocks() -> int:
+    """★ M1-Q3：**每批块数**（★ 默认 5 ⇒ ★ 单块调用须显式启用）。"""
+    try:
+        return max(1, int(os.environ.get("PROSE_BATCH_BLOCKS", _BATCH_BLOCKS)))
+    except (TypeError, ValueError):
+        return _BATCH_BLOCKS
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _collect_blocks(files: list[Path], max_blocks: Optional[int] = None,
+                    budget=None, block_starts: Optional[list] = None) -> list[dict]:
+    """按**文档**切块 ⇒ ``[{"doc":…, "start":…, "text":…}, …]``。
+
+    ★ M1-Q3：``max_blocks`` 可按文档覆盖；``budget`` 为块预算（★ 记录未处理块与原因）。
+    ★ ★ ``block_starts``：**可选的**块起始行白名单（★ 供测试/实验**指定非首块**）。
+      · ★ **不硬编码任何行号** ⇒ 由调用方传入
+      · ★ 默认 ``None`` ⇒ ⇒ **行为与改前完全一致**（★ 可回滚）
+      · ★ 仅取**该文档**内的块；★ 不在白名单的块一律不产出
+    """
+    out: list[dict] = []
+    _mpd = max_blocks if max_blocks is not None else _blocks_per_doc()
+    _mpd = max_blocks if max_blocks is not None else _blocks_per_doc()
+# -*- coding: utf-8 -*-
+"""core/fused/extraction/prose_semantics.py —— **通道 I：LLM 语义切片**。
+
+★ 为什么需要（2026-11-12 跨协议实测）
+  rfc 源的 10 个结构化通道（A0/A0b/A0c/A0d/A/B/C/D/E/F）覆盖的是
+  **结构化形态**（ABNF / 表格 / 命令列表 / 状态转移表 / 消息清单表）
+  ⇒ ⇒ 对「**纯散文**的扩展 RFC」**完全无能为力**
+  （实测 DHCPv4 的 36 个 spec 文档 ⇒ 结构化通道只触及 5 个 ⇒ 31 个丢失）。
+
+★ 结构：**切块 + 共享内核**（★ 2026-11-12 第二批重构）
+  · `_extract_blocks(protocol, blocks, ...)` —— 共享内核（缓存 / 批量化 /
+    LLM 调用 / 运行保护 / 过滤 / 产 norm 全在这里）
+  · `extract_prose_norms(protocol, files, ...)` —— **按文档**切块
+  · `extract_window_norms(protocol, files, ...)` —— **按段落**切块
+  ⇒ ⇒ 两个入口**只在切块粒度上不同** ⇒ ⇒ 缓存 / 批处理 / 运行保护完全同源。
+
+★ 四条硬约束
+  ① **只喂未充分覆盖的文档 / 段落** ⇒ 不重复劳动
+  ② **只产已有 aspect** ⇒ 契约面不变（aspect 数量仍是 21）
+  ③ **证据必须可核对**：span 必填 **且** 该行原文必须出现所声称的实体名
+  ④ **磁盘缓存**（版本化缓存键）⇒ 命中缓存 ⇒ 不调 LLM ⇒ 逐字节可复现
+"""
+import collections
+import hashlib
+import json
+import os
+import os
+import sys
+from pathlib import Path
+from typing import Optional
+
+#: ★ prompt 版本（改动 ⇒ 缓存键变 ⇒ 自动失效）
+PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v2"
+
+#: 每块的最大字符数（喂给 LLM 的上限 ⇒ 控制 token）
+_MAX_BLOCK_CHARS = 3500
+
+#: 每文档最多取几块（按文档入口）
+_MAX_BLOCKS_PER_DOC = 1
+
+#: 一次调用最多合并几个块（★ 批量化 ⇒ 控制调用次数）
+_BATCH_BLOCKS = 5
+
+#: 每块最多几条
+_MAX_ITEMS = 6
+
+#: LLM 的输出预算（★ 推理模型会把 reasoning 计入此预算 ⇒ 须留足）
+_MAX_TOKENS = 16000
+
+#: LLM prompt（要求结构化 JSON + 强制 span + 强制 doc）
+_PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**片段**。
+请只抽取**片段中明确写出的**协议语义事实（不要推测、不要补充文档外知识）。
+
+★ 每段片段前有 `[文档 <文件名>]` 标记 ⇒ 你输出时**必须**带上该文件名（`doc` 字段）。
+★ `span` 是**该文档内**的行号（1 起始）⇒ 无法给出确切行号的条目**不要输出**。
+★ `entity` 必须是**该行原文里真实出现**的名字（否则会被判为幻觉而丢弃）。
+★ `meaning` 用一句话说明它是什么。
+★ ★ `normative_subject`：**真正承担义务的主体**（★ **不是** `entity`！
+  `entity` 只是原文**提及**的实体；义务主体可能是它，也可能是别的（如 client / server /
+  B2BUA / DHCP server）。★ 若主体是代词或**无法确定** ⇒ **留空**（★ **不要猜**）。
+★ ★ `subject_span`：`normative_subject` 在原文中的行号（★ 用于核对；不确定就留 0）。
+★ 若该段是**规范性要求**，额外给出：`action`（动作）/ `object`（对象）/
+  `strength`（MUST|SHOULD|MAY，★ **只取原文出现的等级词，不要推测**）/
+  `polarity`（positive|negative）/ `keyword_raw`（原文等级措辞）/
+  `condition`（生效条件原文）/ `exception`（例外原文）/
+  `cross_ref`（**跨节引用**，如 `section 4.2`；★ **与条件分开** ⇒ 引用不是条件）/
+  `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+  `unknown` 无引用）。
+★ 若**不是**规范性要求，上述字段**全部留空**。
+★ 只输出 JSON，不要解释文字。
+
+格式：
+{"items": [{"doc": "<文件名>", "entity": "<实体名>", "meaning": "<一句话含义>",
+   "constraint": "<强制约束或空串>", "span": <行号>,
+   "action": "<动作或空串>", "object": "<对象或空串>",
+   "strength": "<MUST|SHOULD|MAY 或空串>", "polarity": "<positive|negative 或空串>",
+   "keyword_raw": "<原文等级措辞或空串>",
+   "condition": "<生效条件原文片段或空串>", "exception": "<例外原文片段或空串>",
+   "cross_ref": "<跨节引用或空串>", "cross_ref_status": "<resolved|unresolved|unknown>",
+   "normative_subject": "<义务承担主体或空串>", "subject_span": <主体行号或 0>}]}"""
+
+
+def _hash_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+def _rule_text_of(item: dict) -> str:
+    """由 LLM 原始项构造**规则文本**（★ 与 norm 映射同源 ⇒ 字段一致）。"""
+    from core.fused.extraction.normative_rule import (
+        build_payload, normalize_keyword, rule_text,
+    )
+    _kw = str(item.get("keyword_raw") or "").strip()
+    _st = _pol = None
+    if _kw:
+        _n = normalize_keyword(_kw)          # ★ 只认全大写（RFC 8174）
+        if _n:
+            _st, _pol = _n
+    if not _st:
+        _st = str(item.get("strength") or "").strip() or None
+    if not _pol:
+        _pol = str(item.get("polarity") or "").strip() or None
+    _ent = str(item.get("entity") or "").strip()
+    _con = str(item.get("condition") or "").strip() or None
+    _exc = str(item.get("exception") or "").strip() or None
+    _payload = build_payload(
+        subject=str(item.get("normative_subject") or "").strip() or _ent,
+        action=str(item.get("action") or "").strip() or _ent,
+        object_=str(item.get("object") or "").strip() or _ent,
+        strength=_st, polarity=_pol,
+        condition=_con, condition_status=("stated" if _con else "unknown"),
+        exception=_exc, exception_status=("stated" if _exc else "unknown"),
+        scope=None,
+        cross_ref=str(item.get("cross_ref") or "").strip() or None,
+        cross_ref_status=str(item.get("cross_ref_status") or "").strip() or None,
+    )
+    return rule_text(_payload)
+
+
+
+def _split_blocks(text: str, max_blocks: int) -> list[tuple[int, str]]:
+    """把文档切成若干块 ⇒ ``[(起始行号, 块文本), ...]``（行号可追溯 ⇒ span 的基础）。"""
+    lines = text.replace("\r\n", "\n").split("\n")
+    blocks: list[tuple[int, str]] = []
+    cur: list[str] = []
+    cur_start = 1
+    for i, ln in enumerate(lines, start=1):
+        if not cur:
+            cur_start = i
+        cur.append(ln)
+        if sum(len(x) + 1 for x in cur) >= _MAX_BLOCK_CHARS:
+            blocks.append((cur_start, "\n".join(cur)))
+            cur = []
+            if len(blocks) >= max_blocks:
+                return blocks
+    if cur and len(blocks) < max_blocks:
+        blocks.append((cur_start, "\n".join(cur)))
+    return blocks
+
+
+def _cache_path(protocol: str) -> Path:
+    from core.fused.extraction.source_retrieval import CACHE_DIR
+    return Path(CACHE_DIR) / f"{protocol}.prose.json"
+
+
+def _load_cache(protocol: str, block_hash: str) -> Optional[dict]:
+    """读缓存（★ M1-①：**四类状态 + 旧格式兼容**）。
+
+    ★ 2026-11-13：曾出现「LLM 调用失败 ⇒ 仍把空/部分结果写进缓存」⇒
+      ⇒ 后续命中**空缓存** ⇒ **永不重跑** ⇒ 缺口被永久掩盖。
+      ⇒ ⇒ 现在缓存带 ``complete`` 标志；**未跑完的不算命中** ⇒ ⇒ 会重跑。
+
+    ★ **M1-① 的状态语义**（★ 四类 + 旧格式）：
+      · ``success_nonempty`` ⇒ 正常命中
+      · ``success_empty``    ⇒ 正常命中（★ 合法空结果，不是失败）
+      · ``filtered_zero``    ⇒ 正常命中（★ 映射阶段全拒收 ⇒ **不自动重试**，
+        但**必须**带拒收原因 ⇒ 进入质量观察）
+      · ``failed_incomplete`` ⇒ **不命中**（★ 失败不得复用）
+      · ``legacy_unknown``   ⇒ 正常命中（★ 旧缓存无状态字段 ⇒ **不得假装成功**，
+        但也**不得无差别删除** ⇒ 标记为未知）
+    """
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FAILED_INCOMPLETE, CACHE_STATUS_LEGACY_UNKNOWN,
+    )
+    p = _cache_path(protocol)
+    if not p.is_file():
+        return None
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        # ★ 缓存文件损坏 / 写入中断 ⇒ **不命中**（★ 不得误认为成功）
+        return None
+    if not isinstance(d, dict) or d.get("block_hash") != block_hash:
+        return None
+    # ★ 旧缓存没有 complete 标志 ⇒ 视为「已完成」（向后兼容）
+    if d.get("complete") is False:
+        return None
+    # ★ M1-①：**状态缺失 ⇒ 标记 legacy_unknown**（★ 不假装成功，也不删除）
+    _st = d.get("status")
+    if not _st:
+        d["status"] = CACHE_STATUS_LEGACY_UNKNOWN
+        d["legacy_unknown"] = True
+    elif _st == CACHE_STATUS_FAILED_INCOMPLETE:
+        # ★ 明确标记为失败不完整 ⇒ **不命中**（★ 双保险：complete 标志之外）
+        return None
+    return d
+
+
+def _save_cache(protocol: str, block_hash: str, items: list[dict],
+                complete: bool = True, *,
+                status: Optional[str] = None,
+                drop_reasons: Optional[dict] = None,
+                mapped_count: Optional[int] = None,
+                llm_calls: Optional[int] = None) -> None:
+    """写缓存（★ M1-①：**显式状态 + 拒收原因 + 诊断计数**）。
+
+    ★ ``complete=False`` ⇒ 未跑完 ⇒ **下次会重跑**（★ 失败不固化）
+    ★ ``status`` 缺省时按「complete + items 是否为空」推导：
+      · complete=False ⇒ ``failed_incomplete``
+      · complete=True 且 items 为空 ⇒ ``success_empty``
+      · complete=True 且 items 非空 ⇒ ``success_nonempty``
+    ★ ``filtered_zero`` 只能由**映射后**的调用方显式传入（★ 因为要等拒收原因）
+    """
+    from core.fused.extraction.cache_key import (
+        CACHE_STATUS_FAILED_INCOMPLETE, CACHE_STATUS_SUCCESS_EMPTY,
+        CACHE_STATUS_SUCCESS_NONEMPTY, key_manifest,
+    )
+    if not status:
+        if not complete:
+            status = CACHE_STATUS_FAILED_INCOMPLETE
+        elif not items:
+            status = CACHE_STATUS_SUCCESS_EMPTY
+        else:
+            status = CACHE_STATUS_SUCCESS_NONEMPTY
+    p = _cache_path(protocol)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    _payload = {"block_hash": block_hash, "items": items,
+                "complete": bool(complete),
+                "status": status,
+                "key_manifest": key_manifest(block_hash)}
+    # ★ M1-③ 的诊断计数（★ 只增 ⇒ 不影响既有解析）
+    if drop_reasons is not None:
+        _payload["drop_reasons"] = dict(drop_reasons)
+    if mapped_count is not None:
+        _payload["mapped_count"] = int(mapped_count)
+    if llm_calls is not None:
+        _payload["llm_calls"] = int(llm_calls)
+    p.write_text(json.dumps(_payload, ensure_ascii=False, indent=2),
+                 encoding="utf-8")
+
+
+def _blocks_per_doc() -> int:
+    """★ M1-Q3：**每文档块数**（★ 默认 1 ⇒ ★ 行为与改前一致 ⇒ 不触发历史重抽）。"""
+    try:
+        return max(1, int(os.environ.get("PROSE_BLOCKS_PER_DOC",
+                                        _MAX_BLOCKS_PER_DOC)))
+    except (TypeError, ValueError):
+        return _MAX_BLOCKS_PER_DOC
+
+
+def _batch_blocks() -> int:
+    """★ M1-Q3：**每批块数**（★ 默认 5 ⇒ ★ 单块调用须显式启用）。"""
+    try:
+        return max(1, int(os.environ.get("PROSE_BATCH_BLOCKS", _BATCH_BLOCKS)))
+    except (TypeError, ValueError):
+        return _BATCH_BLOCKS
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
+def _kind_review_enabled() -> bool:
+    """★ M1-Q3-P0.8：★ 类型复核开关（★ **默认关闭** ⇒ 行为完全不变）。"""
+    return str(os.environ.get("PROSE_KIND_REVIEW", "") or "").strip() in (
+        "1", "true", "True", "on", "ON")
+
+
+def _build_kind_review(item: dict, con: str) -> Optional[dict]:
+    """★ 为「被归为 prose_semantics 但含规范性线索」的候选生成**复核建议**。
+
+    ★ ★ 只给建议；★ **不改 kind**、★ 不提升为 confirmed、★ 不进正式 Fact。
+    """
+    try:
+        from core.fused.extraction.block_selection import (
+            has_normative_hint, score_block,
+        )
+    except Exception:                        # noqa: BLE001
+        return None
+    _text = " ".join(str(item.get(k) or "") for k in
+                     ("meaning", "constraint", "action", "object"))
+    if not _text.strip():
+        return None
+    if not has_normative_hint(_text):
+        return None
+    _score, _parts = score_block(_text)
+    return {
+        "proposed_kind": "prose_constraint",
+        "kind_evidence": {
+            "★ 线索来源": "BCP14/方法/头部关系关键词（★ **仅线索**，非义务证明）",
+            "bcp14_hits": _parts.get("bcp14_hits"),
+            "method_score": _parts.get("method_score"),
+            "header_score": _parts.get("header_score"),
+            "★ 原始 meaning": str(item.get("meaning") or "")[:160],
+            "★ 原始 constraint": str(item.get("constraint") or "")[:160],
+        },
+        "review_reason": ("★ 被归为 prose_semantics，但文本含规范性线索"
+                          "⇒ ★ **建议人工复核类型**；★ 本机制不改 kind、"
+                          "★ 不提升为规范事实"),
+    }
+
+
 def _collect_blocks(files: list[Path], max_blocks: Optional[int] = None,
                     budget=None, block_starts: Optional[list] = None) -> list[dict]:
     """按**文档**切块 ⇒ ``[{"doc":…, "start":…, "text":…}, …]``。
@@ -661,6 +2301,18 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             _is_placeholder = True
         kind = ("prose_semantics" if _is_placeholder
                 else ("prose_constraint" if con else "prose_semantics"))
+        # ★ ★ M1-Q3-P0.8：★ **实验性类型复核**（★ 默认关闭 ⇒ 不产生任何字段）
+        #   ⇒ ★ **只标记，不改 kind**；★ 不提升为规范事实；★ 不进正式 Fact
+        #   ⇒ ★ BCP14 关键词只是**发现线索**，★ 不是规范义务成立的证明
+        _kind_review = None
+        if _kind_review_enabled() and kind == "prose_semantics":
+            _kind_review = _build_kind_review(it, con)
+        # ★ ★ M1-Q3-P0.8：★ **实验性类型复核**（★ 默认关闭 ⇒ 不产生任何字段）
+        #   ⇒ ★ **只标记，不改 kind**；★ 不提升为规范事实；★ 不进正式 Fact
+        #   ⇒ ★ BCP14 关键词只是**发现线索**，★ 不是规范义务成立的证明
+        _kind_review = None
+        if _kind_review_enabled() and kind == "prose_semantics":
+            _kind_review = _build_kind_review(it, con)
         # ★ 按「实体 + 类别」去重（fact_key 不含 span ⇒ 同实体必撞）
         _dedup_key = (kind, ent.lower())
         if _dedup_key in seen:
@@ -668,6 +2320,18 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
         seen.add(_dedup_key)
         norms.append({
             "kind": kind,
+            # ★ M1-Q3-P0.8：★ 复核建议字段（★ 默认不存在 ⇒ Schema 不变）
+            **({"classification_review_needed": True,
+                "proposed_kind": _kind_review["proposed_kind"],
+                "kind_evidence": _kind_review["kind_evidence"],
+                "review_reason": _kind_review["review_reason"]}
+               if _kind_review else {}),
+            # ★ M1-Q3-P0.8：★ 复核建议字段（★ 默认不存在 ⇒ Schema 不变）
+            **({"classification_review_needed": True,
+                "proposed_kind": _kind_review["proposed_kind"],
+                "kind_evidence": _kind_review["kind_evidence"],
+                "review_reason": _kind_review["review_reason"]}
+               if _kind_review else {}),
             "protocol": protocol,
             # ★ map_norm_to_facts 按 kb_source_type 分派 ⇒ 缺它会被 skipped
             "kb_source_type": "rfc",
