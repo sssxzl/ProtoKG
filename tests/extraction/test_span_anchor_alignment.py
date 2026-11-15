@@ -108,10 +108,13 @@ def test_l2_quote_contains_must_include(tmp_path, monkeypatch):
     _n = _norms[0]
     assert _n["span_line"] == 10466            # ★ span_line = 锚点
     assert _n["span_matched_line"] == 10464    # ★ 匹配行单列
-    # ★ L1/L2 的 quote 必须覆盖完整句子（含 MUST include）
+    # ★ ★ M1-Q3-P0.6：quote = **锚点所在的完整规范句**
+    #   ⇒ ⇒ 含 MUST include；★ 且**不含上一句**（★ 禁止相邻义务拼接）
     _q = (_n.get("_l1_quote") or "")
     assert "MUST include" in _q, _q
-    assert "did not understand" in _q, _q
+    assert "did not understand" not in _q, (
+        "★ P0.6 后 quote 只取锚点所在句 ⇒ 不应含上一句")
+    assert _n.get("evidence_quote_span") == [10466, 10467], _n.get("evidence_quote_span")
 
 
 # ══ ④ 绝对口径下同样用锚点 ══

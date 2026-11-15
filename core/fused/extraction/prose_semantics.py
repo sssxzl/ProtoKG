@@ -360,6 +360,7 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     from core.fused.extraction.normative_extract import (
         entity_in_span, resolve_span_evidence as _resolve_span_evidence,
         span_quote_window as _span_quote_window,
+        build_evidence as _build_evidence,
     )
 
     stats = {"protocol": protocol, "blocks": len(blocks or []),
@@ -580,6 +581,7 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     _span_trace: list = []
     _sp_matched = None
     _sp_mode = None
+    _sp_evidence = None
     for it in raw_items:
         ent = str(it.get("entity") or "").strip()
         meaning = str(it.get("meaning") or "").strip()
@@ -620,6 +622,8 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             _span_trace.append(_sp_ev)
             _sp_matched = _sp_ev.get("matched_evidence_lines")
             _sp_mode = _sp_ev.get("span_mode")
+            # ★ M1-Q3-P0.6：★ 构造**句界证据**（★ 锚点所在完整规范句）
+            _sp_evidence = _build_evidence(lines, _sp_ev, entity=ent)
             if _sp_ev["span_mode"] in ("absolute", "relative"):
                 span_line = _sp_ev["resolved_span"]     # ★ 采用解析后的**锚点行**
             else:
@@ -678,6 +682,14 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             # ★ M1-Q3：★ 锚点 / 匹配行（★ 供 L1/L2 取完整证据窗口）
             "span_matched_line": _sp_matched,
             "span_mode": _sp_mode,
+            # ★ M1-Q3-P0.6：★ 句界证据（★ 主要 quote + 单独标记的辅助证据）
+            "evidence_quote": _sp_evidence.get("quote") if _sp_evidence else None,
+            "evidence_quote_span": _sp_evidence.get("quote_span") if _sp_evidence else None,
+            "evidence_boundary_reason": (_sp_evidence.get("boundary_reason")
+                                          if _sp_evidence else None),
+            "evidence_aux": _sp_evidence.get("aux_evidence") if _sp_evidence else None,
+            "evidence_cross_chunk": _sp_evidence.get("cross_chunk") if _sp_evidence else None,
+            "evidence_degraded": _sp_evidence.get("degraded") if _sp_evidence else None,
             # ★ **规范声明内容**（Assertion）⇒ 供 Rule Slot / 规则 fact 构造
             "action": str(it.get("action") or "").strip(),
             "object": str(it.get("object") or "").strip(),
@@ -724,18 +736,24 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                 _ln = _n.get("span_line")
                 _quote = ""
                 if isinstance(_doc_n, list) and _ln and 0 < _ln <= len(_doc_n):
-                    # ★ ★ M1-Q3：★ quote 取「锚点↔匹配行」的**完整窗口**
-                    #   ⇒ ⇒ L1/L2 看到完整句子 ⇒ ⇒ 语义支持判断才成立
+                    # ★ ★ M1-Q3-P0.6：★ quote = **锚点所在的完整规范句**
+                    #   ⇒ ★ 句界由确定性算法恢复（★ 排除章节标题/图注/ABNF/表格）
+                    #   ⇒ ★ 前一句（条件/指代/例外）作为**单独标记的辅助证据**
                     #   ⇒ ⇒ ★ **entity 校验窗口本身未变（仍是 ±3）**
-                    _mk = _n.get("span_matched_line")
-                    if isinstance(_mk, int) and _mk and 0 < _mk <= len(_doc_n):
-                        _lo_q = max(1, min(_ln, _mk))
-                        _hi_q = min(len(_doc_n), max(_ln, _mk))
-                        _quote = " ".join(str(x).strip()
-                                          for x in _doc_n[_lo_q - 1:_hi_q]
-                                          if str(x).strip())
+                    _ev_q = _n.get("evidence_quote")
+                    if isinstance(_ev_q, str) and _ev_q.strip():
+                        _quote = _ev_q
                     else:
-                        _quote = _doc_n[_ln - 1]
+                        # ★ 兜底：句界不可用 ⇒ 退回「锚点↔匹配行」窗口
+                        _mk = _n.get("span_matched_line")
+                        if isinstance(_mk, int) and _mk and 0 < _mk <= len(_doc_n):
+                            _lo_q = max(1, min(_ln, _mk))
+                            _hi_q = min(len(_doc_n), max(_ln, _mk))
+                            _quote = " ".join(str(x).strip()
+                                              for x in _doc_n[_lo_q - 1:_hi_q]
+                                              if str(x).strip())
+                        else:
+                            _quote = _doc_n[_ln - 1]
                 # ★ M1-Q3：★ quote 存入 norm（★ 供回归测试与追溯）
                 _n["_l1_quote"] = _quote
                 _n["_quote_span"] = (

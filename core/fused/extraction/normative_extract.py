@@ -403,6 +403,352 @@ def semantic_support(text: str, action: str = "", object_: str = "",
     return "支持", "动作/对象/强度均在证据中出现"
 
 
+
+
+# ════════════════════════════════════════════════════════════════════
+# ★ M1-Q3-P0.6：规范证据**句界**恢复（★ 只改证据构造）
+# ════════════════════════════════════════════════════════════════════
+# ★ 目标：以证据锚点所在的**完整规范句**为中心，确定性恢复**最小充分证据**
+# ★     （★ 不是无条件扩展到前后各一句）
+# ★ 保留定位契约：raw_span / resolved_span / matched_evidence_lines / span_mode
+# ★ 不改 entity_in_span() 的 ±3 匹配规则；★ 不改绝对/相对解释优先级
+# ★ 不改 L1/L2 判定规则、Prompt、FactID、21 aspects、Rule Slot
+
+_RE_TITLE = re.compile(r"^\d+(\.\d+)*\.?\s+\S")             # 章节标题
+_RE_CAPTION = re.compile(r"^(Figure|Table|Note|Listing)\s+\d+", re.I)
+_RE_ABNF = re.compile(r"^[=;]")                              # ABNF 生产式
+_RE_PAGE = re.compile(r"^\[Page \d+\]")                      # 页脚
+_RE_FOOT = re.compile(r"^Fischer & Springer|^RFC \d+")
+
+_ABBREV = {
+    "e.g", "i.e", "etc", "vs", "cf", "sec", "no", "fig", "vol", "pp",
+    "mr", "mrs", "dr", "st", "jr", "sr", "al", "resp", "req",
+    "msg", "hdr", "param", "id", "uri", "url",
+}
+
+
+def is_prose_line(s: str) -> bool:
+    """★ 该行是否属于「散文正文」（★ 否则构成逻辑行边界 ⇒ **不并入规范句**）。"""
+    t = str(s or "").strip()
+    if not t:
+        return False
+    if _RE_TITLE.match(t):
+        return False
+    if _RE_CAPTION.match(t):
+        return False
+    if _RE_ABNF.match(t):
+        return False
+    if _RE_PAGE.match(t) or _RE_FOOT.match(t):
+        return False
+    if t.startswith("|"):
+        return False
+    if len(re.findall(r"\S {3,}\S", t)) >= 1:      # ★ 表格对齐行
+        return False
+    return True
+
+
+def is_sentence_end(t: str, i: int) -> bool:
+    """★ ``t[i] == '.'`` 时该点是否为**句末**（★ 排除小数点/章节引用/缩写）。"""
+    if i < 0 or i >= len(t) or t[i] != ".":
+        return False
+    if 0 < i < len(t) - 1 and t[i - 1].isdigit() and t[i + 1].isdigit():
+        return False                            # ★ 小数点 / 版本号
+    m = re.search(r"([A-Za-z][A-Za-z.]*)\.$", t[:i + 1])
+    if m and m.group(1).lower().rstrip(".") in _ABBREV:
+        return False                            # ★ 缩写
+    j = i + 1
+    while j < len(t) and t[j] in "\"'\u2019)]}":
+        j += 1
+    if j < len(t) and not t[j].isspace():
+        return False
+    return True
+
+
+def _logical_line(lines: list, anchor: int):
+    """★ 从 anchor 起取**连续散文行**构成的逻辑行（★ 返回行范围/文本/偏移）。"""
+    a = max(1, int(anchor))
+    n = len(lines)
+    lo = a
+    while lo - 1 >= 1 and is_prose_line(lines[lo - 2]):
+        lo -= 1
+    hi = a
+    while hi < n and is_prose_line(lines[hi]):
+        hi += 1
+    parts, offsets, pos = [], [], 0
+    for ln in range(lo, hi + 1):
+        txt = str(lines[ln - 1]).rstrip()
+        if not txt:
+            continue
+        if parts and txt:
+            if parts[-1].endswith("-"):          # ★ 行尾连字符 ⇒ 直接接续
+                parts[-1] = parts[-1][:-1] + txt
+                offsets[-1] = (offsets[-1][0], pos + len(txt))
+                pos += len(txt)
+                continue
+            _seg = " " + txt.lstrip()
+            parts.append(_seg)
+            offsets.append((pos, pos + len(_seg)))
+            pos += len(_seg)
+        else:
+            parts.append(txt)
+            offsets.append((pos, pos + len(txt)))
+            pos += len(txt)
+    return lo, hi, "".join(parts), offsets
+
+
+def _sentences_in(logical: str) -> list:
+    """★ 逻辑行内的句子切分（★ 返回 ``(起偏移, 止偏移)`` 列表）。"""
+    out, start, i = [], 0, 0
+    while i < len(logical):
+        if logical[i] == "." and is_sentence_end(logical, i):
+            out.append((start, i + 1))
+            start = i + 1
+            while start < len(logical) and logical[start].isspace():
+                start += 1
+            i = start
+            continue
+        i += 1
+    if start < len(logical) and logical[start:].strip():
+        out.append((start, len(logical)))
+    return out
+
+
+def build_evidence(lines: list, span_info: dict, *,
+                   entity: str = "", max_chars: int = 1200,
+                   max_lines: int = 12) -> dict:
+    """★ M1-Q3-P0.6：构造**句界证据**（★ 主要 quote + 单独标记的辅助证据）。
+
+    Args:
+        lines: 文档**全文**的行列表（★ 允许跨 chunk 取证 ⇒ 同一版本 RFC 真实原文）
+        span_info: :func:`resolve_span_evidence` 的返回值
+        max_chars: 主要 quote 的最大字符数（★ 超出 ⇒ 保守降级）
+        max_lines: 主要 quote 的最大行数（★ 超出 ⇒ 保守降级）
+
+    Returns:
+        ``quote_span`` / ``quote`` / ``anchor_offset`` / ``boundary_reason`` /
+        ``aux_evidence`` / ``cross_chunk`` / ``degraded`` / ``reason``
+    """
+    _out = {
+        "quote_span": None, "quote": "", "anchor_offset": None,
+        "boundary_reason": "", "aux_evidence": [],
+        "cross_chunk": False, "degraded": False, "reason": "",
+        "sentence_span": None, "prev_sentence_span": None,
+        "logical_span": None,
+        "anchor_normalized_to": None, "anchor_normalized_from": None,
+        "entity_sentence_picked": None,
+        "anchor_entity_relocated": None,
+    }
+    _anchor = span_info.get("resolved_span")
+    _entity = str(entity or "").strip().lower()
+    _chunk_start = span_info.get("chunk_start")
+    _chunk_end = span_info.get("chunk_end")
+    if not _anchor or not lines:
+        _out["reason"] = "无锚点或无原文"
+        _out["degraded"] = True
+        return _out
+    # ★ 锚点越界 ⇒ 保守降级（★ 不越界访问）
+    if not (1 <= int(_anchor) <= len(lines)):
+        _out["reason"] = f"锚点行 {_anchor} 越出原文范围（1..{len(lines)}）"
+        _out["degraded"] = True
+        return _out
+
+    # ★ ★★ 有限窗口内**按 entity 出现行**定位锚点（★ **不扫描任意远处**）
+    #   ⇒ 候选的义务句必然含 entity ⇒ ⇒ 用最近的匹配行作锚点最可靠
+    #   ⇒ ★ 窗口 ±10 行（★ 与 entity_in_span 的 ±3 同阶）
+    _anchor_locked = False
+    if _entity:
+        _best = None
+        # ★ 优先**向上**（★ RFC 行号通常指向内容起始行）⇒ ★ 其次**向下**
+        for _dir in (-1, 1):
+            for _d in range(0, 11):
+                _cand = _anchor + _dir * _d
+                if 1 <= _cand <= len(lines) and _entity in str(lines[_cand - 1]).lower():
+                    _best = _cand
+                    break
+            if _best is not None:
+                break
+        if _best is not None:
+            if _best != _anchor:
+                _out["anchor_entity_relocated"] = [_anchor, _best]
+            # ★ ★ **锁定**锚点（★ 该行虽被判为「标题/非散文行」，
+            #   ★ 但它**就是候选所指的内容行** ⇒ ⇒ 不再被后续归一化覆盖）
+            _anchor = _best
+            _anchor_locked = True
+
+    # ★ ★ 锚点行若**不是散文行**（空行/标题/图注/表格）⇒ ⇒ **归一化**到最近的散文行
+    #   ⇒ ★ 优先**向上**（RFC 的行号通常指向内容起始行）⇒ ★ 其次向下
+    #   ⇒ ★ 归一化必须**记录**（★ 不得静默）
+    _a = int(_anchor)
+    _norm_from = None
+    if not _anchor_locked and not is_prose_line(lines[_a - 1]):
+        _k = _a - 1
+        while _k >= 1 and not is_prose_line(lines[_k - 1]):
+            _k -= 1
+        if _k >= 1:
+            _a = _k
+            _norm_from = "up"
+        else:
+            _k = _a + 1
+            while _k <= len(lines) and not is_prose_line(lines[_k - 1]):
+                _k += 1
+            if _k <= len(lines):
+                _a = _k
+                _norm_from = "down"
+            else:
+                _out["reason"] = "锚点行及其邻近均非散文行 ⇒ 无法构造证据"
+                _out["degraded"] = True
+                return _out
+    _out["anchor_normalized_to"] = _a
+    _out["anchor_normalized_from"] = _norm_from
+    if _norm_from:
+        _out["degraded"] = True
+        _out["reason"] = (f"锚点行 {_anchor} 非散文行 ⇒ 归一化到第 {_a} 行"
+                          f"（{_norm_from}）")
+
+    _lo, _hi, _logical, _offsets = _logical_line(lines, _a)
+    _out["logical_span"] = [_lo, _hi]
+    _a_off = 0
+    for _i, (_s, _e) in enumerate(_offsets):
+        if _lo + _i == _a:
+            _a_off = _s
+            break
+    _out["anchor_offset"] = _a_off
+
+    def _span_of(s: int, e: int):
+        _ls = _le = None
+        for _i, (_os, _oe) in enumerate(_offsets):
+            if _ls is None and _os <= s < _oe:
+                _ls = _lo + _i
+            if _os < e:
+                _le = _lo + _i
+        return (_ls or _lo, _le or _lo)
+
+    _sents = _sentences_in(_logical)
+    _cur = None
+    _cur_idx = 0
+    for _i, _pair in enumerate(_sents):
+        if _pair[0] <= _a_off < _pair[1]:
+            _cur = _pair
+            _cur_idx = _i
+            break
+    # ★ ★ M1-Q3-P0.6：★ **句子选择以「含 entity」为准**（★ 候选的义务句必然含 entity）
+    #   ⇒ ⇒ 锚点归一化后若锚点句不含 entity ⇒ ⇒ 在**邻近句**中找含 entity 的那一句
+    #   ⇒ ⇒ ★ 找不到 ⇒ ⇒ 保守用锚点句（★ 并记录）
+    if _cur is not None and _entity:
+        _cur_txt = _logical[_cur[0]:_cur[1]].lower()
+        if _entity not in _cur_txt:
+            _found = None
+            for _j, _pair in enumerate(_sents):
+                if _j == _cur_idx:
+                    continue
+                if _entity in _logical[_pair[0]:_pair[1]].lower():
+                    _found = _j
+                    break
+            if _found is not None:
+                _out["entity_sentence_picked"] = "nearest_with_entity"
+                _out["degraded"] = True
+                _cur_idx = _found
+                _cur = _sents[_cur_idx]
+            else:
+                _out["entity_sentence_picked"] = "anchor_sentence_without_entity"
+                _out["degraded"] = True
+                _out["reason"] = ("逻辑行内无任何一句包含实体 ⇒ 保守用锚点句"
+                                  "（★ 不外扩、不猜测）")
+    if _cur is None:
+        # ★ ★ M1-Q3-P0.6：★ 锚点落在**句间缝隙**（句末与下一句起点之间）⇒ ⇒
+        #   ① 优先取**含 entity 的句**（★ 候选的义务句必然含 entity）
+        #   ② 否则取**锚点行所在的那一句**
+        #   ③ 再否则 ⇒ 保守取逻辑行首句（★ 记原因）
+        _found = None
+        if _entity:
+            for _j, _pair in enumerate(_sents):
+                if _entity in _logical[_pair[0]:_pair[1]].lower():
+                    _found = _j
+                    break
+        if _found is None:
+            for _j, _pair in enumerate(_sents):
+                _ls, _le = _span_of(_pair[0], _pair[1])
+                if _ls <= _a <= _le:
+                    _found = _j
+                    break
+        if _found is not None:
+            _cur_idx = _found
+            _cur = _sents[_cur_idx]
+            _out["degraded"] = True
+            _out["entity_sentence_picked"] = (
+                "entity_sentence" if _entity and
+                _entity in _logical[_cur[0]:_cur[1]].lower() else "anchor_row_sentence")
+            _out["reason"] = ("锚点落在句间缝隙 ⇒ 改取含实体的句/锚点行所在句")
+        else:
+            _cur = _sents[0] if _sents else (0, len(_logical))
+            _cur_idx = 0
+            _out["degraded"] = True
+            _out["reason"] = "锚点未能定位到完整句 ⇒ 保守取逻辑行首句"
+    else:
+        # ★ ★ M1-Q3-P0.6：★ **锚点行内含该句的句末** ⇒ ⇒ 该句在锚点行内**已结束**
+        #   ⇒ ⇒ 锚点所指内容应是该句**之后**的部分 ⇒ ⇒ 取**下一句**
+        #   ★ 例：sip@10466（"field.  The server MUST include …"）⇒ ⇒ 应取第 2 句
+        #   ★ 保守：若下一句不存在 ⇒ ⇒ 保持当前句（★ 不外扩）
+        # ★ ★ 判据：**锚点行内是否含句末**
+        #   （★ 直接按锚点行的字符范围判定 ⇒ 不依赖句的行尾推算）
+        _a_span = _span_of(_a_off, _a_off + 1)
+        _a_line_txt = _logical[_a_span[0] - 0:] if False else None
+        _has_end_in_anchor_line = False
+        for _i, (_os, _oe) in enumerate(_offsets):
+            if _lo + _i != _a:
+                continue
+            _seg = _logical[_os:_oe]
+            for _k in range(len(_seg) - 1):
+                if _seg[_k] == "." and is_sentence_end(_seg, _k):
+                    _has_end_in_anchor_line = True
+                    break
+            break
+        if _has_end_in_anchor_line and _cur_idx + 1 < len(_sents):
+            _cur_idx += 1
+            _cur = _sents[_cur_idx]
+            _out["boundary_reason_note"] = (
+                "★ 锚点行含上一句句末 ⇒ 取下一句")
+
+    _qs, _qe = _span_of(_cur[0], _cur[1])
+    _out["sentence_span"] = [_qs, _qe]
+    _out["quote_span"] = [_qs, _qe]
+    _out["quote"] = _logical[_cur[0]:_cur[1]].strip()
+    _out["boundary_reason"] = (
+        f"句界：逻辑行 {_lo}~{_hi} 内的第 "
+        f"{(_sents.index(_cur) + 1) if _cur in _sents else 1} 句"
+        f"（字符 {_cur[0]}~{_cur[1]}）")
+
+    # ★ 辅助证据：前一句（★ **单独标记，★ 不并入主要 quote**）
+    _idx = _sents.index(_cur) if _cur in _sents else 0
+    if _idx > 0:
+        _ps, _pe = _sents[_idx - 1]
+        _pspan = _span_of(_ps, _pe)
+        _out["prev_sentence_span"] = list(_pspan)
+        _out["aux_evidence"].append({
+            "span": list(_pspan),
+            "text": _logical[_ps:_pe].strip(),
+            "kind": "prev_sentence",
+            "note": "★ **辅助证据，未并入主要 quote** ⇒ 不得据此认定跨句义务成立",
+        })
+
+    # ★ 跨块取证（★ 独立记录）
+    if _chunk_start is not None and _chunk_end is not None:
+        if _qs < _chunk_start or _qe > _chunk_end:
+            _out["cross_chunk"] = True
+            _out["boundary_reason"] += (
+                f"；★ **跨块取证**（quote {_qs}~{_qe} 超出 chunk "
+                f"{_chunk_start}~{_chunk_end}）")
+
+    if len(_out["quote"]) > max_chars:
+        _out["degraded"] = True
+        _out["reason"] = f"quote 超长（{len(_out['quote'])} > {max_chars}）⇒ 保守保留"
+    if (_qe - _qs + 1) > max_lines:
+        _out["degraded"] = True
+        _out["reason"] = f"quote 超行数（{_qe - _qs + 1} > {max_lines}）⇒ 保守保留"
+    if not _out["reason"]:
+        _out["reason"] = "句界确定"
+    return _out
+
 __all__ = [
     "CONDITION_MARKERS", "EXCEPTION_MARKERS", "XREF_PATTERN",
     "ENABLE_CONDITION_NORMALIZATION",
@@ -410,4 +756,5 @@ __all__ = [
     "parse_reference", "locate_section_ref", "normalize_condition",
     "classify_clause_role", "NON_CONDITION_MARKERS", "NON_EXCEPTION_MARKERS",
     "semantic_support", "entity_in_span",
+    "build_evidence", "is_prose_line", "is_sentence_end",
 ]
