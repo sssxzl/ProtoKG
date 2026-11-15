@@ -79,6 +79,9 @@ class LLMCallRecord:
     outcome: str = "success"                    # success/failed/retry_recovered/abandoned
     blocks_without_candidate: Optional[int] = None
     elapsed_s: Optional[float] = None
+    # ★ M1-Q2：span 解释过程的留痕（★ 逐条还原定位过程）
+    span_trace: list = field(default_factory=list)
+    span_mode_counts: dict = field(default_factory=dict)
     ts: float = field(default_factory=time.time)
 
     def to_dict(self) -> dict:

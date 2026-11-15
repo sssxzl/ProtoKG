@@ -233,6 +233,85 @@ def entity_in_span(lines: list[str], span: int, entity: str,
     return None
 
 
+# ════════════════════════════════════════════════════════════════════
+# ★ M1-Q2：span 双口径证据定位（★ 绝对优先；相对必须有据）
+# ════════════════════════════════════════════════════════════════════
+#: 解释模式
+SPAN_MODE_ABSOLUTE = "absolute"        # ★ 绝对行号命中（★ 现状口径）
+SPAN_MODE_RELATIVE = "relative"        # ★ 相对行号命中（★ 本轮新增）
+SPAN_MODE_AMBIGUOUS = "ambiguous"      # ★ 两个解释都命中 ⇒ 冲突 ⇒ 不放行
+SPAN_MODE_OUT_OF_RANGE = "out_of_range"  # ★ 换算后越出 chunk 范围 ⇒ 不放行
+SPAN_MODE_NOT_FOUND = "not_found"      # ★ 两种解释都定位不到 ⇒ 不放行
+SPAN_MODE_UNRESOLVED = "unresolved"    # ★ 缺基准（chunk 起始行未知）⇒ 不放行
+
+#: 相对行号的基准（★ 明确 1 基准：raw_span 是块内第几行）
+RELATIVE_BASE = 1
+
+
+def resolve_span_evidence(lines: list[str], raw_span: int, entity: str, *,
+                          chunk_start: Optional[int] = None,
+                          chunk_end: Optional[int] = None,
+                          window: int = 3) -> dict:
+    """★ **双口径证据定位**（★ 绝对优先；相对必须由真实 chunk 起始行换算）。
+
+    ★ **规则**（M1-Q2 实施要求）：
+      ① 先按**绝对行号**解释（★ 现状口径 ⇒ 行为不变）
+      ② 只有绝对解释**定位不到有效证据**时，才尝试**相对行号**
+      ③ 相对行号 = ``chunk_start + (raw_span - RELATIVE_BASE)``
+         （★ 基准明确为 1；★ **不猜测、不扫描任意附近行**）
+      ④ 换算结果**必须落在 chunk 范围内**（``chunk_start..chunk_end``）⇒ 否则越界
+      ⑤ 两个解释**都命中** ⇒ 歧义 ⇒ **不放行**
+      ⑥ 缺基准（``chunk_start`` 未知）⇒ 不做相对换算 ⇒ 不放行
+
+    Returns:
+        ``{"resolved_span", "span_mode", "absolute_match", "relative_match",
+           "chunk_start", "raw_span", "reason"}``
+    """
+    _out = {
+        "raw_span": raw_span, "resolved_span": None,
+        "span_mode": SPAN_MODE_UNRESOLVED,
+        "absolute_match": None, "relative_match": None,
+        "chunk_start": chunk_start, "chunk_end": chunk_end,
+        "reason": "",
+    }
+    if not raw_span or raw_span <= 0:
+        _out["reason"] = "raw_span 缺失或非正"
+        return _out
+    # ---- ① 绝对行号（★ 现状口径，优先）----
+    _abs = entity_in_span(lines, raw_span, entity, window=window)
+    _out["absolute_match"] = _abs
+    if _abs is not None:
+        _out["resolved_span"] = _abs
+        _out["span_mode"] = SPAN_MODE_ABSOLUTE
+        _out["reason"] = "绝对行号命中"
+        return _out
+    # ---- ② 相对行号（★ 必须有真实 chunk 起始行）----
+    if chunk_start is None or chunk_start <= 0:
+        _out["reason"] = "绝对未命中；缺 chunk 起始行 ⇒ 不做相对换算"
+        return _out
+    _rel_span = int(chunk_start) + (int(raw_span) - RELATIVE_BASE)
+    if chunk_end is not None and not (chunk_start <= _rel_span <= chunk_end):
+        _out["span_mode"] = SPAN_MODE_OUT_OF_RANGE
+        _out["reason"] = (f"相对换算行 {_rel_span} 越出 chunk 范围 "
+                          f"[{chunk_start},{chunk_end}]")
+        return _out
+    _rel = entity_in_span(lines, _rel_span, entity, window=window)
+    _out["relative_match"] = _rel
+    if _rel is None:
+        _out["span_mode"] = SPAN_MODE_NOT_FOUND
+        _out["reason"] = f"绝对与相对均未命中（相对行 {_rel_span}）"
+        return _out
+    # ★ 块起始行=1 ⇒ 相对换算与绝对同值 ⇒ 不算歧义
+    if _rel_span == raw_span:
+        _out["span_mode"] = SPAN_MODE_NOT_FOUND
+        _out["reason"] = "相对换算与绝对同值 ⇒ 仍无法定位"
+        return _out
+    _out["resolved_span"] = _rel
+    _out["span_mode"] = SPAN_MODE_RELATIVE
+    _out["reason"] = f"绝对未命中；相对换算行 {_rel_span} 命中"
+    return _out
+
+
 def normalize_condition(text: str) -> tuple[str, bool]:
     """条件**归一化**（★ 带开关）。
 

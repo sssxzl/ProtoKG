@@ -250,6 +250,34 @@ def _doc_lines_map(files: list[Path]) -> dict:
     return out
 
 
+def _chunk_start_of(item: dict, blocks: list[dict], doc: str) -> Optional[int]:
+    """★ M1-Q2：取 item 所属 chunk 的**真实起始行**（★ 相对换算的基准）。
+
+    ★ 只有当**本批只有一个块**时才可确定基准 ⇒ ⇒ 多块混批时返回 ``None``
+      （★ 不猜测 ⇒ ⇒ 相对换算不做 ⇒ ⇒ 行为与改前一致）。
+    """
+    if not blocks or len(blocks) != 1:
+        return None
+    _b = blocks[0]
+    if str(_b.get("doc") or "") != str(doc or ""):
+        return None
+    try:
+        return int(_b.get("start") or 0) or None
+    except (TypeError, ValueError):
+        return None
+
+
+def _chunk_end_of(item: dict, blocks: list[dict], doc: str,
+                  n_lines: int) -> Optional[int]:
+    """★ M1-Q2：chunk 的行范围上界（★ 相对换算不得越界）。"""
+    _s = _chunk_start_of(item, blocks, doc)
+    if _s is None:
+        return None
+    _b = blocks[0]
+    _n = str(_b.get("text") or "").count("\n") + 1
+    return min(n_lines, _s + _n - 1)
+
+
 def _chunk_id(blocks: list[dict]) -> Optional[str]:
     """★ M1-③：批次的稳定标识（★ 文档名 + 起始行）。"""
     if not blocks:
@@ -289,7 +317,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     ★ 两个入口（按文档 / 按段落）都委托到这里 ⇒ ⇒ 缓存 / 批量化 / 运行保护**同源**。
     """
     from core.fused.extraction.cache_key import cache_key as _cache_key
-    from core.fused.extraction.normative_extract import entity_in_span
+    from core.fused.extraction.normative_extract import (
+        entity_in_span, resolve_span_evidence as _resolve_span_evidence,
+    )
 
     stats = {"protocol": protocol, "blocks": len(blocks or []),
              "calls": 0, "retries": 0, "failures": 0, "raw_items": 0,
@@ -495,6 +525,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
              "duplicate": 0, "missing_span": 0, "span_out_of_range": 0,
              "entity_not_in_span": 0, "subject_unresolved": 0,
              "kind_not_mapped": 0}
+    # ★ M1-Q2：解释模式分布 + 逐条留痕
+    _drop_by_mode: dict = {}
+    _span_trace: list = []
     for it in raw_items:
         ent = str(it.get("entity") or "").strip()
         meaning = str(it.get("meaning") or "").strip()
@@ -524,9 +557,22 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             # ★ 可核对：实体名须在**证据跨度内**（含前后若干行）出现
             #   ★ 2026-11-13（独立复核意见 P0-2）：旧逻辑只看 **span 单行**
             #     ⇒ 实体名在**相邻行**时被**误拒**（如 S09/S19/S29/S39）
-            if entity_in_span(lines, span_line, ent) is None:
+            # ★ ★ M1-Q2：**双口径证据定位**（★ 绝对优先；相对须有据）
+            #   · 绝对行号命中 ⇒ 行为与改前**完全一致**（★ 不影响既有 127 条）
+            #   · 绝对未命中 ⇒ 才尝试相对换算（★ chunk_start + (raw_span - 1)）
+            #   · 换算越界 / 歧义 / 缺基准 ⇒ 一律**不放行**
+            _sp_ev = _resolve_span_evidence(
+                lines, span_line, ent,
+                chunk_start=_chunk_start_of(it, blocks, doc),
+                chunk_end=_chunk_end_of(it, blocks, doc, len(lines)))
+            _span_trace.append(_sp_ev)
+            if _sp_ev["span_mode"] in ("absolute", "relative"):
+                span_line = _sp_ev["resolved_span"]     # ★ 采用解析后的行
+            else:
                 stats["rejected"] += 1
                 _drop["entity_not_in_span"] += 1   # ★ M1-③
+                _drop_by_mode[_sp_ev["span_mode"]] = \
+                    _drop_by_mode.get(_sp_ev["span_mode"], 0) + 1
                 continue
         con = str(it.get("constraint") or "").strip()
         # ★ ★ **主体归属核验**（★ P0-1）：★ `entity` 只是**原文提及的实体**
@@ -536,6 +582,7 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
         _nsub = str(it.get("normative_subject") or "").strip()
         _subject_status = "unresolved"
         if _nsub:
+            # ★ M1-Q2：主体核对**沿用解析后的 span_line**（★ 与证据同一坐标系）
             if entity_in_span(lines or [], span_line, _nsub) is not None:
                 _subject_status = "resolved"
             elif _nsub.lower() == ent.lower():
@@ -705,6 +752,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     # ★ M1-③：**产物映射阶段的丢弃统计**（★ 此前完全静默 ⇒ 无法解释产出量差异）
     stats["raw_items_dropped"] = sum(_drop.values())
     stats["drop_reasons"] = dict(_drop)
+    # ★ M1-Q2：span 解释模式统计（★ 可观测）
+    stats["span_mode_counts"] = dict(_drop_by_mode)
+    stats["span_trace"] = list(_span_trace[-64:])
     stats["input_blocks"] = len(blocks or [])
     # ★ M1-①：**回写缓存状态**（★ 区分「合法空」/「全被拒收」/「失败不完整」）
     from core.fused.extraction.cache_key import (
@@ -741,6 +791,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
         _mrec.error_message = (
             f"raw_items={len(raw_items)} → norms={len(norms)}；"
             f"丢弃 {json.dumps(_drop, ensure_ascii=False)}")
+        # ★ M1-Q2：★ 逐条记录「原始跨度 / 换算跨度 / 解释模式 / 定位结果」
+        _mrec.span_trace = list(_span_trace[-64:])
+        _mrec.span_mode_counts = dict(_drop_by_mode)
     try:
         stats["guard"] = guard.to_dict()
     except Exception:                        # noqa: BLE001
