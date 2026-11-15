@@ -802,6 +802,32 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                 _n["final_state"] = "confirmed"
             else:
                 _n["final_state"] = "pending"
+            # ★ ★ M1-Q3-P0.7-A：★ **确认前的指代主体归属核验**
+            #   ⇒ ★ **不修改 L1/L2 判定标准**（★ 只在状态落定后加一道确认前检查）
+            #   ⇒ ★ 归属歧义 / 未解析 ⇒ ★ **不得自动确认** ⇒ 保守保持 pending
+            #   ⇒ ★ **不重写 canonical 身份**（★ 只改 final_state 并留痕）
+            try:
+                _att = _resolve_subject_attribution(
+                    lines=lines,
+                    quote_span=_n.get("evidence_quote_span"),
+                    quote=str(_n.get("evidence_quote") or ""),
+                    aux_evidence=_n.get("evidence_aux"),
+                    entity=str(_n.get("mentioned_entity") or ""),
+                    subject=str(_n.get("normative_subject") or ""),
+                )
+            except Exception as _exc:
+                _att = {"status": "coreference_unresolved",
+                        "antecedents": [], "evidence_lines": [],
+                        "reason": f"归属核验异常：{type(_exc).__name__}: {_exc}",
+                        "coref_phrase": None}
+            _n["subject_attribution"] = _att
+            if _n.get("final_state") == "confirmed" and \
+                    _att.get("status") in ("coreference_ambiguous",
+                                           "coreference_unresolved"):
+                _n["final_state"] = "pending"
+                _n["attribution_downgraded"] = True
+                stats["attribution_downgraded"] = \
+                    int(stats.get("attribution_downgraded") or 0) + 1
         stats["l2_calls"] = _l2_calls
         stats["l2_guard"] = _l2_guard.to_dict()
         stats["final_states"] = dict(collections.Counter(
