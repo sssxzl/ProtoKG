@@ -245,19 +245,30 @@ def _batch_blocks() -> int:
 
 
 def _collect_blocks(files: list[Path], max_blocks: Optional[int] = None,
-                    budget=None) -> list[dict]:
+                    budget=None, block_starts: Optional[list] = None) -> list[dict]:
     """按**文档**切块 ⇒ ``[{"doc":…, "start":…, "text":…}, …]``。
 
     ★ M1-Q3：``max_blocks`` 可按文档覆盖；``budget`` 为块预算（★ 记录未处理块与原因）。
+    ★ ★ ``block_starts``：**可选的**块起始行白名单（★ 供测试/实验**指定非首块**）。
+      · ★ **不硬编码任何行号** ⇒ 由调用方传入
+      · ★ 默认 ``None`` ⇒ ⇒ **行为与改前完全一致**（★ 可回滚）
+      · ★ 仅取**该文档**内的块；★ 不在白名单的块一律不产出
     """
     out: list[dict] = []
     _mpd = max_blocks if max_blocks is not None else _blocks_per_doc()
+    # ★ 白名单模式下需切出**全文**再过滤（★ 顺序切块 ⇒ 起始行由切分决定
+    #   ⇒ ⇒ 只切前 N 块会漏掉靠后的目标块 ⇒ ⇒ 必须切足量）
+    if block_starts:
+        _mpd = 10 ** 6
     for f in files:
         try:
             text = f.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
         _bl = _split_blocks(text, _mpd)
+        if block_starts is not None:
+            _want = set(int(x) for x in block_starts)
+            _bl = [(s, t) for (s, t) in _bl if s in _want]
         if budget is not None and not budget.allow(f.name, len(_bl)):
             for _st, _tx in _bl:
                 budget.skip(f.name, _st, "budget_exhausted")
