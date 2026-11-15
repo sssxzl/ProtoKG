@@ -23,6 +23,8 @@
 import collections
 import hashlib
 import json
+import os
+import os
 import sys
 from pathlib import Path
 from typing import Optional
@@ -225,15 +227,42 @@ def _save_cache(protocol: str, block_hash: str, items: list[dict],
                  encoding="utf-8")
 
 
-def _collect_blocks(files: list[Path]) -> list[dict]:
-    """按**文档**切块 ⇒ ``[{"doc":…, "start":…, "text":…}, …]``。"""
+def _blocks_per_doc() -> int:
+    """★ M1-Q3：**每文档块数**（★ 默认 1 ⇒ ★ 行为与改前一致 ⇒ 不触发历史重抽）。"""
+    try:
+        return max(1, int(os.environ.get("PROSE_BLOCKS_PER_DOC",
+                                        _MAX_BLOCKS_PER_DOC)))
+    except (TypeError, ValueError):
+        return _MAX_BLOCKS_PER_DOC
+
+
+def _batch_blocks() -> int:
+    """★ M1-Q3：**每批块数**（★ 默认 5 ⇒ ★ 单块调用须显式启用）。"""
+    try:
+        return max(1, int(os.environ.get("PROSE_BATCH_BLOCKS", _BATCH_BLOCKS)))
+    except (TypeError, ValueError):
+        return _BATCH_BLOCKS
+
+
+def _collect_blocks(files: list[Path], max_blocks: Optional[int] = None,
+                    budget=None) -> list[dict]:
+    """按**文档**切块 ⇒ ``[{"doc":…, "start":…, "text":…}, …]``。
+
+    ★ M1-Q3：``max_blocks`` 可按文档覆盖；``budget`` 为块预算（★ 记录未处理块与原因）。
+    """
     out: list[dict] = []
+    _mpd = max_blocks if max_blocks is not None else _blocks_per_doc()
     for f in files:
         try:
             text = f.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
-        for start, block in _split_blocks(text, _MAX_BLOCKS_PER_DOC):
+        _bl = _split_blocks(text, _mpd)
+        if budget is not None and not budget.allow(f.name, len(_bl)):
+            for _st, _tx in _bl:
+                budget.skip(f.name, _st, "budget_exhausted")
+            continue
+        for start, block in _bl:
             out.append({"doc": f.name, "start": start, "text": block})
     return out
 
@@ -319,11 +348,14 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     from core.fused.extraction.cache_key import cache_key as _cache_key
     from core.fused.extraction.normative_extract import (
         entity_in_span, resolve_span_evidence as _resolve_span_evidence,
+        span_quote_window as _span_quote_window,
     )
 
     stats = {"protocol": protocol, "blocks": len(blocks or []),
              "calls": 0, "retries": 0, "failures": 0, "raw_items": 0,
-             "norms": 0, "rejected": 0, "triggers": {}}
+             "norms": 0, "rejected": 0, "triggers": {},
+             # ★ M1-Q3：★ token 累计（★ 成本闸用；★ 无单价 ⇒ 费用记 null）
+             "input_tokens": 0, "output_tokens": 0, "raw_items_total": 0}
     _diag = diagnostics      # ★ M1-③：诊断收集器（★ None ⇒ 完全不记录）
     if not blocks:
         return [], stats
@@ -380,8 +412,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                     )
                 return [], stats
         raw_items = []
-        for i in range(0, len(blocks), _BATCH_BLOCKS):
-            batch = blocks[i:i + _BATCH_BLOCKS]
+        _batch_n = _batch_blocks()
+        for i in range(0, len(blocks), _batch_n):
+            batch = blocks[i:i + _batch_n]
             body_parts = []
             for b in batch:
                 body_parts.append(
@@ -462,6 +495,11 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                     continue
                 # ★ 解析成功 ⇒ 把调用侧元数据（usage / finish_reason）补进记录
                 _meta = getattr(llm, "last_call_meta", None) or {}
+                # ★ M1-Q3：★ token 累计（★ 供预算与成本统计）
+                stats["input_tokens"] = int(stats.get("input_tokens") or 0) + \
+                    int(_meta.get("input_tokens") or 0)
+                stats["output_tokens"] = int(stats.get("output_tokens") or 0) + \
+                    int(_meta.get("output_tokens") or 0)
                 if _rec is not None:
                     _rec.input_tokens = _meta.get("input_tokens")
                     _rec.output_tokens = _meta.get("output_tokens")
@@ -516,6 +554,7 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                     complete=(not stats.get("failures")))
 
     stats["raw_items"] = len(raw_items)
+    stats["raw_items_total"] = len(raw_items)   # ★ M1-Q3：★ 与「解析成功调用数」区分
 
     # ---- ② 过滤 + 产 norm ----
     norms: list[dict] = []
@@ -528,6 +567,8 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
     # ★ M1-Q2：解释模式分布 + 逐条留痕
     _drop_by_mode: dict = {}
     _span_trace: list = []
+    _sp_matched = None
+    _sp_mode = None
     for it in raw_items:
         ent = str(it.get("entity") or "").strip()
         meaning = str(it.get("meaning") or "").strip()
@@ -566,8 +607,10 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                 chunk_start=_chunk_start_of(it, blocks, doc),
                 chunk_end=_chunk_end_of(it, blocks, doc, len(lines)))
             _span_trace.append(_sp_ev)
+            _sp_matched = _sp_ev.get("matched_evidence_lines")
+            _sp_mode = _sp_ev.get("span_mode")
             if _sp_ev["span_mode"] in ("absolute", "relative"):
-                span_line = _sp_ev["resolved_span"]     # ★ 采用解析后的行
+                span_line = _sp_ev["resolved_span"]     # ★ 采用解析后的**锚点行**
             else:
                 stats["rejected"] += 1
                 _drop["entity_not_in_span"] += 1   # ★ M1-③
@@ -621,6 +664,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
             "meaning": meaning,
             "constraint": con,
             "span_line": span_line,
+            # ★ M1-Q3：★ 锚点 / 匹配行（★ 供 L1/L2 取完整证据窗口）
+            "span_matched_line": _sp_matched,
+            "span_mode": _sp_mode,
             # ★ **规范声明内容**（Assertion）⇒ 供 Rule Slot / 规则 fact 构造
             "action": str(it.get("action") or "").strip(),
             "object": str(it.get("object") or "").strip(),
@@ -666,8 +712,26 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
                 _doc_n = _n.get("_doc_lines")
                 _ln = _n.get("span_line")
                 _quote = ""
-                if isinstance(_doc_n, list) and 0 < _ln <= len(_doc_n):
-                    _quote = _doc_n[_ln - 1]
+                if isinstance(_doc_n, list) and _ln and 0 < _ln <= len(_doc_n):
+                    # ★ ★ M1-Q3：★ quote 取「锚点↔匹配行」的**完整窗口**
+                    #   ⇒ ⇒ L1/L2 看到完整句子 ⇒ ⇒ 语义支持判断才成立
+                    #   ⇒ ⇒ ★ **entity 校验窗口本身未变（仍是 ±3）**
+                    _mk = _n.get("span_matched_line")
+                    if isinstance(_mk, int) and _mk and 0 < _mk <= len(_doc_n):
+                        _lo_q = max(1, min(_ln, _mk))
+                        _hi_q = min(len(_doc_n), max(_ln, _mk))
+                        _quote = " ".join(str(x).strip()
+                                          for x in _doc_n[_lo_q - 1:_hi_q]
+                                          if str(x).strip())
+                    else:
+                        _quote = _doc_n[_ln - 1]
+                # ★ M1-Q3：★ quote 存入 norm（★ 供回归测试与追溯）
+                _n["_l1_quote"] = _quote
+                _n["_quote_span"] = (
+                    list(_span_quote_window({
+                        "resolved_span": _ln,
+                        "matched_evidence_lines": _n.get("span_matched_line"),
+                    })) if _n.get("span_matched_line") else [_ln, _ln])
                 try:
                     _l1 = _l1_check(
                         rule_text_value=_n.get("rule_text") or "",

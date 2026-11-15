@@ -271,6 +271,9 @@ def resolve_span_evidence(lines: list[str], raw_span: int, entity: str, *,
         "raw_span": raw_span, "resolved_span": None,
         "span_mode": SPAN_MODE_UNRESOLVED,
         "absolute_match": None, "relative_match": None,
+        # ★ M1-Q3：★ 锚点 / 匹配行 / 证据窗口 三者分离
+        "matched_evidence_lines": None,
+        "quote_span": None,
         "chunk_start": chunk_start, "chunk_end": chunk_end,
         "reason": "",
     }
@@ -281,7 +284,9 @@ def resolve_span_evidence(lines: list[str], raw_span: int, entity: str, *,
     _abs = entity_in_span(lines, raw_span, entity, window=window)
     _out["absolute_match"] = _abs
     if _abs is not None:
-        _out["resolved_span"] = _abs
+        # ★ ★ M1-Q3 修正：resolved_span = **锚点行**（★ 不是 entity 首次匹配行）
+        _out["resolved_span"] = raw_span
+        _out["matched_evidence_lines"] = _abs
         _out["span_mode"] = SPAN_MODE_ABSOLUTE
         _out["reason"] = "绝对行号命中"
         return _out
@@ -306,10 +311,30 @@ def resolve_span_evidence(lines: list[str], raw_span: int, entity: str, *,
         _out["span_mode"] = SPAN_MODE_NOT_FOUND
         _out["reason"] = "相对换算与绝对同值 ⇒ 仍无法定位"
         return _out
-    _out["resolved_span"] = _rel
+    # ★ ★ M1-Q3 修正：resolved_span = **换算锚点**（★ 不是匹配行）
+    _out["resolved_span"] = _rel_span
+    _out["matched_evidence_lines"] = _rel
     _out["span_mode"] = SPAN_MODE_RELATIVE
     _out["reason"] = f"绝对未命中；相对换算行 {_rel_span} 命中"
     return _out
+
+
+def span_quote_window(span_info: dict) -> Optional[tuple]:
+    """★ M1-Q3：由锚点与匹配行算出 **L1/L2 的证据窗口**。
+
+    ★ 规则：``[min(anchor, matched) .. max(anchor, matched)]``
+      ⇒ ⇒ 覆盖「LLM 指定位置」到「实体出现位置」之间的**完整句子**
+      ⇒ ⇒ ★ **entity 校验窗口本身不变（仍是 ±3）** ⇒ ⇒ 不靠放宽匹配提高通过率
+    Returns:
+        ``(起行, 止行)``（1 起始，闭区间）；无法确定 ⇒ ``None``。
+    """
+    _a = span_info.get("resolved_span")
+    _m = span_info.get("matched_evidence_lines")
+    if _a is None:
+        return None
+    if _m is None:
+        return (int(_a), int(_a))
+    return (min(int(_a), int(_m)), max(int(_a), int(_m)))
 
 
 def normalize_condition(text: str) -> tuple[str, bool]:
