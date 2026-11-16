@@ -1,0 +1,233 @@
+{
+  "★ ① 不改变 LLM 输入/输出/请求数": {
+    "★ 依据": "★ sidecar 只**读** raw items 与 norm；★ **不发任何请求**",
+    "★ 请求数变化": "★ 0",
+    "★ 输入变化": "★ 无",
+    "★ 输出变化": "★ 无",
+    "★ 证明": "★ 本轮 0 次 LLM 调用；★ sidecar 无 LLM 客户端"
+  },
+  "★ ② 不改变 Norm 语义内容与条数": {
+    "★ Norm 条数": 23,
+    "★ Norm 内容哈希": "7c46176643b19c334140ab03b11ddeabc9ec00782d467a77f8f5b3817821989d",
+    "★ sidecar 是否写回 Norm": "★ 否（★ 只读）"
+  },
+  "★ ③ 不改变 canonical FactID": {
+    "★ 依据": "★ sidecar 不触碰 `norm.py` / `map_norm_to_facts`",
+    "★ norm.py SHA256": "18b4bd5a126cb402e7fa3edf38c8fee99715dad57feca4d30b5f3cd476c5dc3d"
+  },
+  "★ ④ 不改变 21 aspects": {
+    "★ knowledge_slots.json SHA256": "955f5368865063b5b882e9856f93995500c4b4eaa80daf97e541a05808bcad89",
+    "★ aspect 数": 22
+  },
+  "★ ⑤ 不改变 Rule Slot 与 Assertion": {
+    "★ 依据": "★ sidecar 不触碰 normative_rule.py",
+    "★ normative_rule.py SHA256": "ef93d1d16ea61c0308f74618d663fd25cd8ad92ab2f717fd8b4e7b0ecf3bfb1d"
+  },
+  "★ ⑥ strength/polarity 不进入 FactID": {
+    "★ 依据": "★ 生产 `_quals` 只含 action/object/kind；★ strength/polarity 只进 Assertion",
+    "★ Rule Slot qualifiers 键": [
+      "action",
+      "object",
+      "kind"
+    ]
+  },
+  "★ ⑦ V0/V1/V2 哈希不变": {
+    "V0": "89dbd535bad548e90afe0fe96677a6c23af917fa47e7d1f999bfe83ce0d1d419",
+    "V1": "39703e4f086a12cdafbfcde5148ce6d306e41e00c1769507d0c3e97e190d8e31",
+    "V2": "81566fb71905e313bed67660e5d5ff788f3fbad46ccb145286e98457bd185047"
+  },
+  "★ ⑧ 中枢与 Seed 逐字节一致": "★ 见护栏报告（★ 本轮零生产改动）",
+  "★ ⑨ 现有缓存数据不被覆盖": {
+    "★ sidecar 输出目录": "guard\\_out\\_n1c_v2\\h2a\\sidecar",
+    "★ 是否触碰 derived/cache": "★ 否"
+  },
+  "★ ⑩ 无新增护栏失败": "★ 见护栏报告",
+  "★ ⑪ 0 次新增 LLM 调用": "★ 0",
+  "★ 三类路径验证": {
+    "A prose_constraint 正常映射": {
+      "条数": 10,
+      "样例": [
+        {
+          "candidate_id": "prose_constraint_captive portal dhcp option",
+          "knowledge_kind": "prose_constraint",
+          "mapping_branch": "★ 正常路径：Rule Slot + Assertion",
+          "★ 原始字段（LLM）": {
+            "doc": "rfc8910.txt",
+            "entity": "Captive Portal DHCP option",
+            "meaning": "支持 Captive Portal DHCP 选项的客户端应在 DHCPREQUEST 的 Parameter Request List 中包含该选项",
+            "constraint": "SHOULD include the option in the Parameter Request List in DHCPREQUEST messages",
+            "span": "137",
+            "action": "include",
+            "object": "the option in the Parameter Request List in DHCPREQUEST messages",
+            "strength": "SHOULD",
+            "polarity": "positive",
+            "keyword_raw": "SHOULD",
+            "condition": "that support the Captive Portal DHCP option"
+          },
+          "★ Norm 字段": {
+            "kind": "prose_constraint",
+            "name": "Captive Portal DHCP option",
+            "entity": "Captive Portal DHCP option",
+            "meaning": "支持 Captive Portal DHCP 选项的客户端应在 DHCPREQUEST 的 Parameter Request List 中包含该选项",
+            "constraint": "SHOULD include the option in the Parameter Request List in DHCPREQUEST messages",
+            "action": "include",
+            "object": "the option in the Parameter Request List in DHCPREQUEST messages",
+            "strength": "SHOULD",
+            "polarity": "positive",
+            "condition": "that support the Captive Portal DHCP option",
+            "cross_ref_status": "unknown",
+            "normative_subject": "Clients",
+            "subject_status": "resolved"
+          },
+          "★ 实际 canonical 承载": {
+            "action": "★ Rule Slot qualifiers.action（★ 仅正常路径）",
+            "object": "★ Rule Slot qualifiers.object（★ 仅正常路径）",
+            "strength": "★ Assertion（★ [RULE:v1] JSON）",
+            "polarity": "★ Assertion（★ [RULE:v1] JSON）",
+            "condition": "★ Assertion（★ [RULE:v1] JSON）",
+            "exception": "★ Assertion（★ [RULE:v1] JSON）",
+            "cross_ref_status": "★ Assertion（★ [RULE:v1] JSON）",
+            "normative_subject": "★ Rule Slot 的 subject.name（★ 仅正常路径）"
+          },
+          "★ 可重建性": "★ 结构化字段可从 Assertion/Rule Slot 重建",
+          "★ 来源解析": {
+            "status": "resolved",
+            "source_file": "DHCPv4\\spec\\rfc8910.txt",
+            "source_sha256": "26de2629fd165340696247278eeb95c4b49de7fccfa4d7cc39f89c116a7dac1a",
+            "reason": "★ 已定位并绑定版本哈希"
+          }
+        },
+        {
+          "candidate_id": "prose_constraint_captive portal option",
+          "knowledge_kind": "prose_constraint",
+          "mapping_branch": "★ 正常路径：Rule Slot + Assertion",
+          "★ 原始字段（LLM）": {
+            "doc": "rfc8910.txt",
+            "entity": "Captive Portal option",
+            "meaning": "DHCP 服务器可在没有任何显式请求的情况下发送 Captive Portal 选项",
+            "constraint": "MAY send the Captive Portal option without any explicit request",
+            "span": "138",
+            "action": "send",
+            "object": "the Captive Portal option without any explicit request",
+            "strength": "MAY",
+            "polarity": "positive",
+            "keyword_raw": "MAY"
+          },
+          "★ Norm 字段": {
+            "kind": "prose_constraint",
+            "name": "Captive Portal option",
+            "entity": "Captive Portal option",
+            "meaning": "DHCP 服务器可在没有任何显式请求的情况下发送 Captive Portal 选项",
+            "constraint": "MAY send the Captive Portal option without any explicit request",
+            "action": "send",
+            "object": "the Captive Portal option without any explicit request",
+            "strength": "MAY",
+            "polarity": "positive",
+            "cross_ref_status": "unknown",
+            "normative_subject": "DHCP servers",
+            "subject_status": "resolved"
+          },
+          "★ 实际 canonical 承载": {
+            "action": "★ Rule Slot qualifiers.action（★ 仅正常路径）",
+            "object": "★ Rule Slot qualifiers.object（★ 仅正常路径）",
+            "strength": "★ Assertion（★ [RULE:v1] JSON）",
+            "polarity": "★ Assertion（★ [RULE:v1] JSON）",
+            "condition": "★ Assertion（★ [RULE:v1] JSON）",
+            "exception": "★ Assertion（★ [RULE:v1] JSON）",
+            "cross_ref_status": "★ Assertion（★ [RULE:v1] JSON）",
+            "normative_subject": "★ Rule Slot 的 subject.name（★ 仅正常路径）"
+          },
+          "★ 可重建性": "★ 结构化字段可从 Assertion/Rule Slot 重建",
+          "★ 来源解析": {
+            "status": "resolved",
+            "source_file": "DHCPv4\\spec\\rfc8910.txt",
+            "source_sha256": "26de2629fd165340696247278eeb95c4b49de7fccfa4d7cc39f89c116a7dac1a",
+            "reason": "★ 已定位并绑定版本哈希"
+          }
+        }
+      ]
+    },
+    "B prose_semantics 主体未解析降级": {
+      "条数": 13,
+      "样例": [
+        {
+          "candidate_id": "prose_semantics_must",
+          "knowledge_kind": "prose_semantics",
+          "mapping_branch": "★ 分支1：主体未解析 ⇒ normative_unspecified",
+          "★ 原始字段（LLM）": {
+            "doc": "rfc9463.txt",
+            "entity": "MUST",
+            "meaning": "文档中的关键词（如 MUST）按 BCP 14 [RFC2119] [RFC8174] 的规定解释，且仅当以全大写形式出现时如此。",
+            "span": "130"
+          },
+          "★ Norm 字段": {
+            "kind": "prose_semantics",
+            "name": "MUST",
+            "entity": "MUST",
+            "meaning": "文档中的关键词（如 MUST）按 BCP 14 [RFC2119] [RFC8174] 的规定解释，且仅当以全大写形式出现时如此。",
+            "cross_ref_status": "unknown",
+            "subject_status": "unresolved"
+          },
+          "★ 实际 canonical 承载": {
+            "entity": "★ Rule Slot / definition aspect（★ 经 name）",
+            "meaning": "★ 声明文本（★ 与 constraint 合并进 content）",
+            "constraint": "★ 声明文本（★ 降级分支下为**唯一**承载）"
+          },
+          "★ 可重建性": "★ 结构化字段不可重建；★ 描述性语义仍由 meaning/constraint 承载",
+          "★ 来源解析": {
+            "status": "resolved",
+            "source_file": "DHCPv4\\spec\\rfc9463.txt",
+            "source_sha256": "b1dc07732241f72fc5d2f718497918ed2fa456585eb313e7c7c37614985b1ca9",
+            "reason": "★ 已定位并绑定版本哈希"
+          }
+        },
+        {
+          "candidate_id": "prose_semantics_component values",
+          "knowledge_kind": "prose_semantics",
+          "mapping_branch": "★ 分支1：主体未解析 ⇒ normative_unspecified",
+          "★ 原始字段（LLM）": {
+            "doc": "rfc4776.txt",
+            "entity": "Component values",
+            "meaning": "分量值必须以 UTF-8 [7] 编码。",
+            "constraint": "分量值必须以 UTF-8 编码",
+            "span": "371",
+            "action": "encoded",
+            "object": "as UTF-8 [7]",
+            "strength": "MUST",
+            "polarity": "positive",
+            "keyword_raw": "MUST"
+          },
+          "★ Norm 字段": {
+            "kind": "prose_semantics",
+            "name": "Component values",
+            "entity": "Component values",
+            "meaning": "分量值必须以 UTF-8 [7] 编码。",
+            "constraint": "分量值必须以 UTF-8 编码",
+            "action": "encoded",
+            "object": "as UTF-8 [7]",
+            "strength": "MUST",
+            "polarity": "positive",
+            "cross_ref_status": "unknown",
+            "subject_status": "unresolved"
+          },
+          "★ 实际 canonical 承载": {
+            "entity": "★ Rule Slot / definition aspect（★ 经 name）",
+            "meaning": "★ 声明文本（★ 与 constraint 合并进 content）",
+            "constraint": "★ 声明文本（★ 降级分支下为**唯一**承载）"
+          },
+          "★ 可重建性": "★ 结构化字段不可重建；★ 描述性语义仍由 meaning/constraint 承载",
+          "★ 来源解析": {
+            "status": "resolved",
+            "source_file": "DHCPv4\\spec\\rfc4776.txt",
+            "source_sha256": "fe1f91d6874c826dd447a5caddcb9952a90ba1dd32ac822b872713134cb14d94",
+            "reason": "★ 已定位并绑定版本哈希"
+          }
+        }
+      ]
+    },
+    "C action/object 缺失降级": {
+      "条数": 0,
+      "样例": []
+    }
+  }
+}

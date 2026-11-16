@@ -1,0 +1,277 @@
+{
+  "★ ① 97 闭合核算": {
+    "★ 本地复算的字段分布": {
+      "strength": 13,
+      "polarity": 13,
+      "condition": 13,
+      "exception": 13,
+      "action": 13,
+      "object": 13,
+      "cross_ref": 13,
+      "cross_ref_status": 13
+    },
+    "★ 合计": 104,
+    "★ 用户复算给出的分布": {
+      "cross_ref_status": 23,
+      "action": 14,
+      "object": 14,
+      "strength": 14,
+      "polarity": 14,
+      "normative_subject": 10,
+      "condition": 7
+    },
+    "★ 用户复算合计": 96,
+    "★ 差异项": {
+      "cross_ref_status": [
+        13,
+        23
+      ],
+      "action": [
+        13,
+        14
+      ],
+      "object": [
+        13,
+        14
+      ],
+      "strength": [
+        13,
+        14
+      ],
+      "polarity": [
+        13,
+        14
+      ],
+      "normative_subject": [
+        0,
+        10
+      ],
+      "condition": [
+        13,
+        7
+      ]
+    },
+    "★ ★ 闭合结论": "★ **97 = 96 + 1（★ `constraint`）**；★ ★ 用户复算漏掉了 `constraint` 的 1 条 ⇒ ★ **97 本身是闭合的**",
+    "★ constraint 那 1 条的详情": []
+  },
+  "★ ② 104 重新定义": {
+    "★ 真实字段级记录数（★ 全量流转）": 253,
+    "★ 字段适用的记录数（★ 分母）": 70,
+    "★ E 类记录数（★ 原 104）": 104,
+    "★ ├ 其中字段【适用】者": 0,
+    "★ └ 其中字段【不适用】者（★ ★ 不是语义损失）": 91,
+    "★ ★ 原文与 LLM 输出均有证据、但下游丢失必要语义的记录数": 0,
+    "★ ★ 方案 B 预计恢复的记录数": "★ 见 §三（★ 需验证描述性语义可重建性）",
+    "★ 方案 B 预计恢复的记录数": "★ **待人工判定 3 个候选**（★ 文本含强度词）"
+  },
+  "★ ③ 13 个 prose_semantics 描述性语义可重建性": [
+    {
+      "candidate_id": "prose_semantics_must",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        130,
+        134
+      ],
+      "★ norm.meaning": "文档中的关键词（如 MUST）按 BCP 14 [RFC2119] [RFC8174] 的规定解释，且仅当以全大写形式出现时如此。",
+      "★ norm.constraint": "",
+      "★ LLM 原始 action": "",
+      "★ LLM 原始 object": "",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 是（★ ⇒ 可能是规范义务被降级）",
+      "★ ★ 结论": "★ ★ ★ **文本含强度词 ⇒ 需人工判定它是否真是规范义务**"
+    },
+    {
+      "candidate_id": "prose_semantics_component values",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        371,
+        374
+      ],
+      "★ norm.meaning": "分量值必须以 UTF-8 [7] 编码。",
+      "★ norm.constraint": "分量值必须以 UTF-8 编码",
+      "★ LLM 原始 action": "encoded",
+      "★ LLM 原始 object": "as UTF-8 [7]",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 否（★ ⇒ 确为描述性）",
+      "★ ★ 结论": "★ **描述性语义已由 meaning/constraint 承载 ⇒ 无不可重建损失 ⇒ ★ 方案 B 对本类**无实际收益**"
+    },
+    {
+      "candidate_id": "prose_semantics_they",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        371,
+        374
+      ],
+      "★ norm.meaning": "代词，指代前述分量值，建议按习惯拼写以混合大小写书写。",
+      "★ norm.constraint": "",
+      "★ LLM 原始 action": "encoded",
+      "★ LLM 原始 object": "as UTF-8 [7]",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 否（★ ⇒ 确为描述性）",
+      "★ ★ 结论": "★ **描述性语义已由 meaning/constraint 承载 ⇒ 无不可重建损失 ⇒ ★ 方案 B 对本类**无实际收益**"
+    },
+    {
+      "candidate_id": "prose_semantics_dhcpv6_options attribute",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        216,
+        217
+      ],
+      "★ norm.meaning": "该属性可被包含在 RADIUS CoA-Request 报文中",
+      "★ norm.constraint": "MAY appear in a RADIUS CoA-Request packet",
+      "★ LLM 原始 action": "appear in",
+      "★ LLM 原始 object": "a RADIUS CoA-Request packet",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 是（★ ⇒ 可能是规范义务被降级）",
+      "★ ★ 结论": "★ ★ ★ **文本含强度词 ⇒ 需人工判定它是否真是规范义务**"
+    },
+    {
+      "candidate_id": "prose_semantics_bcp 14",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        118,
+        122
+      ],
+      "★ norm.meaning": "文档中的大写关键词按 BCP 14（RFC2119、RFC8174）解释",
+      "★ norm.constraint": "key words are to be interpreted as described in BCP 14",
+      "★ LLM 原始 action": "",
+      "★ LLM 原始 object": "",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 否（★ ⇒ 确为描述性）",
+      "★ ★ 结论": "★ **描述性语义已由 meaning/constraint 承载 ⇒ 无不可重建损失 ⇒ ★ 方案 B 对本类**无实际收益**"
+    },
+    {
+      "candidate_id": "prose_semantics_ipv4 time offset option",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        311,
+        319
+      ],
+      "★ norm.meaning": "先前的 IPv4 时间偏移选项（tag 2）已被弃用",
+      "★ norm.constraint": "the older option is deprecated",
+      "★ LLM 原始 action": "",
+      "★ LLM 原始 object": "",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 否（★ ⇒ 确为描述性）",
+      "★ ★ 结论": "★ **描述性语义已由 meaning/constraint 承载 ⇒ 无不可重建损失 ⇒ ★ 方案 B 对本类**无实际收益**"
+    },
+    {
+      "candidate_id": "prose_semantics_vendor_specific information",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        343,
+        348
+      ],
+      "★ norm.meaning": "Use of vendor-specific information allows enhanced operation by utilizing additional features in a vendor's DHCP implementation.",
+      "★ norm.constraint": "",
+      "★ LLM 原始 action": "",
+      "★ LLM 原始 object": "",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 否（★ ⇒ 确为描述性）",
+      "★ ★ 结论": "★ **描述性语义已由 meaning/constraint 承载 ⇒ 无不可重建损失 ⇒ ★ 方案 B 对本类**无实际收益**"
+    },
+    {
+      "candidate_id": "prose_semantics_this option",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        213,
+        220
+      ],
+      "★ norm.meaning": "This option contains information corresponding to one or more Enterprise Numbers.",
+      "★ norm.constraint": "",
+      "★ LLM 原始 action": "",
+      "★ LLM 原始 object": "",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 否（★ ⇒ 确为描述性）",
+      "★ ★ 结论": "★ **描述性语义已由 meaning/constraint 承载 ⇒ 无不可重建损失 ⇒ ★ 方案 B 对本类**无实际收益**"
+    },
+    {
+      "candidate_id": "prose_semantics_behavior",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        213,
+        220
+      ],
+      "★ norm.meaning": "Behavior is undefined if an Enterprise Number occurs multiple times.",
+      "★ norm.constraint": "",
+      "★ LLM 原始 action": "",
+      "★ LLM 原始 object": "",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 否（★ ⇒ 确为描述性）",
+      "★ ★ 结论": "★ **描述性语义已由 meaning/constraint 承载 ⇒ 无不可重建损失 ⇒ ★ 方案 B 对本类**无实际收益**"
+    },
+    {
+      "candidate_id": "prose_semantics_enterprise number",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        213,
+        220
+      ],
+      "★ norm.meaning": "The information for each Enterprise Number is treated independently regardless of whether it occurs with other Enterprise Numbers or in a separate option.",
+      "★ norm.constraint": "",
+      "★ LLM 原始 action": "",
+      "★ LLM 原始 object": "",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 否（★ ⇒ 确为描述性）",
+      "★ ★ 结论": "★ **描述性语义已由 meaning/constraint 承载 ⇒ 无不可重建损失 ⇒ ★ 方案 B 对本类**无实际收益**"
+    },
+    {
+      "candidate_id": "prose_semantics_key words",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        142,
+        146
+      ],
+      "★ norm.meaning": "The listed key words are to be interpreted as described in BCP 14 (RFC2119 and RFC8174) only when they appear in all capitals.",
+      "★ norm.constraint": "",
+      "★ LLM 原始 action": "",
+      "★ LLM 原始 object": "",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 否（★ ⇒ 确为描述性）",
+      "★ ★ 结论": "★ **描述性语义已由 meaning/constraint 承载 ⇒ 无不可重建损失 ⇒ ★ 方案 B 对本类**无实际收益**"
+    },
+    {
+      "candidate_id": "prose_semantics_forcerenew message",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        216,
+        219
+      ],
+      "★ norm.meaning": "The FORCERENEW message must be authenticated using the procedures described in DHCP-AUTH.",
+      "★ norm.constraint": "the FORCERENEW message MUST be authenticated using the procedures as described in [DHCP-AUTH].",
+      "★ LLM 原始 action": "authenticated",
+      "★ LLM 原始 object": "using the procedures as described in [DHCP-AUTH]",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 是（★ ⇒ 可能是规范义务被降级）",
+      "★ ★ 结论": "★ ★ ★ **文本含强度词 ⇒ 需人工判定它是否真是规范义务**"
+    },
+    {
+      "candidate_id": "prose_semantics_standards track",
+      "knowledge_kind": "prose_semantics",
+      "source_span": [
+        7,
+        12
+      ],
+      "★ norm.meaning": "该 RFC 的类别为 Standards Track（标准跟踪文档）",
+      "★ norm.constraint": "",
+      "★ LLM 原始 action": "",
+      "★ LLM 原始 object": "",
+      "★ LLM 原始 normative_subject": "",
+      "★ ★ 描述性语义是否在 meaning/constraint 中可重建": "★ 是",
+      "★ ★ 该候选文本是否含规范强度词": "★ 否（★ ⇒ 确为描述性）",
+      "★ ★ 结论": "★ **描述性语义已由 meaning/constraint 承载 ⇒ 无不可重建损失 ⇒ ★ 方案 B 对本类**无实际收益**"
+    }
+  ]
+}

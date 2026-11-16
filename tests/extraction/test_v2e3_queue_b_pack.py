@@ -84,8 +84,16 @@ def test_knowledge_pack_has_14_contract_fields():
 
 
 def test_arbitration_template_has_required_audit_fields():
+    """★ ★ 2026-11-17：★ 审核者已填写 ⇒ 行数【不再恰好 54】（★ 一片段多条知识 ⇒ 复制行）。
+
+    ★ 断言由「== 54」改为「≥54 且覆盖全部基线 snippet_id」。
+    """
     _r = _rows(D / "V2-E3_队列B_第三方仲裁模板.csv")
-    assert len(_r) == 54
+    assert len(_r) >= 54
+    _base = {json.loads(l)["snippet_id"] for l in
+             (D / "V2-E3_原文与证据不可编辑字段基线.jsonl")
+             .read_text(encoding="utf-8").splitlines() if l.strip()}
+    assert {x["snippet_id"] for x in _r} >= _base
     for _c in ("★ 仲裁者 ID（★ 匿名编号）", "★ 审核日期", "★ 仲裁理由",
                "★ 是否 unresolved"):
         assert _c in _r[0], _c
@@ -93,8 +101,13 @@ def test_arbitration_template_has_required_audit_fields():
 
 # ══ ④ Excel 友好模板不含原文 ══
 def test_excel_template_excludes_raw_text():
+    """★ ★ 2026-11-17：★ 审核者已填写 ⇒ 行数【不再恰好 54】（★ 一片段多条知识 ⇒ 复制行）。"""
     _r = _rows(D / "V2-E3_队列B_审核者A_Excel友好编辑模板.csv")
-    assert len(_r) == 54
+    assert len(_r) >= 54
+    _base = {json.loads(l)["snippet_id"] for l in
+             (D / "V2-E3_原文与证据不可编辑字段基线.jsonl")
+             .read_text(encoding="utf-8").splitlines() if l.strip()}
+    assert {x["snippet_id"] for x in _r} >= _base
     _cols = set(_r[0].keys())
     assert "★ 原文（不可编辑）" not in _cols
     assert not any("原文" in c for c in _cols)

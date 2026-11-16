@@ -1,0 +1,204 @@
+{
+  "① 文件与编码验收": {
+    "A": {
+      "★ 原文件": "docs\\实施\\待办与勘误\\M0对账交付\\M1-Q3-V2-E3队列B盲审发放与保留来源预案\\V2-E3_队列B_审核者A_Excel友好编辑模板.csv",
+      "★ 原文件 SHA256": "98483fc35a54204094c5a279a2cb6025ec56348ed6e267e7723630b10652056e",
+      "★ 原文件大小": 87494,
+      "★ 原编码": "gb18030",
+      "★ CRLF 数": 129,
+      "★ 转换后行数": 128,
+      "★ 转换后列数": 20,
+      "★ 逐单元格差异数": 0,
+      "★ 差异明细（前 5）": [],
+      "★ 中文 原/新": "9000/9000",
+      "★ ★ 转换无损": true,
+      "★ UTF-8 工作副本": "guard\\_out\\_n1c_v2\\h2\\utf8_V2-E3_队列B_审核者A_Excel友好编辑模板.csv"
+    },
+    "B": {
+      "★ 原文件": "docs\\实施\\待办与勘误\\M0对账交付\\M1-Q3-V2-E3队列B盲审发放与保留来源预案\\V2-E3_队列B_审核者B_Excel友好编辑模板.csv",
+      "★ 原文件 SHA256": "d6575c1853f18071bbb5bf6e9fa74663d3079090d2c2f4521cc2ac2ccf2a0d0a",
+      "★ 原文件大小": 85387,
+      "★ 原编码": "gb18030",
+      "★ CRLF 数": 124,
+      "★ 转换后行数": 123,
+      "★ 转换后列数": 20,
+      "★ 逐单元格差异数": 0,
+      "★ 差异明细（前 5）": [],
+      "★ 中文 原/新": "8934/8934",
+      "★ ★ 转换无损": true,
+      "★ UTF-8 工作副本": "guard\\_out\\_n1c_v2\\h2\\utf8_V2-E3_队列B_审核者B_Excel友好编辑模板.csv"
+    },
+    "ARB": {
+      "★ 原文件": "docs\\实施\\待办与勘误\\M0对账交付\\M1-Q3-V2-E3队列B盲审发放与保留来源预案\\V2-E3_队列B_第三方仲裁模板.csv",
+      "★ 原文件 SHA256": "73d6ae0f4aee4a72e57f035f24a2b2d2f98eb8a43e8fded0ddcf5e5826d29eb6",
+      "★ 原文件大小": 46150,
+      "★ 原编码": "gb18030",
+      "★ CRLF 数": 98,
+      "★ 转换后行数": 97,
+      "★ 转换后列数": 23,
+      "★ 逐单元格差异数": 0,
+      "★ 差异明细（前 5）": [],
+      "★ 中文 原/新": "4515/4515",
+      "★ ★ 转换无损": true,
+      "★ UTF-8 工作副本": "guard\\_out\\_n1c_v2\\h2\\utf8_V2-E3_队列B_第三方仲裁模板.csv"
+    }
+  },
+  "② 结构检查": {
+    "A": {
+      "★ 行数": 128,
+      "★ 唯一 snippet_id 数": 54,
+      "★ 覆盖基线 snippet_id 数": 54,
+      "★ 基线总数": 54,
+      "★ ★ 是否覆盖全部 54": true,
+      "★ 无效 snippet_id": [],
+      "★ 原子知识行数（★ 允许 ≠ 54）": 128,
+      "★ 非法 gold_knowledge_id": [],
+      "★ 重复 gold_knowledge_id": [],
+      "★ 断裂引用（★ gold_knowledge_id 的 snippet 前缀不在基线内）": []
+    },
+    "B": {
+      "★ 行数": 123,
+      "★ 唯一 snippet_id 数": 54,
+      "★ 覆盖基线 snippet_id 数": 54,
+      "★ 基线总数": 54,
+      "★ ★ 是否覆盖全部 54": true,
+      "★ 无效 snippet_id": [],
+      "★ 原子知识行数（★ 允许 ≠ 54）": 123,
+      "★ 非法 gold_knowledge_id": [],
+      "★ 重复 gold_knowledge_id": [],
+      "★ 断裂引用（★ gold_knowledge_id 的 snippet 前缀不在基线内）": []
+    }
+  },
+  "③ 不可编辑字段核对": {
+    "A": {
+      "★ 基线中缺失于回收文件的 snippet_id": [],
+      "★ 说明": "★ 本模板【不含原文与哈希列】（★ 那是只读证据包的内容）★ ⇒ ★ 不可编辑字段的逐单元格比对由 ★ `p72_freeze_pool.py --verify` 针对【片段级表】执行"
+    },
+    "B": {
+      "★ 基线中缺失于回收文件的 snippet_id": [],
+      "★ 说明": "★ 本模板【不含原文与哈希列】（★ 那是只读证据包的内容）★ ⇒ ★ 不可编辑字段的逐单元格比对由 ★ `p72_freeze_pool.py --verify` 针对【片段级表】执行"
+    }
+  },
+  "④ 证据包一致性": {
+    "★ 证据包条数": 54,
+    "★ html 哈希与清单一致": true,
+    "★ jsonl 哈希与清单一致": true,
+    "★ snippet_id 集合与基线一致": true
+  },
+  "⑤ 双层一致性统计": {
+    "★ 片段级": {
+      "★ A 覆盖": 54,
+      "★ B 覆盖": 54,
+      "★ 是否存在目标知识 分布 A": {
+        "是": 45,
+        "否": 9
+      },
+      "★ 是否存在目标知识 分布 B": {
+        "是": 54
+      },
+      "★ 知识类别分布 A": {
+        "normative_rule_candidate": 4,
+        "normative_rule_candidate;protocol_descriptive_semantics": 4,
+        "protocol_descriptive_semantics;normative_rule_candidate": 4,
+        "protocol_syntax": 9,
+        "protocol_descriptive_semantics": 7,
+        "non_protocol_metadata": 9,
+        "protocol_registry_or_enumeration": 4,
+        "protocol_syntax;normative_rule_candidate": 2,
+        "protocol_descriptive_semantics;protocol_registry_or_enumeration": 2,
+        "protocol_registry_or_enumeration;normative_rule_candidate": 3,
+        "protocol_registry_or_enumeration;protocol_descriptive_semantics": 1,
+        "normative_rule_candidate;protocol_registry_or_enumeration": 1,
+        "protocol_descriptive_semantics;protocol_syntax": 3,
+        "protocol_syntax;protocol_descriptive_semantics": 1
+      },
+      "★ 知识类别分布 B": {
+        "normative_rule_candidate": 4,
+        "protocol_descriptive_semantics;normative_rule_candidate": 3,
+        "protocol_syntax": 9,
+        "protocol_descriptive_semantics": 8,
+        "non_protocol_metadata": 10,
+        "normative_rule_candidate;protocol_descriptive_semantics": 4,
+        "protocol_registry_or_enumeration": 2,
+        "protocol_syntax;normative_rule_candidate": 3,
+        "protocol_syntax;protocol_descriptive_semantics": 2,
+        "protocol_descriptive_semantics;protocol_registry_or_enumeration": 1,
+        "normative_rule_candidate;non_protocol_metadata": 1,
+        "protocol_registry_or_enumeration;non_protocol_metadata": 1,
+        "normative_rule_candidate;protocol_registry_or_enumeration": 1,
+        "protocol_registry_or_enumeration;normative_rule_candidate": 1,
+        "protocol_descriptive_semantics;protocol_syntax;normative_rule_candidate": 1,
+        "protocol_registry_or_enumeration;protocol_descriptive_semantics": 1,
+        "protocol_descriptive_semantics;protocol_syntax": 2
+      },
+      "★ uncertain 数 A": 0,
+      "★ uncertain 数 B": 0,
+      "★ 无目标知识片段数 A": 9,
+      "★ 无目标知识片段数 B": 0,
+      "★ 片段级『是否存在目标知识』一致数": 45,
+      "★ 片段级一致率": 0.8333
+    },
+    "★ 原子知识级": {
+      "★ A 原子知识数": 128,
+      "★ B 原子知识数": 123,
+      "★ 语义对齐后的共同知识数": 121,
+      "★ 只由 A 识别": 7,
+      "★ 只由 B 识别": 2,
+      "★ 逐字段全同的知识对": 0,
+      "★ 关键字段分歧计数": {
+        "subject": 86,
+        "object": 109,
+        "review_note": 121,
+        "action": 66,
+        "condition": 48,
+        "exception": 14,
+        "evidence_span": 43,
+        "evidence_support": 20,
+        "knowledge_kind": 30,
+        "strength": 15,
+        "polarity": 22
+      },
+      "★ 证据支持分歧": {
+        "evidence_support": 20
+      },
+      "★ ★ 未做字段级 Kappa（★ 原子知识匹配未完成）": true
+    }
+  },
+  "⑥ 第三方仲裁有效性": {
+    "★ 行数": 97,
+    "★ 填了结论的行数": 74,
+    "★ 有审核者 ID 的行数": 74,
+    "★ 有日期的行数": 74,
+    "★ 有理由的行数": 74,
+    "★ unresolved 标记分布": {
+      "★ 否": 97
+    },
+    "★ A 审核者 ID": [
+      "A"
+    ],
+    "★ B 审核者 ID": [
+      "B"
+    ],
+    "★ 仲裁者 ID": [
+      "C"
+    ],
+    "★ ★ 仲裁者与 A/B 区分开": true,
+    "★ 仅复制 A/B 且无理由（★ 不算完成仲裁）": 0,
+    "★ 实质裁定的条目数": 74
+  },
+  "⑦ Gold 冻结": {
+    "★ status 分布": {
+      "valid_gold": 121,
+      "no_target_knowledge": 9
+    },
+    "★ Gold 总条数": 130,
+    "★ 有效知识数（★ valid_gold）": 121,
+    "★ no_target_knowledge": 9,
+    "★ uncertain": 0,
+    "★ unresolved": 0,
+    "★ 冻结清单 SHA256": "b99467a4d806910f78b11ef2278ed0e28eab12ee4906e6fdc137787c6bc2cd23",
+    "★ 片段级字段分歧未仲裁的片段数": 130
+  },
+  "★ 错误": [],
+  "★ 警告": []
+}

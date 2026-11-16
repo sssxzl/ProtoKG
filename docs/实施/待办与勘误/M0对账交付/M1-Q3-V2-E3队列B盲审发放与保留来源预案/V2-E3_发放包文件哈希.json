@@ -4,9 +4,9 @@
     "V2-E3_队列B_审核者B_片段级标注表.csv": "e3cf7461b05d4fef2de94c03a1c6a0af86d5a99ad9c7d61b82928098c7ecd2cf",
     "V2-E3_队列B_审核者A_原子知识级标注表.csv": "b934fef2a884e9943d5c3cdbc27a3de0168948d0297ef3e9dfac9825bde8495f",
     "V2-E3_队列B_审核者B_原子知识级标注表.csv": "b934fef2a884e9943d5c3cdbc27a3de0168948d0297ef3e9dfac9825bde8495f",
-    "V2-E3_队列B_第三方仲裁模板.csv": "276f0e00e51758190cc4263391b711960f86e31fbddc7369bb4a794ca04f5827",
-    "V2-E3_队列B_审核者A_Excel友好编辑模板.csv": "653f291b9ac9b58130cb7725a469e840d73db958fafa2ad514569f2a141d7aa2",
-    "V2-E3_队列B_审核者B_Excel友好编辑模板.csv": "653f291b9ac9b58130cb7725a469e840d73db958fafa2ad514569f2a141d7aa2"
+    "V2-E3_队列B_第三方仲裁模板.csv": "684cf3d578257ad10408fd7fa652df077afd12ec9a58d8e89777b195edcb2eeb",
+    "V2-E3_队列B_审核者A_Excel友好编辑模板.csv": "e1de7ecfff4bb818d56c1bef4064427afb980929c0812f7f39749a77a768f0e2",
+    "V2-E3_队列B_审核者B_Excel友好编辑模板.csv": "09b7135e7987c3342bb468a9f0fd85c5f3f163538e1b1d44d87a1256910dbf4f"
   },
   "★ 不可编辑基线哈希": "443a80382911fcf8ea3040ff39e174e891b9f9f65bd8607149e559395c84fa9c",
   "★ CSV 往返完整性": true,
@@ -15,5 +15,6 @@
   "★ splitlines() 反证": {
     "★ 行数": 1,
     "★ 是否仍正确": false
-  }
+  },
+  "★ ★ 2026-11-17 更新": "★ 审核者填写后，三个【Excel 模板/仲裁模板】为 GB18030 编码（★ Excel 另存）；★ 原件保留于 guard/_out/_n1c_v2/h2/received_originals/（★ 不入库）；★ 仓库内为 UTF-8 无损转换版（★ 逐单元格差异 = 0）；★ 下方哈希已更新为转换版"
 }
