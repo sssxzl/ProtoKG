@@ -1,0 +1,1262 @@
+[
+  {
+    "sample_id": "A-rfc5322.txt_1_0",
+    "队列": "A",
+    "candidate_id": "rfc5322.txt@1#0",
+    "protocol": "smtp",
+    "document": "rfc5322.txt",
+    "chunk_id": "rfc5322.txt@1",
+    "rfc_sha256": "cb459acca15a2aa895863eaeff6f1d5b9c4ca15578ae3e3706f757787a385969",
+    "source_span": [
+      25,
+      25
+    ],
+    "evidence_span": [
+      19,
+      31
+    ],
+    "★ 章节类型": "① 协议操作与行为规范"
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc1534.txt-92",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc1534.txt",
+    "chunk_id": null,
+    "rfc_sha256": "e82c57f4688aadfb81442959c492788183561d7ec854fec1a27dd844e9b4805e",
+    "source_span": [
+      92,
+      98
+    ],
+    "evidence_span": [
+      92,
+      98
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   If a DHCP server returns a automatic address, the BOOTP client will    not be aware of the DHCP lease mechanism for network address    assignment.  Thus the DHCP server must assign an infinite lease    duration to for automatic addresses assigned to BOOTP clients.  Such    network addresses cannot be automatically reassigned by the server.    The local system administrator may choose to manually release network    addresses assigned to BOOTP clients. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc1534.txt-100",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc1534.txt",
+    "chunk_id": null,
+    "rfc_sha256": "e82c57f4688aadfb81442959c492788183561d7ec854fec1a27dd844e9b4805e",
+    "source_span": [
+      100,
+      107
+    ],
+    "evidence_span": [
+      100,
+      107
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   A DHCP server that supports BOOTP clients MUST interact with BOOTP    clients according to the BOOTP protocol.  The server MUST formulate a    BOOTP BOOTREPLY message rather than a DHCP DHCPOFFER message (i.e.,    the server MUST NOT include the 'DHCP message type' option and MUST    NOT exceed the size limit for BOOTREPLY messages).  The server marks    a binding for a BOOTP client as BOUND after sending the BOOTP    BOOTREPLY, as a non-DHCP client will not send a DHCPREQUEST message    nor will that client expect a DHCPACK message. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc1534.txt-139",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc1534.txt",
+    "chunk_id": null,
+    "rfc_sha256": "e82c57f4688aadfb81442959c492788183561d7ec854fec1a27dd844e9b4805e",
+    "source_span": [
+      139,
+      144
+    ],
+    "evidence_span": [
+      139,
+      144
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   A DHCP client MAY use a reply from a BOOTP server if the    configuration returned from the BOOTP server is acceptable to the    DHCP client.  A DHCP client MUST assume that an IP address returned    in a message from a BOOTP server has an infinite lease.  A DHCP    client SHOULD choose to use a reply from a DHCP server in preference    to a reply from a BOOTP server. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc1542.txt-81",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc1542.txt",
+    "chunk_id": null,
+    "rfc_sha256": "791f988d45474c915f8260efdc9676729f0b7264f3af79c5910f3be4a489fdb4",
+    "source_span": [
+      81,
+      89
+    ],
+    "evidence_span": [
+      81,
+      89
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The Bootstrap Protocol (BOOTP) is a UDP/IP-based protocol which    allows a booting host to configure itself dynamically and without    user supervision.  BOOTP provides a means to notify a host of its    assigned IP address, the IP address of a boot server host, and the    name of a file to be loaded into memory and executed [1].  Other    configuration information such as the local subnet mask, the local    time offset, the addresses of default routers, and the addresses of    various Internet servers can also be communicated to a host using    BOOTP [2]. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc1542.txt-91",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc1542.txt",
+    "chunk_id": null,
+    "rfc_sha256": "791f988d45474c915f8260efdc9676729f0b7264f3af79c5910f3be4a489fdb4",
+    "source_span": [
+      91,
+      97
+    ],
+    "evidence_span": [
+      91,
+      97
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   Unfortunately, the original BOOTP specification [1] left some issues    of the protocol open to question.  The exact behavior of BOOTP relay    agents formerly called \"BOOTP forwarding agents\") was not clearly    specified.  Some parts of the overall protocol specification actually    conflict, while other parts have been subject to misinterpretation,    indicating that clarification is needed.  This memo addresses these    problems. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc1542.txt-193",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc1542.txt",
+    "chunk_id": null,
+    "rfc_sha256": "791f988d45474c915f8260efdc9676729f0b7264f3af79c5910f3be4a489fdb4",
+    "source_span": [
+      193,
+      198
+    ],
+    "evidence_span": [
+      193,
+      198
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The order of transmission of the header and data described in this    document is resolved to the octet level.  Whenever a diagram shows a    group of octets, the order of transmission of those octets is the    normal order in which they are read in English.  For example, in the    following diagram, the octets are transmitted in the order they are    numbered. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc1542.txt-200",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc1542.txt",
+    "chunk_id": null,
+    "rfc_sha256": "791f988d45474c915f8260efdc9676729f0b7264f3af79c5910f3be4a489fdb4",
+    "source_span": [
+      200,
+      208
+    ],
+    "evidence_span": [
+      200,
+      208
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "                     0                   1                      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5                      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                      |       1       |       2       |                      +-------------------------------+                      |       3       |       4       |                      +-------------------------------+                      |       5       |       6       |                      +-------------------------------+ "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc1542.txt-343",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc1542.txt",
+    "chunk_id": null,
+    "rfc_sha256": "791f988d45474c915f8260efdc9676729f0b7264f3af79c5910f3be4a489fdb4",
+    "source_span": [
+      343,
+      373
+    ],
+    "evidence_span": [
+      343,
+      373
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   0                   1                   2                   3    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+    |     op (1)    |   htype (1)   |   hlen (1)    |   hops (1)    |    +---------------+---------------+---------------+---------------+    |                            xid (4)                            |    +-------------------------------+-------------------------------+    |           secs (2)            |           flags (2)           |    +-------------------------------+-------------------------------+    |                           ciaddr (4)                          |    +---------------------------------------------------------------+    |                           yiaddr (4)                          |    +---------------------------------------------------------------+    |                           siaddr (4)                          |    +---------------------------------------------------------------+    |                           giaddr (4)                          |    +---------------------------------------------------------------+    |                             "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc1542.txt-416",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc1542.txt",
+    "chunk_id": null,
+    "rfc_sha256": "791f988d45474c915f8260efdc9676729f0b7264f3af79c5910f3be4a489fdb4",
+    "source_span": [
+      416,
+      423
+    ],
+    "evidence_span": [
+      416,
+      423
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The client SHOULD send its broadcast BOOTREQUEST with an All Routes    Explorer RIF.  This will enable servers/relay agents to cache the    return route if they choose to do so.  For those server/relay agents    which cannot cache the return route (because they are stateless, for    example), the BOOTREPLY message SHOULD be sent to the client's    hardware address, as taken from the BOOTP message, with a Spanning    Tree Rooted RIF.  The actual bridge route will be recorded by the    client and server/relay agent by normal ARP processing code. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2131.txt-74",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2131.txt",
+    "chunk_id": null,
+    "rfc_sha256": "a043b705785b81762505ded4cf71d61392b2b1da2b4ce1e32c13bc984de5f4a5",
+    "source_span": [
+      74,
+      85
+    ],
+    "evidence_span": [
+      74,
+      85
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   2. Format of the 'flags' field. . . . . . . . . . . . . . . . . . 11    3. Timeline diagram of messages exchanged between DHCP client and       servers when allocating a new network address. . . . . . . . . 15    4. Timeline diagram of messages exchanged between DHCP client and       servers when reusing a previously allocated network address. . 18    5. State-transition diagram for DHCP clients. . . . . . . . . . . 34 List of Tables    1. Description of fields in a DHCP message. . . . . . . . . . . . 10    2. DHCP messages. . . . . . . . . . . . . . . . . . . . . . . . . 14    3. Fields and options used by DHCP servers. . . . . . . . . . . . 28    4. Client messages from various states. . . . . . . . . . . . . . 33    5. Fields and options used by DHCP clients. . . . . . . . . . . . 37 "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2131.txt-95",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2131.txt",
+    "chunk_id": null,
+    "rfc_sha256": "a043b705785b81762505ded4cf71d61392b2b1da2b4ce1e32c13bc984de5f4a5",
+    "source_span": [
+      95,
+      100
+    ],
+    "evidence_span": [
+      95,
+      100
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   DHCP is built on a client-server model, where designated DHCP server    hosts allocate network addresses and deliver configuration parameters    to dynamically configured hosts.  Throughout the remainder of this    document, the term \"server\" refers to a host providing initialization    parameters through DHCP, and the term \"client\" refers to a host    requesting initialization parameters from a DHCP server. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2131.txt-102",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2131.txt",
+    "chunk_id": null,
+    "rfc_sha256": "a043b705785b81762505ded4cf71d61392b2b1da2b4ce1e32c13bc984de5f4a5",
+    "source_span": [
+      102,
+      110
+    ],
+    "evidence_span": [
+      102,
+      110
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   A host should not act as a DHCP server unless explicitly configured    to do so by a system administrator.  The diversity of hardware and    protocol implementations in the Internet would preclude reliable    operation if random hosts were allowed to respond to DHCP requests.    For example, IP requires the setting of many parameters within the    protocol implementation software.  Because IP can be used on many    dissimilar kinds of network hardware, values for those parameters    cannot be guessed or assumed to have correct defaults.  Also,    distributed address allocation schemes depend on a polling/defense "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2131.txt-124",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2131.txt",
+    "chunk_id": null,
+    "rfc_sha256": "a043b705785b81762505ded4cf71d61392b2b1da2b4ce1e32c13bc984de5f4a5",
+    "source_span": [
+      124,
+      132
+    ],
+    "evidence_span": [
+      124,
+      132
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   DHCP supports three mechanisms for IP address allocation.  In    \"automatic allocation\", DHCP assigns a permanent IP address to a    client.  In \"dynamic allocation\", DHCP assigns an IP address to a    client for a limited period of time (or until the client explicitly    relinquishes the address).  In \"manual allocation\", a client's IP    address is assigned by the network administrator, and DHCP is used    simply to convey the assigned address to the client.  A particular    network will use one or more of these mechanisms, depending on the    policies of the network administrator. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2131.txt-134",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2131.txt",
+    "chunk_id": null,
+    "rfc_sha256": "a043b705785b81762505ded4cf71d61392b2b1da2b4ce1e32c13bc984de5f4a5",
+    "source_span": [
+      134,
+      147
+    ],
+    "evidence_span": [
+      134,
+      147
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   Dynamic allocation is the only one of the three mechanisms that    allows automatic reuse of an address that is no longer needed by the    client to which it was assigned.  Thus, dynamic allocation is    particularly useful for assigning an address to a client that will be    connected to the network only temporarily or for sharing a limited    pool of IP addresses among a group of clients that do not need    permanent IP addresses.  Dynamic allocation may also be a good choice    for assigning an IP address to a new client being permanently    connected to a network where IP addresses are sufficiently scarce    that it is important to reclaim them when old clients are retired.    Manual allocation allows DHCP to be used to eliminate the error-prone    process of manually configuring hosts with IP addresses in    environments where (for whatever reasons) it is desirable to manage    IP address assignment outside of the DHCP mechanisms. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2131.txt-149",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2131.txt",
+    "chunk_id": null,
+    "rfc_sha256": "a043b705785b81762505ded4cf71d61392b2b1da2b4ce1e32c13bc984de5f4a5",
+    "source_span": [
+      149,
+      154
+    ],
+    "evidence_span": [
+      149,
+      154
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The format of DHCP messages is based on the format of BOOTP messages,    to capture the BOOTP relay agent behavior described as part of the    BOOTP specification [7, 21] and to allow interoperability of existing    BOOTP clients with DHCP servers.  Using BOOTP relay agents eliminates    the necessity of having a DHCP server on each physical network    segment. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2132.txt-97",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2132.txt",
+    "chunk_id": null,
+    "rfc_sha256": "0cfbedab7cfe859624ae78c07a722bc51bf8ea123a7b43b099fc546ddcf00b90",
+    "source_span": [
+      97,
+      105
+    ],
+    "evidence_span": [
+      97,
+      105
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   This document updates the definition of DHCP/BOOTP options that    appears in RFC1533.  The classing mechanism has been extended to    include vendor classes as described in section 8.4 and 9.13.  The new    procedure for defining new DHCP/BOOTP options in described in section    10.  Several new options, including NIS+ domain and servers, Mobile    IP home agent, SMTP server, TFTP server and Bootfile server, have    been added.  Text giving definitions used throughout the document has    been added in section 1.1.  Text emphasizing the need for uniqueness    of client-identifiers has been added to section 9.14. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2132.txt-189",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2132.txt",
+    "chunk_id": null,
+    "rfc_sha256": "0cfbedab7cfe859624ae78c07a722bc51bf8ea123a7b43b099fc546ddcf00b90",
+    "source_span": [
+      189,
+      202
+    ],
+    "evidence_span": [
+      189,
+      202
+    ],
+    "★ 章节类型": "④ 定义、注册与参数说明",
+    "★ 证据文本": "   DHCP options have the same format as the BOOTP 'vendor extensions'    defined in RFC 1497 [2].  Options may be fixed length or variable    length.  All options begin with a tag octet, which uniquely    identifies the option.  Fixed-length options without data consist of    only a tag octet.  Only options 0 and 255 are fixed length.  All    other options are variable-length with a length octet following the    tag octet.  The value of the length octet does not include the two    octets specifying the tag and length.  The length octet is followed    by \"length\" octets of data.  Options containing NVT ASCII data SHOULD    NOT include a trailing NULL; however, the receiver of such options    MUST be prepared to delete trailing nulls if they exist.  The    receiver MUST NOT require that a trailing null be included in the    data.  In the case of some variable-length options the length field    is a constant but must still be specified. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2132.txt-209",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2132.txt",
+    "chunk_id": null,
+    "rfc_sha256": "0cfbedab7cfe859624ae78c07a722bc51bf8ea123a7b43b099fc546ddcf00b90",
+    "source_span": [
+      209,
+      214
+    ],
+    "evidence_span": [
+      209,
+      214
+    ],
+    "★ 章节类型": "④ 定义、注册与参数说明",
+    "★ 证据文本": "   When used with BOOTP, the first four octets of the vendor information    field have been assigned to the \"magic cookie\" (as suggested in RFC    951).  This field identifies the mode in which the succeeding data is    to be interpreted.  The value of the magic cookie is the 4 octet    dotted decimal 99.130.83.99 (or hexadecimal number 63.82.53.63) in    network byte order. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2132.txt-1022",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2132.txt",
+    "chunk_id": null,
+    "rfc_sha256": "0cfbedab7cfe859624ae78c07a722bc51bf8ea123a7b43b099fc546ddcf00b90",
+    "source_span": [
+      1022,
+      1031
+    ],
+    "evidence_span": [
+      1022,
+      1031
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   This option is used by clients and servers to exchange vendor-    specific information.  The information is an opaque object of n    octets, presumably interpreted by vendor-specific code on the clients    and servers.  The definition of this information is vendor specific.    The vendor is indicated in the vendor class identifier option.    Servers not equipped to interpret the vendor-specific information    sent by a client MUST ignore it (although it may be reported).    Clients which do not receive desired vendor-specific information    SHOULD make an attempt to operate without it, although they may do so    (and announce they are doing so) in a degraded mode. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2132.txt-1481",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2132.txt",
+    "chunk_id": null,
+    "rfc_sha256": "0cfbedab7cfe859624ae78c07a722bc51bf8ea123a7b43b099fc546ddcf00b90",
+    "source_span": [
+      1481,
+      1490
+    ],
+    "evidence_span": [
+      1481,
+      1490
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "           Value   Message Type            -----   ------------              1     DHCPDISCOVER              2     DHCPOFFER              3     DHCPREQUEST              4     DHCPDECLINE              5     DHCPACK              6     DHCPNAK              7     DHCPRELEASE              8     DHCPINFORM "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2132.txt-1545",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2132.txt",
+    "chunk_id": null,
+    "rfc_sha256": "0cfbedab7cfe859624ae78c07a722bc51bf8ea123a7b43b099fc546ddcf00b90",
+    "source_span": [
+      1545,
+      1550
+    ],
+    "evidence_span": [
+      1545,
+      1550
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   This option is used by a DHCP server to provide an error message to a    DHCP client in a DHCPNAK message in the event of a failure. A client    may use this option in a DHCPDECLINE message to indicate the why the    client declined the offered parameters.  The message consists of n    octets of NVT ASCII text, which the client may display on an    available output device. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2563.txt-89",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2563.txt",
+    "chunk_id": null,
+    "rfc_sha256": "11decc3356b82748e60b078ec553499ea1ca875c95dd61c8ef81fe0e6e3ab6c4",
+    "source_span": [
+      89,
+      94
+    ],
+    "evidence_span": [
+      89,
+      94
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The first scenario is handled by the current DHCP standard.  However,    the current DHCP specification [DHCP] says servers must silently    ignore requests from hosts they do not know.  Because of this, DHCP    clients are unable to determine whether they are on a subnet with no    administration, or with administration that is choosing not to hand    out addresses. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2563.txt-181",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2563.txt",
+    "chunk_id": null,
+    "rfc_sha256": "11decc3356b82748e60b078ec553499ea1ca875c95dd61c8ef81fe0e6e3ab6c4",
+    "source_span": [
+      181,
+      186
+    ],
+    "evidence_span": [
+      181,
+      186
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   If a DHCP client receives any DHCPOFFER which contains a 'yiaddr' of    0x00000000, and the Auto-Configure flag says \"DoNotAutoConfigure\", in    the absence of a DHCPOFFER with a valid 'yiaddr', the DHCP client    MUST NOT generate a link-local IP address.  The amount of time a DHCP    client waits to collect any other DHCPOFFERs is implementation    dependant. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2563.txt-234",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2563.txt",
+    "chunk_id": null,
+    "rfc_sha256": "11decc3356b82748e60b078ec553499ea1ca875c95dd61c8ef81fe0e6e3ab6c4",
+    "source_span": [
+      234,
+      259
+    ],
+    "evidence_span": [
+      234,
+      259
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "                          v               v               v                           |               |               |                           |     Begins initialization     |                           |               |               |                           | _____________/|\\____________  |                           |/DHCPDISCOVER  | DHCPDISCOVER \\|                           |               |               |                       Determines          |          Determines                      configuration        |         configuration                           |               |               |                           |               |  ____________/|                           |               | /DHCPOFFER    |                           |               |/              |                           |               |               |                           |       Collects replies        |                           |               |               |                           |     Selects configuration     |                           |               |               |                           |--AutoConfigs--|- NO IP ADDR --|                           .               .       "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2563.txt-271",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2563.txt",
+    "chunk_id": null,
+    "rfc_sha256": "11decc3356b82748e60b078ec553499ea1ca875c95dd61c8ef81fe0e6e3ab6c4",
+    "source_span": [
+      271,
+      276
+    ],
+    "evidence_span": [
+      271,
+      276
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   If the DHCPDISCOVER contains the Auto-Configure option, and the site    administrator has specified that Auto-Configuration should be    disabled on the subnet the DHCPDISCOVER is originating from, or for    the client originating the request, then a DHCPOFFER MUST be sent to    the DHCP client.  This offer MUST be for the address 0x00000000, and    the Auto-Configure option MUST be set to \"DoNotAutoConfigure\". "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2563.txt-381",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2563.txt",
+    "chunk_id": null,
+    "rfc_sha256": "11decc3356b82748e60b078ec553499ea1ca875c95dd61c8ef81fe0e6e3ab6c4",
+    "source_span": [
+      381,
+      386
+    ],
+    "evidence_span": [
+      381,
+      386
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   This idea started at a joint Common Solutions Group / Microsoft    meeting at Microsoft in May, 1998.  The IP stacks in Win98 and NT5    assign themselves an IP address (in a specific subnet) in the absence    of a responding DHCP server, and this is causing headaches for many    sites that actually rely on machines not getting IP addresses when    the DHCP servers do not know them. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2937.txt-126",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2937.txt",
+    "chunk_id": null,
+    "rfc_sha256": "11d8c332f073ddb390da2732369750ecd10e9d290c5ba60dc5dc9d605dea56ac",
+    "source_span": [
+      126,
+      132
+    ],
+    "evidence_span": [
+      126,
+      132
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "      0                   1                   2                   3       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+      |     117       |      4        |              6                |      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+      |              65               |      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2937.txt-136",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2937.txt",
+    "chunk_id": null,
+    "rfc_sha256": "11d8c332f073ddb390da2732369750ecd10e9d290c5ba60dc5dc9d605dea56ac",
+    "source_span": [
+      136,
+      142
+    ],
+    "evidence_span": [
+      136,
+      142
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "     The DHCP client will use this option to create a search list for      name resolution.  The client may receive name services in this      option that it does not support or has not been configured to      access.  Likewise, a client may receive an option that lists name      services for which no corresponding DHCP option was supplied.      Clients will interpret this option in a system-specific manner      whose specification is outside the scope of this document. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2939.txt-99",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2939.txt",
+    "chunk_id": null,
+    "rfc_sha256": "aeb311959b9596ee4afb0acd3200ba1fc980b80f1cb98371c17e790669bfc7ec",
+    "source_span": [
+      99,
+      104
+    ],
+    "evidence_span": [
+      99,
+      104
+    ],
+    "★ 章节类型": "④ 定义、注册与参数说明",
+    "★ 证据文本": "   Since the publication of RFC 2132, the option number space for    publicly defined DHCP options (1-127) has almost been exhausted.    Many of the defined option numbers have not been followed up with    Internet Drafts submitted to the DHC WG.  There has been a lack of    specific guidance to IANA from the DHC WG as to the assignment of    DHCP option numbers. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2939.txt-125",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2939.txt",
+    "chunk_id": null,
+    "rfc_sha256": "aeb311959b9596ee4afb0acd3200ba1fc980b80f1cb98371c17e790669bfc7ec",
+    "source_span": [
+      125,
+      134
+    ],
+    "evidence_span": [
+      125,
+      134
+    ],
+    "★ 章节类型": "④ 定义、注册与参数说明",
+    "★ 证据文本": "   In the future, new DHCP option codes will be assigned by IETF    consensus.  New DHCP options will be documented in RFCs approved by    the IESG, and the codes for those options will be assigned at the    time the relevant RFCs are published.  Typically, the IESG will seek    input on prospective assignments from appropriate sources (e.g., a    relevant Working Group if one exists).  Groups of related options may    be combined  into a single specification and reviewed as a set by the    IESG.  Prior to assignment of an option code, it is not appropriate    to incorporate new options into products, include the specification    in other documents or otherwise make use of the new options. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2939.txt-156",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2939.txt",
+    "chunk_id": null,
+    "rfc_sha256": "aeb311959b9596ee4afb0acd3200ba1fc980b80f1cb98371c17e790669bfc7ec",
+    "source_span": [
+      156,
+      161
+    ],
+    "evidence_span": [
+      156,
+      161
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   Typically, the IESG will seek input on new message types from    appropriate sources (e.g., a relevant Working Group if one exists).    Prior to assignment of a message type code, it is not appropriate to    incorporate new message types into products, include the    specification in other documents or otherwise make use of the new    message types. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2939.txt-242",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2939.txt",
+    "chunk_id": null,
+    "rfc_sha256": "aeb311959b9596ee4afb0acd3200ba1fc980b80f1cb98371c17e790669bfc7ec",
+    "source_span": [
+      242,
+      247
+    ],
+    "evidence_span": [
+      242,
+      247
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   This document extends the procedures for defining new DHCP options    specified in RFC 2489 [5] to include the definition of new DHCP    message types.  The language reserving site-specific option codes has    been strengthened to emphasize the requirement that site-specific    option codes must not be encoded in publicly distributed DHCP    implementations. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2939.txt-254",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2939.txt",
+    "chunk_id": null,
+    "rfc_sha256": "aeb311959b9596ee4afb0acd3200ba1fc980b80f1cb98371c17e790669bfc7ec",
+    "source_span": [
+      254,
+      260
+    ],
+    "evidence_span": [
+      254,
+      260
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   An analysis of security issues is required for all newly defined DHCP    options or message types.  The description of security issues in the    specification of new options or message types must be as accurate as    possible.  The specification for a new option or message type may    reference the \"Security Considerations\" section in the DHCP    specification [1]; e.g., (from \"NetWare/IP Domain Name and    Information\" [3]): "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc2939.txt-268",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc2939.txt",
+    "chunk_id": null,
+    "rfc_sha256": "aeb311959b9596ee4afb0acd3200ba1fc980b80f1cb98371c17e790669bfc7ec",
+    "source_span": [
+      268,
+      274
+    ],
+    "evidence_span": [
+      268,
+      274
+    ],
+    "★ 章节类型": "⑤ 附录、元数据及其他",
+    "★ 证据文本": "   RFC 2132 and RFC 2489 provided guidance to the IANA on the procedure    it should follow when assigning option numbers for new DHCP options    or message types.  This document updates and replaces those    instructions.  In particular, IANA is requested to assign DHCP option    codes or message type codes only for options or message types that    have been approved for publication as RFCs; i.e., documents that have    been approved through \"IETF consensus\" as defined in RFC 2434 [4]. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3004.txt-156",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3004.txt",
+    "chunk_id": null,
+    "rfc_sha256": "d1488dcc8274d1e8128b734e98709088998c91f926d5141019cb0b4d34232a7c",
+    "source_span": [
+      156,
+      162
+    ],
+    "evidence_span": [
+      156,
+      162
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   This lack of authentication mechanism means that a DHCP server cannot    check if a client or user is authorized to use a given User Class.    This introduces an obvious vulnerability when using the User Class    option.  For example, if the User Class is used to give out a special    parameter (e.g., a particular database server), there is no way to    authenticate a client and it is therefore impossible to check if a    client is authorized to use this parameter. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3004.txt-258",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3004.txt",
+    "chunk_id": null,
+    "rfc_sha256": "d1488dcc8274d1e8128b734e98709088998c91f926d5141019cb0b4d34232a7c",
+    "source_span": [
+      258,
+      264
+    ],
+    "evidence_span": [
+      258,
+      264
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   Jerome Privat    Northstream AB    Espace Beethoven 1    1200 Route des Lucioles    BP 302    06906 Sophia Antipolis Cedex    France "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3011.txt-35",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3011.txt",
+    "chunk_id": null,
+    "rfc_sha256": "b5809d9f053e6cdc3003c04a8c529f23fb24794c47c21370f8199a48743d0202",
+    "source_span": [
+      35,
+      44
+    ],
+    "evidence_span": [
+      35,
+      44
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   1. Introduction..................................................1    1.1. Motivational Example........................................2    2. Subnet Selection Option Definition............................3    3. Intellectual Property.........................................4    4. IANA Considerations...........................................4    5. Acknowledgements..............................................5    6. Security Considerations.......................................5    7. References....................................................5    8. Editor's Addresses............................................6    9. Full Copyright Statement......................................7 "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3011.txt-48",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3011.txt",
+    "chunk_id": null,
+    "rfc_sha256": "b5809d9f053e6cdc3003c04a8c529f23fb24794c47c21370f8199a48743d0202",
+    "source_span": [
+      48,
+      53
+    ],
+    "evidence_span": [
+      48,
+      53
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The Dynamic Host Configuration Protocol (DHCP) [RFC2131] provides a    framework for passing configuration information to hosts on a TCP/IP    network.  RFC 2132 [RFC2132] specifies DHCP option configuration    information that may be carried in DHCP packets to/from the DHCP    server and the DHCP client.  This document specifies a new DHCP    option. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3011.txt-92",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3011.txt",
+    "chunk_id": null,
+    "rfc_sha256": "b5809d9f053e6cdc3003c04a8c529f23fb24794c47c21370f8199a48743d0202",
+    "source_span": [
+      92,
+      98
+    ],
+    "evidence_span": [
+      92,
+      98
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   In this scenario, the device is connected to a private \"internal\"    network on which the DHCP server would be located.  The device is    also connected to one or more service providing \"external\" networks    (i.e.: the networks that the device's clients are connected to).    Furthermore, the internal network is not IP connected to the external    networks, although inside the device there is connectivity between    the internal and external networks (e.g.: though the backplane). "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3011.txt-100",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3011.txt",
+    "chunk_id": null,
+    "rfc_sha256": "b5809d9f053e6cdc3003c04a8c529f23fb24794c47c21370f8199a48743d0202",
+    "source_span": [
+      100,
+      109
+    ],
+    "evidence_span": [
+      100,
+      109
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   Recall that the device is allocating addresses for its clients on the    external networks and that there is no IP connectivity between the    internal network and the external networks.  The DHCP requests cannot    originate from the external networks since packets cannot be routed    between the external network and the internal network.  Thus, the    DHCP requests must originate from the internal network.  The problem    with originating the DHCP requests from the internal network is that    the DHCP server will allocate addresses on the internal network's    subnet, when what is required are addresses on the external subnets.    The subnet selection option provides a solution to this problem. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3011.txt-119",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3011.txt",
+    "chunk_id": null,
+    "rfc_sha256": "b5809d9f053e6cdc3003c04a8c529f23fb24794c47c21370f8199a48743d0202",
+    "source_span": [
+      119,
+      124
+    ],
+    "evidence_span": [
+      119,
+      124
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The device would send its DHCP request on the internal subnet, but    would include the subnet selection option containing the address of    the external subnet on which it requires the address.  The subnet    selection option instructs the DHCP server to allocate the address on    the requested subnet as opposed to the normal operation of allocating    the address on the subnet from which the DHCP request originated. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3011.txt-254",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3011.txt",
+    "chunk_id": null,
+    "rfc_sha256": "b5809d9f053e6cdc3003c04a8c529f23fb24794c47c21370f8199a48743d0202",
+    "source_span": [
+      254,
+      261
+    ],
+    "evidence_span": [
+      254,
+      261
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   Servers that implement the subnet selection option MUST by default    disable use of the feature; it must specifically be enabled through    configuration.  Moreover, a server SHOULD provide the ability to    selectively enable use of the feature under restricted conditions,    e.g., by enabling use of the option only from explicitly configured    client-ids, enabling its use only by clients on a particular subnet,    or restricting the subnets (as indicated in the subnet selection    option) from which addresses may be requested. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3046.txt-28",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3046.txt",
+    "chunk_id": null,
+    "rfc_sha256": "6b343c02d5c495cd1f780a43ab2c4e3b9bca968b82024b9d2fdb90d75b98a5cf",
+    "source_span": [
+      28,
+      36
+    ],
+    "evidence_span": [
+      28,
+      36
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   Newer high-speed public Internet access technologies call for a    high-speed modem to have a local area network (LAN) attachment to one    or more customer premise hosts.  It is advantageous to use the    Dynamic Host Configuration Protocol (DHCP) as defined in RFC 2131 to    assign customer premise host IP addresses in this environment.    However, a number of security and scaling problems arise with such    \"public\" DHCP use.  This document describes a new DHCP option to    address these issues.  This option extends the set of DHCP options as    defined in RFC 2132. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3046.txt-38",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3046.txt",
+    "chunk_id": null,
+    "rfc_sha256": "6b343c02d5c495cd1f780a43ab2c4e3b9bca968b82024b9d2fdb90d75b98a5cf",
+    "source_span": [
+      38,
+      45
+    ],
+    "evidence_span": [
+      38,
+      45
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The new option is called the Relay Agent Information option and is    inserted by the DHCP relay agent when forwarding client-originated    DHCP packets to a DHCP server.  Servers recognizing the Relay Agent    Information option may use the information to implement IP address or    other parameter assignment policies.  The DHCP Server echoes the    option back verbatim to the relay agent in server-to-client replies,    and the relay agent strips the option before forwarding the reply to    the client. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3046.txt-47",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3046.txt",
+    "chunk_id": null,
+    "rfc_sha256": "6b343c02d5c495cd1f780a43ab2c4e3b9bca968b82024b9d2fdb90d75b98a5cf",
+    "source_span": [
+      47,
+      53
+    ],
+    "evidence_span": [
+      47,
+      53
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The \"Relay Agent Information\" option is organized as a single DHCP    option that contains one or more \"sub-options\" that convey    information known by the relay agent.  The initial sub-options are    defined for a relay agent that is co-located in a public circuit    access unit.  These include a \"circuit ID\" for the incoming circuit,    and a \"remote ID\" which provides a trusted identifier for the remote    high-speed modem. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3046.txt-65",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3046.txt",
+    "chunk_id": null,
+    "rfc_sha256": "6b343c02d5c495cd1f780a43ab2c4e3b9bca968b82024b9d2fdb90d75b98a5cf",
+    "source_span": [
+      65,
+      82
+    ],
+    "evidence_span": [
+      65,
+      82
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   1   Introduction...........................................  2    1.1 High-Speed Circuit Switched Data Networks..............  2    1.2 DHCP Relay Agent in the Circuit Access Equipment.......  4    2.0 Relay Agent Information Option.........................  5    2.1 Agent Operation........................................  6    2.1.1 Reforwarded DHCP requests............................  7    2.2 Server Operation.......................................  7    3.0 Relay Agent Information Suboptions.....................  8    3.1 Agent Circuit ID.......................................  8    3.2 Agent Remote ID........................................  9    4.0 Issues Resolved........................................  9    5.0 Security Considerations................................ 10    6.0 IANA Considerations.................................... 11    7.0 Intellectual Property Notice........................... 12    8.0 References............................................. 12    9.0 Glossary............................................... 13    10.0 Author's Address...................................... 13    11.0 Full Copyright Statement ............................. 14 "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3046.txt-88",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3046.txt",
+    "chunk_id": null,
+    "rfc_sha256": "6b343c02d5c495cd1f780a43ab2c4e3b9bca968b82024b9d2fdb90d75b98a5cf",
+    "source_span": [
+      88,
+      94
+    ],
+    "evidence_span": [
+      88,
+      94
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   Public Access to the Internet is usually via a circuit switched data    network.  Today, this is primarily implemented with dial-up modems    connecting to a Remote Access Server.  But higher speed circuit    access networks also include ISDN, ATM, Frame Relay, and Cable Data    Networks.  All of these networks can be characterized as a \"star\"    topology where multiple users connect to a \"circuit access unit\" via    switched or permanent circuits. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3046.txt-100",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3046.txt",
+    "chunk_id": null,
+    "rfc_sha256": "6b343c02d5c495cd1f780a43ab2c4e3b9bca968b82024b9d2fdb90d75b98a5cf",
+    "source_span": [
+      100,
+      107
+    ],
+    "evidence_span": [
+      100,
+      107
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The newer high-speed circuit technologies, however, frequently    provide a LAN interface (especially Ethernet) to one or more host    PCs.  It is desirable to support centralized assignment of the IP    addresses of host computers connecting on such circuits via DHCP.    The DHCP server can be, but usually is not, co-implemented with the    centralized circuit concentration access device.  The DHCP server is    often connected as a separate server on the \"Central LAN\" to which    the central access device (or devices) attach. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3074.txt-7",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3074.txt",
+    "chunk_id": null,
+    "rfc_sha256": "1f3d5e93c2c7490b338b3028b0026f1570c9f2c1940b6cb65102ab0684a3a8b4",
+    "source_span": [
+      7,
+      15
+    ],
+    "evidence_span": [
+      7,
+      15
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "Network Working Group                                            B. Volz Request for Comments: 3074                                      Ericsson Category: Standards Track                                      S. Gonczi                                                    Network Engines, Inc.                                                                 T. Lemon                                                   Internet Engines, Inc.                                                               R. Stevens                                                       Join Systems, Inc.                                                            February 2001 "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3074.txt-39",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3074.txt",
+    "chunk_id": null,
+    "rfc_sha256": "1f3d5e93c2c7490b338b3028b0026f1570c9f2c1940b6cb65102ab0684a3a8b4",
+    "source_span": [
+      39,
+      46
+    ],
+    "evidence_span": [
+      39,
+      46
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The server selection is based on the servers hashing client Media    Access Control (MAC) addresses when multiple Dynamic Host    Configuration Protocol (DHCP) servers are available to service DHCP    clients.  The proposed technique provides for efficient server    selection when multiple DHCP servers offer services on a network    without requiring any changes to existing DHCP clients.  The same    method is proposed to select the target server of a forwarding agent    such as a Bootstrap Protocol (BOOTP) relay. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3074.txt-138",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3074.txt",
+    "chunk_id": null,
+    "rfc_sha256": "1f3d5e93c2c7490b338b3028b0026f1570c9f2c1940b6cb65102ab0684a3a8b4",
+    "source_span": [
+      138,
+      143
+    ],
+    "evidence_span": [
+      138,
+      143
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The approach is probabilistic in nature, because it is nearly    impossible to foresee which client will request service next.  For    short periods of time, the actual percentage of clients served by a    given server will likely deviate from the desired percentage.  As the    number of requests grows, the actual percentage of the load being    handled by each server will approximate the configured percentage. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3074.txt-147",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3074.txt",
+    "chunk_id": null,
+    "rfc_sha256": "1f3d5e93c2c7490b338b3028b0026f1570c9f2c1940b6cb65102ab0684a3a8b4",
+    "source_span": [
+      147,
+      152
+    ],
+    "evidence_span": [
+      147,
+      152
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   DHCP servers MUST use the Client Identifier option as the STID if it    is present.  If no Client Identifier option is present, the hlen    field of the DHCP packet MUST be used as the length of the data to be    hashed, and the contents of the chaddr MUST be the data to be hashed.    At most the first sixteen bytes of the Client Identifier or chaddr    are used. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3074.txt-194",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3074.txt",
+    "chunk_id": null,
+    "rfc_sha256": "1f3d5e93c2c7490b338b3028b0026f1570c9f2c1940b6cb65102ab0684a3a8b4",
+    "source_span": [
+      194,
+      203
+    ],
+    "evidence_span": [
+      194,
+      203
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   A DHCP server providing this capability SHOULD use the value in the    secs field of the client request if its value is not zero.  Because    some clients may not correctly implement the secs field, a DHCP    server MAY keep track of the first instance of a client transaction    to which it would not normally respond.  If the server receives a    request from a client that has the same transaction ID as a    previously recorded request, and if the secs field in the second    packet is zero, the DHCP server MAY use the elapsed time (seconds)    between the first and subsequent client request, instead of the secs    field. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3074.txt-209",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3074.txt",
+    "chunk_id": null,
+    "rfc_sha256": "1f3d5e93c2c7490b338b3028b0026f1570c9f2c1940b6cb65102ab0684a3a8b4",
+    "source_span": [
+      209,
+      215
+    ],
+    "evidence_span": [
+      209,
+      215
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   The configuration step consists of assigning hash values to available    servers.  This is accomplished by providing one or more Hash Bucket    Assignments (HBA-s).  These may come from a configuration file, the    Windows NT registry, EEPROM, etc.  Alternatively, the hash bucket    values could be assigned using some agreed upon algorithm.  E.g.,    \"Every odd value is serviced by server A and every even value is    serviced by server B\". "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3118.txt-30",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3118.txt",
+    "chunk_id": null,
+    "rfc_sha256": "23d81251e739d9618b9b7503c0d9848c8d54290c78302cd7f3c5ddb72f9fb4ce",
+    "source_span": [
+      30,
+      38
+    ],
+    "evidence_span": [
+      30,
+      38
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   This document defines a new Dynamic Host Configuration Protocol    (DHCP) option through which authorization tickets can be easily    generated and newly attached hosts with proper authorization can be    automatically configured from an authenticated DHCP server.  DHCP    provides a framework for passing configuration information to hosts    on a TCP/IP network.  In some situations, network administrators may    wish to constrain the allocation of addresses to authorized hosts.    Additionally, some network administrators may wish to provide for    authentication of the source and contents of DHCP messages. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc3361.txt-289",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc3361.txt",
+    "chunk_id": null,
+    "rfc_sha256": "67f99fdee92d0510fb3484897917e7e636b4ea1f4fda0c5622a057236811a583",
+    "source_span": [
+      289,
+      294
+    ],
+    "evidence_span": [
+      289,
+      294
+    ],
+    "★ 章节类型": "⑤ 附录、元数据及其他",
+    "★ 证据文本": "   Henning Schulzrinne    Dept. of Computer Science    Columbia University    1214 Amsterdam Avenue, MC 0401    New York, NY 10027    USA "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc951.txt-64",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc951.txt",
+    "chunk_id": null,
+    "rfc_sha256": "098809562693d95c502d59451fa8cc6a4a2f263448fad077f0af677088cb0c52",
+    "source_span": [
+      64,
+      69
+    ],
+    "evidence_span": [
+      64,
+      69
+    ],
+    "★ 章节类型": "③ 状态、响应与错误处理",
+    "★ 证据文本": "      3. The request can optionally contain the name of the server the       client wishes to respond.  This is so the client can force the       boot to occur from a specific host (e.g. if multiple versions of       the same bootfile exist or if the server is in a far distant       net/domain).  The client does not have to deal with name / domain       services; instead this function is pushed off to the BOOTP server. "
+  },
+  {
+    "sample_id": "B-DHCPv4-rfc951.txt-71",
+    "队列": "B",
+    "protocol": "DHCPv4",
+    "document": "rfc951.txt",
+    "chunk_id": null,
+    "rfc_sha256": "098809562693d95c502d59451fa8cc6a4a2f263448fad077f0af677088cb0c52",
+    "source_span": [
+      71,
+      79
+    ],
+    "evidence_span": [
+      71,
+      79
+    ],
+    "★ 章节类型": "③ 状态、响应与错误处理",
+    "★ 证据文本": "      4. The request can optionally contain the 'generic' filename to be       booted.  For example 'unix' or 'ethertip'.  When the server sends       the bootreply, it replaces this field with the fully qualified       path name of the appropriate boot file.  In determining this name,       the server may consult his own database correlating the client's       address and filename request, with a particular boot file       customized for that client.  If the bootrequest filename is a null       string, then the server returns a filename field indicating the       'default' file to be loaded for that client. "
+  },
+  {
+    "sample_id": "B-rtsp-rfc2326.txt-7",
+    "队列": "B",
+    "protocol": "rtsp",
+    "document": "rfc2326.txt",
+    "chunk_id": null,
+    "rfc_sha256": "1b72124761d99b8d4ed72fee82d4a3c4a7c153a368702b8221de02a42da93038",
+    "source_span": [
+      7,
+      13
+    ],
+    "evidence_span": [
+      7,
+      13
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "Network Working Group                                     H. Schulzrinne Request for Comments: 2326                                   Columbia U. Category: Standards Track                                         A. Rao                                                                 Netscape                                                              R. Lanphier                                                             RealNetworks                                                               April 1998 "
+  },
+  {
+    "sample_id": "B-rtsp-rfc2326.txt-43",
+    "队列": "B",
+    "protocol": "rtsp",
+    "document": "rfc2326.txt",
+    "chunk_id": null,
+    "rfc_sha256": "1b72124761d99b8d4ed72fee82d4a3c4a7c153a368702b8221de02a42da93038",
+    "source_span": [
+      43,
+      54
+    ],
+    "evidence_span": [
+      43,
+      54
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   * 1 Introduction .................................................  5         + 1.1 Purpose ...............................................  5         + 1.2 Requirements ..........................................  6         + 1.3 Terminology ...........................................  6         + 1.4 Protocol Properties ...................................  9         + 1.5 Extending RTSP ........................................ 11         + 1.6 Overall Operation ..................................... 11         + 1.7 RTSP States ........................................... 12         + 1.8 Relationship with Other Protocols ..................... 13    * 2 Notational Conventions ....................................... 14    * 3 Protocol Parameters .......................................... 14         + 3.1 RTSP Version .......................................... 14 "
+  },
+  {
+    "sample_id": "B-rtsp-rfc2326.txt-63",
+    "队列": "B",
+    "protocol": "rtsp",
+    "document": "rfc2326.txt",
+    "chunk_id": null,
+    "rfc_sha256": "1b72124761d99b8d4ed72fee82d4a3c4a7c153a368702b8221de02a42da93038",
+    "source_span": [
+      63,
+      110
+    ],
+    "evidence_span": [
+      63,
+      110
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "        + 3.2 RTSP URL .............................................. 14         + 3.3 Conference Identifiers ................................ 16         + 3.4 Session Identifiers ................................... 16         + 3.5 SMPTE Relative Timestamps ............................. 16         + 3.6 Normal Play Time ...................................... 17         + 3.7 Absolute Time ......................................... 18         + 3.8 Option Tags ........................................... 18              o 3.8.1 Registering New Option Tags with IANA .......... 18    * 4 RTSP Message ................................................. 19         + 4.1 Message Types ......................................... 19         + 4.2 Message Headers ....................................... 19         + 4.3 Message Body .......................................... 19         + 4.4 Message Length ........................................ 20    * 5 General Header Fields ........................................ 20    * 6 Request ...................................................... 20         + 6.1 Request Line .......................................... 21         + 6.2 Request Header Fie"
+  },
+  {
+    "sample_id": "B-rtsp-rfc2326.txt-119",
+    "队列": "B",
+    "protocol": "rtsp",
+    "document": "rfc2326.txt",
+    "chunk_id": null,
+    "rfc_sha256": "1b72124761d99b8d4ed72fee82d4a3c4a7c153a368702b8221de02a42da93038",
+    "source_span": [
+      119,
+      166
+    ],
+    "evidence_span": [
+      119,
+      166
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "             o 11.3.4 453 Not Enough Bandwidth ...................... 42              o 11.3.5 454 Session Not Found ......................... 42              o 11.3.6 455 Method Not Valid in This State ............ 42              o 11.3.7 456 Header Field Not Valid for Resource ....... 42              o 11.3.8 457 Invalid Range ............................. 43              o 11.3.9 458 Parameter Is Read-Only .................... 43              o 11.3.10 459 Aggregate Operation Not Allowed .......... 43              o 11.3.11 460 Only Aggregate Operation Allowed ......... 43              o 11.3.12 461 Unsupported Transport .................... 43              o 11.3.13 462 Destination Unreachable .................. 43              o 11.3.14 551 Option not supported ..................... 43    * 12 Header Field Definitions .................................... 44         + 12.1 Accept ............................................... 46         + 12.2 Accept-Encoding ...................................... 46         + 12.3 Accept-Language ...................................... 46         + 12.4 Allow ................................................ 46         + 12.5 Authorization ..."
+  },
+  {
+    "sample_id": "B-sip-rfc3261.txt-7",
+    "队列": "B",
+    "protocol": "sip",
+    "document": "rfc3261.txt",
+    "chunk_id": null,
+    "rfc_sha256": "d513777f77fea01a4de9c0a2d9d6713cb53b8231f1b7a2ab56705f8d51b066dc",
+    "source_span": [
+      7,
+      23
+    ],
+    "evidence_span": [
+      7,
+      23
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "Network Working Group                                       J. Rosenberg Request for Comments: 3261                                   dynamicsoft Obsoletes: 2543                                           H. Schulzrinne Category: Standards Track                                    Columbia U.                                                             G. Camarillo                                                                 Ericsson                                                              A. Johnston                                                                 WorldCom                                                              J. Peterson                                                                  Neustar                                                                R. Sparks                                                              dynamicsoft                                                               M. Handley                                                                     ICIR                                                              E. Schooler                                                                     AT&T                                 "
+  },
+  {
+    "sample_id": "B-sip-rfc3261.txt-65",
+    "队列": "B",
+    "protocol": "sip",
+    "document": "rfc3261.txt",
+    "chunk_id": null,
+    "rfc_sha256": "d513777f77fea01a4de9c0a2d9d6713cb53b8231f1b7a2ab56705f8d51b066dc",
+    "source_span": [
+      65,
+      110
+    ],
+    "evidence_span": [
+      65,
+      110
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   1          Introduction ........................................    8    2          Overview of SIP Functionality .......................    9    3          Terminology .........................................   10    4          Overview of Operation ...............................   10    5          Structure of the Protocol ...........................   18    6          Definitions .........................................   20    7          SIP Messages ........................................   26    7.1        Requests ............................................   27    7.2        Responses ...........................................   28    7.3        Header Fields .......................................   29    7.3.1      Header Field Format .................................   30    7.3.2      Header Field Classification .........................   32    7.3.3      Compact Form ........................................   32    7.4        Bodies ..............................................   33    7.4.1      Message Body Type ...................................   33    7.4.2      Message Body Length .................................   33    7.5        Framing SIP Messag"
+  },
+  {
+    "sample_id": "B-sip-rfc3261.txt-175",
+    "队列": "B",
+    "protocol": "sip",
+    "document": "rfc3261.txt",
+    "chunk_id": null,
+    "rfc_sha256": "d513777f77fea01a4de9c0a2d9d6713cb53b8231f1b7a2ab56705f8d51b066dc",
+    "source_span": [
+      175,
+      222
+    ],
+    "evidence_span": [
+      175,
+      222
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   13.3.1.3   The INVITE is Rejected ..............................   85    13.3.1.4   The INVITE is Accepted ..............................   85    14         Modifying an Existing Session .......................   86    14.1       UAC Behavior ........................................   86    14.2       UAS Behavior ........................................   88    15         Terminating a Session ...............................   89    15.1       Terminating a Session with a BYE Request ............   90    15.1.1     UAC Behavior ........................................   90    15.1.2     UAS Behavior ........................................   91    16         Proxy Behavior ......................................   91    16.1       Overview ............................................   91    16.2       Stateful Proxy ......................................   92    16.3       Request Validation ..................................   94    16.4       Route Information Preprocessing .....................   96    16.5       Determining Request Targets .........................   97    16.6       Request Forwarding ..................................   99    16.7       Response Processin"
+  },
+  {
+    "sample_id": "B-sip-rfc3261.txt-287",
+    "队列": "B",
+    "protocol": "sip",
+    "document": "rfc3261.txt",
+    "chunk_id": null,
+    "rfc_sha256": "d513777f77fea01a4de9c0a2d9d6713cb53b8231f1b7a2ab56705f8d51b066dc",
+    "source_span": [
+      287,
+      334
+    ],
+    "evidence_span": [
+      287,
+      334
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   20.35      Server ..............................................  177    20.36      Subject .............................................  177    20.37      Supported ...........................................  178    20.38      Timestamp ...........................................  178    20.39      To ..................................................  178    20.40      Unsupported .........................................  179    20.41      User-Agent ..........................................  179    20.42      Via .................................................  179    20.43      Warning .............................................  180    20.44      WWW-Authenticate ....................................  182    21         Response Codes ......................................  182    21.1       Provisional 1xx .....................................  182    21.1.1     100 Trying ..........................................  183    21.1.2     180 Ringing .........................................  183    21.1.3     181 Call Is Being Forwarded .........................  183    21.1.4     182 Queued ..........................................  183    21.1.5     183 Session Progre"
+  },
+  {
+    "sample_id": "B-smtp-rfc3207.txt-30",
+    "队列": "B",
+    "protocol": "smtp",
+    "document": "rfc3207.txt",
+    "chunk_id": null,
+    "rfc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+    "source_span": [
+      30,
+      35
+    ],
+    "evidence_span": [
+      30,
+      35
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   This document describes an extension to the SMTP (Simple Mail    Transfer Protocol) service that allows an SMTP server and client to    use TLS (Transport Layer Security) to provide private, authenticated    communication over the Internet.  This gives SMTP agents the ability    to protect some or all of their communications from eavesdroppers and    attackers. "
+  },
+  {
+    "sample_id": "B-smtp-rfc3207.txt-119",
+    "队列": "B",
+    "protocol": "smtp",
+    "document": "rfc3207.txt",
+    "chunk_id": null,
+    "rfc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+    "source_span": [
+      119,
+      127
+    ],
+    "evidence_span": [
+      119,
+      127
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   If the client receives the 454 response, the client must decide    whether or not to continue the SMTP session.  Such a decision is    based on local policy.  For instance, if TLS was being used for    client authentication, the client might try to continue the session,    in case the server allows it even with no authentication.  However,    if TLS was being negotiated for encryption, a client that gets a 454    response needs to decide whether to send the message anyway with no    TLS encryption, whether to wait and try again later, or whether to    give up and notify the sender of the error. "
+  },
+  {
+    "sample_id": "B-smtp-rfc3207.txt-129",
+    "队列": "B",
+    "protocol": "smtp",
+    "document": "rfc3207.txt",
+    "chunk_id": null,
+    "rfc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+    "source_span": [
+      129,
+      136
+    ],
+    "evidence_span": [
+      129,
+      136
+    ],
+    "★ 章节类型": "① 协议操作与行为规范",
+    "★ 证据文本": "   A publicly-referenced SMTP server MUST NOT require use of the    STARTTLS extension in order to deliver mail locally.  This rule    prevents the STARTTLS extension from damaging the interoperability of    the Internet's SMTP infrastructure.  A publicly-referenced SMTP    server is an SMTP server which runs on port 25 of an Internet host    listed in the MX record (or A record if an MX record is not present)    for the domain name on the right hand side of an Internet mail    address. "
+  }
+]
