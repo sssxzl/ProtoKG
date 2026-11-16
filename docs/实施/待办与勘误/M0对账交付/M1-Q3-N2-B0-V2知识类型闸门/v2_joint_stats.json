@@ -1,0 +1,50 @@
+{
+  "★ 联合A（V1 单独）": {
+    "pending": {
+      "无效": 61,
+      "有效": 12,
+      "合计": 73
+    },
+    "routed_to_LLM": {
+      "有效": 25,
+      "无效": 2,
+      "合计": 27
+    }
+  },
+  "★ 联合B（V2+V1）": {
+    "routed_to_structured": {
+      "无效": 56,
+      "有效": 5,
+      "合计": 61
+    },
+    "routed_to_LLM": {
+      "有效": 17,
+      "合计": 17
+    },
+    "pending": {
+      "无效": 7,
+      "有效": 15,
+      "合计": 22
+    }
+  },
+  "★ V2 route 分布": {
+    "descriptive_channel": 32,
+    "rule_channel": 22,
+    "structured_channel": 7,
+    "metadata_channel": 22,
+    "pending_review": 17
+  },
+  "★ V2 knowledge_kind 分布": {
+    "protocol_descriptive_semantics": 32,
+    "normative_rule_candidate": 22,
+    "protocol_registry_or_enumeration": 2,
+    "non_protocol_metadata": 22,
+    "mixed_or_uncertain": 17,
+    "protocol_syntax": 5
+  },
+  "★ V2 rule_eligibility 分布": {
+    "ineligible": 61,
+    "eligible": 22,
+    "uncertain": 17
+  }
+}
