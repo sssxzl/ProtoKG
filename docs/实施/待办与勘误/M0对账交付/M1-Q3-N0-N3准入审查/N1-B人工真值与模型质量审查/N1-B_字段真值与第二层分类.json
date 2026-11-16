@@ -1,0 +1,98 @@
+{
+  "★ 第一层 规范义务存在性": {
+    "valid_confirmed": 24,
+    "valid_rejection": 26
+  },
+  "★ 第二层 候选字段完整性": {
+    "① 原文存在规范义务，候选字段全部正确": 12,
+    "③ 原文存在规范义务，但候选部分字段错误": 3,
+    "② 原文存在规范义务，但候选缺少条件或主体等关键字段": 9,
+    "④ 原文并不支持候选所声称的规范义务": 26
+  },
+  "★ 逐字段归一化状态": {
+    "subject": {
+      "substantive_diff": 18,
+      "resolved": 29,
+      "expressional_diff_empty_vs_filled": 3
+    },
+    "action": {
+      "resolved": 42,
+      "substantive_diff": 6,
+      "expressional_diff_empty_vs_filled": 2
+    },
+    "object": {
+      "substantive_diff": 23,
+      "resolved": 25,
+      "expressional_diff_empty_vs_filled": 2
+    },
+    "strength": {
+      "resolved": 47,
+      "substantive_diff": 1,
+      "expressional_diff_empty_vs_filled": 2
+    },
+    "polarity": {
+      "resolved": 23,
+      "expressional_diff_empty_vs_filled": 27
+    },
+    "condition": {
+      "resolved": 36,
+      "substantive_diff": 10,
+      "expressional_diff_empty_vs_filled": 4
+    },
+    "exception": {
+      "resolved": 49,
+      "substantive_diff": 1
+    }
+  },
+  "★ 逐字段候选匹配（★ 仅 resolved 字段可判）": {
+    "subject": {
+      "match": 3,
+      "mismatch": 0,
+      "undetermined": 47,
+      "★ 匹配率": 1.0
+    },
+    "action": {
+      "match": 13,
+      "mismatch": 4,
+      "undetermined": 33,
+      "★ 匹配率": 0.7647
+    },
+    "object": {
+      "match": 0,
+      "mismatch": 0,
+      "undetermined": 50,
+      "★ 匹配率": "N/A"
+    },
+    "strength": {
+      "match": 20,
+      "mismatch": 0,
+      "undetermined": 30,
+      "★ 匹配率": 1.0
+    },
+    "polarity": {
+      "match": 20,
+      "mismatch": 1,
+      "undetermined": 29,
+      "★ 匹配率": 0.9524
+    },
+    "condition": {
+      "match": 0,
+      "mismatch": 0,
+      "undetermined": 50,
+      "★ 匹配率": "N/A"
+    },
+    "exception": {
+      "match": 0,
+      "mismatch": 0,
+      "undetermined": 50,
+      "★ 匹配率": "N/A"
+    }
+  },
+  "★ ★ 口径说明": [
+    "★ **valid_confirmed ≠ fully_supported**",
+    "★ 字段准确率**只对归一化后已 resolve 的字段**计算；★ 其余列为**字段级仲裁待办**",
+    "★ 「A 填 null / B 填值」判为 `expressional_diff_empty_vs_filled` ⇒ ★ 不算实质分歧",
+    "★ 极性：★ MUST + negative ≡ MUST NOT（★ 强度等价归一）",
+    "★ 强度：★ SHALL ≡ MUST、SHALL NOT ≡ MUST NOT（★ RFC 8174）、REQUIRED≡MUST、RECOMMENDED≡SHOULD"
+  ]
+}

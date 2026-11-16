@@ -1,0 +1,85 @@
+{
+  "★ 口径声明": {
+    "主口径": "★ 每个候选取**批次优先级最高**的一次**真实 API** L2 判定（★ 生产复判批次优先）",
+    "★ L1": "★ **N/A**（★ 历史批次记录只含 L2）⇒ ★ 不用估计值填补",
+    "★ 缓存": "★ l2_check 不使用缓存 ⇒ 每次判定均为真实请求",
+    "★ 不混批": "★ 跨批次判定不一致者**单列**，★ **不计入单批次指标**"
+  },
+  "★ 逐次判定记录数": 205,
+  "★ 涉及候选数": 75,
+  "★ 主口径 L2 分布": {
+    "pending": 39,
+    "rejected": 28,
+    "confirmed": 8
+  },
+  "★ ★ 跨批次不稳定候选": [
+    "rfc2326.txt@1309#3",
+    "rfc2326.txt@2030#2",
+    "rfc2326.txt@2747#3",
+    "rfc2326.txt@2747#4",
+    "rfc2326.txt@587#1",
+    "rfc3261.txt@1842#2",
+    "rfc3261.txt@12767#1",
+    "rfc3261.txt@10452#3",
+    "rfc3261.txt@10452#4",
+    "rfc3261.txt@8085#1",
+    "rfc5321.txt@5226#3",
+    "rfc5321.txt@5226#4",
+    "rfc2326.txt@2030#5",
+    "rfc2326.txt@2747#1",
+    "rfc2326.txt@2747#2",
+    "rfc2326.txt@3499#2",
+    "rfc3207.txt@1#0",
+    "rfc3207.txt@1#1",
+    "rfc3207.txt@1#2",
+    "rfc3207.txt@1#5",
+    "rfc3261.txt@10452#1",
+    "rfc3261.txt@12767#2",
+    "rfc3261.txt@12767#4",
+    "rfc3261.txt@12767#5",
+    "rfc3261.txt@3893#2",
+    "rfc3261.txt@3893#5",
+    "rfc3261.txt@5893#0",
+    "rfc3261.txt@5893#5",
+    "rfc3261.txt@8085#0",
+    "rfc5321.txt@5226#1",
+    "rfc2326.txt@587#3",
+    "rfc2326.txt@1309#2",
+    "rfc2326.txt@5115#1"
+  ],
+  "★ 不稳定候选数": 33,
+  "★ 批次": [
+    {
+      "batch": "N3-补齐复判",
+      "file": "guard\\_out\\n3\\n3_recall_records.jsonl"
+    },
+    {
+      "batch": "N2-稳定性扩展",
+      "file": "guard\\_out\\n2\\n2_records.jsonl"
+    },
+    {
+      "batch": "B5-P1-有效候选复判",
+      "file": "guard\\_out\\m1_q3\\p079\\p07_a5_p1_rows.jsonl"
+    },
+    {
+      "batch": "B5-P0-状态迁移复判",
+      "file": "guard\\_out\\m1_q3\\p079\\p07_a4_p0_rows.jsonl"
+    },
+    {
+      "batch": "P3-S-稳定性探针",
+      "file": "guard\\_out\\m1_q3\\p07b5\\p3s_records.jsonl"
+    },
+    {
+      "batch": "B4-成本试验",
+      "file": "guard\\_out\\m1_q3\\p07b\\b4_records.jsonl"
+    }
+  ],
+  "★ 冻结代码版本": "b4eeb49",
+  "★ Parser/Schema 版本": {
+    "parser_version": null,
+    "schema_version": null,
+    "verifier_version": null,
+    "★ l2_system_sha": "93dc344a5f3f8707",
+    "★ l2_user_template_sha": "ee9dd0c92ee51925"
+  }
+}

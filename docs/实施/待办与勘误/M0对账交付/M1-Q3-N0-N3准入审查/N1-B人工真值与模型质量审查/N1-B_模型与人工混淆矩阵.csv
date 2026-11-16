@@ -1,0 +1,17 @@
+★ 口径,★ 模型 L2 状态,★ 人工规范义务存在性,★ 样本数,★ 占比(分母=该口径总样本),★ 说明
+单批次口径（★ 跨批一致者）,pending,valid_confirmed,1,0.0556,★ 行=模型 L2，★ 列=人工规范真值（★ 第一层）
+单批次口径（★ 跨批一致者）,pending,valid_rejection,5,0.2778,★ 行=模型 L2，★ 列=人工规范真值（★ 第一层）
+单批次口径（★ 跨批一致者）,rejected,valid_confirmed,11,0.6111,★ 行=模型 L2，★ 列=人工规范真值（★ 第一层）
+单批次口径（★ 跨批一致者）,rejected,valid_rejection,1,0.0556,★ 行=模型 L2，★ 列=人工规范真值（★ 第一层）
+全量对照（★ 含跨批不一致与无状态）,confirmed,valid_confirmed,3,0.0938,★ 行=模型 L2，★ 列=人工规范真值（★ 第一层）
+全量对照（★ 含跨批不一致与无状态）,pending,valid_confirmed,7,0.2188,★ 行=模型 L2，★ 列=人工规范真值（★ 第一层）
+全量对照（★ 含跨批不一致与无状态）,pending,valid_rejection,8,0.25,★ 行=模型 L2，★ 列=人工规范真值（★ 第一层）
+全量对照（★ 含跨批不一致与无状态）,rejected,valid_confirmed,13,0.4062,★ 行=模型 L2，★ 列=人工规范真值（★ 第一层）
+全量对照（★ 含跨批不一致与无状态）,rejected,valid_rejection,1,0.0312,★ 行=模型 L2，★ 列=人工规范真值（★ 第一层）
+
+★ 指标,★ 分子,★ 分母,★ 值,★ CI95(Wilson),★ 定义
+confirmed precision,0,0,N/A,None,★ valid_confirmed / (模型 confirmed)；★ **分母=模型 confirmed 样本**
+错误确认（口径①义务不存在）,0,0,N/A,None,★ 人工判 valid_rejection 但模型 confirmed
+错误确认（口径②字段错误）,0,0,N/A,None,★ 人工判 valid_confirmed 但第二层为②/③
+错误拒收（rejected）,11,12,0.9167,"[0.6461, 0.9851]",★ 人工判 valid_confirmed 但模型 rejected；★ **pending 不计入**
+有效知识被 pending 隔离,1,6,0.1667,"[0.0301, 0.5635]",★ 人工判 valid_confirmed 但模型 pending；★ **pending ≠ 错误拒收**

@@ -1,0 +1,134 @@
+{
+  "★ 口径": {
+    "★ 单批次指标分母": "★ 仅「有模型状态 **且** 跨批次判定一致」的样本",
+    "★ 有模型状态": 32,
+    "★ 无模型状态（⇒ 相关指标 N/A）": 18,
+    "★ 跨批次不稳定（★ 单列）": 14,
+    "★ 计入单批次指标": 18
+  },
+  "★ 混淆矩阵（★ 单批次口径，★ 行=模型 L2，★ 列=人工规范真值）": {
+    "model=pending|truth=valid_confirmed": 1,
+    "model=pending|truth=valid_rejection": 5,
+    "model=rejected|truth=valid_confirmed": 11,
+    "model=rejected|truth=valid_rejection": 1
+  },
+  "★ 混淆矩阵（★ 全量对照，★ 含不稳定者）": {
+    "model=confirmed|truth=valid_confirmed": 3,
+    "model=pending|truth=valid_confirmed": 7,
+    "model=pending|truth=valid_rejection": 8,
+    "model=rejected|truth=valid_confirmed": 13,
+    "model=rejected|truth=valid_rejection": 1
+  },
+  "★ 1 confirmed precision": {
+    "★ 定义": "★ valid_confirmed / (模型 confirmed)，★ **分母 = 模型 confirmed 样本**",
+    "k": 0,
+    "n": 0,
+    "rate": "N/A",
+    "★ CI95(Wilson)": null,
+    "★ 错误确认（★ 口径①：规范义务不存在）": {
+      "k": 0,
+      "n": 0,
+      "rate": "N/A",
+      "★ CI95(Wilson)": null
+    },
+    "★ 错误确认（★ 口径②：义务存在但关键字段缺失/错误）": {
+      "k": 0,
+      "n": 0,
+      "rate": "N/A",
+      "★ CI95(Wilson)": null
+    },
+    "★ 错误确认样本": []
+  },
+  "★ 2 rejected 统计（★ 与 pending 分开）": {
+    "★ 定义": "★ 模型 rejected 中，★ 人工判为 valid_confirmed ⇒ ★ **错误拒收（疑似误拒）**",
+    "k": 11,
+    "n": 12,
+    "rate": 0.9167,
+    "★ CI95(Wilson)": [
+      0.6461,
+      0.9851
+    ],
+    "★ 错误拒收样本": [
+      {
+        "sample_id": "rfc1534.txt@1#3",
+        "分组": "R",
+        "第二层": "② 原文存在规范义务，但候选缺少条件或主体等关键字段"
+      },
+      {
+        "sample_id": "rfc1534.txt@1#4",
+        "分组": "R",
+        "第二层": "② 原文存在规范义务，但候选缺少条件或主体等关键字段"
+      },
+      {
+        "sample_id": "rfc2326.txt@2747#5",
+        "分组": "K",
+        "第二层": "② 原文存在规范义务，但候选缺少条件或主体等关键字段"
+      },
+      {
+        "sample_id": "rfc2326.txt@587#2",
+        "分组": "K",
+        "第二层": "① 原文存在规范义务，候选字段全部正确"
+      },
+      {
+        "sample_id": "rfc2326.txt@587#4",
+        "分组": "R",
+        "第二层": "② 原文存在规范义务，但候选缺少条件或主体等关键字段"
+      },
+      {
+        "sample_id": "rfc2937.txt@1#3",
+        "分组": "K",
+        "第二层": "① 原文存在规范义务，候选字段全部正确"
+      },
+      {
+        "sample_id": "rfc3004.txt@1#3",
+        "分组": "K",
+        "第二层": "② 原文存在规范义务，但候选缺少条件或主体等关键字段"
+      },
+      {
+        "sample_id": "rfc3261.txt@3893#3",
+        "分组": "R",
+        "第二层": "① 原文存在规范义务，候选字段全部正确"
+      },
+      {
+        "sample_id": "rfc3261.txt@5893#1",
+        "分组": "K",
+        "第二层": "① 原文存在规范义务，候选字段全部正确"
+      },
+      {
+        "sample_id": "rfc3261.txt@8085#2",
+        "分组": "K",
+        "第二层": "① 原文存在规范义务，候选字段全部正确"
+      },
+      {
+        "sample_id": "rfc5321.txt@5226#2",
+        "分组": "R",
+        "第二层": "① 原文存在规范义务，候选字段全部正确"
+      }
+    ],
+    "★ ★ 注意": "★ rejected 的其余部分**不是**错误（★ 人工也判不成立）"
+  },
+  "★ 3 pending 统计（★ ★ pending 不是自动意义上的错误拒收）": {
+    "★ 定义": "★ 模型 pending 中，★ 人工判为 valid_confirmed ⇒ ★ **有效知识被隔离**",
+    "k": 1,
+    "n": 6,
+    "rate": 0.1667,
+    "★ CI95(Wilson)": [
+      0.0301,
+      0.5635
+    ],
+    "★ 被隔离的有效知识样本": [
+      {
+        "sample_id": "rfc3261.txt@5893#4",
+        "分组": "R",
+        "第二层": "② 原文存在规范义务，但候选缺少条件或主体等关键字段"
+      }
+    ],
+    "★ 被正确保留 pending 的样本数": 5,
+    "★ ★ 说明": "★ pending 把 26 条人工判不成立的候选**留待复核**（★ 非错误）"
+  },
+  "★ 4 稳定性与人工真值交叉": {
+    "★ 不稳定候选中人工判 valid_confirmed 的数量": 11,
+    "★ 不稳定候选中人工判 valid_rejection 的数量": 3,
+    "★ ★ 含义": "★ 跨批次不稳定 ⇒ ★ **即使人工判成立，★ 单次 confirmed 也不足以作为发布依据**"
+  }
+}

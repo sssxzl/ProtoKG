@@ -1,0 +1,157 @@
+{
+  "★ 输入清单与哈希": [
+    {
+      "file": "N1_盲审标注表_A.csv",
+      "★ 状态": "已归档",
+      "sha256": "c71a93f48c7fd09204b1849f89304684663ebb3f5c5877907661a9b6b4782db2",
+      "★ 检测编码": "gb18030",
+      "★ BOM": false,
+      "★ CRLF 行数": 51,
+      "★ LF 总数": 51,
+      "★ 字节数": 77600,
+      "★ 归档副本 sha256": "c71a93f48c7fd09204b1849f89304684663ebb3f5c5877907661a9b6b4782db2",
+      "★ 归档与原件一致": true
+    },
+    {
+      "file": "N1_盲审标注表_B.csv",
+      "★ 状态": "已归档",
+      "sha256": "90e06f68bcbdb50a6a2bfe9da2e0966e3d0b2c3bd3ca72d2b2865b673d4b9305",
+      "★ 检测编码": "gb18030",
+      "★ BOM": false,
+      "★ CRLF 行数": 51,
+      "★ LF 总数": 51,
+      "★ 字节数": 82021,
+      "★ 归档副本 sha256": "90e06f68bcbdb50a6a2bfe9da2e0966e3d0b2c3bd3ca72d2b2865b673d4b9305",
+      "★ 归档与原件一致": true
+    },
+    {
+      "file": "N1_仲裁表.csv",
+      "★ 状态": "已归档",
+      "sha256": "45fbc4b5c7d5b6df753242a9190a83e3efe58fb714ccd7c6cc54d0c3382fe74e",
+      "★ 检测编码": "gb18030",
+      "★ BOM": false,
+      "★ CRLF 行数": 51,
+      "★ LF 总数": 51,
+      "★ 字节数": 8483,
+      "★ 归档副本 sha256": "45fbc4b5c7d5b6df753242a9190a83e3efe58fb714ccd7c6cc54d0c3382fe74e",
+      "★ 归档与原件一致": true
+    },
+    {
+      "file": "N1_审核说明.md",
+      "★ 状态": "已归档",
+      "sha256": "38180743b12eeada9d339f6e13c5cb56f57149cecd16d7b896a334065cd58538",
+      "★ 检测编码": "utf-8",
+      "★ BOM": false,
+      "★ CRLF 行数": 0,
+      "★ LF 总数": 90,
+      "★ 字节数": 5179,
+      "★ 归档副本 sha256": "38180743b12eeada9d339f6e13c5cb56f57149cecd16d7b896a334065cd58538",
+      "★ 归档与原件一致": true
+    },
+    {
+      "file": "n1_汇总脚本.py",
+      "★ 状态": "已归档",
+      "sha256": "0cc22b4b7edc9c4eae250e75376ab2bd16fa5e3865873721eea14ae787a0aa37",
+      "★ 检测编码": "utf-8",
+      "★ BOM": false,
+      "★ CRLF 行数": 311,
+      "★ LF 总数": 311,
+      "★ 字节数": 14451,
+      "★ 归档副本 sha256": "0cc22b4b7edc9c4eae250e75376ab2bd16fa5e3865873721eea14ae787a0aa37",
+      "★ 归档与原件一致": true
+    },
+    {
+      "file": "N1_风险台账_未纳入本次审核.csv",
+      "★ 状态": "已归档",
+      "sha256": "8347df06a5b09421dcda9f98d64a4023d84f9f3de78f3f5d58af903bfdc92cf3",
+      "★ 检测编码": "utf-8",
+      "★ BOM": false,
+      "★ CRLF 行数": 107,
+      "★ LF 总数": 107,
+      "★ 字节数": 21926,
+      "★ 归档副本 sha256": "8347df06a5b09421dcda9f98d64a4023d84f9f3de78f3f5d58af903bfdc92cf3",
+      "★ 归档与原件一致": true
+    }
+  ],
+  "★ 编码统一验证": [
+    {
+      "file": "N1_盲审标注表_A.csv",
+      "★ 原编码": "gb18030",
+      "★ 新编码": "utf-8 (LF, 无 BOM)",
+      "★ 行数": 50,
+      "★ 列数": 39,
+      "★ sample_id 集合一致": true,
+      "★ 字段值差异数": 0,
+      "★ 差异明细": [],
+      "★ 中文字符数 原/新": "3683/3683",
+      "★ 特殊字符数 原/新": "256/256",
+      "★ 转换无失真": true
+    },
+    {
+      "file": "N1_盲审标注表_B.csv",
+      "★ 原编码": "gb18030",
+      "★ 新编码": "utf-8 (LF, 无 BOM)",
+      "★ 行数": 50,
+      "★ 列数": 39,
+      "★ sample_id 集合一致": true,
+      "★ 字段值差异数": 0,
+      "★ 差异明细": [],
+      "★ 中文字符数 原/新": "3691/3691",
+      "★ 特殊字符数 原/新": "91/91",
+      "★ 转换无失真": true
+    },
+    {
+      "file": "N1_仲裁表.csv",
+      "★ 原编码": "gb18030",
+      "★ 新编码": "utf-8 (LF, 无 BOM)",
+      "★ 行数": 50,
+      "★ 列数": 8,
+      "★ sample_id 集合一致": true,
+      "★ 字段值差异数": 0,
+      "★ 差异明细": [],
+      "★ 中文字符数 原/新": "1392/1392",
+      "★ 特殊字符数 原/新": "57/57",
+      "★ 转换无失真": true
+    }
+  ],
+  "★ 编码转换对统计的影响": {
+    "N1_盲审标注表_A.csv": {
+      "原文件统计": {
+        "valid_confirmed": 23,
+        "es:supported": 7,
+        "es:partially_supported": 16,
+        "valid_rejection": 27,
+        "es:contradicted": 27
+      },
+      "工作副本统计": {
+        "valid_confirmed": 23,
+        "es:supported": 7,
+        "es:partially_supported": 16,
+        "valid_rejection": 27,
+        "es:contradicted": 27
+      },
+      "★ 完全一致": true
+    },
+    "N1_盲审标注表_B.csv": {
+      "原文件统计": {
+        "valid_confirmed": 24,
+        "es:partially_supported": 19,
+        "es:supported": 5,
+        "valid_rejection": 26,
+        "es:contradicted": 25,
+        "es:evidence_insufficient": 1
+      },
+      "工作副本统计": {
+        "valid_confirmed": 24,
+        "es:partially_supported": 19,
+        "es:supported": 5,
+        "valid_rejection": 26,
+        "es:contradicted": 25,
+        "es:evidence_insufficient": 1
+      },
+      "★ 完全一致": true
+    }
+  },
+  "★ 归档目录": "docs\\实施\\待办与勘误\\M0对账交付\\M1-Q3-N0-N3准入审查\\N1-B人工真值与模型质量审查\\archive_original",
+  "★ 工作副本目录": "docs\\实施\\待办与勘误\\M0对账交付\\M1-Q3-N0-N3准入审查\\N1-B人工真值与模型质量审查\\work_utf8"
+}

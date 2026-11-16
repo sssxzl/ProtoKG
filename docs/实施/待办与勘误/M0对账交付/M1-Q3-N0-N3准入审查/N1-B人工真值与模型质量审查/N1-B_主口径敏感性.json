@@ -1,0 +1,337 @@
+{
+  "★ 三口径对比": {
+    "A 主口径（优先级最高批次）": {
+      "★ 分母(confirmed)": 3,
+      "★ confirmed 正确": 3,
+      "★ confirmed precision": 1.0,
+      "★ 分母(rejected)": 14,
+      "★ 错误拒收": 13,
+      "★ 错误拒收率": 0.9286
+    },
+    "B 任一批次出现 confirmed": {
+      "★ 分母(confirmed)": 6,
+      "★ confirmed 正确": 6,
+      "★ confirmed precision": 1.0,
+      "★ 分母(rejected)": 12,
+      "★ 错误拒收": 11,
+      "★ 错误拒收率": 0.9167
+    },
+    "C 仅全部批次一致者可用": {
+      "★ 分母(confirmed)": 1,
+      "★ confirmed 正确": 1,
+      "★ confirmed precision": 1.0,
+      "★ 分母(rejected)": 2,
+      "★ 错误拒收": 2,
+      "★ 错误拒收率": 1.0
+    }
+  },
+  "★ 逐批次口径": {
+    "B4-成本试验": {
+      "★ 样本数": 2,
+      "★ L2 分布": {
+        "pending": 1,
+        "rejected": 1
+      },
+      "★ confirmed precision": "N/A",
+      "★ 错误拒收率": 1.0
+    },
+    "B5-P0-状态迁移复判": {
+      "★ 样本数": 9,
+      "★ L2 分布": {
+        "pending": 6,
+        "confirmed": 2,
+        "rejected": 1
+      },
+      "★ confirmed precision": 1.0,
+      "★ 错误拒收率": 0.0
+    },
+    "B5-P1-有效候选复判": {
+      "★ 样本数": 10,
+      "★ L2 分布": {
+        "pending": 6,
+        "confirmed": 2,
+        "rejected": 2
+      },
+      "★ confirmed precision": 1.0,
+      "★ 错误拒收率": 1.0
+    },
+    "N2-稳定性扩展": {
+      "★ 样本数": 12,
+      "★ L2 分布": {
+        "pending": 7,
+        "confirmed": 2,
+        "rejected": 3
+      },
+      "★ confirmed precision": 1.0,
+      "★ 错误拒收率": 1.0
+    },
+    "N3-补齐复判": {
+      "★ 样本数": 1,
+      "★ L2 分布": {
+        "pending": 1
+      },
+      "★ confirmed precision": "N/A",
+      "★ 错误拒收率": "N/A"
+    },
+    "P3-S-稳定性探针": {
+      "★ 样本数": 1,
+      "★ L2 分布": {
+        "pending": 1
+      },
+      "★ confirmed precision": "N/A",
+      "★ 错误拒收率": "N/A"
+    }
+  },
+  "★ 出现过 confirmed 的候选": [
+    {
+      "sample_id": "rfc2326.txt@2030#5",
+      "分组": "K",
+      "★ 人工规范真值": "valid_confirmed",
+      "★ 口径A 主口径": "pending",
+      "★ 口径B 任一批次confirmed": "confirmed",
+      "★ 口径C 全部批次一致": "★ 跨批不一致",
+      "★ 全部批次判定": [
+        {
+          "batch": "N2-稳定性扩展",
+          "L2": "pending",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "N2-稳定性扩展",
+          "L2": "pending",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "B5-P0-状态迁移复判",
+          "L2": "confirmed",
+          "det": false,
+          "side": "old"
+        },
+        {
+          "batch": "B5-P0-状态迁移复判",
+          "L2": "pending",
+          "det": false,
+          "side": "new"
+        }
+      ],
+      "★ 真实API判定集合": [
+        "confirmed",
+        "pending"
+      ],
+      "★ 跨批不一致": true,
+      "★ 出现过 confirmed": true
+    },
+    {
+      "sample_id": "rfc2326.txt@2747#1",
+      "分组": "K",
+      "★ 人工规范真值": "valid_confirmed",
+      "★ 口径A 主口径": "confirmed",
+      "★ 口径B 任一批次confirmed": "confirmed",
+      "★ 口径C 全部批次一致": "★ 跨批不一致",
+      "★ 全部批次判定": [
+        {
+          "batch": "N2-稳定性扩展",
+          "L2": "confirmed",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "N2-稳定性扩展",
+          "L2": "pending",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "B5-P0-状态迁移复判",
+          "L2": "rejected",
+          "det": true,
+          "side": "old"
+        },
+        {
+          "batch": "B5-P0-状态迁移复判",
+          "L2": "confirmed",
+          "det": false,
+          "side": "new"
+        }
+      ],
+      "★ 真实API判定集合": [
+        "confirmed",
+        "pending"
+      ],
+      "★ 跨批不一致": true,
+      "★ 出现过 confirmed": true
+    },
+    {
+      "sample_id": "rfc2326.txt@2747#2",
+      "分组": "K",
+      "★ 人工规范真值": "valid_confirmed",
+      "★ 口径A 主口径": "rejected",
+      "★ 口径B 任一批次confirmed": "confirmed",
+      "★ 口径C 全部批次一致": "★ 跨批不一致",
+      "★ 全部批次判定": [
+        {
+          "batch": "N2-稳定性扩展",
+          "L2": "rejected",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "N2-稳定性扩展",
+          "L2": "confirmed",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "B5-P0-状态迁移复判",
+          "L2": "rejected",
+          "det": true,
+          "side": "old"
+        },
+        {
+          "batch": "B5-P0-状态迁移复判",
+          "L2": "pending",
+          "det": false,
+          "side": "new"
+        }
+      ],
+      "★ 真实API判定集合": [
+        "confirmed",
+        "pending",
+        "rejected"
+      ],
+      "★ 跨批不一致": true,
+      "★ 出现过 confirmed": true
+    },
+    {
+      "sample_id": "rfc3261.txt@10452#1",
+      "分组": "R",
+      "★ 人工规范真值": "valid_confirmed",
+      "★ 口径A 主口径": "confirmed",
+      "★ 口径B 任一批次confirmed": "confirmed",
+      "★ 口径C 全部批次一致": "confirmed",
+      "★ 全部批次判定": [
+        {
+          "batch": "B5-P1-有效候选复判",
+          "L2": "rejected",
+          "det": true,
+          "side": "old"
+        },
+        {
+          "batch": "B5-P1-有效候选复判",
+          "L2": "confirmed",
+          "det": false,
+          "side": "new"
+        }
+      ],
+      "★ 真实API判定集合": [
+        "confirmed"
+      ],
+      "★ 跨批不一致": false,
+      "★ 出现过 confirmed": true
+    },
+    {
+      "sample_id": "rfc3261.txt@8085#1",
+      "分组": "K",
+      "★ 人工规范真值": "valid_confirmed",
+      "★ 口径A 主口径": "rejected",
+      "★ 口径B 任一批次confirmed": "confirmed",
+      "★ 口径C 全部批次一致": "★ 跨批不一致",
+      "★ 全部批次判定": [
+        {
+          "batch": "N2-稳定性扩展",
+          "L2": "rejected",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "N2-稳定性扩展",
+          "L2": "confirmed",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "B5-P1-有效候选复判",
+          "L2": "rejected",
+          "det": true,
+          "side": "old"
+        },
+        {
+          "batch": "P3-S-稳定性探针",
+          "L2": "pending",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "P3-S-稳定性探针",
+          "L2": "pending",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "B4-成本试验",
+          "L2": "rejected",
+          "det": true,
+          "side": "old"
+        },
+        {
+          "batch": "B4-成本试验",
+          "L2": "rejected",
+          "det": false,
+          "side": "new"
+        }
+      ],
+      "★ 真实API判定集合": [
+        "confirmed",
+        "pending",
+        "rejected"
+      ],
+      "★ 跨批不一致": true,
+      "★ 出现过 confirmed": true
+    },
+    {
+      "sample_id": "rfc5321.txt@5226#3",
+      "分组": "K",
+      "★ 人工规范真值": "valid_confirmed",
+      "★ 口径A 主口径": "confirmed",
+      "★ 口径B 任一批次confirmed": "confirmed",
+      "★ 口径C 全部批次一致": "★ 跨批不一致",
+      "★ 全部批次判定": [
+        {
+          "batch": "N2-稳定性扩展",
+          "L2": "confirmed",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "N2-稳定性扩展",
+          "L2": "pending",
+          "det": false,
+          "side": "new"
+        },
+        {
+          "batch": "B5-P1-有效候选复判",
+          "L2": "rejected",
+          "det": true,
+          "side": "old"
+        },
+        {
+          "batch": "B5-P1-有效候选复判",
+          "L2": "confirmed",
+          "det": false,
+          "side": "new"
+        }
+      ],
+      "★ 真实API判定集合": [
+        "confirmed",
+        "pending"
+      ],
+      "★ 跨批不一致": true,
+      "★ 出现过 confirmed": true
+    }
+  ],
+  "★ 跨批不一致候选数": 9,
+  "★ 跨批不一致且人工判成立": 6,
+  "★ ★ 结论": "★ 主口径选择会显著影响结论 ⇒ ★ **必须同时报告多口径**，★ 不得只报单一口径"
+}
