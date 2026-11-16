@@ -1,0 +1,64 @@
+{
+  "★ unexpectedly_lost 复核": {
+    "★ 统计单位": "★ **字段级流转记录**（★ 1 条 = 1 个 candidate_id × 1 个字段）",
+    "★ 记录数": 97,
+    "★ 唯一 candidate_id": 23,
+    "★ 唯一 (candidate_id, field)": 97,
+    "★ 每候选丢失字段数分布": {
+      "1": 9,
+      "5": 3,
+      "6": 4,
+      "7": 7
+    },
+    "★ 按字段": {
+      "cross_ref_status": 23,
+      "action": 14,
+      "object": 14,
+      "strength": 14,
+      "polarity": 14,
+      "constraint": 1,
+      "normative_subject": 10,
+      "condition": 7
+    },
+    "★ 按知识类型": {
+      "prose_semantics": 30,
+      "prose_constraint": 67
+    },
+    "★ 按文档（前 10）": {
+      "file:rfc4776.txt#@371": 11,
+      "file:rfc8910.txt#@137": 7,
+      "file:rfc4833.txt#@220": 7,
+      "file:rfc4833.txt#@318": 7,
+      "file:rfc3925.txt#@345": 7,
+      "file:rfc3925.txt#@346": 7,
+      "file:rfc9928.txt#@204": 7,
+      "file:rfc3203.txt#@218": 7,
+      "file:rfc8910.txt#@138": 6,
+      "file:rfc3925.txt#@216": 6
+    },
+    "★ 其中 LLM 层确实非空（★ 真丢失）": 97,
+    "★ 其中 LLM 层为空却判 lost（★ 口径错）": 0,
+    "★ ★ 结论": "★ **97 是【字段级记录数】，★ 不是「97 条有效知识丢失」**；★ ★ 实际涉及 **23 个候选**；★ ★ 且其中 **97 条**才是【LLM 已产出却未保留】的【真丢失】"
+  },
+  "★ canonical 保全率 0 复核": {
+    "★ 现象": "★ ④ 映射阶段保全率 全为 0",
+    "★ ★ 根因": "★ **核验脚本从未提供 canonical 视图**（★ `canonical_view` 恒为 None）★ ⇒ **0 是【未测量】，★ 不是【测得为零】**",
+    "★ 有 canonical 承载路径的字段": [
+      "constraint",
+      "entity",
+      "evidence_span",
+      "meaning"
+    ],
+    "★ 无直接槽位的字段（★ 按映射表）": [
+      "action",
+      "condition",
+      "cross_ref_status",
+      "exception",
+      "normative_subject",
+      "object",
+      "polarity",
+      "strength"
+    ],
+    "★ ★ 结论": "★ ★ **不得把所有非同名字段统计为丢失**；★ 需沿 canonical 实际承载路径★ （规范文本 / qualifiers / Assertion / provenance / 关联 Fact）逐条核对"
+  }
+}
