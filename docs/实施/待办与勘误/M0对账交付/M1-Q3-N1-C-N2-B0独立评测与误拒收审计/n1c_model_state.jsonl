@@ -1,0 +1,50 @@
+{"sample_id": "rfc1534.txt@1#1", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc1534.txt@1#2", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc1542.txt@1#1", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc1542.txt@1#2", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc1542.txt@1#3", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc2131.txt@1#4", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc2132.txt@1#2", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc2326.txt@1#2", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "old", "★ prompt_hash": "555d9d2e6fd32903", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@1309#0", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "old", "★ prompt_hash": "00fb8c6208683683", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@1309#1", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "old", "★ prompt_hash": "592c7e24cf5adaf2", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@1309#3", "★ 模型状态（★ 盲审阶段不可见）": "rejected", "★ 批次": "n3_recall_records", "★ side": "old", "★ prompt_hash": "97251126d1cc61f5", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@1309#5", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "old", "★ prompt_hash": "63e38ea410ddbd21", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@2030#0", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "old", "★ prompt_hash": "a2aaf9e7a7fd06a0", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@2030#3", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "old", "★ prompt_hash": "95ab39862af9c9ed", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@2030#4", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "old", "★ prompt_hash": "1ccbc93ed4a5103b", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@2747#3", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "new", "★ prompt_hash": "1c5b7b81cc8a5e3c", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@2747#4", "★ 模型状态（★ 盲审阶段不可见）": "confirmed", "★ 批次": "n3_recall_records", "★ side": "new", "★ prompt_hash": "ff93b7987066f2f2", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@3499#0", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "old", "★ prompt_hash": "23c8873d7aa20e95", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@5115#0", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc2326.txt@5115#1", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "p3s_records", "★ side": null, "★ prompt_hash": "0d434aa91139138b", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@587#1", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "new", "★ prompt_hash": "0e26f2b921b6c7a6", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2326.txt@587#3", "★ 模型状态（★ 盲审阶段不可见）": "confirmed", "★ 批次": "p07_a4_p0_rows", "★ side": "new", "★ prompt_hash": "8367b90e739db5c3", "★ model": null}
+{"sample_id": "rfc2326.txt@587#5", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "n3_recall_records", "★ side": "old", "★ prompt_hash": "1431353a6db1794f", "★ model": "deepseek-flash"}
+{"sample_id": "rfc2563.txt@1#0", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc2563.txt@1#1", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc2563.txt@1#2", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc2939.txt@1#1", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc2939.txt@1#2", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc2939.txt@1#3", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc2939.txt@1#4", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc3004.txt@1#5", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc3261.txt@1#4", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc3261.txt@10452#0", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc3261.txt@10452#5", "★ 模型状态（★ 盲审阶段不可见）": "rejected", "★ 批次": "p07_a5_p1_rows", "★ side": "new", "★ prompt_hash": "35cd200e9730a2b0", "★ model": null}
+{"sample_id": "rfc3261.txt@12767#0", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "p07_a5_p1_rows", "★ side": "old", "★ prompt_hash": "ddd723e546e6a4fb", "★ model": null}
+{"sample_id": "rfc3261.txt@12767#2", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "p07_a5_p1_rows", "★ side": "old", "★ prompt_hash": "b9f9a1c1da414fc8", "★ model": null}
+{"sample_id": "rfc3261.txt@12767#3", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "p07_a5_p1_rows", "★ side": "old", "★ prompt_hash": "dce02fc5cfcb391c", "★ model": null}
+{"sample_id": "rfc3261.txt@12767#4", "★ 模型状态（★ 盲审阶段不可见）": "rejected", "★ 批次": "p07_a5_p1_rows", "★ side": "old", "★ prompt_hash": "840d340b642a652d", "★ model": null}
+{"sample_id": "rfc3261.txt@12767#5", "★ 模型状态（★ 盲审阶段不可见）": "rejected", "★ 批次": "p07_a5_p1_rows", "★ side": "old", "★ prompt_hash": "dbef103f1a7e0404", "★ model": null}
+{"sample_id": "rfc3261.txt@3893#2", "★ 模型状态（★ 盲审阶段不可见）": "confirmed", "★ 批次": "p07_a5_p1_rows", "★ side": "old", "★ prompt_hash": "863785d28a1a24d3", "★ model": null}
+{"sample_id": "rfc3261.txt@3893#4", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc3261.txt@3893#5", "★ 模型状态（★ 盲审阶段不可见）": "confirmed", "★ 批次": "p07_a5_p1_rows", "★ side": "new", "★ prompt_hash": "e4931fdcd03e3654", "★ model": null}
+{"sample_id": "rfc3261.txt@5893#0", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "p07_a5_p1_rows", "★ side": "new", "★ prompt_hash": "3196442e3b7fbe59", "★ model": null}
+{"sample_id": "rfc3261.txt@5893#2", "★ 模型状态（★ 盲审阶段不可见）": "rejected", "★ 批次": "p07_a5_p1_rows", "★ side": "new", "★ prompt_hash": "d7013f3184e5ec50", "★ model": null}
+{"sample_id": "rfc3261.txt@5893#3", "★ 模型状态（★ 盲审阶段不可见）": "pending", "★ 批次": "p07_a5_p1_rows", "★ side": "old", "★ prompt_hash": "a0a81a63ec10c5f3", "★ model": null}
+{"sample_id": "rfc3261.txt@5893#5", "★ 模型状态（★ 盲审阶段不可见）": "confirmed", "★ 批次": "p07_a5_p1_rows", "★ side": "new", "★ prompt_hash": "b8486ccb300c03ca", "★ model": null}
+{"sample_id": "rfc3261.txt@8085#3", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc4954.txt@1091#1", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc4954.txt@1091#2", "★ 模型状态（★ 盲审阶段不可见）": null}
+{"sample_id": "rfc4954.txt@1091#3", "★ 模型状态（★ 盲审阶段不可见）": null}
