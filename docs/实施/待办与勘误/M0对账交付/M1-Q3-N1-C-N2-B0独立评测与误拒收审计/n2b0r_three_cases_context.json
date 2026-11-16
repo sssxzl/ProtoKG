@@ -1,0 +1,456 @@
+{
+  "rfc2326.txt@2030#5": {
+    "★ 协议/文档": "rtsp/rfc2326.txt",
+    "★ chunk": "rfc2326.txt@2030",
+    "★ raw_span / resolved_span / span_mode": "2097 / 2097 / absolute",
+    "★ 锚点行原文": "     A request SHOULD only contain a single parameter to allow the client",
+    "★ 原始候选字段": {
+      "entity": "request",
+      "normative_subject": "",
+      "action": "contain",
+      "object": "a single parameter",
+      "strength": "SHOULD",
+      "meaning": "SET_PARAMETER 请求应只包含单个参数，以便客户端判断某个请求失败的原因。",
+      "constraint": "请求应只包含单个参数"
+    },
+    "★ 原始 meaning（生成文本）": "SET_PARAMETER 请求应只包含单个参数，以便客户端判断某个请求失败的原因。",
+    "★ 原始 constraint（生成文本）": "请求应只包含单个参数",
+    "★ 上下文（锚点 ±12 行）": [
+      {
+        "line": 2085,
+        "text": "           jitter: 0.3838"
+      },
+      {
+        "line": 2086,
+        "text": ""
+      },
+      {
+        "line": 2087,
+        "text": "     The \"text/parameters\" section is only an example type for"
+      },
+      {
+        "line": 2088,
+        "text": "     parameter. This method is intentionally loosely defined with the"
+      },
+      {
+        "line": 2089,
+        "text": "     intention that the reply content and response content will be"
+      },
+      {
+        "line": 2090,
+        "text": "     defined after further experimentation."
+      },
+      {
+        "line": 2091,
+        "text": ""
+      },
+      {
+        "line": 2092,
+        "text": "10.9 SET_PARAMETER"
+      },
+      {
+        "line": 2093,
+        "text": ""
+      },
+      {
+        "line": 2094,
+        "text": "     This method requests to set the value of a parameter for a"
+      },
+      {
+        "line": 2095,
+        "text": "     presentation or stream specified by the URI."
+      },
+      {
+        "line": 2096,
+        "text": ""
+      },
+      {
+        "line": 2097,
+        "text": "     A request SHOULD only contain a single parameter to allow the client"
+      },
+      {
+        "line": 2098,
+        "text": "     to determine why a particular request failed. If the request contains"
+      },
+      {
+        "line": 2099,
+        "text": "     several parameters, the server MUST only act on the request if all of"
+      },
+      {
+        "line": 2100,
+        "text": "     the parameters can be set successfully. A server MUST allow a"
+      },
+      {
+        "line": 2101,
+        "text": "     parameter to be set repeatedly to the same value, but it MAY disallow"
+      },
+      {
+        "line": 2102,
+        "text": "     changing parameter values."
+      },
+      {
+        "line": 2103,
+        "text": ""
+      },
+      {
+        "line": 2104,
+        "text": "     Note: transport parameters for the media stream MUST only be set with"
+      },
+      {
+        "line": 2105,
+        "text": "     the SETUP command."
+      },
+      {
+        "line": 2106,
+        "text": ""
+      },
+      {
+        "line": 2107,
+        "text": "     Restricting setting transport parameters to SETUP is for the"
+      },
+      {
+        "line": 2108,
+        "text": "     benefit of firewalls."
+      },
+      {
+        "line": 2109,
+        "text": ""
+      }
+    ],
+    "★ 窗口内含 BCP14 词的行": [
+      {
+        "line": 2097,
+        "text": "A request SHOULD only contain a single parameter to allow the client",
+        "★ BCP14 词": [
+          "SHOULD"
+        ]
+      },
+      {
+        "line": 2099,
+        "text": "several parameters, the server MUST only act on the request if all of",
+        "★ BCP14 词": [
+          "MUST"
+        ]
+      },
+      {
+        "line": 2100,
+        "text": "the parameters can be set successfully. A server MUST allow a",
+        "★ BCP14 词": [
+          "MUST"
+        ]
+      },
+      {
+        "line": 2101,
+        "text": "parameter to be set repeatedly to the same value, but it MAY disallow",
+        "★ BCP14 词": [
+          "MAY"
+        ]
+      },
+      {
+        "line": 2104,
+        "text": "Note: transport parameters for the media stream MUST only be set with",
+        "★ BCP14 词": [
+          "MUST"
+        ]
+      }
+    ]
+  },
+  "rfc5321.txt@5226#1": {
+    "★ 协议/文档": "smtp/rfc5321.txt",
+    "★ chunk": "rfc5321.txt@5226",
+    "★ raw_span / resolved_span / span_mode": "5238 / 5238 / absolute",
+    "★ 锚点行原文": "   Clients SHOULD NOT provide SEND, SAML, or SOML as services.  Servers",
+    "★ 原始候选字段": {
+      "entity": "Clients",
+      "normative_subject": "Clients",
+      "action": "provide",
+      "object": "SEND, SAML, or SOML as services",
+      "strength": "SHOULD",
+      "meaning": "SMTP 客户端",
+      "constraint": "Clients SHOULD NOT provide SEND, SAML, or SOML as services."
+    },
+    "★ 原始 meaning（生成文本）": "SMTP 客户端",
+    "★ 原始 constraint（生成文本）": "Clients SHOULD NOT provide SEND, SAML, or SOML as services.",
+    "★ 上下文（锚点 ±12 行）": [
+      {
+        "line": 5226,
+        "text": "   digit years are deprecated; three-digit years were never permitted in"
+      },
+      {
+        "line": 5227,
+        "text": "   the Internet mail system."
+      },
+      {
+        "line": 5228,
+        "text": ""
+      },
+      {
+        "line": 5229,
+        "text": "F.6.  Sending versus Mailing"
+      },
+      {
+        "line": 5230,
+        "text": ""
+      },
+      {
+        "line": 5231,
+        "text": "   In addition to specifying a mechanism for delivering messages to"
+      },
+      {
+        "line": 5232,
+        "text": "   user's mailboxes, RFC 821 provided additional, optional, commands to"
+      },
+      {
+        "line": 5233,
+        "text": "   deliver messages directly to the user's terminal screen.  These"
+      },
+      {
+        "line": 5234,
+        "text": "   commands (SEND, SAML, SOML) were rarely implemented, and changes in"
+      },
+      {
+        "line": 5235,
+        "text": "   workstation technology and the introduction of other protocols may"
+      },
+      {
+        "line": 5236,
+        "text": "   have rendered them obsolete even where they are implemented."
+      },
+      {
+        "line": 5237,
+        "text": ""
+      },
+      {
+        "line": 5238,
+        "text": "   Clients SHOULD NOT provide SEND, SAML, or SOML as services.  Servers"
+      },
+      {
+        "line": 5239,
+        "text": "   MAY implement them.  If they are implemented by servers, the"
+      },
+      {
+        "line": 5240,
+        "text": "   implementation model specified in RFC 821 MUST be used and the"
+      },
+      {
+        "line": 5241,
+        "text": "   command names MUST be published in the response to the EHLO command."
+      },
+      {
+        "line": 5242,
+        "text": ""
+      },
+      {
+        "line": 5243,
+        "text": "Author's Address"
+      },
+      {
+        "line": 5244,
+        "text": ""
+      },
+      {
+        "line": 5245,
+        "text": "   John C. Klensin"
+      },
+      {
+        "line": 5246,
+        "text": "   1770 Massachusetts Ave, Suite 322"
+      },
+      {
+        "line": 5247,
+        "text": "   Cambridge, MA  02140"
+      },
+      {
+        "line": 5248,
+        "text": "   USA"
+      },
+      {
+        "line": 5249,
+        "text": ""
+      },
+      {
+        "line": 5250,
+        "text": "   EMail: john+smtp@jck.com"
+      }
+    ],
+    "★ 窗口内含 BCP14 词的行": [
+      {
+        "line": 5238,
+        "text": "Clients SHOULD NOT provide SEND, SAML, or SOML as services.  Servers",
+        "★ BCP14 词": [
+          "SHOULD NOT"
+        ]
+      },
+      {
+        "line": 5239,
+        "text": "MAY implement them.  If they are implemented by servers, the",
+        "★ BCP14 词": [
+          "MAY"
+        ]
+      },
+      {
+        "line": 5240,
+        "text": "implementation model specified in RFC 821 MUST be used and the",
+        "★ BCP14 词": [
+          "MUST"
+        ]
+      },
+      {
+        "line": 5241,
+        "text": "command names MUST be published in the response to the EHLO command.",
+        "★ BCP14 词": [
+          "MUST"
+        ]
+      }
+    ]
+  },
+  "rfc5321.txt@5226#2": {
+    "★ 协议/文档": "smtp/rfc5321.txt",
+    "★ chunk": "rfc5321.txt@5226",
+    "★ raw_span / resolved_span / span_mode": "5238 / 5238 / absolute",
+    "★ 锚点行原文": "   Clients SHOULD NOT provide SEND, SAML, or SOML as services.  Servers",
+    "★ 原始候选字段": {
+      "entity": "Servers",
+      "normative_subject": "Servers",
+      "action": "implement",
+      "object": "them (SEND, SAML, SOML)",
+      "strength": "MAY",
+      "meaning": "SMTP 服务器",
+      "constraint": "Servers MAY implement them."
+    },
+    "★ 原始 meaning（生成文本）": "SMTP 服务器",
+    "★ 原始 constraint（生成文本）": "Servers MAY implement them.",
+    "★ 上下文（锚点 ±12 行）": [
+      {
+        "line": 5226,
+        "text": "   digit years are deprecated; three-digit years were never permitted in"
+      },
+      {
+        "line": 5227,
+        "text": "   the Internet mail system."
+      },
+      {
+        "line": 5228,
+        "text": ""
+      },
+      {
+        "line": 5229,
+        "text": "F.6.  Sending versus Mailing"
+      },
+      {
+        "line": 5230,
+        "text": ""
+      },
+      {
+        "line": 5231,
+        "text": "   In addition to specifying a mechanism for delivering messages to"
+      },
+      {
+        "line": 5232,
+        "text": "   user's mailboxes, RFC 821 provided additional, optional, commands to"
+      },
+      {
+        "line": 5233,
+        "text": "   deliver messages directly to the user's terminal screen.  These"
+      },
+      {
+        "line": 5234,
+        "text": "   commands (SEND, SAML, SOML) were rarely implemented, and changes in"
+      },
+      {
+        "line": 5235,
+        "text": "   workstation technology and the introduction of other protocols may"
+      },
+      {
+        "line": 5236,
+        "text": "   have rendered them obsolete even where they are implemented."
+      },
+      {
+        "line": 5237,
+        "text": ""
+      },
+      {
+        "line": 5238,
+        "text": "   Clients SHOULD NOT provide SEND, SAML, or SOML as services.  Servers"
+      },
+      {
+        "line": 5239,
+        "text": "   MAY implement them.  If they are implemented by servers, the"
+      },
+      {
+        "line": 5240,
+        "text": "   implementation model specified in RFC 821 MUST be used and the"
+      },
+      {
+        "line": 5241,
+        "text": "   command names MUST be published in the response to the EHLO command."
+      },
+      {
+        "line": 5242,
+        "text": ""
+      },
+      {
+        "line": 5243,
+        "text": "Author's Address"
+      },
+      {
+        "line": 5244,
+        "text": ""
+      },
+      {
+        "line": 5245,
+        "text": "   John C. Klensin"
+      },
+      {
+        "line": 5246,
+        "text": "   1770 Massachusetts Ave, Suite 322"
+      },
+      {
+        "line": 5247,
+        "text": "   Cambridge, MA  02140"
+      },
+      {
+        "line": 5248,
+        "text": "   USA"
+      },
+      {
+        "line": 5249,
+        "text": ""
+      },
+      {
+        "line": 5250,
+        "text": "   EMail: john+smtp@jck.com"
+      }
+    ],
+    "★ 窗口内含 BCP14 词的行": [
+      {
+        "line": 5238,
+        "text": "Clients SHOULD NOT provide SEND, SAML, or SOML as services.  Servers",
+        "★ BCP14 词": [
+          "SHOULD NOT"
+        ]
+      },
+      {
+        "line": 5239,
+        "text": "MAY implement them.  If they are implemented by servers, the",
+        "★ BCP14 词": [
+          "MAY"
+        ]
+      },
+      {
+        "line": 5240,
+        "text": "implementation model specified in RFC 821 MUST be used and the",
+        "★ BCP14 词": [
+          "MUST"
+        ]
+      },
+      {
+        "line": 5241,
+        "text": "command names MUST be published in the response to the EHLO command.",
+        "★ BCP14 词": [
+          "MUST"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "★ V0 统计（★ 冻结版）": {
+    "★ routed_to_LLM": {
+      "合计": 19,
+      "★ 人工成立": 11,
+      "★ 人工不成立": 8
+    },
+    "★ pending": {
+      "合计": 10,
+      "★ 人工成立": 9,
+      "★ 人工不成立": 1
+    },
+    "★ rejected": {
+      "合计": 3,
+      "★ 人工成立": 3,
+      "★ 人工不成立": 0
+    }
+  },
+  "★ V1 统计（★ 修正版）": {
+    "★ routed_to_LLM": {
+      "合计": 16,
+      "★ 人工成立": 15,
+      "★ 人工不成立": 1
+    },
+    "★ pending": {
+      "合计": 16,
+      "★ 人工成立": 8,
+      "★ 人工不成立": 8
+    }
+  },
+  "★ 路由变化条数": 15,
+  "★ 路由变化明细": [
+    {
+      "candidate_id": "rfc1534.txt@1#4",
+      "原版": "rejected",
+      "V0": "uncertain",
+      "V1": "supported",
+      "★ 人工真值": "valid_confirmed",
+      "V1 reason": "★ 同命题（★ 行 72）且强度命中 ⇒ supported（★ **强度不一致不构成矛盾**）"
+    },
+    {
+      "candidate_id": "rfc2326.txt@1309#2",
+      "原版": "pending",
+      "V0": "supported",
+      "V1": "uncertain",
+      "★ 人工真值": "valid_rejection",
+      "V1 reason": "★ 未能在**同一命题**（主体+动作+对象同时对应）上定位强度或明确反证⇒ ★ 证据缺失/跨句归属不清/存在多个义务 ⇒ ★ 优先 uncertain"
+    },
+    {
+      "candidate_id": "rfc2326.txt@1309#4",
+      "原版": "pending",
+      "V0": "supported",
+      "V1": "uncertain",
+      "★ 人工真值": "valid_rejection",
+      "V1 reason": "★ 未能在**同一命题**（主体+动作+对象同时对应）上定位强度或明确反证⇒ ★ 证据缺失/跨句归属不清/存在多个义务 ⇒ ★ 优先 uncertain"
+    },
+    {
+      "candidate_id": "rfc2326.txt@2030#1",
+      "原版": "pending",
+      "V0": "supported",
+      "V1": "uncertain",
+      "★ 人工真值": "valid_rejection",
+      "V1 reason": "★ 未能在**同一命题**（主体+动作+对象同时对应）上定位强度或明确反证⇒ ★ 证据缺失/跨句归属不清/存在多个义务 ⇒ ★ 优先 uncertain"
+    },
+    {
+      "candidate_id": "rfc2326.txt@2030#5",
+      "原版": "pending",
+      "V0": "contradicted",
+      "V1": "supported",
+      "★ 人工真值": "valid_confirmed",
+      "V1 reason": "★ 同命题（★ 行 2097）且强度命中 ⇒ supported（★ **强度不一致不构成矛盾**）"
+    },
+    {
+      "candidate_id": "rfc2326.txt@3499#1",
+      "原版": "pending",
+      "V0": "supported",
+      "V1": "uncertain",
+      "★ 人工真值": "valid_rejection",
+      "V1 reason": "★ 候选字段自相矛盾（★ constraint 含否定而 strength 不含）⇒ ★ 优先 uncertain，★ **不判 contradicted、★ 不升级 confirmed**"
+    },
+    {
+      "candidate_id": "rfc2326.txt@3499#2",
+      "原版": "pending",
+      "V0": "supported",
+      "V1": "uncertain",
+      "★ 人工真值": "valid_rejection",
+      "V1 reason": "★ 未能在**同一命题**（主体+动作+对象同时对应）上定位强度或明确反证⇒ ★ 证据缺失/跨句归属不清/存在多个义务 ⇒ ★ 优先 uncertain"
+    },
+    {
+      "candidate_id": "rfc2326.txt@3499#3",
+      "原版": "pending",
+      "V0": "supported",
+      "V1": "uncertain",
+      "★ 人工真值": "valid_rejection",
+      "V1 reason": "★ 未能在**同一命题**（主体+动作+对象同时对应）上定位强度或明确反证⇒ ★ 证据缺失/跨句归属不清/存在多个义务 ⇒ ★ 优先 uncertain"
+    },
+    {
+      "candidate_id": "rfc2326.txt@587#0",
+      "原版": "pending",
+      "V0": "supported",
+      "V1": "uncertain",
+      "★ 人工真值": "valid_rejection",
+      "V1 reason": "★ 未能在**同一命题**（主体+动作+对象同时对应）上定位强度或明确反证⇒ ★ 证据缺失/跨句归属不清/存在多个义务 ⇒ ★ 优先 uncertain"
+    },
+    {
+      "candidate_id": "rfc3207.txt@1#0",
+      "原版": "pending",
+      "V0": "supported",
+      "V1": "uncertain",
+      "★ 人工真值": "valid_rejection",
+      "V1 reason": "★ 未能在**同一命题**（主体+动作+对象同时对应）上定位强度或明确反证⇒ ★ 证据缺失/跨句归属不清/存在多个义务 ⇒ ★ 优先 uncertain"
+    },
+    {
+      "candidate_id": "rfc3207.txt@468#0",
+      "原版": "rejected",
+      "V0": "uncertain",
+      "V1": "supported",
+      "★ 人工真值": "valid_rejection",
+      "V1 reason": "★ 同命题（★ 行 464）且强度命中 ⇒ supported（★ **强度不一致不构成矛盾**）"
+    },
+    {
+      "candidate_id": "rfc5321.txt@5226#1",
+      "原版": "pending",
+      "V0": "contradicted",
+      "V1": "uncertain",
+      "★ 人工真值": "valid_confirmed",
+      "V1 reason": "★ 候选字段自相矛盾（★ constraint 含否定而 strength 不含）⇒ ★ 优先 uncertain，★ **不判 contradicted、★ 不升级 confirmed**"
+    },
+    {
+      "candidate_id": "rfc5321.txt@5226#2",
+      "原版": "rejected",
+      "V0": "contradicted",
+      "V1": "uncertain",
+      "★ 人工真值": "valid_confirmed",
+      "V1 reason": "★ 未能在**同一命题**（主体+动作+对象同时对应）上定位强度或明确反证⇒ ★ 证据缺失/跨句归属不清/存在多个义务 ⇒ ★ 优先 uncertain"
+    },
+    {
+      "candidate_id": "rfc5321.txt@5226#3",
+      "原版": "confirmed",
+      "V0": "uncertain",
+      "V1": "supported",
+      "★ 人工真值": "valid_confirmed",
+      "V1 reason": "★ 同命题（★ 行 5239）且强度命中 ⇒ supported（★ **强度不一致不构成矛盾**）"
+    },
+    {
+      "candidate_id": "rfc5321.txt@5226#4",
+      "原版": "pending",
+      "V0": "uncertain",
+      "V1": "supported",
+      "★ 人工真值": "valid_confirmed",
+      "V1 reason": "★ 同命题（★ 行 5239）且强度命中 ⇒ supported（★ **强度不一致不构成矛盾**）"
+    }
+  ],
+  "★ 三条误拒案例 V1 结果": [
+    {
+      "candidate_id": "rfc2326.txt@2030#5",
+      "V0": "contradicted",
+      "V1": "supported",
+      "V1 路由": "★ routed_to_LLM",
+      "V1 reason": "★ 同命题（★ 行 2097）且强度命中 ⇒ supported（★ **强度不一致不构成矛盾**）",
+      "V1 命题对应": "{\"subject\": \"★ 主体缺失\", \"action\": \"supported\", \"object\": \"supported\", \"strength\": \"supported\"}",
+      "V1 反证行": null,
+      "V1 反证句": null,
+      "★ 字段自相矛盾": null,
+      "★ 人工真值": "valid_confirmed"
+    },
+    {
+      "candidate_id": "rfc5321.txt@5226#1",
+      "V0": "contradicted",
+      "V1": "uncertain",
+      "V1 路由": "★ pending",
+      "V1 reason": "★ 候选字段自相矛盾（★ constraint 含否定而 strength 不含）⇒ ★ 优先 uncertain，★ **不判 contradicted、★ 不升级 confirmed**",
+      "V1 命题对应": "null",
+      "V1 反证行": null,
+      "V1 反证句": null,
+      "★ 字段自相矛盾": "★ constraint 文本含否定结构（'Clients SHOULD NOT provide SEND, SAML, or SOML as services.'）而 strength 字段（'SHOULD'）不含 ⇒ ★ **字段自相矛盾 ⇒ uncertain**",
+      "★ 人工真值": "valid_confirmed"
+    },
+    {
+      "candidate_id": "rfc5321.txt@5226#2",
+      "V0": "contradicted",
+      "V1": "uncertain",
+      "V1 路由": "★ pending",
+      "V1 reason": "★ 未能在**同一命题**（主体+动作+对象同时对应）上定位强度或明确反证⇒ ★ 证据缺失/跨句归属不清/存在多个义务 ⇒ ★ 优先 uncertain",
+      "V1 命题对应": "null",
+      "V1 反证行": null,
+      "V1 反证句": null,
+      "★ 字段自相矛盾": null,
+      "★ 人工真值": "valid_confirmed"
+    }
+  ]
+}
