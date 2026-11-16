@@ -1,0 +1,18 @@
+{
+  "★ 目标": "★ N1-B 中人工判成立但模型 rejected 的样本",
+  "★ 条数": 13,
+  "★ first_blocking_stage 分布": {
+    "★ L2/LLM 阶段": 7,
+    "★ semantic_support（★ 确定性前置）": 6
+  },
+  "★ rejection_rule 分布": {
+    "★ 非确定性前置拒收（★ 需另行定位）": 7,
+    "★ B 仅词面/同义词不匹配（★ 无明确反证）": 6
+  },
+  "★ 有明确反证（保留 rejected）": 1,
+  "★ 无明确反证（改 pending）": 12,
+  "★ 加宽证据窗口后 semantic_support verdict": {
+    "支持": 9,
+    "不支持": 4
+  }
+}

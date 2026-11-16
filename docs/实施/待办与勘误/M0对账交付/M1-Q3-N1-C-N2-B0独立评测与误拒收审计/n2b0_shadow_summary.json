@@ -1,0 +1,40 @@
+{
+  "★ 样本数（★ 全部 50 条盲审样本）": 50,
+  "★ 原确定性 verdict 分布": {
+    "支持": 41,
+    "不支持": 9
+  },
+  "★ 影子三态 verdict 分布": {
+    "supported": 37,
+    "uncertain": 10,
+    "contradicted": 3
+  },
+  "★ ★ 风险一（错误拒收）": {
+    "★ 原 rejected 中人工判成立": 13,
+    "★ 缺乏支持证据但无明确反证": 8,
+    "★ ★ 可安全恢复为 pending": 8,
+    "★ 仍应 rejected（★ 三态 contradicted）": 3,
+    "★ 需补充原文证据（★ 关键字段仍缺）": 3,
+    "★ ★ 错误确认（★ 影子放行口径）": 0,
+    "★ ★ 其中「rejected→pending 且人工判不成立」（★ 非错误确认）": 1,
+    "★ ★ 说明": "★ **rejected→pending ≠ 错误确认**（★ pending 不是放行）；★ 本影子**未产生任何 confirmed** ⇒ ★ 错误确认 = 0"
+  },
+  "★ ★ 风险二（错误确认）": {
+    "★ 三态是否引入新的 confirmed": 0,
+    "★ ★ 说明": "★ 三态只产出 supported/contradicted/uncertain ⇒ ★ **uncertain 一律 pending，★ 绝不 confirmed** ⇒ ★ **结构上不可能引入新 confirmed**",
+    "★ ★ 「三态 supported」≠ 放行": "★ supported 只表示「确定性语义检查通过 ⇒ 可进 LLM 链」；★ 真正放行仍取决于 L1/L2 链（★ 本影子不改）",
+    "★ 三态 supported 条数": 37,
+    "★ ★ 是否会把不确定性升级为确定知识": "★ **否**（★ uncertain→pending）"
+  },
+  "★ confirmed/pending/rejected 增减": {
+    "★ 原 confirmed（★ 历史）": 3,
+    "★ 影子 confirmed": 3,
+    "★ ★ 三态 uncertain 增量（★ 仅有原状态者）": 9,
+    "★ 原 pending": 15,
+    "★ 影子 pending（★ 含原 pending + 新增 uncertain）": 8,
+    "★ 原 rejected": 14,
+    "★ 影子 rejected": 1,
+    "★ ★ 人工审核负担增量（★ 新增 pending 数）": -7
+  },
+  "★ ★ 关键限定": "★ **rejected→pending 不等于语义准确率提升，★ 也不等于可以发布**；★ 恢复的候选仍需独立证据校验；★ ★ 本影子**未接入生产**"
+}

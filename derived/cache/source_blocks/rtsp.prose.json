@@ -1,10 +1,10 @@
 {
-  "block_hash": "af3f2f46a8b1e91b79be672a4079c786fa8f452c20c4b114a31df85937a297ea",
+  "block_hash": "011b4ff0eb68396b09998032ca4259dc3fdf2e00c65a76cfffe27889a1b17b69",
   "items": [],
   "complete": true,
   "status": "success_empty",
   "key_manifest": {
-    "key": "af3f2f46a8b1e91b79be672a4079c786fa8f452c20c4b114a31df85937a297ea",
+    "key": "011b4ff0eb68396b09998032ca4259dc3fdf2e00c65a76cfffe27889a1b17b69",
     "parser_version": "rfc-parser-v1",
     "schema_version": "rfc-norm-schema-v1",
     "verifier_version": "normative-verifier-v1",
