@@ -1,0 +1,26 @@
+{
+  "★ run_id": "v2e2-pilot-20261116-181448",
+  "★ 限额": {
+    "★ max_rfc": 12,
+    "★ max_chunks": 24,
+    "★ max_requests": 24,
+    "★ max_tokens_total": 200000
+  },
+  "★ 实际处理 RFC 文档数": 12,
+  "★ 实际处理 chunk 数": 24,
+  "★ 实际 LLM 调用数（★ 估算）": 24,
+  "★ input tokens": 19141,
+  "★ output tokens": 29503,
+  "★ token 合计": 48644,
+  "★ 是否超 token 上限": false,
+  "★ 估算费用 USD": 0.020573,
+  "★ 新增候选数（★ shadow/proposed）": 52,
+  "★ 限额均未超": {
+    "★ RFC": true,
+    "★ chunk": true,
+    "★ 请求": true,
+    "★ token": true
+  },
+  "★ 生产缓存未被污染": true,
+  "★ 诊断记录文件": "guard\\_out\\_v2_e2_pilot\\diagnostics"
+}

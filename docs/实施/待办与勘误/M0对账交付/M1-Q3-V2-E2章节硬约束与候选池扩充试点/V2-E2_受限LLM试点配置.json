@@ -1,0 +1,27 @@
+{
+  "★ model": "deepseek-flash",
+  "★ model_version": "DeepSeek-V4.1-Flash-1017",
+  "★ base_url": "https://api.deepseek.com",
+  "★ temperature": 0.1,
+  "★ max_tokens": 4000,
+  "★ ★ max_tokens 说明": "★ 生产默认 16000；★ 试点下调至 4000 以满足 200K token 上限（★ 记录差异）",
+  "★ prompt_source": "core/fused/extraction/prose_semantics.py::_PROMPT",
+  "★ prompt_version": "prose-semantics-v2",
+  "★ schema": "prose_semantics 原生 schema（★ 未新建）",
+  "★ extractor_entry": "core.fused.extraction.prose_semantics.extract_window_norms",
+  "★ extractor_code_commit": "57ed0a3",
+  "★ 单价（USD / 1M tokens，闲时）": {
+    "input_cache_miss": 0.15,
+    "input_cache_hit": 0.003,
+    "output": 0.6
+  },
+  "★ 计价时段": "★ 北京时间 18:30（★ 已过 14:00-18:00 高峰）⇒ ★ 闲时价",
+  "★ 限额": {
+    "★ max_rfc": 12,
+    "★ max_chunks": 24,
+    "★ max_requests": 24,
+    "★ max_tokens_total": 200000
+  },
+  "★ prompt_digest": "d97fbe611ac9aa61",
+  "★ 代码树哈希（★ 冻结判据与抽取器）": "4c1057037ffb1717416fabb920646489fb5ad94948eedd8d6f4e5fb1a2db2ab4"
+}
