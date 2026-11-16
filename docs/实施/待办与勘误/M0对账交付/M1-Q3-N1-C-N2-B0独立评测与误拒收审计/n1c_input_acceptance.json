@@ -1,0 +1,397 @@
+{
+  "★ 报告": {
+    "★ 原件归档": {
+      "N1-C_盲审标注表_A.csv": {
+        "sha256": "06f4de7d1da68626ab216cac93a173c7eb45527a6037c22a427c7631b49d753e",
+        "★ 编码": "gb18030",
+        "★ CRLF": 51,
+        "★ LF": 51,
+        "★ 归档与原件一致": true
+      },
+      "N1-C_盲审标注表_B.csv": {
+        "sha256": "f6f6b99d0d54819857898c7e8a07c204abfec32b6a2c7956c8d8e1bfb52f50f3",
+        "★ 编码": "gb18030",
+        "★ CRLF": 51,
+        "★ LF": 51,
+        "★ 归档与原件一致": true
+      },
+      "N1-C_仲裁表.csv": {
+        "sha256": "cefb389bfef1eb10d7ebbfe9a0f8f50f544cbeb83386a9e68fb16f823056ac8b",
+        "★ 编码": "gb18030",
+        "★ CRLF": 51,
+        "★ LF": 51,
+        "★ 归档与原件一致": true
+      }
+    },
+    "★ 编码转换验证": {
+      "N1-C_盲审标注表_A.csv": {
+        "★ 原编码": "gb18030",
+        "★ 行数": 51,
+        "★ 列数": 37,
+        "★ 单元格差异数": 0,
+        "★ 差异明细": [],
+        "★ 中文 原/新": "2728/2728",
+        "★ ★ 转换无损": true
+      },
+      "N1-C_盲审标注表_B.csv": {
+        "★ 原编码": "gb18030",
+        "★ 行数": 51,
+        "★ 列数": 37,
+        "★ 单元格差异数": 0,
+        "★ 差异明细": [],
+        "★ 中文 原/新": "3775/3775",
+        "★ ★ 转换无损": true
+      },
+      "N1-C_仲裁表.csv": {
+        "★ 原编码": "gb18030",
+        "★ 行数": 50,
+        "★ 列数": 8,
+        "★ 单元格差异数": 0,
+        "★ 差异明细": [],
+        "★ 中文 原/新": "1273/1273",
+        "★ ★ 转换无损": true
+      }
+    },
+    "★ 与发放时版本比对（★ 不可编辑列）": {
+      "N1-C_盲审标注表_A.csv": {
+        "★ 不可编辑列数": 26,
+        "★ 比对单元格数": 1300,
+        "★ 差异数": 101,
+        "★ 差异明细": [
+          {
+            "sample_id": " ? 12772: RFC 3261            SIP: Session Initiation Protocol           June 2002 ? 12773:  ? 12774:  ? 12775: disp-param            =  handling-param / generic-param ? 12776: handling-param        =  \"handling\" EQUAL ? 12777:                          ( \"optional\" / \"required\" ? 12778:                          / other-handling ) ? 12779: other-handling        =  token ? 12780: disp-extension-token  =  token ? 12781:  ? 12782: Content-Encoding  =  ( \"Content-Encoding\" / \"e\" ) HCOLON ? 12783:                      content-coding *(COMMA content-coding)",
+            "★ 问题": "★ ID 集合不一致"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ 锚点行是否空白",
+            "发放时": "False",
+            "现在": "FALSE"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ RFC 原文上下文（锚点 ±6 行）",
+            "发放时": "32:    protocol suite.  The format of DHCP messages is based on the format ⏎ 33:    of BOO",
+            "现在": "32:    protocol suite.  The format of DHCP messages is based on the format ? 33:    of BOO"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#2",
+            "col": "★ 锚点行是否空白",
+            "发放时": "False",
+            "现在": "FALSE"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#2",
+            "col": "★ RFC 原文上下文（锚点 ±6 行）",
+            "发放时": "42:    extensions\", are now termed simply \"options\".  This document will ⏎ 43:    refer to",
+            "现在": "42:    extensions\", are now termed simply \"options\".  This document will ? 43:    refer to"
+          },
+          {
+            "sample_id": "rfc1542.txt@1#1",
+            "col": "★ 锚点行是否空白",
+            "发放时": "False",
+            "现在": "FALSE"
+          },
+          {
+            "sample_id": "rfc1542.txt@1#1",
+            "col": "★ RFC 原文上下文（锚点 ±6 行）",
+            "发放时": "21:    Official Protocol Standards\" for the standardization state and status ⏎ 22:    of t",
+            "现在": "21:    Official Protocol Standards\" for the standardization state and status ? 22:    of t"
+          },
+          {
+            "sample_id": "rfc1542.txt@1#2",
+            "col": "★ 锚点行是否空白",
+            "发放时": "False",
+            "现在": "FALSE"
+          }
+        ],
+        "★ ★ 完全一致": false
+      },
+      "N1-C_盲审标注表_B.csv": {
+        "★ 不可编辑列数": 26,
+        "★ 比对单元格数": 1300,
+        "★ 差异数": 101,
+        "★ 差异明细": [
+          {
+            "sample_id": " ? 12772: RFC 3261            SIP: Session Initiation Protocol           June 2002 ? 12773:  ? 12774:  ? 12775: disp-param            =  handling-param / generic-param ? 12776: handling-param        =  \"handling\" EQUAL ? 12777:                          ( \"optional\" / \"required\" ? 12778:                          / other-handling ) ? 12779: other-handling        =  token ? 12780: disp-extension-token  =  token ? 12781:  ? 12782: Content-Encoding  =  ( \"Content-Encoding\" / \"e\" ) HCOLON ? 12783:                      content-coding *(COMMA content-coding)",
+            "★ 问题": "★ ID 集合不一致"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ 锚点行是否空白",
+            "发放时": "False",
+            "现在": "FALSE"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ RFC 原文上下文（锚点 ±6 行）",
+            "发放时": "32:    protocol suite.  The format of DHCP messages is based on the format ⏎ 33:    of BOO",
+            "现在": "32:    protocol suite.  The format of DHCP messages is based on the format ? 33:    of BOO"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#2",
+            "col": "★ 锚点行是否空白",
+            "发放时": "False",
+            "现在": "FALSE"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#2",
+            "col": "★ RFC 原文上下文（锚点 ±6 行）",
+            "发放时": "42:    extensions\", are now termed simply \"options\".  This document will ⏎ 43:    refer to",
+            "现在": "42:    extensions\", are now termed simply \"options\".  This document will ? 43:    refer to"
+          },
+          {
+            "sample_id": "rfc1542.txt@1#1",
+            "col": "★ 锚点行是否空白",
+            "发放时": "False",
+            "现在": "FALSE"
+          },
+          {
+            "sample_id": "rfc1542.txt@1#1",
+            "col": "★ RFC 原文上下文（锚点 ±6 行）",
+            "发放时": "21:    Official Protocol Standards\" for the standardization state and status ⏎ 22:    of t",
+            "现在": "21:    Official Protocol Standards\" for the standardization state and status ? 22:    of t"
+          },
+          {
+            "sample_id": "rfc1542.txt@1#2",
+            "col": "★ 锚点行是否空白",
+            "发放时": "False",
+            "现在": "FALSE"
+          }
+        ],
+        "★ ★ 完全一致": false
+      },
+      "N1-C_仲裁表.csv": {
+        "★ 不可编辑列数": 8,
+        "★ 比对单元格数": 400,
+        "★ 差异数": 350,
+        "★ 差异明细": [
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ A:truth_label",
+            "发放时": "",
+            "现在": "valid_rejection"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ B:truth_label",
+            "发放时": "",
+            "现在": "valid_rejection"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ 是否分歧",
+            "发放时": "",
+            "现在": "否"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ 仲裁后 truth_label",
+            "发放时": "",
+            "现在": "valid_rejection"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ 仲裁者 ID（★ 匿名编号）",
+            "发放时": "",
+            "现在": "3号人工"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ 审核日期",
+            "发放时": "",
+            "现在": "2026/11/16"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#1",
+            "col": "★ 仲裁理由",
+            "发放时": "",
+            "现在": "锚点 1534:38-39 的 “vendor extensions” 字段在 BOOTP 中更名为 “options” 一句为被动术语说明，无承担主体、无动作要求，属描述性知识。"
+          },
+          {
+            "sample_id": "rfc1534.txt@1#2",
+            "col": "★ A:truth_label",
+            "发放时": "",
+            "现在": "valid_rejection"
+          }
+        ],
+        "★ ★ 完全一致": false
+      }
+    },
+    "★ 复算数字": {
+      "★ A 行数/列数": "51 / 37",
+      "★ B 行数/列数": "51 / 37",
+      "★ 仲裁表 行数/列数": "50 / 8",
+      "★ A/B/仲裁 sample_id 集合一致": false,
+      "★ A/B truth_label 一致数": 51,
+      "★ evidence_support 一致数": 47,
+      "★ truth_label 分布": {
+        "valid_rejection": 36,
+        "valid_confirmed": 13,
+        "": 2
+      },
+      "★ 仲裁表 已填结论数": 50,
+      "★ 仲裁表 审核编号非空数": 50,
+      "★ 仲裁表 日期非空数": 50,
+      "★ 仲裁表 理由非空数": 50,
+      "★ 协议分布": {
+        "DHCPv4": 15,
+        "rtsp": 16,
+        "sip": 16,
+        "null": 1,
+        "smtp": 3
+      },
+      "★ chunk 数": 22
+    },
+    "★ evidence_support 分歧": [
+      {
+        "sample_id": "rfc2326.txt@1309#0",
+        "A": "evidence_insufficient",
+        "B": "contradicted"
+      },
+      {
+        "sample_id": "rfc2326.txt@1309#1",
+        "A": "evidence_insufficient",
+        "B": "contradicted"
+      },
+      {
+        "sample_id": "rfc2326.txt@1309#3",
+        "A": "evidence_insufficient",
+        "B": "contradicted"
+      },
+      {
+        "sample_id": "rfc2326.txt@1309#5",
+        "A": "evidence_insufficient",
+        "B": "contradicted"
+      }
+    ],
+    "★ 字段级分歧（★ 全部）": [
+      {
+        "sample_id": "rfc2326.txt@2747#4",
+        "field": "condition",
+        "A": "To mark a response as \"already expired\"",
+        "B": "to mark a response as \"already expired\""
+      },
+      {
+        "sample_id": "rfc2326.txt@587#1",
+        "field": "subject",
+        "A": "sender",
+        "B": "sender（发出该请求的一方）"
+      },
+      {
+        "sample_id": "rfc2326.txt@587#1",
+        "field": "action",
+        "A": "attempt to use",
+        "B": "attempt to use again"
+      },
+      {
+        "sample_id": "rfc2326.txt@587#1",
+        "field": "object",
+        "A": "this method again",
+        "B": "this method"
+      },
+      {
+        "sample_id": "rfc2326.txt@587#1",
+        "field": "condition",
+        "A": "If the recipient of the message does not understand the request（即以 501",
+        "B": "the recipient of the message does not understand the request（其以 501 No"
+      },
+      {
+        "sample_id": "rfc2326.txt@587#3",
+        "field": "object",
+        "A": "the methods it supports using the Public response header",
+        "B": "the methods it supports"
+      },
+      {
+        "sample_id": "rfc3261.txt@10452#0",
+        "field": "polarity",
+        "A": "negative",
+        "B": "positive"
+      },
+      {
+        "sample_id": "rfc3261.txt@10452#5",
+        "field": "subject",
+        "A": "servers",
+        "B": "servers（收到该请求的 UAS/服务器）"
+      },
+      {
+        "sample_id": "rfc3261.txt@10452#5",
+        "field": "condition",
+        "A": "if a desirable extension is not listed in the Supported header field",
+        "B": "if a desirable extension is not listed in the Supported header field（请"
+      },
+      {
+        "sample_id": "rfc3261.txt@3893#2",
+        "field": "subject",
+        "A": "UAs",
+        "B": "UAs（user agents）"
+      },
+      {
+        "sample_id": "rfc3261.txt@3893#4",
+        "field": "object",
+        "A": "the order of those values（从请求复制到响应的 Record-Route 头域值）",
+        "B": "the order of those values"
+      },
+      {
+        "sample_id": "rfc3261.txt@3893#4",
+        "field": "condition",
+        "A": "When a UAS responds to a request with a response that establishes a di",
+        "B": "when a UAS responds to a request with a response that establishes a di"
+      },
+      {
+        "sample_id": "rfc3261.txt@3893#5",
+        "field": "condition",
+        "A": "When a UAS responds to a request with a response that establishes a di",
+        "B": "when a UAS responds to a request with a response that establishes a di"
+      },
+      {
+        "sample_id": "rfc3261.txt@5893#0",
+        "field": "subject",
+        "A": "proxy（构造/提供 branch 参数的代理）",
+        "B": "proxy（计算其转发请求 branch 参数者，见 5891-5892 行 'the \"branch\" parameter it supp"
+      },
+      {
+        "sample_id": "rfc3261.txt@5893#0",
+        "field": "action",
+        "A": "include",
+        "B": "include in the calculation of the branch parameter"
+      },
+      {
+        "sample_id": "rfc3261.txt@5893#0",
+        "field": "object",
+        "A": "the request method in the calculation of the branch parameter",
+        "B": "the request method"
+      },
+      {
+        "sample_id": "rfc3261.txt@5893#2",
+        "field": "condition",
+        "A": "If the request will be sent to the next hop using a stream-based trans",
+        "B": "if the request will be sent to the next hop using a stream-based trans"
+      },
+      {
+        "sample_id": "rfc3261.txt@5893#5",
+        "field": "condition",
+        "A": "null",
+        "B": "when an INVITE request is proxied（对每个 client transaction 设定 Timer C 时）"
+      },
+      {
+        "sample_id": "rfc3261.txt@8085#3",
+        "field": "subject",
+        "A": "the \"received\" parameter（由 server transport 添加到 Via 头域值）",
+        "B": "the \"received\" parameter of the top Via header field value（由 server 添加"
+      },
+      {
+        "sample_id": "rfc3261.txt@8085#3",
+        "field": "condition",
+        "A": "if the host portion of the \"sent-by\" parameter contains a domain name,",
+        "B": "the server adds a \"received\" parameter to the top Via header field val"
+      }
+    ]
+  },
+  "★ 错误": [
+    "★ ★ N1-C_盲审标注表_A.csv：101 处**不可编辑列**被改动",
+    "★ ★ N1-C_盲审标注表_B.csv：101 处**不可编辑列**被改动",
+    "★ ★ N1-C_仲裁表.csv：350 处**不可编辑列**被改动"
+  ],
+  "★ 通过": false
+}

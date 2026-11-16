@@ -1,51 +1,51 @@
 sample_id,★ A:truth_label,★ B:truth_label,★ 是否分歧,★ 仲裁后 truth_label,★ 仲裁者 ID（★ 匿名编号）,★ 审核日期,★ 仲裁理由
-rfc1534.txt@1#1,,,,,,,
-rfc1534.txt@1#2,,,,,,,
-rfc1542.txt@1#1,,,,,,,
-rfc1542.txt@1#2,,,,,,,
-rfc1542.txt@1#3,,,,,,,
-rfc2131.txt@1#4,,,,,,,
-rfc2132.txt@1#2,,,,,,,
-rfc2326.txt@1#2,,,,,,,
-rfc2326.txt@1309#0,,,,,,,
-rfc2326.txt@1309#1,,,,,,,
-rfc2326.txt@1309#3,,,,,,,
-rfc2326.txt@1309#5,,,,,,,
-rfc2326.txt@2030#0,,,,,,,
-rfc2326.txt@2030#3,,,,,,,
-rfc2326.txt@2030#4,,,,,,,
-rfc2326.txt@2747#3,,,,,,,
-rfc2326.txt@2747#4,,,,,,,
-rfc2326.txt@3499#0,,,,,,,
-rfc2326.txt@5115#0,,,,,,,
-rfc2326.txt@5115#1,,,,,,,
-rfc2326.txt@587#1,,,,,,,
-rfc2326.txt@587#3,,,,,,,
-rfc2326.txt@587#5,,,,,,,
-rfc2563.txt@1#0,,,,,,,
-rfc2563.txt@1#1,,,,,,,
-rfc2563.txt@1#2,,,,,,,
-rfc2939.txt@1#1,,,,,,,
-rfc2939.txt@1#2,,,,,,,
-rfc2939.txt@1#3,,,,,,,
-rfc2939.txt@1#4,,,,,,,
-rfc3004.txt@1#5,,,,,,,
-rfc3261.txt@1#4,,,,,,,
-rfc3261.txt@10452#0,,,,,,,
-rfc3261.txt@10452#5,,,,,,,
-rfc3261.txt@12767#0,,,,,,,
-rfc3261.txt@12767#2,,,,,,,
-rfc3261.txt@12767#3,,,,,,,
-rfc3261.txt@12767#4,,,,,,,
-rfc3261.txt@12767#5,,,,,,,
-rfc3261.txt@3893#2,,,,,,,
-rfc3261.txt@3893#4,,,,,,,
-rfc3261.txt@3893#5,,,,,,,
-rfc3261.txt@5893#0,,,,,,,
-rfc3261.txt@5893#2,,,,,,,
-rfc3261.txt@5893#3,,,,,,,
-rfc3261.txt@5893#5,,,,,,,
-rfc3261.txt@8085#3,,,,,,,
-rfc4954.txt@1091#1,,,,,,,
-rfc4954.txt@1091#2,,,,,,,
-rfc4954.txt@1091#3,,,,,,,
+rfc1534.txt@1#1,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 1534:38-39 的 “vendor extensions” 字段在 BOOTP 中更名为 “options” 一句为被动术语说明，无承担主体、无动作要求，属描述性知识。与 A/B 一致（valid_rejection）。
+rfc1534.txt@1#2,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 1534:46-49 “will be referred to as a DHCPDISCOVER message” 是本文命名约定，仅规定行文如何称呼该报文，不约束实现者。与 A/B 一致（valid_rejection）。
+rfc1542.txt@1#1,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 1542:26-28 称原规范对 relay agent 行为仅给出 “only a general description”，属摘要问题背景陈述，无主体动作与强度词。与 A/B 一致（valid_rejection）。
+rfc1542.txt@1#2,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 1542:28-29 “originally called BOOTP forwarding agents” 只是旧称括注（术语考据），不构成义务。与 A/B 一致（valid_rejection）。
+rfc1542.txt@1#3,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 1542:31-33 “this memo is reissued as RFC 1542” 为文档出版沿革说明，与协议行为义务无关。与 A/B 一致（valid_rejection）。
+rfc2131.txt@1#4,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点即 2131:22 “Abstract” 标题行，24-30 行 “provides a framework”“DHCP captures the behavior of BOOTP relay agents” 均为摘要描述。与 A/B 一致（valid_rejection）。
+rfc2132.txt@1#2,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2132:28-30 “The data items themselves are also called options” 是纯术语定义，未施加任何行为要求。与 A/B 一致（valid_rejection）。
+rfc2326.txt@1#2,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:36-39 “is intended to control…provide a means for choosing delivery mechanisms” 为协议设计意图与能力描述，非义务。与 A/B 一致（valid_rejection）。
+rfc2326.txt@1309#0,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:1309 位于 1295 行起 Status-Code ABNF 枚举，“404 ; Not Found” 仅代码与助记名，无主体行为，属定义列举。与 A/B 一致（valid_rejection）；A 的 evidence_insufficient 属第二层字段，不改真值。
+rfc2326.txt@1309#1,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:1310 仍属 1295 行起 Status-Code ABNF 枚举，“405 ; Method Not Allowed” 只有代码与短语，无规范句。与 A/B 一致（valid_rejection）；A 的 evidence_insufficient 属第二层字段。
+rfc2326.txt@1309#3,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:1312 属 Status-Code ABNF 枚举，“407 ; Proxy Authentication Required” 为语法列举，±6 行内无规范语句。与 A/B 一致（valid_rejection）；A 的 evidence_insufficient 属第二层。
+rfc2326.txt@1309#5,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:1314 属 Status-Code ABNF 枚举，“410 ; Gone” 仅登记代码与助记名，不构成义务。与 A/B 一致（valid_rejection）；A 的 evidence_insufficient 属第二层。
+rfc2326.txt@2030#0,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:2033-2036 “a PLAY would still resume…as it is assumed that the client has discarded data” 用虚拟语气描述既有行为与假设，非可判定义务。与 A/B 一致（valid_rejection）。
+rfc2326.txt@2030#3,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:2056-2059 “The GET_PARAMETER request retrieves the value of a parameter…left to the implementation” 为方法功能定义。与 A/B 一致（valid_rejection）。
+rfc2326.txt@2030#4,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:2092 是标题 “10.9 SET_PARAMETER”，2094-2095 “This method requests to set the value…” 为方法定义；同段 2097 的 SHOULD 非本候选所声称。与 A/B 一致（valid_rejection）。
+rfc2326.txt@2747#3,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 2326:2834-2835 “servers should not send Expires dates more than one year in the future” 为真实 SHOULD NOT，主体/动作/对象齐备，义务成立；候选强度记 SHOULD、极性 positive 属字段层偏差。与 A/B 一致（valid_confirmed）。
+rfc2326.txt@2747#4,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 2326:2830-2831 “an origin server should use an Expires date that is equal to the Date header value” 为真实 SHOULD，义务成立；候选漏填 “already expired” 条件属字段层。与 A/B 一致（valid_confirmed）。
+rfc2326.txt@3499#0,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:3504-3506 “The following examples are not to be used as a reference” 是第 14 章示例免责说明，约束读者引用方式而非协议实体。与 A/B 一致（valid_rejection）。
+rfc2326.txt@5115#0,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:5117-5118 在 5103 行起 Full Copyright Statement 内，“procedures for copyrights…must be followed” 虽含 must，仍属版权许可样板。与 A/B 一致（valid_rejection）。
+rfc2326.txt@5115#1,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:5121-5122 “perpetual and will not be revoked by the Internet Society” 是版权许可存续性声明，非协议义务。与 A/B 一致（valid_rejection）。
+rfc2326.txt@587#1,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 2326:598-601 “If the recipient…does not understand the request…the sender should not attempt to use this method again” 为条件→行为结构的 SHOULD NOT，义务成立；候选极性记 positive 属字段错。与 A/B 一致（valid_confirmed）。
+rfc2326.txt@587#3,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 2326:602-603 “The server SHOULD list the methods it supports using the Public response header” 主体 server、动作 list、强度 SHOULD 均被支持，义务成立。与 A/B 一致（valid_confirmed）。
+rfc2326.txt@587#5,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2326:610 “may be identified by an RTSP URL” 小写 may 表可能性、被动无主体，属 1.6 节描述。与 A/B 一致（valid_rejection）。
+rfc2563.txt@1#0,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2563:28-31 “Operating Systems are now attempting…some OS's are automatically choosing” 为摘要现状描述，DHCP 仅作括注背景。与 A/B 一致（valid_rejection）。
+rfc2563.txt@1#1,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2563:32-34 “will not allow the OS to communicate with anything beyond a router” 是链路本地地址可达性事实描述，非规范要求。与 A/B 一致（valid_rejection）。
+rfc2563.txt@1#2,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2563:36-38 “DHCP servers are able to tell clients…” 是能力描述；句末 client should not generate 主体为 client，与候选 entity 不符。与 A/B 一致（valid_rejection）。
+rfc2939.txt@1#1,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2939:29-33 摘要 “provides a framework for passing configuration information”“carried in tagged data items” 为框架与承载方式描述。与 A/B 一致（valid_rejection）。
+rfc2939.txt@1#2,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2939:34 “The data items themselves are also called options” 为术语定义句，无行为义务。与 A/B 一致（valid_rejection）。
+rfc2939.txt@1#3,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2939:36-38 “messages are identified by the DHCP Message Type option (option code 51)” 是识别方式定义，非规范要求。与 A/B 一致（valid_rejection）。
+rfc2939.txt@1#4,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 2939:37 “option (option code 51)” 为选项编号登记性注解，与 34 行定义同属定义性文本。与 A/B 一致（valid_rejection）。
+rfc3004.txt@1#5,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 3004:63 是标题 “2. Requirements Terminology”，65-67 “key words…are to be interpreted as described in RFC 2119” 为关键词解读样板。与 A/B 一致（valid_rejection）。
+rfc3261.txt@1#4,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 3261:47-54 “SIP invitations…carry session descriptions”“SIP runs on top of several different transport protocols” 为体系结构概述。与 A/B 一致（valid_rejection）。
+rfc3261.txt@10452#0,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 3261:10456 是标题 “21.4.14 416 Unsupported URI Scheme”，10458-10459 “The server cannot process the request because…” 为状态码语义定义。与 A/B 一致（valid_rejection）。
+rfc3261.txt@10452#5,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 3261:10487-10490 “if a desirable extension is not listed…servers SHOULD process the request using baseline SIP capabilities” 为条件→行为 SHOULD，义务成立；候选漏填条件。与 A/B 一致（valid_confirmed）。
+rfc3261.txt@12767#0,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 3261:12775 “disp-param = handling-param / generic-param” 属 12763 行起 Content-Disposition 的 ABNF 产生式，是语法定义。与 A/B 一致（valid_rejection）。
+rfc3261.txt@12767#2,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 3261:12776-12778 “handling-param = handling EQUAL ( optional / required / other-handling )” 为 ABNF 取值定义。与 A/B 一致（valid_rejection）。
+rfc3261.txt@12767#3,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 3261:12780 “disp-extension-token = token” 是 ABNF 子产生式定义，无主体与强度词。与 A/B 一致（valid_rejection）。
+rfc3261.txt@12767#4,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 3261:12782-12783 “Content-Encoding = ( Content-Encoding / e ) HCOLON content-coding” 是头域语法 ABNF 定义。与 A/B 一致（valid_rejection）。
+rfc3261.txt@12767#5,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 3261:12785-12786 “Content-Language = … language-tag *(COMMA language-tag)” 同为 ABNF 定义，非规范义务。与 A/B 一致（valid_rejection）。
+rfc3261.txt@3893#2,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 3261:3902-3903 “UAs MUST assign values to the dialog ID components as described below” 六字段齐备，义务成立；as described below 是交叉指引非条件。与 A/B 一致（valid_confirmed）。
+rfc3261.txt@3893#4,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 3261:3908-3912 “MUST copy all Record-Route…and MUST maintain the order of those values” 第二个 MUST 义务成立；候选漏填 When 从句条件。与 A/B 一致（valid_confirmed）。
+rfc3261.txt@3893#5,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 3261:3912-3913 “The UAS MUST add a Contact header field to the response” 显式 MUST，义务成立；候选漏填 3907-3908 的 When 条件。与 A/B 一致（valid_confirmed）。
+rfc3261.txt@5893#0,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 3261:5899-5900 “The request method MUST NOT be included in the calculation of the branch parameter” 为 MUST NOT 禁止句，义务成立；承担者经 5891-5892 解析为 proxy，候选把对象当 subject 且极性记 positive。与 A/B 一致（valid_confirmed）。
+rfc3261.txt@5893#2,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,"锚点 3261:5908-5911 “If…the copy contains no Content-Length header field, the proxy MUST insert one” 条件→MUST，义务成立；候选漏填条件。与 A/B 一致（valid_confirmed）。"
+rfc3261.txt@5893#3,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 3261:5915-5918 “A stateful proxy MUST create a new client transaction for this request” 六字段一致，义务成立。与 A/B 一致（valid_confirmed）。
+rfc3261.txt@5893#5,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 3261:5924-5926 “Timer C MUST be set…The timer MUST be larger than 3 minutes” 显式 MUST，义务成立；候选 subject 仅写 timer、漏 when 条件属字段层。与 A/B 一致（valid_confirmed）。
+rfc3261.txt@8085#3,valid_confirmed,valid_confirmed,否,valid_confirmed,3号人工,2026/11/16,锚点 3261:8099-8101 “This parameter MUST contain the source address from which the packet was received” 义务成立；候选 normative_subject 空、action 与 object 重复属字段错。与 A/B 一致（valid_confirmed）。
+rfc4954.txt@1091#1,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 4954:1095-1096 在 1087 行起 Intellectual Property 节内，“Information on the procedures…found in BCP 78 and BCP 79” 为 IPR 样板指引。与 A/B 一致（valid_rejection）。
+rfc4954.txt@1091#2,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 4954:1098-1103 “Copies of IPR disclosures made to the IETF Secretariat…can be obtained from the IETF on-line IPR repository” 为资料来源说明，Secretariat 非义务主体。与 A/B 一致（valid_rejection）。
+rfc4954.txt@1091#3,valid_rejection,valid_rejection,否,valid_rejection,3号人工,2026/11/16,锚点 4954:1102-1103 “can be obtained from the IETF on-line IPR repository at http://www.ietf.org/ipr” 属 IPR 声明中的获取渠道说明。与 A/B 一致（valid_rejection）。

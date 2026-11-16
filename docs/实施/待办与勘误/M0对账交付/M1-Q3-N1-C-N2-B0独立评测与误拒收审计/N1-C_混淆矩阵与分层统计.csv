@@ -1,0 +1,47 @@
+★ 口径,★ 分层维度,★ 分层取值,★ 模型/影子状态,★ 人工真值,★ 条数,★ 占比(该层内),★ 说明
+★ 影子确定性层（V0）,★ 全体,★ 全体,★ pending,valid_confirmed,4,0.8,★ 行=影子路由，★ 列=人工冻结真值
+★ 影子确定性层（V0）,★ 全体,★ 全体,★ pending,valid_rejection,1,0.2,★ 行=影子路由，★ 列=人工冻结真值
+★ 影子确定性层（V0）,★ 全体,★ 全体,★ rejected,valid_confirmed,1,1.0,★ 行=影子路由，★ 列=人工冻结真值
+★ 影子确定性层（V0）,★ 全体,★ 全体,★ routed_to_LLM,valid_confirmed,8,0.1818,★ 行=影子路由，★ 列=人工冻结真值
+★ 影子确定性层（V0）,★ 全体,★ 全体,★ routed_to_LLM,valid_rejection,36,0.8182,★ 行=影子路由，★ 列=人工冻结真值
+★ 影子确定性层（V1）,★ 全体,★ 全体,★ pending,valid_confirmed,4,0.1,★ 行=影子路由，★ 列=人工冻结真值
+★ 影子确定性层（V1）,★ 全体,★ 全体,★ pending,valid_rejection,36,0.9,★ 行=影子路由，★ 列=人工冻结真值
+★ 影子确定性层（V1）,★ 全体,★ 全体,★ routed_to_LLM,valid_confirmed,9,0.9,★ 行=影子路由，★ 列=人工冻结真值
+★ 影子确定性层（V1）,★ 全体,★ 全体,★ routed_to_LLM,valid_rejection,1,0.1,★ 行=影子路由，★ 列=人工冻结真值
+★ 影子确定性层（V0）,★ protocol,DHCPv4,★ routed_to_LLM,valid_rejection,15,1.0,★ 协议分层
+★ 影子确定性层（V0）,★ protocol,rtsp,★ pending,valid_confirmed,2,0.6667,★ 协议分层
+★ 影子确定性层（V0）,★ protocol,rtsp,★ pending,valid_rejection,1,0.3333,★ 协议分层
+★ 影子确定性层（V0）,★ protocol,rtsp,★ routed_to_LLM,valid_confirmed,2,0.1538,★ 协议分层
+★ 影子确定性层（V0）,★ protocol,rtsp,★ routed_to_LLM,valid_rejection,11,0.8462,★ 协议分层
+★ 影子确定性层（V0）,★ protocol,sip,★ pending,valid_confirmed,2,1.0,★ 协议分层
+★ 影子确定性层（V0）,★ protocol,sip,★ rejected,valid_confirmed,1,1.0,★ 协议分层
+★ 影子确定性层（V0）,★ protocol,sip,★ routed_to_LLM,valid_confirmed,6,0.4615,★ 协议分层
+★ 影子确定性层（V0）,★ protocol,sip,★ routed_to_LLM,valid_rejection,7,0.5385,★ 协议分层
+★ 影子确定性层（V0）,★ protocol,smtp,★ routed_to_LLM,valid_rejection,3,1.0,★ 协议分层
+★ 影子确定性层（V1）,★ protocol,DHCPv4,★ pending,valid_rejection,15,1.0,★ 协议分层
+★ 影子确定性层（V1）,★ protocol,rtsp,★ pending,valid_confirmed,3,0.2143,★ 协议分层
+★ 影子确定性层（V1）,★ protocol,rtsp,★ pending,valid_rejection,11,0.7857,★ 协议分层
+★ 影子确定性层（V1）,★ protocol,rtsp,★ routed_to_LLM,valid_confirmed,1,0.5,★ 协议分层
+★ 影子确定性层（V1）,★ protocol,rtsp,★ routed_to_LLM,valid_rejection,1,0.5,★ 协议分层
+★ 影子确定性层（V1）,★ protocol,sip,★ pending,valid_confirmed,1,0.125,★ 协议分层
+★ 影子确定性层（V1）,★ protocol,sip,★ pending,valid_rejection,7,0.875,★ 协议分层
+★ 影子确定性层（V1）,★ protocol,sip,★ routed_to_LLM,valid_confirmed,8,1.0,★ 协议分层
+★ 影子确定性层（V1）,★ protocol,smtp,★ pending,valid_rejection,3,1.0,★ 协议分层
+★ 影子确定性层（V0）,★ 候选质量(evidence_support),supported,★ routed_to_LLM,valid_confirmed,3,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V0）,★ 候选质量(evidence_support),partially_supported,★ pending,valid_confirmed,4,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V0）,★ 候选质量(evidence_support),partially_supported,★ rejected,valid_confirmed,1,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V0）,★ 候选质量(evidence_support),partially_supported,★ routed_to_LLM,valid_confirmed,5,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V0）,★ 候选质量(evidence_support),contradicted,★ pending,valid_rejection,1,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V0）,★ 候选质量(evidence_support),contradicted,★ routed_to_LLM,valid_rejection,32,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V0）,★ 候选质量(evidence_support),evidence_insufficient,★ routed_to_LLM,valid_rejection,4,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V1）,★ 候选质量(evidence_support),supported,★ routed_to_LLM,valid_confirmed,3,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V1）,★ 候选质量(evidence_support),partially_supported,★ pending,valid_confirmed,4,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V1）,★ 候选质量(evidence_support),partially_supported,★ routed_to_LLM,valid_confirmed,6,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V1）,★ 候选质量(evidence_support),contradicted,★ pending,valid_rejection,32,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V1）,★ 候选质量(evidence_support),contradicted,★ routed_to_LLM,valid_rejection,1,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 影子确定性层（V1）,★ 候选质量(evidence_support),evidence_insufficient,★ pending,valid_rejection,4,1.0,★ ★ 4 条 ABNF 的 evidence_support 存在 A/B 分类分歧（★ 方向一致）
+★ 模型相对层,★ 全体,★ 全体,confirmed,valid_confirmed,5,,★ **仅 27 条有冻结模型状态**；★ 其余 23 条 N/A
+★ 模型相对层,★ 全体,★ 全体,pending,valid_confirmed,4,,★ **仅 27 条有冻结模型状态**；★ 其余 23 条 N/A
+★ 模型相对层,★ 全体,★ 全体,pending,valid_rejection,13,,★ **仅 27 条有冻结模型状态**；★ 其余 23 条 N/A
+★ 模型相对层,★ 全体,★ 全体,rejected,valid_confirmed,2,,★ **仅 27 条有冻结模型状态**；★ 其余 23 条 N/A
+★ 模型相对层,★ 全体,★ 全体,rejected,valid_rejection,3,,★ **仅 27 条有冻结模型状态**；★ 其余 23 条 N/A

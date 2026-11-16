@@ -87,17 +87,33 @@ def test_n1c_evidence_columns_complete():
         assert _r["chunk_id"].strip(), _r["sample_id"]
 
 
-def test_n1c_label_columns_are_empty_and_complete():
-    """★ 标签列必须**全空**（★ Agent 不得代填）。"""
+def test_n1c_label_columns_are_filled_and_valid():
+    """★ **N1-C 独立评估阶段**：★ 标签列必须**已填**且**枚举合法**。
+
+    ★ ★ 发放前阶段的对应断言是「标签列全空」（★ 见提交历史）；
+    ★ ★ 现已由真实人类审核者填毕 ⇒ ★ 断言更新为「已填 + 合法」。
+    """
     _fields = ["subject", "action", "object", "strength", "polarity",
                "condition", "exception", "evidence_support", "truth_label",
                "review_note"]
+    _truth_ok = {"valid_confirmed", "valid_rejection",
+                 "pending_insufficient_evidence", "uncertain_requires_human"}
+    _sup_ok = {"supported", "partially_supported", "contradicted",
+               "evidence_insufficient"}
     for _n, _tag in (("N1-C_盲审标注表_A.csv", "A"), ("N1-C_盲审标注表_B.csv", "B")):
         for _r in _rows(DELIV / _n):
             for _f in _fields:
                 assert f"★ {_tag}:{_f}" in _r
-                assert not (_r.get(f"★ {_tag}:{_f}") or "").strip(), \
-                    f"{_n}:{_r['sample_id']}:{_f}"
+            _t = (_r.get(f"★ {_tag}:truth_label") or "").strip()
+            _e = (_r.get(f"★ {_tag}:evidence_support") or "").strip()
+            assert _t, f"{_n}:{_r['sample_id']}:truth_label 未填"
+            assert _t in _truth_ok, f"{_n}:{_r['sample_id']}:{_t}"
+            assert _e, f"{_n}:{_r['sample_id']}:evidence_support 未填"
+            assert _e in _sup_ok, f"{_n}:{_r['sample_id']}:{_e}"
+            assert (_r.get(f"★ {_tag}:review_note") or "").strip(), \
+                f"{_n}:{_r['sample_id']}:review_note 未填"
+            assert (_r.get(f"★ {_tag}:审核者") or "").strip(), \
+                f"{_n}:{_r['sample_id']}:审核者 未填"
 
 
 def test_n1c_arbitration_table_has_required_audit_columns():
