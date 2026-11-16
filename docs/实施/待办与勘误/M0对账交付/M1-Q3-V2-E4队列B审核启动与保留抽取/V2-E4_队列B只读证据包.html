@@ -1,0 +1,2029 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>V2-E4 队列 B 只读证据包（54 条片段）</title>
+<style>
+body{font-family:Consolas,"Microsoft YaHei",monospace;margin:24px;color:#1a1a1a;line-height:1.5}
+h1{font-size:20px}h2{font-size:15px;margin:24px 0 6px;padding:6px 10px;background:#eef3fa;border-left:4px solid #3a6ea5}
+.meta{color:#555;font-size:12px;margin-bottom:4px}
+table.ln{border-collapse:collapse;width:100%;margin:6px 0 10px}
+table.ln td{padding:1px 8px;font-size:12.5px;vertical-align:top}
+td.no{width:52px;color:#888;text-align:right;background:#f6f6f6;user-select:none}
+tr.ev td{background:#fff6d8;font-weight:600}
+tr.ctx td{color:#333}
+.hint{background:#fffbe6;border:1px solid #e0c97a;padding:10px 14px;margin:14px 0;font-size:13px}
+</style></head><body>
+<h1>V2-E4 · 队列 B 只读 RFC 原文证据包</h1>
+<div class="hint">
+<b>给审核者：</b>本包是<b>只读</b>的 RFC 原文证据（含行号）。<br>
+① 请用 <code>V2-E3_队列B_审核者X_Excel友好编辑模板.csv</code> 填写标注（该模板不含原文，故须对照本包）。<br>
+② 本包<b>不含</b>任何模型预测、历史标签或「是否已生成候选」信息。<br>
+③ 一个片段可发现 <b>0 / 1 / 多条</b>原子知识；多条时在原子知识表中<b>新增行</b>（序号改 -2、-3 …），不要覆盖。<br>
+④ 原文未明确给出强度时写 <code>unknown</code>；<code>SHOULD NOT</code> ⇒ <code>strength=SHOULD</code> 且 <code>polarity=negative</code>。
+</div>
+
+<h2>B-DHCPv4-rfc1534.txt-100</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc1534.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>100–107</b> ｜
+rfc_sha256 <code>e82c57f4688aadfb…</code> ｜ 证据 sha256 <code>4796a8f5072abc4f…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">90</td><td>   decision by the system administrator.</td></tr>
+<tr class="ctx"><td class="no">91</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">92</td><td>   If a DHCP server returns a automatic address, the BOOTP client will</td></tr>
+<tr class="ctx"><td class="no">93</td><td>   not be aware of the DHCP lease mechanism for network address</td></tr>
+<tr class="ctx"><td class="no">94</td><td>   assignment.  Thus the DHCP server must assign an infinite lease</td></tr>
+<tr class="ctx"><td class="no">95</td><td>   duration to for automatic addresses assigned to BOOTP clients.  Such</td></tr>
+<tr class="ctx"><td class="no">96</td><td>   network addresses cannot be automatically reassigned by the server.</td></tr>
+<tr class="ctx"><td class="no">97</td><td>   The local system administrator may choose to manually release network</td></tr>
+<tr class="ctx"><td class="no">98</td><td>   addresses assigned to BOOTP clients.</td></tr>
+<tr class="ctx"><td class="no">99</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">100</td><td>   A DHCP server that supports BOOTP clients MUST interact with BOOTP</td></tr>
+<tr class="ev"><td class="no">101</td><td>   clients according to the BOOTP protocol.  The server MUST formulate a</td></tr>
+<tr class="ev"><td class="no">102</td><td>   BOOTP BOOTREPLY message rather than a DHCP DHCPOFFER message (i.e.,</td></tr>
+<tr class="ev"><td class="no">103</td><td>   the server MUST NOT include the &#x27;DHCP message type&#x27; option and MUST</td></tr>
+<tr class="ev"><td class="no">104</td><td>   NOT exceed the size limit for BOOTREPLY messages).  The server marks</td></tr>
+<tr class="ev"><td class="no">105</td><td>   a binding for a BOOTP client as BOUND after sending the BOOTP</td></tr>
+<tr class="ev"><td class="no">106</td><td>   BOOTREPLY, as a non-DHCP client will not send a DHCPREQUEST message</td></tr>
+<tr class="ev"><td class="no">107</td><td>   nor will that client expect a DHCPACK message.</td></tr>
+<tr class="ctx"><td class="no">108</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">109</td><td>   DHCP servers MAY send any DHCP Options to a BOOTP client as allowed</td></tr>
+<tr class="ctx"><td class="no">110</td><td>   by the &quot;DHCP Options and BOOTP Vendor Extensions&quot; RFC [2].</td></tr>
+<tr class="ctx"><td class="no">111</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">112</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">113</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">114</td><td>Droms                                                           [Page 2]</td></tr>
+<tr class="ctx"><td class="no">115</td><td></td></tr>
+<tr class="ctx"><td class="no">116</td><td>RFC 1534         Interoperation Between DHCP and BOOTP      October 1993</td></tr>
+<tr class="ctx"><td class="no">117</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-DHCPv4-rfc1534.txt-139</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc1534.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>139–144</b> ｜
+rfc_sha256 <code>e82c57f4688aadfb…</code> ｜ 证据 sha256 <code>01880d5f51db7d55…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">129</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">130</td><td>      o MUST abide by the BOOTP specification when interacting with</td></tr>
+<tr class="ctx"><td class="no">131</td><td>        BOOTP clients, and</td></tr>
+<tr class="ctx"><td class="no">132</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">133</td><td>      o MAY send DHCP options (those options defined in the DHCP options</td></tr>
+<tr class="ctx"><td class="no">134</td><td>        document but not in the BOOTP vendor extensions documents) to</td></tr>
+<tr class="ctx"><td class="no">135</td><td>        a BOOTP client.</td></tr>
+<tr class="ctx"><td class="no">136</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">137</td><td>3. DHCP clients and BOOTP servers</td></tr>
+<tr class="ctx"><td class="no">138</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">139</td><td>   A DHCP client MAY use a reply from a BOOTP server if the</td></tr>
+<tr class="ev"><td class="no">140</td><td>   configuration returned from the BOOTP server is acceptable to the</td></tr>
+<tr class="ev"><td class="no">141</td><td>   DHCP client.  A DHCP client MUST assume that an IP address returned</td></tr>
+<tr class="ev"><td class="no">142</td><td>   in a message from a BOOTP server has an infinite lease.  A DHCP</td></tr>
+<tr class="ev"><td class="no">143</td><td>   client SHOULD choose to use a reply from a DHCP server in preference</td></tr>
+<tr class="ev"><td class="no">144</td><td>   to a reply from a BOOTP server.</td></tr>
+<tr class="ctx"><td class="no">145</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">146</td><td>4. References</td></tr>
+<tr class="ctx"><td class="no">147</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">148</td><td>   [1] Wimer, W., &quot;Clarifications and Extensions for the Bootstrap</td></tr>
+<tr class="ctx"><td class="no">149</td><td>       Protocol&quot;, RFC 1532, Carnegie Mellon University, October 1993.</td></tr>
+<tr class="ctx"><td class="no">150</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">151</td><td>   [2] Alexander, S., and R. Droms, &quot;DHCP Options and BOOTP Vendor</td></tr>
+<tr class="ctx"><td class="no">152</td><td>       Extensions&quot;, RFC 1533, Lachman Technology, Inc., Bucknell</td></tr>
+<tr class="ctx"><td class="no">153</td><td>       University, October 1993.</td></tr>
+<tr class="ctx"><td class="no">154</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-DHCPv4-rfc1534.txt-92</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc1534.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>92–98</b> ｜
+rfc_sha256 <code>e82c57f4688aadfb…</code> ｜ 证据 sha256 <code>3fe2d463c2a6f8e5…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">82</td><td>   server from its pool of unassigned addresses.</td></tr>
+<tr class="ctx"><td class="no">83</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">84</td><td>   Since BOOTP clients may not be prepared to receive automatic</td></tr>
+<tr class="ctx"><td class="no">85</td><td>   addresses, the decision to allow a DHCP server to return automatic</td></tr>
+<tr class="ctx"><td class="no">86</td><td>   addresses must be under the control of the system administrator.  If</td></tr>
+<tr class="ctx"><td class="no">87</td><td>   a DHCP server supports supplying automatic addresses to BOOTP</td></tr>
+<tr class="ctx"><td class="no">88</td><td>   clients, this feature must be configurable, and the feature must</td></tr>
+<tr class="ctx"><td class="no">89</td><td>   default off.  Enabling of the feature must be the result of an active</td></tr>
+<tr class="ctx"><td class="no">90</td><td>   decision by the system administrator.</td></tr>
+<tr class="ctx"><td class="no">91</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">92</td><td>   If a DHCP server returns a automatic address, the BOOTP client will</td></tr>
+<tr class="ev"><td class="no">93</td><td>   not be aware of the DHCP lease mechanism for network address</td></tr>
+<tr class="ev"><td class="no">94</td><td>   assignment.  Thus the DHCP server must assign an infinite lease</td></tr>
+<tr class="ev"><td class="no">95</td><td>   duration to for automatic addresses assigned to BOOTP clients.  Such</td></tr>
+<tr class="ev"><td class="no">96</td><td>   network addresses cannot be automatically reassigned by the server.</td></tr>
+<tr class="ev"><td class="no">97</td><td>   The local system administrator may choose to manually release network</td></tr>
+<tr class="ev"><td class="no">98</td><td>   addresses assigned to BOOTP clients.</td></tr>
+<tr class="ctx"><td class="no">99</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">100</td><td>   A DHCP server that supports BOOTP clients MUST interact with BOOTP</td></tr>
+<tr class="ctx"><td class="no">101</td><td>   clients according to the BOOTP protocol.  The server MUST formulate a</td></tr>
+<tr class="ctx"><td class="no">102</td><td>   BOOTP BOOTREPLY message rather than a DHCP DHCPOFFER message (i.e.,</td></tr>
+<tr class="ctx"><td class="no">103</td><td>   the server MUST NOT include the &#x27;DHCP message type&#x27; option and MUST</td></tr>
+<tr class="ctx"><td class="no">104</td><td>   NOT exceed the size limit for BOOTREPLY messages).  The server marks</td></tr>
+<tr class="ctx"><td class="no">105</td><td>   a binding for a BOOTP client as BOUND after sending the BOOTP</td></tr>
+<tr class="ctx"><td class="no">106</td><td>   BOOTREPLY, as a non-DHCP client will not send a DHCPREQUEST message</td></tr>
+<tr class="ctx"><td class="no">107</td><td>   nor will that client expect a DHCPACK message.</td></tr>
+<tr class="ctx"><td class="no">108</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-DHCPv4-rfc1542.txt-182</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc1542.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>182–189</b> ｜
+rfc_sha256 <code>791f988d45474c91…</code> ｜ 证据 sha256 <code>5e8a1d7dd6da5024…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">172</td><td>RFC 1542        Clarifications and Extensions for BOOTP     October 1993</td></tr>
+<tr class="ctx"><td class="no">173</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">174</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">175</td><td>      BOOTREPLY</td></tr>
+<tr class="ctx"><td class="no">176</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">177</td><td>         A BOOTREPLY message is a BOOTP message sent from a BOOTP server</td></tr>
+<tr class="ctx"><td class="no">178</td><td>         to a BOOTP client, providing configuration information.</td></tr>
+<tr class="ctx"><td class="no">179</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">180</td><td>      Silently discard</td></tr>
+<tr class="ctx"><td class="no">181</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">182</td><td>         This memo specifies several cases where a BOOTP entity is to</td></tr>
+<tr class="ev"><td class="no">183</td><td>         &quot;silently discard&quot; a received BOOTP message.  This means that</td></tr>
+<tr class="ev"><td class="no">184</td><td>         the entity is to discard the message without further</td></tr>
+<tr class="ev"><td class="no">185</td><td>         processing, and that the entity will not send any ICMP error</td></tr>
+<tr class="ev"><td class="no">186</td><td>         message as a result.  However, for diagnosis of problems, the</td></tr>
+<tr class="ev"><td class="no">187</td><td>         entity SHOULD provide the capability of logging the error,</td></tr>
+<tr class="ev"><td class="no">188</td><td>         including the contents of the silently-discarded message, and</td></tr>
+<tr class="ev"><td class="no">189</td><td>         SHOULD record the event in a statistics counter.</td></tr>
+<tr class="ctx"><td class="no">190</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">191</td><td>1.3 Data Transmission Order</td></tr>
+<tr class="ctx"><td class="no">192</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">193</td><td>   The order of transmission of the header and data described in this</td></tr>
+<tr class="ctx"><td class="no">194</td><td>   document is resolved to the octet level.  Whenever a diagram shows a</td></tr>
+<tr class="ctx"><td class="no">195</td><td>   group of octets, the order of transmission of those octets is the</td></tr>
+<tr class="ctx"><td class="no">196</td><td>   normal order in which they are read in English.  For example, in the</td></tr>
+<tr class="ctx"><td class="no">197</td><td>   following diagram, the octets are transmitted in the order they are</td></tr>
+<tr class="ctx"><td class="no">198</td><td>   numbered.</td></tr>
+<tr class="ctx"><td class="no">199</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-DHCPv4-rfc1542.txt-193</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc1542.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>193–198</b> ｜
+rfc_sha256 <code>791f988d45474c91…</code> ｜ 证据 sha256 <code>4e590996a218d087…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">183</td><td>         &quot;silently discard&quot; a received BOOTP message.  This means that</td></tr>
+<tr class="ctx"><td class="no">184</td><td>         the entity is to discard the message without further</td></tr>
+<tr class="ctx"><td class="no">185</td><td>         processing, and that the entity will not send any ICMP error</td></tr>
+<tr class="ctx"><td class="no">186</td><td>         message as a result.  However, for diagnosis of problems, the</td></tr>
+<tr class="ctx"><td class="no">187</td><td>         entity SHOULD provide the capability of logging the error,</td></tr>
+<tr class="ctx"><td class="no">188</td><td>         including the contents of the silently-discarded message, and</td></tr>
+<tr class="ctx"><td class="no">189</td><td>         SHOULD record the event in a statistics counter.</td></tr>
+<tr class="ctx"><td class="no">190</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">191</td><td>1.3 Data Transmission Order</td></tr>
+<tr class="ctx"><td class="no">192</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">193</td><td>   The order of transmission of the header and data described in this</td></tr>
+<tr class="ev"><td class="no">194</td><td>   document is resolved to the octet level.  Whenever a diagram shows a</td></tr>
+<tr class="ev"><td class="no">195</td><td>   group of octets, the order of transmission of those octets is the</td></tr>
+<tr class="ev"><td class="no">196</td><td>   normal order in which they are read in English.  For example, in the</td></tr>
+<tr class="ev"><td class="no">197</td><td>   following diagram, the octets are transmitted in the order they are</td></tr>
+<tr class="ev"><td class="no">198</td><td>   numbered.</td></tr>
+<tr class="ctx"><td class="no">199</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">200</td><td>                     0                   1</td></tr>
+<tr class="ctx"><td class="no">201</td><td>                     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5</td></tr>
+<tr class="ctx"><td class="no">202</td><td>                     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</td></tr>
+<tr class="ctx"><td class="no">203</td><td>                     |       1       |       2       |</td></tr>
+<tr class="ctx"><td class="no">204</td><td>                     +-------------------------------+</td></tr>
+<tr class="ctx"><td class="no">205</td><td>                     |       3       |       4       |</td></tr>
+<tr class="ctx"><td class="no">206</td><td>                     +-------------------------------+</td></tr>
+<tr class="ctx"><td class="no">207</td><td>                     |       5       |       6       |</td></tr>
+<tr class="ctx"><td class="no">208</td><td>                     +-------------------------------+</td></tr>
+</table>
+<h2>B-DHCPv4-rfc1542.txt-200</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc1542.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>200–208</b> ｜
+rfc_sha256 <code>791f988d45474c91…</code> ｜ 证据 sha256 <code>2db56b7700c1609d…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">190</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">191</td><td>1.3 Data Transmission Order</td></tr>
+<tr class="ctx"><td class="no">192</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">193</td><td>   The order of transmission of the header and data described in this</td></tr>
+<tr class="ctx"><td class="no">194</td><td>   document is resolved to the octet level.  Whenever a diagram shows a</td></tr>
+<tr class="ctx"><td class="no">195</td><td>   group of octets, the order of transmission of those octets is the</td></tr>
+<tr class="ctx"><td class="no">196</td><td>   normal order in which they are read in English.  For example, in the</td></tr>
+<tr class="ctx"><td class="no">197</td><td>   following diagram, the octets are transmitted in the order they are</td></tr>
+<tr class="ctx"><td class="no">198</td><td>   numbered.</td></tr>
+<tr class="ctx"><td class="no">199</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">200</td><td>                     0                   1</td></tr>
+<tr class="ev"><td class="no">201</td><td>                     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5</td></tr>
+<tr class="ev"><td class="no">202</td><td>                     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</td></tr>
+<tr class="ev"><td class="no">203</td><td>                     |       1       |       2       |</td></tr>
+<tr class="ev"><td class="no">204</td><td>                     +-------------------------------+</td></tr>
+<tr class="ev"><td class="no">205</td><td>                     |       3       |       4       |</td></tr>
+<tr class="ev"><td class="no">206</td><td>                     +-------------------------------+</td></tr>
+<tr class="ev"><td class="no">207</td><td>                     |       5       |       6       |</td></tr>
+<tr class="ev"><td class="no">208</td><td>                     +-------------------------------+</td></tr>
+<tr class="ctx"><td class="no">209</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">210</td><td>   Whenever an octet represents a numeric quantity, the leftmost bit in</td></tr>
+<tr class="ctx"><td class="no">211</td><td>   the diagram is the high order or most significant bit.  That is, the</td></tr>
+<tr class="ctx"><td class="no">212</td><td>   bit labeled 0 is the most significant bit.  For example, the</td></tr>
+<tr class="ctx"><td class="no">213</td><td>   following diagram represents the value 170 (decimal).</td></tr>
+<tr class="ctx"><td class="no">214</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">215</td><td>                               0 1 2 3 4 5 6 7</td></tr>
+<tr class="ctx"><td class="no">216</td><td>                              +-+-+-+-+-+-+-+-+</td></tr>
+<tr class="ctx"><td class="no">217</td><td>                              |1 0 1 0 1 0 1 0|</td></tr>
+<tr class="ctx"><td class="no">218</td><td>                              +---------------+</td></tr>
+</table>
+<h2>B-DHCPv4-rfc1542.txt-525</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc1542.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>525–538</b> ｜
+rfc_sha256 <code>791f988d45474c91…</code> ｜ 证据 sha256 <code>9271970dcd5f3ad1…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">515</td><td>   The &#x27;secs&#x27; field of a BOOTREQUEST message SHOULD represent the</td></tr>
+<tr class="ctx"><td class="no">516</td><td>   elapsed time, in seconds, since the client sent its first BOOTREQUEST</td></tr>
+<tr class="ctx"><td class="no">517</td><td>   message.  Note that this implies that the &#x27;secs&#x27; field of the first</td></tr>
+<tr class="ctx"><td class="no">518</td><td>   BOOTREQUEST message SHOULD be set to zero.</td></tr>
+<tr class="ctx"><td class="no">519</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">520</td><td>   Clients SHOULD NOT set the &#x27;secs&#x27; field to a value which is constant</td></tr>
+<tr class="ctx"><td class="no">521</td><td>   for all BOOTREQUEST messages.</td></tr>
+<tr class="ctx"><td class="no">522</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">523</td><td>      DISCUSSION:</td></tr>
+<tr class="ctx"><td class="no">524</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">525</td><td>         The original definition of the &#x27;secs&#x27; field was vague.  It was</td></tr>
+<tr class="ev"><td class="no">526</td><td>         not clear whether it represented the time since the first</td></tr>
+<tr class="ev"><td class="no">527</td><td>         BOOTREQUEST message was sent or some other time period such as</td></tr>
+<tr class="ev"><td class="no">528</td><td>         the time since the client machine was powered-up.  This has</td></tr>
+<tr class="ev"><td class="no">529</td><td>         limited its usefulness as a policy control mechanism for BOOTP</td></tr>
+<tr class="ev"><td class="no">530</td><td>         servers and relay agents.  Furthermore, certain client</td></tr>
+<tr class="ev"><td class="no">531</td><td>         implementations have been known to simply set this field to a</td></tr>
+<tr class="ev"><td class="no">532</td><td>         constant value or use incorrect byte-ordering.  Incorrect</td></tr>
+<tr class="ev"><td class="no">533</td><td>         byte-ordering usually makes it appear as if a client has been</td></tr>
+<tr class="ev"><td class="no">534</td><td>         waiting much longer than it really has, so a relay agent will</td></tr>
+<tr class="ev"><td class="no">535</td><td>         relay the BOOTREQUEST sooner than desired (usually</td></tr>
+<tr class="ev"><td class="no">536</td><td>         immediately).  These implementation errors have further</td></tr>
+<tr class="ev"><td class="no">537</td><td>         undermined the usefulness of the &#x27;secs&#x27; field.  These incorrect</td></tr>
+<tr class="ev"><td class="no">538</td><td>         implementations SHOULD be corrected.</td></tr>
+<tr class="ctx"><td class="no">539</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">540</td><td>3.3 Use of the &#x27;ciaddr&#x27; and &#x27;yiaddr&#x27; fields</td></tr>
+<tr class="ctx"><td class="no">541</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">542</td><td>   If a BOOTP client does not know what IP address it should be using,</td></tr>
+<tr class="ctx"><td class="no">543</td><td>   the client SHOULD set the &#x27;ciaddr&#x27; field to 0.0.0.0.  If the client</td></tr>
+<tr class="ctx"><td class="no">544</td><td>   has the ability to remember the last IP address it was assigned, or</td></tr>
+<tr class="ctx"><td class="no">545</td><td>   it has been preconfigured with an IP address via some alternate</td></tr>
+<tr class="ctx"><td class="no">546</td><td>   mechanism, the client MAY fill the &#x27;ciaddr&#x27; field with that IP</td></tr>
+<tr class="ctx"><td class="no">547</td><td>   address.  If the client does place a non-zero IP address in the</td></tr>
+<tr class="ctx"><td class="no">548</td><td>   &#x27;ciaddr&#x27; field, the client MUST be prepared to accept incoming</td></tr>
+</table>
+<h2>B-DHCPv4-rfc1542.txt-81</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc1542.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>81–89</b> ｜
+rfc_sha256 <code>791f988d45474c91…</code> ｜ 证据 sha256 <code>0e888e1de91d1d9d…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">71</td><td>   5.2 Use of the &#x27;secs&#x27; field..................................... 19</td></tr>
+<tr class="ctx"><td class="no">72</td><td>   5.3 Use of the &#x27;ciaddr&#x27; field................................... 19</td></tr>
+<tr class="ctx"><td class="no">73</td><td>   5.4 Strategy for Delivery of BOOTREPLY Messages................. 20</td></tr>
+<tr class="ctx"><td class="no">74</td><td>   Acknowledgements................................................ 21</td></tr>
+<tr class="ctx"><td class="no">75</td><td>   References...................................................... 22</td></tr>
+<tr class="ctx"><td class="no">76</td><td>   Security Considerations......................................... 23</td></tr>
+<tr class="ctx"><td class="no">77</td><td>   Author&#x27;s Address................................................ 23</td></tr>
+<tr class="ctx"><td class="no">78</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">79</td><td>1. Introduction</td></tr>
+<tr class="ctx"><td class="no">80</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">81</td><td>   The Bootstrap Protocol (BOOTP) is a UDP/IP-based protocol which</td></tr>
+<tr class="ev"><td class="no">82</td><td>   allows a booting host to configure itself dynamically and without</td></tr>
+<tr class="ev"><td class="no">83</td><td>   user supervision.  BOOTP provides a means to notify a host of its</td></tr>
+<tr class="ev"><td class="no">84</td><td>   assigned IP address, the IP address of a boot server host, and the</td></tr>
+<tr class="ev"><td class="no">85</td><td>   name of a file to be loaded into memory and executed [1].  Other</td></tr>
+<tr class="ev"><td class="no">86</td><td>   configuration information such as the local subnet mask, the local</td></tr>
+<tr class="ev"><td class="no">87</td><td>   time offset, the addresses of default routers, and the addresses of</td></tr>
+<tr class="ev"><td class="no">88</td><td>   various Internet servers can also be communicated to a host using</td></tr>
+<tr class="ev"><td class="no">89</td><td>   BOOTP [2].</td></tr>
+<tr class="ctx"><td class="no">90</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">91</td><td>   Unfortunately, the original BOOTP specification [1] left some issues</td></tr>
+<tr class="ctx"><td class="no">92</td><td>   of the protocol open to question.  The exact behavior of BOOTP relay</td></tr>
+<tr class="ctx"><td class="no">93</td><td>   agents formerly called &quot;BOOTP forwarding agents&quot;) was not clearly</td></tr>
+<tr class="ctx"><td class="no">94</td><td>   specified.  Some parts of the overall protocol specification actually</td></tr>
+<tr class="ctx"><td class="no">95</td><td>   conflict, while other parts have been subject to misinterpretation,</td></tr>
+<tr class="ctx"><td class="no">96</td><td>   indicating that clarification is needed.  This memo addresses these</td></tr>
+<tr class="ctx"><td class="no">97</td><td>   problems.</td></tr>
+<tr class="ctx"><td class="no">98</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">99</td><td>   Since the introduction of BOOTP, the IEEE 802.5 Token Ring Network</td></tr>
+</table>
+<h2>B-DHCPv4-rfc1542.txt-91</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc1542.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>91–97</b> ｜
+rfc_sha256 <code>791f988d45474c91…</code> ｜ 证据 sha256 <code>4b2fbcbffda526ec…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">81</td><td>   The Bootstrap Protocol (BOOTP) is a UDP/IP-based protocol which</td></tr>
+<tr class="ctx"><td class="no">82</td><td>   allows a booting host to configure itself dynamically and without</td></tr>
+<tr class="ctx"><td class="no">83</td><td>   user supervision.  BOOTP provides a means to notify a host of its</td></tr>
+<tr class="ctx"><td class="no">84</td><td>   assigned IP address, the IP address of a boot server host, and the</td></tr>
+<tr class="ctx"><td class="no">85</td><td>   name of a file to be loaded into memory and executed [1].  Other</td></tr>
+<tr class="ctx"><td class="no">86</td><td>   configuration information such as the local subnet mask, the local</td></tr>
+<tr class="ctx"><td class="no">87</td><td>   time offset, the addresses of default routers, and the addresses of</td></tr>
+<tr class="ctx"><td class="no">88</td><td>   various Internet servers can also be communicated to a host using</td></tr>
+<tr class="ctx"><td class="no">89</td><td>   BOOTP [2].</td></tr>
+<tr class="ctx"><td class="no">90</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">91</td><td>   Unfortunately, the original BOOTP specification [1] left some issues</td></tr>
+<tr class="ev"><td class="no">92</td><td>   of the protocol open to question.  The exact behavior of BOOTP relay</td></tr>
+<tr class="ev"><td class="no">93</td><td>   agents formerly called &quot;BOOTP forwarding agents&quot;) was not clearly</td></tr>
+<tr class="ev"><td class="no">94</td><td>   specified.  Some parts of the overall protocol specification actually</td></tr>
+<tr class="ev"><td class="no">95</td><td>   conflict, while other parts have been subject to misinterpretation,</td></tr>
+<tr class="ev"><td class="no">96</td><td>   indicating that clarification is needed.  This memo addresses these</td></tr>
+<tr class="ev"><td class="no">97</td><td>   problems.</td></tr>
+<tr class="ctx"><td class="no">98</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">99</td><td>   Since the introduction of BOOTP, the IEEE 802.5 Token Ring Network</td></tr>
+<tr class="ctx"><td class="no">100</td><td>   has been developed which presents a unique problem for BOOTP&#x27;s</td></tr>
+<tr class="ctx"><td class="no">101</td><td>   particular message-transfer paradigm.  This memo also suggests a</td></tr>
+<tr class="ctx"><td class="no">102</td><td>   solution for this problem.</td></tr>
+<tr class="ctx"><td class="no">103</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">104</td><td>   NOTE: Unless otherwise specified in this document or a later</td></tr>
+<tr class="ctx"><td class="no">105</td><td>   document, the information and requirements specified througout this</td></tr>
+<tr class="ctx"><td class="no">106</td><td>   document also apply to extensions to BOOTP such as the Dynamic Host</td></tr>
+<tr class="ctx"><td class="no">107</td><td>   Configuration Protocol (DHCP) [3].</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2131.txt-102</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2131.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>102–110</b> ｜
+rfc_sha256 <code>a043b705785b8176…</code> ｜ 证据 sha256 <code>1e9f51e32a5c1f5e…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">92</td><td>   DHCP server to a host and a mechanism for allocation of network</td></tr>
+<tr class="ctx"><td class="no">93</td><td>   addresses to hosts.</td></tr>
+<tr class="ctx"><td class="no">94</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">95</td><td>   DHCP is built on a client-server model, where designated DHCP server</td></tr>
+<tr class="ctx"><td class="no">96</td><td>   hosts allocate network addresses and deliver configuration parameters</td></tr>
+<tr class="ctx"><td class="no">97</td><td>   to dynamically configured hosts.  Throughout the remainder of this</td></tr>
+<tr class="ctx"><td class="no">98</td><td>   document, the term &quot;server&quot; refers to a host providing initialization</td></tr>
+<tr class="ctx"><td class="no">99</td><td>   parameters through DHCP, and the term &quot;client&quot; refers to a host</td></tr>
+<tr class="ctx"><td class="no">100</td><td>   requesting initialization parameters from a DHCP server.</td></tr>
+<tr class="ctx"><td class="no">101</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">102</td><td>   A host should not act as a DHCP server unless explicitly configured</td></tr>
+<tr class="ev"><td class="no">103</td><td>   to do so by a system administrator.  The diversity of hardware and</td></tr>
+<tr class="ev"><td class="no">104</td><td>   protocol implementations in the Internet would preclude reliable</td></tr>
+<tr class="ev"><td class="no">105</td><td>   operation if random hosts were allowed to respond to DHCP requests.</td></tr>
+<tr class="ev"><td class="no">106</td><td>   For example, IP requires the setting of many parameters within the</td></tr>
+<tr class="ev"><td class="no">107</td><td>   protocol implementation software.  Because IP can be used on many</td></tr>
+<tr class="ev"><td class="no">108</td><td>   dissimilar kinds of network hardware, values for those parameters</td></tr>
+<tr class="ev"><td class="no">109</td><td>   cannot be guessed or assumed to have correct defaults.  Also,</td></tr>
+<tr class="ev"><td class="no">110</td><td>   distributed address allocation schemes depend on a polling/defense</td></tr>
+<tr class="ctx"><td class="no">111</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">112</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">113</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">114</td><td>Droms                       Standards Track                     [Page 2]</td></tr>
+<tr class="ctx"><td class="no">115</td><td></td></tr>
+<tr class="ctx"><td class="no">116</td><td>RFC 2131          Dynamic Host Configuration Protocol         March 1997</td></tr>
+<tr class="ctx"><td class="no">117</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">118</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">119</td><td>   mechanism for discovery of addresses that are already in use.  IP</td></tr>
+<tr class="ctx"><td class="no">120</td><td>   hosts may not always be able to defend their network addresses, so</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2131.txt-74</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2131.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>74–85</b> ｜
+rfc_sha256 <code>a043b705785b8176…</code> ｜ 证据 sha256 <code>c69fde90348d8a44…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">64</td><td>   4.2 DHCP server administrative controls . . . . . . . . . . . . . 25</td></tr>
+<tr class="ctx"><td class="no">65</td><td>   4.3 DHCP server behavior. . . . . . . . . . . . . . . . . . . . . 26</td></tr>
+<tr class="ctx"><td class="no">66</td><td>   4.4 DHCP client behavior. . . . . . . . . . . . . . . . . . . . . 34</td></tr>
+<tr class="ctx"><td class="no">67</td><td>   5.  Acknowledgments. . . . . . . . . . . . . . . . . . . . . . . .42</td></tr>
+<tr class="ctx"><td class="no">68</td><td>   6.  References . . . . . . . . . . . . . . . . . . . . . . . . . .42</td></tr>
+<tr class="ctx"><td class="no">69</td><td>   7.  Security Considerations. . . . . . . . . . . . . . . . . . . .43</td></tr>
+<tr class="ctx"><td class="no">70</td><td>   8.  Author&#x27;s Address . . . . . . . . . . . . . . . . . . . . . . .44</td></tr>
+<tr class="ctx"><td class="no">71</td><td>   A.  Host Configuration Parameters  . . . . . . . . . . . . . . . .45</td></tr>
+<tr class="ctx"><td class="no">72</td><td>List of Figures</td></tr>
+<tr class="ctx"><td class="no">73</td><td>   1. Format of a DHCP message . . . . . . . . . . . . . . . . . . .  9</td></tr>
+<tr class="ev"><td class="no">74</td><td>   2. Format of the &#x27;flags&#x27; field. . . . . . . . . . . . . . . . . . 11</td></tr>
+<tr class="ev"><td class="no">75</td><td>   3. Timeline diagram of messages exchanged between DHCP client and</td></tr>
+<tr class="ev"><td class="no">76</td><td>      servers when allocating a new network address. . . . . . . . . 15</td></tr>
+<tr class="ev"><td class="no">77</td><td>   4. Timeline diagram of messages exchanged between DHCP client and</td></tr>
+<tr class="ev"><td class="no">78</td><td>      servers when reusing a previously allocated network address. . 18</td></tr>
+<tr class="ev"><td class="no">79</td><td>   5. State-transition diagram for DHCP clients. . . . . . . . . . . 34</td></tr>
+<tr class="ev"><td class="no">80</td><td>List of Tables</td></tr>
+<tr class="ev"><td class="no">81</td><td>   1. Description of fields in a DHCP message. . . . . . . . . . . . 10</td></tr>
+<tr class="ev"><td class="no">82</td><td>   2. DHCP messages. . . . . . . . . . . . . . . . . . . . . . . . . 14</td></tr>
+<tr class="ev"><td class="no">83</td><td>   3. Fields and options used by DHCP servers. . . . . . . . . . . . 28</td></tr>
+<tr class="ev"><td class="no">84</td><td>   4. Client messages from various states. . . . . . . . . . . . . . 33</td></tr>
+<tr class="ev"><td class="no">85</td><td>   5. Fields and options used by DHCP clients. . . . . . . . . . . . 37</td></tr>
+<tr class="ctx"><td class="no">86</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">87</td><td>1. Introduction</td></tr>
+<tr class="ctx"><td class="no">88</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">89</td><td>   The Dynamic Host Configuration Protocol (DHCP) provides configuration</td></tr>
+<tr class="ctx"><td class="no">90</td><td>   parameters to Internet hosts.  DHCP consists of two components: a</td></tr>
+<tr class="ctx"><td class="no">91</td><td>   protocol for delivering host-specific configuration parameters from a</td></tr>
+<tr class="ctx"><td class="no">92</td><td>   DHCP server to a host and a mechanism for allocation of network</td></tr>
+<tr class="ctx"><td class="no">93</td><td>   addresses to hosts.</td></tr>
+<tr class="ctx"><td class="no">94</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">95</td><td>   DHCP is built on a client-server model, where designated DHCP server</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2131.txt-95</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2131.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>95–100</b> ｜
+rfc_sha256 <code>a043b705785b8176…</code> ｜ 证据 sha256 <code>c1740e8d483f9a86…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">85</td><td>   5. Fields and options used by DHCP clients. . . . . . . . . . . . 37</td></tr>
+<tr class="ctx"><td class="no">86</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">87</td><td>1. Introduction</td></tr>
+<tr class="ctx"><td class="no">88</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">89</td><td>   The Dynamic Host Configuration Protocol (DHCP) provides configuration</td></tr>
+<tr class="ctx"><td class="no">90</td><td>   parameters to Internet hosts.  DHCP consists of two components: a</td></tr>
+<tr class="ctx"><td class="no">91</td><td>   protocol for delivering host-specific configuration parameters from a</td></tr>
+<tr class="ctx"><td class="no">92</td><td>   DHCP server to a host and a mechanism for allocation of network</td></tr>
+<tr class="ctx"><td class="no">93</td><td>   addresses to hosts.</td></tr>
+<tr class="ctx"><td class="no">94</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">95</td><td>   DHCP is built on a client-server model, where designated DHCP server</td></tr>
+<tr class="ev"><td class="no">96</td><td>   hosts allocate network addresses and deliver configuration parameters</td></tr>
+<tr class="ev"><td class="no">97</td><td>   to dynamically configured hosts.  Throughout the remainder of this</td></tr>
+<tr class="ev"><td class="no">98</td><td>   document, the term &quot;server&quot; refers to a host providing initialization</td></tr>
+<tr class="ev"><td class="no">99</td><td>   parameters through DHCP, and the term &quot;client&quot; refers to a host</td></tr>
+<tr class="ev"><td class="no">100</td><td>   requesting initialization parameters from a DHCP server.</td></tr>
+<tr class="ctx"><td class="no">101</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">102</td><td>   A host should not act as a DHCP server unless explicitly configured</td></tr>
+<tr class="ctx"><td class="no">103</td><td>   to do so by a system administrator.  The diversity of hardware and</td></tr>
+<tr class="ctx"><td class="no">104</td><td>   protocol implementations in the Internet would preclude reliable</td></tr>
+<tr class="ctx"><td class="no">105</td><td>   operation if random hosts were allowed to respond to DHCP requests.</td></tr>
+<tr class="ctx"><td class="no">106</td><td>   For example, IP requires the setting of many parameters within the</td></tr>
+<tr class="ctx"><td class="no">107</td><td>   protocol implementation software.  Because IP can be used on many</td></tr>
+<tr class="ctx"><td class="no">108</td><td>   dissimilar kinds of network hardware, values for those parameters</td></tr>
+<tr class="ctx"><td class="no">109</td><td>   cannot be guessed or assumed to have correct defaults.  Also,</td></tr>
+<tr class="ctx"><td class="no">110</td><td>   distributed address allocation schemes depend on a polling/defense</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2132.txt-1111</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2132.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>1111–1116</b> ｜
+rfc_sha256 <code>0cfbedab7cfe8596…</code> ｜ 证据 sha256 <code>e0545cbfc6e75961…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">1101</td><td>   |  45 |  n  |  a1 |  a2 |  a3 |  a4 |  b1 |  b2 |  b3 |  b4 | ...</td></tr>
+<tr class="ctx"><td class="no">1102</td><td>   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+----</td></tr>
+<tr class="ctx"><td class="no">1103</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1104</td><td>8.7. NetBIOS over TCP/IP Node Type Option</td></tr>
+<tr class="ctx"><td class="no">1105</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1106</td><td>   The NetBIOS node type option allows NetBIOS over TCP/IP clients which</td></tr>
+<tr class="ctx"><td class="no">1107</td><td>   are configurable to be configured as described in RFC 1001/1002.  The</td></tr>
+<tr class="ctx"><td class="no">1108</td><td>   value is specified as a single octet which identifies the client type</td></tr>
+<tr class="ctx"><td class="no">1109</td><td>   as follows:</td></tr>
+<tr class="ctx"><td class="no">1110</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">1111</td><td>      Value         Node Type</td></tr>
+<tr class="ev"><td class="no">1112</td><td>      -----         ---------</td></tr>
+<tr class="ev"><td class="no">1113</td><td>      0x1           B-node</td></tr>
+<tr class="ev"><td class="no">1114</td><td>      0x2           P-node</td></tr>
+<tr class="ev"><td class="no">1115</td><td>      0x4           M-node</td></tr>
+<tr class="ev"><td class="no">1116</td><td>      0x8           H-node</td></tr>
+<tr class="ctx"><td class="no">1117</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1118</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1119</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1120</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1121</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1122</td><td>Alexander &amp; Droms           Standards Track                    [Page 20]</td></tr>
+<tr class="ctx"><td class="no">1123</td><td></td></tr>
+<tr class="ctx"><td class="no">1124</td><td>RFC 2132        DHCP Options and BOOTP Vendor Extensions      March 1997</td></tr>
+<tr class="ctx"><td class="no">1125</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1126</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2132.txt-189</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2132.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>189–202</b> ｜
+rfc_sha256 <code>0cfbedab7cfe8596…</code> ｜ 证据 sha256 <code>71393f48185e42fe…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">179</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">180</td><td>      o &quot;binding&quot;</td></tr>
+<tr class="ctx"><td class="no">181</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">182</td><td>       A binding is a collection of configuration parameters, including</td></tr>
+<tr class="ctx"><td class="no">183</td><td>       at least an IP address, associated with or &quot;bound to&quot; a DHCP</td></tr>
+<tr class="ctx"><td class="no">184</td><td>       client.  Bindings are managed by DHCP servers.</td></tr>
+<tr class="ctx"><td class="no">185</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">186</td><td>2. BOOTP Extension/DHCP Option Field Format</td></tr>
+<tr class="ctx"><td class="no">187</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">188</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">189</td><td>   DHCP options have the same format as the BOOTP &#x27;vendor extensions&#x27;</td></tr>
+<tr class="ev"><td class="no">190</td><td>   defined in RFC 1497 [2].  Options may be fixed length or variable</td></tr>
+<tr class="ev"><td class="no">191</td><td>   length.  All options begin with a tag octet, which uniquely</td></tr>
+<tr class="ev"><td class="no">192</td><td>   identifies the option.  Fixed-length options without data consist of</td></tr>
+<tr class="ev"><td class="no">193</td><td>   only a tag octet.  Only options 0 and 255 are fixed length.  All</td></tr>
+<tr class="ev"><td class="no">194</td><td>   other options are variable-length with a length octet following the</td></tr>
+<tr class="ev"><td class="no">195</td><td>   tag octet.  The value of the length octet does not include the two</td></tr>
+<tr class="ev"><td class="no">196</td><td>   octets specifying the tag and length.  The length octet is followed</td></tr>
+<tr class="ev"><td class="no">197</td><td>   by &quot;length&quot; octets of data.  Options containing NVT ASCII data SHOULD</td></tr>
+<tr class="ev"><td class="no">198</td><td>   NOT include a trailing NULL; however, the receiver of such options</td></tr>
+<tr class="ev"><td class="no">199</td><td>   MUST be prepared to delete trailing nulls if they exist.  The</td></tr>
+<tr class="ev"><td class="no">200</td><td>   receiver MUST NOT require that a trailing null be included in the</td></tr>
+<tr class="ev"><td class="no">201</td><td>   data.  In the case of some variable-length options the length field</td></tr>
+<tr class="ev"><td class="no">202</td><td>   is a constant but must still be specified.</td></tr>
+<tr class="ctx"><td class="no">203</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">204</td><td>   Any options defined subsequent to this document MUST contain a length</td></tr>
+<tr class="ctx"><td class="no">205</td><td>   octet even if the length is fixed or zero.</td></tr>
+<tr class="ctx"><td class="no">206</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">207</td><td>   All multi-octet quantities are in network byte-order.</td></tr>
+<tr class="ctx"><td class="no">208</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">209</td><td>   When used with BOOTP, the first four octets of the vendor information</td></tr>
+<tr class="ctx"><td class="no">210</td><td>   field have been assigned to the &quot;magic cookie&quot; (as suggested in RFC</td></tr>
+<tr class="ctx"><td class="no">211</td><td>   951).  This field identifies the mode in which the succeeding data is</td></tr>
+<tr class="ctx"><td class="no">212</td><td>   to be interpreted.  The value of the magic cookie is the 4 octet</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2132.txt-209</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2132.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>209–214</b> ｜
+rfc_sha256 <code>0cfbedab7cfe8596…</code> ｜ 证据 sha256 <code>9ccbd4f8d4c499d2…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">199</td><td>   MUST be prepared to delete trailing nulls if they exist.  The</td></tr>
+<tr class="ctx"><td class="no">200</td><td>   receiver MUST NOT require that a trailing null be included in the</td></tr>
+<tr class="ctx"><td class="no">201</td><td>   data.  In the case of some variable-length options the length field</td></tr>
+<tr class="ctx"><td class="no">202</td><td>   is a constant but must still be specified.</td></tr>
+<tr class="ctx"><td class="no">203</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">204</td><td>   Any options defined subsequent to this document MUST contain a length</td></tr>
+<tr class="ctx"><td class="no">205</td><td>   octet even if the length is fixed or zero.</td></tr>
+<tr class="ctx"><td class="no">206</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">207</td><td>   All multi-octet quantities are in network byte-order.</td></tr>
+<tr class="ctx"><td class="no">208</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">209</td><td>   When used with BOOTP, the first four octets of the vendor information</td></tr>
+<tr class="ev"><td class="no">210</td><td>   field have been assigned to the &quot;magic cookie&quot; (as suggested in RFC</td></tr>
+<tr class="ev"><td class="no">211</td><td>   951).  This field identifies the mode in which the succeeding data is</td></tr>
+<tr class="ev"><td class="no">212</td><td>   to be interpreted.  The value of the magic cookie is the 4 octet</td></tr>
+<tr class="ev"><td class="no">213</td><td>   dotted decimal 99.130.83.99 (or hexadecimal number 63.82.53.63) in</td></tr>
+<tr class="ev"><td class="no">214</td><td>   network byte order.</td></tr>
+<tr class="ctx"><td class="no">215</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">216</td><td>   All of the &quot;vendor extensions&quot; defined in RFC 1497 are also DHCP</td></tr>
+<tr class="ctx"><td class="no">217</td><td>   options.</td></tr>
+<tr class="ctx"><td class="no">218</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">219</td><td>   Option codes 128 to 254 (decimal) are reserved for site-specific</td></tr>
+<tr class="ctx"><td class="no">220</td><td>   options.</td></tr>
+<tr class="ctx"><td class="no">221</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">222</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">223</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">224</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2132.txt-628</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2132.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>628–635</b> ｜
+rfc_sha256 <code>0cfbedab7cfe8596…</code> ｜ 证据 sha256 <code>748f18ed7afceaa8…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">618</td><td>Alexander &amp; Droms           Standards Track                    [Page 11]</td></tr>
+<tr class="ctx"><td class="no">619</td><td></td></tr>
+<tr class="ctx"><td class="no">620</td><td>RFC 2132        DHCP Options and BOOTP Vendor Extensions      March 1997</td></tr>
+<tr class="ctx"><td class="no">621</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">622</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">623</td><td>   See [4] for further information.</td></tr>
+<tr class="ctx"><td class="no">624</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">625</td><td>   The code for this option is 21.  The minimum length of this option is</td></tr>
+<tr class="ctx"><td class="no">626</td><td>   8, and the length MUST be a multiple of 8.</td></tr>
+<tr class="ctx"><td class="no">627</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">628</td><td>    Code   Len         Address 1                  Mask 1</td></tr>
+<tr class="ev"><td class="no">629</td><td>   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+</td></tr>
+<tr class="ev"><td class="no">630</td><td>   |  21 |  n  |  a1 |  a2 |  a3 |  a4 |  m1 |  m2 |  m3 |  m4 |</td></tr>
+<tr class="ev"><td class="no">631</td><td>   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+</td></tr>
+<tr class="ev"><td class="no">632</td><td>           Address 2                  Mask 2</td></tr>
+<tr class="ev"><td class="no">633</td><td>   +-----+-----+-----+-----+-----+-----+-----+-----+---</td></tr>
+<tr class="ev"><td class="no">634</td><td>   |  a1 |  a2 |  a3 |  a4 |  m1 |  m2 |  m3 |  m4 | ...</td></tr>
+<tr class="ev"><td class="no">635</td><td>   +-----+-----+-----+-----+-----+-----+-----+-----+---</td></tr>
+<tr class="ctx"><td class="no">636</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">637</td><td>4.4. Maximum Datagram Reassembly Size</td></tr>
+<tr class="ctx"><td class="no">638</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">639</td><td>   This option specifies the maximum size datagram that the client</td></tr>
+<tr class="ctx"><td class="no">640</td><td>   should be prepared to reassemble.  The size is specified as a 16-bit</td></tr>
+<tr class="ctx"><td class="no">641</td><td>   unsigned integer.  The minimum value legal value is 576.</td></tr>
+<tr class="ctx"><td class="no">642</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">643</td><td>   The code for this option is 22, and its length is 2.</td></tr>
+<tr class="ctx"><td class="no">644</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">645</td><td>    Code   Len      Size</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2132.txt-721</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2132.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>721–726</b> ｜
+rfc_sha256 <code>0cfbedab7cfe8596…</code> ｜ 证据 sha256 <code>4cd19190a70a4c48…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">711</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">712</td><td>   The code for this option is 26, and its length is 2.</td></tr>
+<tr class="ctx"><td class="no">713</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">714</td><td>    Code   Len      MTU</td></tr>
+<tr class="ctx"><td class="no">715</td><td>   +-----+-----+-----+-----+</td></tr>
+<tr class="ctx"><td class="no">716</td><td>   |  26 |  2  |  m1 |  m2 |</td></tr>
+<tr class="ctx"><td class="no">717</td><td>   +-----+-----+-----+-----+</td></tr>
+<tr class="ctx"><td class="no">718</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">719</td><td>5.2. All Subnets are Local Option</td></tr>
+<tr class="ctx"><td class="no">720</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">721</td><td>   This option specifies whether or not the client may assume that all</td></tr>
+<tr class="ev"><td class="no">722</td><td>   subnets of the IP network to which the client is connected use the</td></tr>
+<tr class="ev"><td class="no">723</td><td>   same MTU as the subnet of that network to which the client is</td></tr>
+<tr class="ev"><td class="no">724</td><td>   directly connected.  A value of 1 indicates that all subnets share</td></tr>
+<tr class="ev"><td class="no">725</td><td>   the same MTU.  A value of 0 means that the client should assume that</td></tr>
+<tr class="ev"><td class="no">726</td><td>   some subnets of the directly connected network may have smaller MTUs.</td></tr>
+<tr class="ctx"><td class="no">727</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">728</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">729</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">730</td><td>Alexander &amp; Droms           Standards Track                    [Page 13]</td></tr>
+<tr class="ctx"><td class="no">731</td><td></td></tr>
+<tr class="ctx"><td class="no">732</td><td>RFC 2132        DHCP Options and BOOTP Vendor Extensions      March 1997</td></tr>
+<tr class="ctx"><td class="no">733</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">734</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">735</td><td>   The code for this option is 27, and its length is 1.</td></tr>
+<tr class="ctx"><td class="no">736</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2132.txt-847</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2132.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>847–854</b> ｜
+rfc_sha256 <code>0cfbedab7cfe8596…</code> ｜ 证据 sha256 <code>9120f9930c78100b…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">837</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">838</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">839</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">840</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">841</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">842</td><td>Alexander &amp; Droms           Standards Track                    [Page 15]</td></tr>
+<tr class="ctx"><td class="no">843</td><td></td></tr>
+<tr class="ctx"><td class="no">844</td><td>RFC 2132        DHCP Options and BOOTP Vendor Extensions      March 1997</td></tr>
+<tr class="ctx"><td class="no">845</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">846</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">847</td><td>    Code   Len         Destination 1           Router 1</td></tr>
+<tr class="ev"><td class="no">848</td><td>   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+</td></tr>
+<tr class="ev"><td class="no">849</td><td>   |  33 |  n  |  d1 |  d2 |  d3 |  d4 |  r1 |  r2 |  r3 |  r4 |</td></tr>
+<tr class="ev"><td class="no">850</td><td>   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+</td></tr>
+<tr class="ev"><td class="no">851</td><td>           Destination 2           Router 2</td></tr>
+<tr class="ev"><td class="no">852</td><td>   +-----+-----+-----+-----+-----+-----+-----+-----+---</td></tr>
+<tr class="ev"><td class="no">853</td><td>   |  d1 |  d2 |  d3 |  d4 |  r1 |  r2 |  r3 |  r4 | ...</td></tr>
+<tr class="ev"><td class="no">854</td><td>   +-----+-----+-----+-----+-----+-----+-----+-----+---</td></tr>
+<tr class="ctx"><td class="no">855</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">856</td><td>6. Link Layer Parameters per Interface</td></tr>
+<tr class="ctx"><td class="no">857</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">858</td><td>   This section lists the options that affect the operation of the data</td></tr>
+<tr class="ctx"><td class="no">859</td><td>   link layer on a per-interface basis.</td></tr>
+<tr class="ctx"><td class="no">860</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">861</td><td>6.1. Trailer Encapsulation Option</td></tr>
+<tr class="ctx"><td class="no">862</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">863</td><td>   This option specifies whether or not the client should negotiate the</td></tr>
+<tr class="ctx"><td class="no">864</td><td>   use of trailers (RFC 893 [14]) when using the ARP protocol.  A value</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2939.txt-125</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2939.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>125–134</b> ｜
+rfc_sha256 <code>aeb311959b9596ee…</code> ｜ 证据 sha256 <code>3ffe4aae8f58fcf7…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">115</td><td></td></tr>
+<tr class="ctx"><td class="no">116</td><td>RFC 2939            Procedures for New DHCP Options       September 2000</td></tr>
+<tr class="ctx"><td class="no">117</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">118</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">119</td><td>   responsible for bringing new options to the attention of the IESG.</td></tr>
+<tr class="ctx"><td class="no">120</td><td>   Finally, RFC 2132 does not make clear that newly defined options are</td></tr>
+<tr class="ctx"><td class="no">121</td><td>   not to be incorporated into products, included in other</td></tr>
+<tr class="ctx"><td class="no">122</td><td>   specifications or otherwise used until the specification for the</td></tr>
+<tr class="ctx"><td class="no">123</td><td>   option is published as an RFC.</td></tr>
+<tr class="ctx"><td class="no">124</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">125</td><td>   In the future, new DHCP option codes will be assigned by IETF</td></tr>
+<tr class="ev"><td class="no">126</td><td>   consensus.  New DHCP options will be documented in RFCs approved by</td></tr>
+<tr class="ev"><td class="no">127</td><td>   the IESG, and the codes for those options will be assigned at the</td></tr>
+<tr class="ev"><td class="no">128</td><td>   time the relevant RFCs are published.  Typically, the IESG will seek</td></tr>
+<tr class="ev"><td class="no">129</td><td>   input on prospective assignments from appropriate sources (e.g., a</td></tr>
+<tr class="ev"><td class="no">130</td><td>   relevant Working Group if one exists).  Groups of related options may</td></tr>
+<tr class="ev"><td class="no">131</td><td>   be combined  into a single specification and reviewed as a set by the</td></tr>
+<tr class="ev"><td class="no">132</td><td>   IESG.  Prior to assignment of an option code, it is not appropriate</td></tr>
+<tr class="ev"><td class="no">133</td><td>   to incorporate new options into products, include the specification</td></tr>
+<tr class="ev"><td class="no">134</td><td>   in other documents or otherwise make use of the new options.</td></tr>
+<tr class="ctx"><td class="no">135</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">136</td><td>   The DHCP option number space (1-254) is split into two parts.  The</td></tr>
+<tr class="ctx"><td class="no">137</td><td>   site-specific option codes [2] (128-254) are defined as &quot;Private Use&quot;</td></tr>
+<tr class="ctx"><td class="no">138</td><td>   and require no review by the DHC WG.  Site-specific options codes</td></tr>
+<tr class="ctx"><td class="no">139</td><td>   (128-254) MUST NOT be defined for use by any publicly distributed</td></tr>
+<tr class="ctx"><td class="no">140</td><td>   DHCP server, client or relay agent implementations.  These option</td></tr>
+<tr class="ctx"><td class="no">141</td><td>   codes are explicitly reserved for private definition and use within a</td></tr>
+<tr class="ctx"><td class="no">142</td><td>   site or an organization.</td></tr>
+<tr class="ctx"><td class="no">143</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">144</td><td>   The public option codes (0-127, 255) are defined as &quot;Specification</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2939.txt-268</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2939.txt ｜
+章节类型 ⑤ 附录、元数据及其他 ｜ 证据行 <b>268–274</b> ｜
+rfc_sha256 <code>aeb311959b9596ee…</code> ｜ 证据 sha256 <code>f67e10a19dd5bad9…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">258</td><td>   reference the &quot;Security Considerations&quot; section in the DHCP</td></tr>
+<tr class="ctx"><td class="no">259</td><td>   specification [1]; e.g., (from &quot;NetWare/IP Domain Name and</td></tr>
+<tr class="ctx"><td class="no">260</td><td>   Information&quot; [3]):</td></tr>
+<tr class="ctx"><td class="no">261</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">262</td><td>      DHCP currently provides no authentication or security mechanisms.</td></tr>
+<tr class="ctx"><td class="no">263</td><td>      Potential exposures to attack are discussed in section 7 of the</td></tr>
+<tr class="ctx"><td class="no">264</td><td>      DHCP protocol specification [RFC 2131].</td></tr>
+<tr class="ctx"><td class="no">265</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">266</td><td>7. IANA Considerations</td></tr>
+<tr class="ctx"><td class="no">267</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">268</td><td>   RFC 2132 and RFC 2489 provided guidance to the IANA on the procedure</td></tr>
+<tr class="ev"><td class="no">269</td><td>   it should follow when assigning option numbers for new DHCP options</td></tr>
+<tr class="ev"><td class="no">270</td><td>   or message types.  This document updates and replaces those</td></tr>
+<tr class="ev"><td class="no">271</td><td>   instructions.  In particular, IANA is requested to assign DHCP option</td></tr>
+<tr class="ev"><td class="no">272</td><td>   codes or message type codes only for options or message types that</td></tr>
+<tr class="ev"><td class="no">273</td><td>   have been approved for publication as RFCs; i.e., documents that have</td></tr>
+<tr class="ev"><td class="no">274</td><td>   been approved through &quot;IETF consensus&quot; as defined in RFC 2434 [4].</td></tr>
+<tr class="ctx"><td class="no">275</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">276</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">277</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">278</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">279</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">280</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">281</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">282</td><td>Droms                    Best Current Practice                  [Page 5]</td></tr>
+<tr class="ctx"><td class="no">283</td><td></td></tr>
+<tr class="ctx"><td class="no">284</td><td>RFC 2939            Procedures for New DHCP Options       September 2000</td></tr>
+</table>
+<h2>B-DHCPv4-rfc2939.txt-99</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc2939.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>99–104</b> ｜
+rfc_sha256 <code>aeb311959b9596ee…</code> ｜ 证据 sha256 <code>6b8db3ff129d941f…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">89</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">90</td><td>2.1 New DHCP option codes</td></tr>
+<tr class="ctx"><td class="no">91</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">92</td><td>   The procedure described in this document modifies and clarifies the</td></tr>
+<tr class="ctx"><td class="no">93</td><td>   procedure for defining new options in RFC 2131 [2].  The primary</td></tr>
+<tr class="ctx"><td class="no">94</td><td>   modification is to the time at which a new DHCP option is assigned an</td></tr>
+<tr class="ctx"><td class="no">95</td><td>   option number.  In the procedure described in this document, the</td></tr>
+<tr class="ctx"><td class="no">96</td><td>   option number is not assigned until specification for the option is</td></tr>
+<tr class="ctx"><td class="no">97</td><td>   about to be published as an RFC.</td></tr>
+<tr class="ctx"><td class="no">98</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">99</td><td>   Since the publication of RFC 2132, the option number space for</td></tr>
+<tr class="ev"><td class="no">100</td><td>   publicly defined DHCP options (1-127) has almost been exhausted.</td></tr>
+<tr class="ev"><td class="no">101</td><td>   Many of the defined option numbers have not been followed up with</td></tr>
+<tr class="ev"><td class="no">102</td><td>   Internet Drafts submitted to the DHC WG.  There has been a lack of</td></tr>
+<tr class="ev"><td class="no">103</td><td>   specific guidance to IANA from the DHC WG as to the assignment of</td></tr>
+<tr class="ev"><td class="no">104</td><td>   DHCP option numbers.</td></tr>
+<tr class="ctx"><td class="no">105</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">106</td><td>   The procedure as specified in RFC 2132 does not clearly state that</td></tr>
+<tr class="ctx"><td class="no">107</td><td>   new options are to be reviewed individually for technical</td></tr>
+<tr class="ctx"><td class="no">108</td><td>   correctness, appropriateness and complete documentation.  RFC 2132</td></tr>
+<tr class="ctx"><td class="no">109</td><td>   also does not require that new options are to be submitted to the</td></tr>
+<tr class="ctx"><td class="no">110</td><td>   IESG for review, and that the author of the option specification is</td></tr>
+<tr class="ctx"><td class="no">111</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">112</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">113</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">114</td><td>Droms                    Best Current Practice                  [Page 2]</td></tr>
+</table>
+<h2>B-DHCPv4-rfc3456.txt-636</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc3456.txt ｜
+章节类型 ⑤ 附录、元数据及其他 ｜ 证据行 <b>636–642</b> ｜
+rfc_sha256 <code>79e86d7f30f22ec7…</code> ｜ 证据 sha256 <code>566f5d73d55b8f12…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">626</td><td>   per-tunnel basis.</td></tr>
+<tr class="ctx"><td class="no">627</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">628</td><td>   As described in [17], a number of issues arise when forwarding DHCP</td></tr>
+<tr class="ctx"><td class="no">629</td><td>   client requests from untrusted sources.  These include DHCP</td></tr>
+<tr class="ctx"><td class="no">630</td><td>   exhaustion attacks, and spoofing of the client identifier option or</td></tr>
+<tr class="ctx"><td class="no">631</td><td>   client MAC address.  These issues can be partially addressed through</td></tr>
+<tr class="ctx"><td class="no">632</td><td>   use of the DHCP Relay Information Option [17].</td></tr>
+<tr class="ctx"><td class="no">633</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">634</td><td>6.  IANA Considerations</td></tr>
+<tr class="ctx"><td class="no">635</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">636</td><td>   This document requires that an htype value be allocated for use with</td></tr>
+<tr class="ev"><td class="no">637</td><td>   IPsec tunnel mode, as described in section 4.1.  Note that DHCP</td></tr>
+<tr class="ev"><td class="no">638</td><td>   relies on the arp-parameters registry for definition of both the hrd</td></tr>
+<tr class="ev"><td class="no">639</td><td>   parameter in ARP and the htype parameter in BOOTP/DHCP.  As a result,</td></tr>
+<tr class="ev"><td class="no">640</td><td>   an assignment in the arp-parameters registry is required, even though</td></tr>
+<tr class="ev"><td class="no">641</td><td>   IPsec-DHCP will never use that parameter for ARP purposes, since</td></tr>
+<tr class="ev"><td class="no">642</td><td>   conceptually BOOTP/DHCP and ARP share the arp-parameters registry.</td></tr>
+<tr class="ctx"><td class="no">643</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">644</td><td>   This document does not create any new number spaces for IANA</td></tr>
+<tr class="ctx"><td class="no">645</td><td>   administration.</td></tr>
+<tr class="ctx"><td class="no">646</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">647</td><td>7.  Intellectual Property Statement</td></tr>
+<tr class="ctx"><td class="no">648</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">649</td><td>   The IETF takes no position regarding the validity or scope of any</td></tr>
+<tr class="ctx"><td class="no">650</td><td>   intellectual property or other rights that might be claimed to</td></tr>
+<tr class="ctx"><td class="no">651</td><td>   pertain to the implementation or use of the technology described in</td></tr>
+<tr class="ctx"><td class="no">652</td><td>   this document or the extent to which any license under such rights</td></tr>
+</table>
+<h2>B-DHCPv4-rfc3456.txt-649</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc3456.txt ｜
+章节类型 ⑤ 附录、元数据及其他 ｜ 证据行 <b>649–661</b> ｜
+rfc_sha256 <code>79e86d7f30f22ec7…</code> ｜ 证据 sha256 <code>4b1bf830dbf6809e…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">639</td><td>   parameter in ARP and the htype parameter in BOOTP/DHCP.  As a result,</td></tr>
+<tr class="ctx"><td class="no">640</td><td>   an assignment in the arp-parameters registry is required, even though</td></tr>
+<tr class="ctx"><td class="no">641</td><td>   IPsec-DHCP will never use that parameter for ARP purposes, since</td></tr>
+<tr class="ctx"><td class="no">642</td><td>   conceptually BOOTP/DHCP and ARP share the arp-parameters registry.</td></tr>
+<tr class="ctx"><td class="no">643</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">644</td><td>   This document does not create any new number spaces for IANA</td></tr>
+<tr class="ctx"><td class="no">645</td><td>   administration.</td></tr>
+<tr class="ctx"><td class="no">646</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">647</td><td>7.  Intellectual Property Statement</td></tr>
+<tr class="ctx"><td class="no">648</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">649</td><td>   The IETF takes no position regarding the validity or scope of any</td></tr>
+<tr class="ev"><td class="no">650</td><td>   intellectual property or other rights that might be claimed to</td></tr>
+<tr class="ev"><td class="no">651</td><td>   pertain to the implementation or use of the technology described in</td></tr>
+<tr class="ev"><td class="no">652</td><td>   this document or the extent to which any license under such rights</td></tr>
+<tr class="ev"><td class="no">653</td><td>   might or might not be available; neither does it represent that it</td></tr>
+<tr class="ev"><td class="no">654</td><td>   has made any effort to identify any such rights.  Information on the</td></tr>
+<tr class="ev"><td class="no">655</td><td>   IETF&#x27;s procedures with respect to rights in standards-track and</td></tr>
+<tr class="ev"><td class="no">656</td><td>   standards-related documentation can be found in BCP-11.  Copies of</td></tr>
+<tr class="ev"><td class="no">657</td><td>   claims of rights made available for publication and any assurances of</td></tr>
+<tr class="ev"><td class="no">658</td><td>   licenses to be made available, or the result of an attempt made to</td></tr>
+<tr class="ev"><td class="no">659</td><td>   obtain a general license or permission for the use of such</td></tr>
+<tr class="ev"><td class="no">660</td><td>   proprietary rights by implementors or users of this specification can</td></tr>
+<tr class="ev"><td class="no">661</td><td>   be obtained from the IETF Secretariat.</td></tr>
+<tr class="ctx"><td class="no">662</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">663</td><td>   The IETF invites any interested party to bring to its attention any</td></tr>
+<tr class="ctx"><td class="no">664</td><td>   copyrights, patents or patent applications, or other proprietary</td></tr>
+<tr class="ctx"><td class="no">665</td><td>   rights which may cover technology that may be required to practice</td></tr>
+<tr class="ctx"><td class="no">666</td><td>   this standard.  Please address the information to the IETF Executive</td></tr>
+<tr class="ctx"><td class="no">667</td><td>   Director.</td></tr>
+<tr class="ctx"><td class="no">668</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">669</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">670</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">671</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-DHCPv4-rfc3679.txt-312</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc3679.txt ｜
+章节类型 ⑤ 附录、元数据及其他 ｜ 证据行 <b>312–317</b> ｜
+rfc_sha256 <code>f962fd3bdb4ff7d6…</code> ｜ 证据 sha256 <code>5bd77222702aa160…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">302</td><td>   The option codes 99, 102-107, 109 and 111 have already been returned</td></tr>
+<tr class="ctx"><td class="no">303</td><td>   for reassignment to future DHCP options.</td></tr>
+<tr class="ctx"><td class="no">304</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">305</td><td>5. Security Considerations</td></tr>
+<tr class="ctx"><td class="no">306</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">307</td><td>   This document has no known security implications, as none of the</td></tr>
+<tr class="ctx"><td class="no">308</td><td>   reclaimed options are known to be in use.</td></tr>
+<tr class="ctx"><td class="no">309</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">310</td><td>6. IANA Considerations</td></tr>
+<tr class="ctx"><td class="no">311</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">312</td><td>   IANA has returned the DHCP option codes listed in Section 2 to the</td></tr>
+<tr class="ev"><td class="no">313</td><td>   list of available option codes.  These option codes may be reassigned</td></tr>
+<tr class="ev"><td class="no">314</td><td>   to new DHCP options, according to the procedures in RFC 2939 [6].</td></tr>
+<tr class="ev"><td class="no">315</td><td>   IANA is requested to reassign these option codes after the list of</td></tr>
+<tr class="ev"><td class="no">316</td><td>   option codes that have never been assigned or have previously been</td></tr>
+<tr class="ev"><td class="no">317</td><td>   returned has been exhausted.</td></tr>
+<tr class="ctx"><td class="no">318</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">319</td><td>Informative References</td></tr>
+<tr class="ctx"><td class="no">320</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">321</td><td>   [1]  Assigned Numbers Editor, IANA., &quot;BOOTP and DHCP Parameters&quot;,</td></tr>
+<tr class="ctx"><td class="no">322</td><td>        http://www.iana.org/assignments/bootp-dhcp-parameters, February</td></tr>
+<tr class="ctx"><td class="no">323</td><td>        2003.</td></tr>
+<tr class="ctx"><td class="no">324</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">325</td><td>   [2]  Patrick, M., &quot;DHCP Relay Agent Information Option&quot;, RFC 3046,</td></tr>
+<tr class="ctx"><td class="no">326</td><td>        January 2001.</td></tr>
+<tr class="ctx"><td class="no">327</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-DHCPv4-rfc3679.txt-352</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc3679.txt ｜
+章节类型 ⑤ 附录、元数据及其他 ｜ 证据行 <b>352–364</b> ｜
+rfc_sha256 <code>f962fd3bdb4ff7d6…</code> ｜ 证据 sha256 <code>4b1bf830dbf6809e…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">342</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">343</td><td>   [5]  Volz, B., Droms, R. and T. Lemon, &quot;Extending DHCP Options</td></tr>
+<tr class="ctx"><td class="no">344</td><td>        Codes&quot;, Work in Progress.</td></tr>
+<tr class="ctx"><td class="no">345</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">346</td><td>   [6]  Droms, R., &quot;Procedures and IANA Guidelines for Definition of New</td></tr>
+<tr class="ctx"><td class="no">347</td><td>        DHCP Options and Message Types&quot;, BCP 43, RFC 2939, September</td></tr>
+<tr class="ctx"><td class="no">348</td><td>        2000.</td></tr>
+<tr class="ctx"><td class="no">349</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">350</td><td>Intellectual Property Statement</td></tr>
+<tr class="ctx"><td class="no">351</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">352</td><td>   The IETF takes no position regarding the validity or scope of any</td></tr>
+<tr class="ev"><td class="no">353</td><td>   intellectual property or other rights that might be claimed to</td></tr>
+<tr class="ev"><td class="no">354</td><td>   pertain to the implementation or use of the technology described in</td></tr>
+<tr class="ev"><td class="no">355</td><td>   this document or the extent to which any license under such rights</td></tr>
+<tr class="ev"><td class="no">356</td><td>   might or might not be available; neither does it represent that it</td></tr>
+<tr class="ev"><td class="no">357</td><td>   has made any effort to identify any such rights.  Information on the</td></tr>
+<tr class="ev"><td class="no">358</td><td>   IETF&#x27;s procedures with respect to rights in standards-track and</td></tr>
+<tr class="ev"><td class="no">359</td><td>   standards-related documentation can be found in BCP-11.  Copies of</td></tr>
+<tr class="ev"><td class="no">360</td><td>   claims of rights made available for publication and any assurances of</td></tr>
+<tr class="ev"><td class="no">361</td><td>   licenses to be made available, or the result of an attempt made to</td></tr>
+<tr class="ev"><td class="no">362</td><td>   obtain a general license or permission for the use of such</td></tr>
+<tr class="ev"><td class="no">363</td><td>   proprietary rights by implementors or users of this specification can</td></tr>
+<tr class="ev"><td class="no">364</td><td>   be obtained from the IETF Secretariat.</td></tr>
+<tr class="ctx"><td class="no">365</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">366</td><td>   The IETF invites any interested party to bring to its attention any</td></tr>
+<tr class="ctx"><td class="no">367</td><td>   copyrights, patents or patent applications, or other proprietary</td></tr>
+<tr class="ctx"><td class="no">368</td><td>   rights which may cover technology that may be required to practice</td></tr>
+<tr class="ctx"><td class="no">369</td><td>   this standard.  Please address the information to the IETF Executive</td></tr>
+<tr class="ctx"><td class="no">370</td><td>   Director.</td></tr>
+<tr class="ctx"><td class="no">371</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">372</td><td>Author&#x27;s Address</td></tr>
+<tr class="ctx"><td class="no">373</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">374</td><td>   Ralph Droms</td></tr>
+</table>
+<h2>B-DHCPv4-rfc951.txt-64</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc951.txt ｜
+章节类型 ③ 状态、响应与错误处理 ｜ 证据行 <b>64–69</b> ｜
+rfc_sha256 <code>098809562693d95c…</code> ｜ 证据 sha256 <code>3b0bd19ad9b9e64c…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">54</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">55</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">56</td><td>Croft &amp; Gilmore                                                 [Page 1]</td></tr>
+<tr class="ctx"><td class="no">57</td><td></td></tr>
+<tr class="ctx"><td class="no">58</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">59</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">60</td><td>RFC 951                                                   September 1985</td></tr>
+<tr class="ctx"><td class="no">61</td><td>Bootstrap Protocol</td></tr>
+<tr class="ctx"><td class="no">62</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">63</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">64</td><td>      3. The request can optionally contain the name of the server the</td></tr>
+<tr class="ev"><td class="no">65</td><td>      client wishes to respond.  This is so the client can force the</td></tr>
+<tr class="ev"><td class="no">66</td><td>      boot to occur from a specific host (e.g. if multiple versions of</td></tr>
+<tr class="ev"><td class="no">67</td><td>      the same bootfile exist or if the server is in a far distant</td></tr>
+<tr class="ev"><td class="no">68</td><td>      net/domain).  The client does not have to deal with name / domain</td></tr>
+<tr class="ev"><td class="no">69</td><td>      services; instead this function is pushed off to the BOOTP server.</td></tr>
+<tr class="ctx"><td class="no">70</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">71</td><td>      4. The request can optionally contain the &#x27;generic&#x27; filename to be</td></tr>
+<tr class="ctx"><td class="no">72</td><td>      booted.  For example &#x27;unix&#x27; or &#x27;ethertip&#x27;.  When the server sends</td></tr>
+<tr class="ctx"><td class="no">73</td><td>      the bootreply, it replaces this field with the fully qualified</td></tr>
+<tr class="ctx"><td class="no">74</td><td>      path name of the appropriate boot file.  In determining this name,</td></tr>
+<tr class="ctx"><td class="no">75</td><td>      the server may consult his own database correlating the client&#x27;s</td></tr>
+<tr class="ctx"><td class="no">76</td><td>      address and filename request, with a particular boot file</td></tr>
+<tr class="ctx"><td class="no">77</td><td>      customized for that client.  If the bootrequest filename is a null</td></tr>
+<tr class="ctx"><td class="no">78</td><td>      string, then the server returns a filename field indicating the</td></tr>
+<tr class="ctx"><td class="no">79</td><td>      &#x27;default&#x27; file to be loaded for that client.</td></tr>
+</table>
+<h2>B-DHCPv4-rfc951.txt-71</h2>
+<div class="meta">协议 DHCPv4 ｜ 文档 rfc951.txt ｜
+章节类型 ③ 状态、响应与错误处理 ｜ 证据行 <b>71–79</b> ｜
+rfc_sha256 <code>098809562693d95c…</code> ｜ 证据 sha256 <code>89b0902b3e0208d8…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">61</td><td>Bootstrap Protocol</td></tr>
+<tr class="ctx"><td class="no">62</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">63</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">64</td><td>      3. The request can optionally contain the name of the server the</td></tr>
+<tr class="ctx"><td class="no">65</td><td>      client wishes to respond.  This is so the client can force the</td></tr>
+<tr class="ctx"><td class="no">66</td><td>      boot to occur from a specific host (e.g. if multiple versions of</td></tr>
+<tr class="ctx"><td class="no">67</td><td>      the same bootfile exist or if the server is in a far distant</td></tr>
+<tr class="ctx"><td class="no">68</td><td>      net/domain).  The client does not have to deal with name / domain</td></tr>
+<tr class="ctx"><td class="no">69</td><td>      services; instead this function is pushed off to the BOOTP server.</td></tr>
+<tr class="ctx"><td class="no">70</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">71</td><td>      4. The request can optionally contain the &#x27;generic&#x27; filename to be</td></tr>
+<tr class="ev"><td class="no">72</td><td>      booted.  For example &#x27;unix&#x27; or &#x27;ethertip&#x27;.  When the server sends</td></tr>
+<tr class="ev"><td class="no">73</td><td>      the bootreply, it replaces this field with the fully qualified</td></tr>
+<tr class="ev"><td class="no">74</td><td>      path name of the appropriate boot file.  In determining this name,</td></tr>
+<tr class="ev"><td class="no">75</td><td>      the server may consult his own database correlating the client&#x27;s</td></tr>
+<tr class="ev"><td class="no">76</td><td>      address and filename request, with a particular boot file</td></tr>
+<tr class="ev"><td class="no">77</td><td>      customized for that client.  If the bootrequest filename is a null</td></tr>
+<tr class="ev"><td class="no">78</td><td>      string, then the server returns a filename field indicating the</td></tr>
+<tr class="ev"><td class="no">79</td><td>      &#x27;default&#x27; file to be loaded for that client.</td></tr>
+<tr class="ctx"><td class="no">80</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">81</td><td>      5. In the case of clients who do not know their IP addresses, the</td></tr>
+<tr class="ctx"><td class="no">82</td><td>      server must also have a database relating hardware address to IP</td></tr>
+<tr class="ctx"><td class="no">83</td><td>      address.  This client IP address is then placed into a field in</td></tr>
+<tr class="ctx"><td class="no">84</td><td>      the bootreply.</td></tr>
+<tr class="ctx"><td class="no">85</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">86</td><td>      6. Certain network topologies (such as Stanford&#x27;s) may be such</td></tr>
+<tr class="ctx"><td class="no">87</td><td>      that a given physical cable does not have a TFTP server directly</td></tr>
+<tr class="ctx"><td class="no">88</td><td>      attached to it (e.g. all the gateways and hosts on a certain cable</td></tr>
+<tr class="ctx"><td class="no">89</td><td>      may be diskless).  With the cooperation of neighboring gateways,</td></tr>
+</table>
+<h2>B-rtsp-rfc2326.txt-1224</h2>
+<div class="meta">协议 rtsp ｜ 文档 rfc2326.txt ｜
+章节类型 ③ 状态、响应与错误处理 ｜ 证据行 <b>1224–1230</b> ｜
+rfc_sha256 <code>1b72124761d99b8d…</code> ｜ 证据 sha256 <code>041de78790248ee1…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">1214</td><td>   The first line of a Response message is the Status-Line, consisting</td></tr>
+<tr class="ctx"><td class="no">1215</td><td>   of the protocol version followed by a numeric status code, and the</td></tr>
+<tr class="ctx"><td class="no">1216</td><td>   textual phrase associated with the status code, with each element</td></tr>
+<tr class="ctx"><td class="no">1217</td><td>   separated by SP characters. No CR or LF is allowed except in the</td></tr>
+<tr class="ctx"><td class="no">1218</td><td>   final CRLF sequence.</td></tr>
+<tr class="ctx"><td class="no">1219</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1220</td><td>   Status-Line =   RTSP-Version SP Status-Code SP Reason-Phrase CRLF</td></tr>
+<tr class="ctx"><td class="no">1221</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1222</td><td>7.1.1 Status Code and Reason Phrase</td></tr>
+<tr class="ctx"><td class="no">1223</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">1224</td><td>   The Status-Code element is a 3-digit integer result code of the</td></tr>
+<tr class="ev"><td class="no">1225</td><td>   attempt to understand and satisfy the request. These codes are fully</td></tr>
+<tr class="ev"><td class="no">1226</td><td>   defined in Section 11. The Reason-Phrase is intended to give a short</td></tr>
+<tr class="ev"><td class="no">1227</td><td>   textual description of the Status-Code. The Status-Code is intended</td></tr>
+<tr class="ev"><td class="no">1228</td><td>   for use by automata and the Reason-Phrase is intended for the human</td></tr>
+<tr class="ev"><td class="no">1229</td><td>   user. The client is not required to examine or display the Reason-</td></tr>
+<tr class="ev"><td class="no">1230</td><td>   Phrase.</td></tr>
+<tr class="ctx"><td class="no">1231</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1232</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1233</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1234</td><td>Schulzrinne, et. al.        Standards Track                    [Page 22]</td></tr>
+<tr class="ctx"><td class="no">1235</td><td></td></tr>
+<tr class="ctx"><td class="no">1236</td><td>RFC 2326              Real Time Streaming Protocol            April 1998</td></tr>
+<tr class="ctx"><td class="no">1237</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1238</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1239</td><td>   The first digit of the Status-Code defines the class of response. The</td></tr>
+<tr class="ctx"><td class="no">1240</td><td>   last two digits do not have any categorization role. There are 5</td></tr>
+</table>
+<h2>B-rtsp-rfc2326.txt-1243</h2>
+<div class="meta">协议 rtsp ｜ 文档 rfc2326.txt ｜
+章节类型 ③ 状态、响应与错误处理 ｜ 证据行 <b>1243–1251</b> ｜
+rfc_sha256 <code>1b72124761d99b8d…</code> ｜ 证据 sha256 <code>cc723135de592762…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">1233</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1234</td><td>Schulzrinne, et. al.        Standards Track                    [Page 22]</td></tr>
+<tr class="ctx"><td class="no">1235</td><td></td></tr>
+<tr class="ctx"><td class="no">1236</td><td>RFC 2326              Real Time Streaming Protocol            April 1998</td></tr>
+<tr class="ctx"><td class="no">1237</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1238</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1239</td><td>   The first digit of the Status-Code defines the class of response. The</td></tr>
+<tr class="ctx"><td class="no">1240</td><td>   last two digits do not have any categorization role. There are 5</td></tr>
+<tr class="ctx"><td class="no">1241</td><td>   values for the first digit:</td></tr>
+<tr class="ctx"><td class="no">1242</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">1243</td><td>     * 1xx: Informational - Request received, continuing process</td></tr>
+<tr class="ev"><td class="no">1244</td><td>     * 2xx: Success - The action was successfully received, understood,</td></tr>
+<tr class="ev"><td class="no">1245</td><td>       and accepted</td></tr>
+<tr class="ev"><td class="no">1246</td><td>     * 3xx: Redirection - Further action must be taken in order to</td></tr>
+<tr class="ev"><td class="no">1247</td><td>       complete the request</td></tr>
+<tr class="ev"><td class="no">1248</td><td>     * 4xx: Client Error - The request contains bad syntax or cannot be</td></tr>
+<tr class="ev"><td class="no">1249</td><td>       fulfilled</td></tr>
+<tr class="ev"><td class="no">1250</td><td>     * 5xx: Server Error - The server failed to fulfill an apparently</td></tr>
+<tr class="ev"><td class="no">1251</td><td>       valid request</td></tr>
+<tr class="ctx"><td class="no">1252</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1253</td><td>   The individual values of the numeric status codes defined for</td></tr>
+<tr class="ctx"><td class="no">1254</td><td>   RTSP/1.0, and an example set of corresponding Reason-Phrase&#x27;s, are</td></tr>
+<tr class="ctx"><td class="no">1255</td><td>   presented below. The reason phrases listed here are only recommended</td></tr>
+<tr class="ctx"><td class="no">1256</td><td>   - they may be replaced by local equivalents without affecting the</td></tr>
+<tr class="ctx"><td class="no">1257</td><td>   protocol. Note that RTSP adopts most HTTP/1.1 [2] status codes and</td></tr>
+<tr class="ctx"><td class="no">1258</td><td>   adds RTSP-specific status codes starting at x50 to avoid conflicts</td></tr>
+<tr class="ctx"><td class="no">1259</td><td>   with newly defined HTTP status codes.</td></tr>
+<tr class="ctx"><td class="no">1260</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1261</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-rtsp-rfc2326.txt-357</h2>
+<div class="meta">协议 rtsp ｜ 文档 rfc2326.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>357–364</b> ｜
+rfc_sha256 <code>1b72124761d99b8d…</code> ｜ 证据 sha256 <code>f367b30abeeb7c2f…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">347</td><td>   Connection:</td></tr>
+<tr class="ctx"><td class="no">348</td><td>          A transport layer virtual circuit established between two</td></tr>
+<tr class="ctx"><td class="no">349</td><td>          programs for the purpose of communication.</td></tr>
+<tr class="ctx"><td class="no">350</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">351</td><td>   Container file:</td></tr>
+<tr class="ctx"><td class="no">352</td><td>          A file which may contain multiple media streams which often</td></tr>
+<tr class="ctx"><td class="no">353</td><td>          comprise a presentation when played together. RTSP servers may</td></tr>
+<tr class="ctx"><td class="no">354</td><td>          offer aggregate control on these files, though the concept of</td></tr>
+<tr class="ctx"><td class="no">355</td><td>          a container file is not embedded in the protocol.</td></tr>
+<tr class="ctx"><td class="no">356</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">357</td><td>   Continuous media:</td></tr>
+<tr class="ev"><td class="no">358</td><td>          Data where there is a timing relationship between source and</td></tr>
+<tr class="ev"><td class="no">359</td><td>          sink; that is, the sink must reproduce the timing relationship</td></tr>
+<tr class="ev"><td class="no">360</td><td>          that existed at the source. The most common examples of</td></tr>
+<tr class="ev"><td class="no">361</td><td>          continuous media are audio and motion video. Continuous media</td></tr>
+<tr class="ev"><td class="no">362</td><td>          can be real-time (interactive), where there is a &quot;tight&quot;</td></tr>
+<tr class="ev"><td class="no">363</td><td>          timing relationship between source and sink, or streaming</td></tr>
+<tr class="ev"><td class="no">364</td><td>          (playback), where the relationship is less strict.</td></tr>
+<tr class="ctx"><td class="no">365</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">366</td><td>   Entity:</td></tr>
+<tr class="ctx"><td class="no">367</td><td>          The information transferred as the payload of a request or</td></tr>
+<tr class="ctx"><td class="no">368</td><td>          response. An entity consists of metainformation in the form of</td></tr>
+<tr class="ctx"><td class="no">369</td><td>          entity-header fields and content in the form of an entity-</td></tr>
+<tr class="ctx"><td class="no">370</td><td>          body, as described in Section 8.</td></tr>
+<tr class="ctx"><td class="no">371</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">372</td><td>   Media initialization:</td></tr>
+<tr class="ctx"><td class="no">373</td><td>          Datatype/codec specific initialization. This includes such</td></tr>
+<tr class="ctx"><td class="no">374</td><td>          things as clockrates, color tables, etc. Any transport-</td></tr>
+</table>
+<h2>B-rtsp-rfc2326.txt-7</h2>
+<div class="meta">协议 rtsp ｜ 文档 rfc2326.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>7–13</b> ｜
+rfc_sha256 <code>1b72124761d99b8d…</code> ｜ 证据 sha256 <code>c5ba693324af9417…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">1</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">2</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">3</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">4</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">5</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">6</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">7</td><td>Network Working Group                                     H. Schulzrinne</td></tr>
+<tr class="ev"><td class="no">8</td><td>Request for Comments: 2326                                   Columbia U.</td></tr>
+<tr class="ev"><td class="no">9</td><td>Category: Standards Track                                         A. Rao</td></tr>
+<tr class="ev"><td class="no">10</td><td>                                                                Netscape</td></tr>
+<tr class="ev"><td class="no">11</td><td>                                                             R. Lanphier</td></tr>
+<tr class="ev"><td class="no">12</td><td>                                                            RealNetworks</td></tr>
+<tr class="ev"><td class="no">13</td><td>                                                              April 1998</td></tr>
+<tr class="ctx"><td class="no">14</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">15</td><td>                  Real Time Streaming Protocol (RTSP)</td></tr>
+<tr class="ctx"><td class="no">16</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">17</td><td>Status of this Memo</td></tr>
+<tr class="ctx"><td class="no">18</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">19</td><td>   This document specifies an Internet standards track protocol for the</td></tr>
+<tr class="ctx"><td class="no">20</td><td>   Internet community, and requests discussion and suggestions for</td></tr>
+<tr class="ctx"><td class="no">21</td><td>   improvements.  Please refer to the current edition of the &quot;Internet</td></tr>
+<tr class="ctx"><td class="no">22</td><td>   Official Protocol Standards&quot; (STD 1) for the standardization state</td></tr>
+<tr class="ctx"><td class="no">23</td><td>   and status of this protocol.  Distribution of this memo is unlimited.</td></tr>
+</table>
+<h2>B-rtsp-rfc2326.txt-935</h2>
+<div class="meta">协议 rtsp ｜ 文档 rfc2326.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>935–941</b> ｜
+rfc_sha256 <code>1b72124761d99b8d…</code> ｜ 证据 sha256 <code>d02be01498206362…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">925</td><td>   current instant of a live event. It may be used only for live events.</td></tr>
+<tr class="ctx"><td class="no">926</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">927</td><td>   NPT is defined as in DSM-CC: &quot;Intuitively, NPT is the clock the</td></tr>
+<tr class="ctx"><td class="no">928</td><td>   viewer associates with a program. It is often digitally displayed on</td></tr>
+<tr class="ctx"><td class="no">929</td><td>   a VCR. NPT advances normally when in normal play mode (scale = 1),</td></tr>
+<tr class="ctx"><td class="no">930</td><td>   advances at a faster rate when in fast scan forward (high positive</td></tr>
+<tr class="ctx"><td class="no">931</td><td>   scale ratio), decrements when in scan reverse (high negative scale</td></tr>
+<tr class="ctx"><td class="no">932</td><td>   ratio) and is fixed in pause mode. NPT is (logically) equivalent to</td></tr>
+<tr class="ctx"><td class="no">933</td><td>   SMPTE time codes.&quot; [5]</td></tr>
+<tr class="ctx"><td class="no">934</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">935</td><td>   npt-range    =   ( npt-time &quot;-&quot; [ npt-time ] ) | ( &quot;-&quot; npt-time )</td></tr>
+<tr class="ev"><td class="no">936</td><td>   npt-time     =   &quot;now&quot; | npt-sec | npt-hhmmss</td></tr>
+<tr class="ev"><td class="no">937</td><td>   npt-sec      =   1*DIGIT [ &quot;.&quot; *DIGIT ]</td></tr>
+<tr class="ev"><td class="no">938</td><td>   npt-hhmmss   =   npt-hh &quot;:&quot; npt-mm &quot;:&quot; npt-ss [ &quot;.&quot; *DIGIT ]</td></tr>
+<tr class="ev"><td class="no">939</td><td>   npt-hh       =   1*DIGIT     ; any positive number</td></tr>
+<tr class="ev"><td class="no">940</td><td>   npt-mm       =   1*2DIGIT    ; 0-59</td></tr>
+<tr class="ev"><td class="no">941</td><td>   npt-ss       =   1*2DIGIT    ; 0-59</td></tr>
+<tr class="ctx"><td class="no">942</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">943</td><td>   Examples:</td></tr>
+<tr class="ctx"><td class="no">944</td><td>     npt=123.45-125</td></tr>
+<tr class="ctx"><td class="no">945</td><td>     npt=12:05:35.3-</td></tr>
+<tr class="ctx"><td class="no">946</td><td>     npt=now-</td></tr>
+<tr class="ctx"><td class="no">947</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">948</td><td>     The syntax conforms to ISO 8601. The npt-sec notation is optimized</td></tr>
+<tr class="ctx"><td class="no">949</td><td>     for automatic generation, the ntp-hhmmss notation for consumption</td></tr>
+<tr class="ctx"><td class="no">950</td><td>     by human readers. The &quot;now&quot; constant allows clients to request to</td></tr>
+<tr class="ctx"><td class="no">951</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-rtsp-rfc2326.txt-999</h2>
+<div class="meta">协议 rtsp ｜ 文档 rfc2326.txt ｜
+章节类型 ⑤ 附录、元数据及其他 ｜ 证据行 <b>999–1005</b> ｜
+rfc_sha256 <code>1b72124761d99b8d…</code> ｜ 证据 sha256 <code>2056ec54aea94efb…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">989</td><td>   a reverse domain name (e.g., &quot;com.foo.mynewfeature&quot; is an apt name</td></tr>
+<tr class="ctx"><td class="no">990</td><td>   for a feature whose inventor can be reached at &quot;foo.com&quot;), or</td></tr>
+<tr class="ctx"><td class="no">991</td><td>   register the new option with the Internet Assigned Numbers Authority</td></tr>
+<tr class="ctx"><td class="no">992</td><td>   (IANA).</td></tr>
+<tr class="ctx"><td class="no">993</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">994</td><td>3.8.1 Registering New Option Tags with IANA</td></tr>
+<tr class="ctx"><td class="no">995</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">996</td><td>   When registering a new RTSP option, the following information should</td></tr>
+<tr class="ctx"><td class="no">997</td><td>   be provided:</td></tr>
+<tr class="ctx"><td class="no">998</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">999</td><td>     * Name and description of option. The name may be of any length,</td></tr>
+<tr class="ev"><td class="no">1000</td><td>       but SHOULD be no more than twenty characters long. The name MUST</td></tr>
+<tr class="ev"><td class="no">1001</td><td>       not contain any spaces, control characters or periods.</td></tr>
+<tr class="ev"><td class="no">1002</td><td>     * Indication of who has change control over the option (for</td></tr>
+<tr class="ev"><td class="no">1003</td><td>       example, IETF, ISO, ITU-T, other international standardization</td></tr>
+<tr class="ev"><td class="no">1004</td><td>       bodies, a consortium or a particular company or group of</td></tr>
+<tr class="ev"><td class="no">1005</td><td>       companies);</td></tr>
+<tr class="ctx"><td class="no">1006</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1007</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1008</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1009</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1010</td><td>Schulzrinne, et. al.        Standards Track                    [Page 18]</td></tr>
+<tr class="ctx"><td class="no">1011</td><td></td></tr>
+<tr class="ctx"><td class="no">1012</td><td>RFC 2326              Real Time Streaming Protocol            April 1998</td></tr>
+<tr class="ctx"><td class="no">1013</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1014</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1015</td><td>     * A reference to a further description, if available, for example</td></tr>
+</table>
+<h2>B-sip-rfc3261.txt-1101</h2>
+<div class="meta">协议 sip ｜ 文档 rfc3261.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>1101–1106</b> ｜
+rfc_sha256 <code>d513777f77fea01a…</code> ｜ 证据 sha256 <code>a32ae6d6d56a59ec…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">1091</td><td>   The procedures of Sections 8, 10, 11, 12, 13, 14, and 15 deal</td></tr>
+<tr class="ctx"><td class="no">1092</td><td>   entirely with the UA core (Section 9 describes cancellation, which</td></tr>
+<tr class="ctx"><td class="no">1093</td><td>   applies to both UA core and proxy core).  Section 16 discusses the</td></tr>
+<tr class="ctx"><td class="no">1094</td><td>   proxy element, which facilitates routing of messages between user</td></tr>
+<tr class="ctx"><td class="no">1095</td><td>   agents.</td></tr>
+<tr class="ctx"><td class="no">1096</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1097</td><td>6 Definitions</td></tr>
+<tr class="ctx"><td class="no">1098</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1099</td><td>   The following terms have special significance for SIP.</td></tr>
+<tr class="ctx"><td class="no">1100</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">1101</td><td>      Address-of-Record: An address-of-record (AOR) is a SIP or SIPS URI</td></tr>
+<tr class="ev"><td class="no">1102</td><td>         that points to a domain with a location service that can map</td></tr>
+<tr class="ev"><td class="no">1103</td><td>         the URI to another URI where the user might be available.</td></tr>
+<tr class="ev"><td class="no">1104</td><td>         Typically, the location service is populated through</td></tr>
+<tr class="ev"><td class="no">1105</td><td>         registrations.  An AOR is frequently thought of as the &quot;public</td></tr>
+<tr class="ev"><td class="no">1106</td><td>         address&quot; of the user.</td></tr>
+<tr class="ctx"><td class="no">1107</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1108</td><td>      Back-to-Back User Agent: A back-to-back user agent (B2BUA) is a</td></tr>
+<tr class="ctx"><td class="no">1109</td><td>         logical entity that receives a request and processes it as a</td></tr>
+<tr class="ctx"><td class="no">1110</td><td>         user agent server (UAS).  In order to determine how the request</td></tr>
+<tr class="ctx"><td class="no">1111</td><td>         should be answered, it acts as a user agent client (UAC) and</td></tr>
+<tr class="ctx"><td class="no">1112</td><td>         generates requests.  Unlike a proxy server, it maintains dialog</td></tr>
+<tr class="ctx"><td class="no">1113</td><td>         state and must participate in all requests sent on the dialogs</td></tr>
+<tr class="ctx"><td class="no">1114</td><td>         it has established.  Since it is a concatenation of a UAC and</td></tr>
+<tr class="ctx"><td class="no">1115</td><td>         UAS, no explicit definitions are needed for its behavior.</td></tr>
+<tr class="ctx"><td class="no">1116</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-sip-rfc3261.txt-119</h2>
+<div class="meta">协议 sip ｜ 文档 rfc3261.txt ｜
+章节类型 ③ 状态、响应与错误处理 ｜ 证据行 <b>119–166</b> ｜
+rfc_sha256 <code>d513777f77fea01a…</code> ｜ 证据 sha256 <code>63de6de355e2729a…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">109</td><td>   8.2.4      Applying Extensions .................................   49</td></tr>
+<tr class="ctx"><td class="no">110</td><td>   8.2.5      Processing the Request ..............................   49</td></tr>
+<tr class="ctx"><td class="no">111</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">112</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">113</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">114</td><td>Rosenberg, et. al.          Standards Track                     [Page 2]</td></tr>
+<tr class="ctx"><td class="no">115</td><td></td></tr>
+<tr class="ctx"><td class="no">116</td><td>RFC 3261            SIP: Session Initiation Protocol           June 2002</td></tr>
+<tr class="ctx"><td class="no">117</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">118</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">119</td><td>   8.2.6      Generating the Response .............................   49</td></tr>
+<tr class="ev"><td class="no">120</td><td>   8.2.6.1    Sending a Provisional Response ......................   49</td></tr>
+<tr class="ev"><td class="no">121</td><td>   8.2.6.2    Headers and Tags ....................................   50</td></tr>
+<tr class="ev"><td class="no">122</td><td>   8.2.7      Stateless UAS Behavior ..............................   50</td></tr>
+<tr class="ev"><td class="no">123</td><td>   8.3        Redirect Servers ....................................   51</td></tr>
+<tr class="ev"><td class="no">124</td><td>   9          Canceling a Request .................................   53</td></tr>
+<tr class="ev"><td class="no">125</td><td>   9.1        Client Behavior .....................................   53</td></tr>
+<tr class="ev"><td class="no">126</td><td>   9.2        Server Behavior .....................................   55</td></tr>
+<tr class="ev"><td class="no">127</td><td>   10         Registrations .......................................   56</td></tr>
+<tr class="ev"><td class="no">128</td><td>   10.1       Overview ............................................   56</td></tr>
+<tr class="ev"><td class="no">129</td><td>   10.2       Constructing the REGISTER Request ...................   57</td></tr>
+<tr class="ev"><td class="no">130</td><td>   10.2.1     Adding Bindings .....................................   59</td></tr>
+<tr class="ev"><td class="no">131</td><td>   10.2.1.1   Setting the Expiration Interval of Contact Addresses    60</td></tr>
+<tr class="ev"><td class="no">132</td><td>   10.2.1.2   Preferences among Contact Addresses .................   61</td></tr>
+<tr class="ev"><td class="no">133</td><td>   10.2.2     Removing Bindings ...................................   61</td></tr>
+<tr class="ev"><td class="no">134</td><td>   10.2.3     Fetching Bindings ...................................   61</td></tr>
+<tr class="ev"><td class="no">135</td><td>   10.2.4     Refreshing Bindings .................................   61</td></tr>
+<tr class="ev"><td class="no">136</td><td>   10.2.5     Setting the Internal Clock ..........................   62</td></tr>
+<tr class="ev"><td class="no">137</td><td>   10.2.6     Discovering a Registrar .............................   62</td></tr>
+<tr class="ev"><td class="no">138</td><td>   10.2.7     Transmitting a Request ..............................   62</td></tr>
+<tr class="ev"><td class="no">139</td><td>   10.2.8     Error Responses .....................................   63</td></tr>
+<tr class="ev"><td class="no">140</td><td>   10.3       Processing REGISTER Requests ........................   63</td></tr>
+<tr class="ev"><td class="no">141</td><td>   11         Querying for Capabilities ...........................   66</td></tr>
+<tr class="ev"><td class="no">142</td><td>   11.1       Construction of OPTIONS Request .....................   67</td></tr>
+<tr class="ev"><td class="no">143</td><td>   11.2       Processing of OPTIONS Request .......................   68</td></tr>
+<tr class="ev"><td class="no">144</td><td>   12         Dialogs .............................................   69</td></tr>
+<tr class="ev"><td class="no">145</td><td>   12.1       Creation of a Dialog ................................   70</td></tr>
+<tr class="ev"><td class="no">146</td><td>   12.1.1     UAS behavior ........................................   70</td></tr>
+<tr class="ev"><td class="no">147</td><td>   12.1.2     UAC Behavior ........................................   71</td></tr>
+<tr class="ev"><td class="no">148</td><td>   12.2       Requests within a Dialog ............................   72</td></tr>
+<tr class="ev"><td class="no">149</td><td>   12.2.1     UAC Behavior ........................................   73</td></tr>
+<tr class="ev"><td class="no">150</td><td>   12.2.1.1   Generating the Request ..............................   73</td></tr>
+<tr class="ev"><td class="no">151</td><td>   12.2.1.2   Processing the Responses ............................   75</td></tr>
+<tr class="ev"><td class="no">152</td><td>   12.2.2     UAS Behavior ........................................   76</td></tr>
+<tr class="ev"><td class="no">153</td><td>   12.3       Termination of a Dialog .............................   77</td></tr>
+<tr class="ev"><td class="no">154</td><td>   13         Initiating a Session ................................   77</td></tr>
+<tr class="ev"><td class="no">155</td><td>   13.1       Overview ............................................   77</td></tr>
+<tr class="ev"><td class="no">156</td><td>   13.2       UAC Processing ......................................   78</td></tr>
+<tr class="ev"><td class="no">157</td><td>   13.2.1     Creating the Initial INVITE .........................   78</td></tr>
+<tr class="ev"><td class="no">158</td><td>   13.2.2     Processing INVITE Responses .........................   81</td></tr>
+<tr class="ev"><td class="no">159</td><td>   13.2.2.1   1xx Responses .......................................   81</td></tr>
+<tr class="ev"><td class="no">160</td><td>   13.2.2.2   3xx Responses .......................................   81</td></tr>
+<tr class="ev"><td class="no">161</td><td>   13.2.2.3   4xx, 5xx and 6xx Responses ..........................   81</td></tr>
+<tr class="ev"><td class="no">162</td><td>   13.2.2.4   2xx Responses .......................................   82</td></tr>
+<tr class="ev"><td class="no">163</td><td>   13.3       UAS Processing ......................................   83</td></tr>
+<tr class="ev"><td class="no">164</td><td>   13.3.1     Processing of the INVITE ............................   83</td></tr>
+<tr class="ev"><td class="no">165</td><td>   13.3.1.1   Progress ............................................   84</td></tr>
+<tr class="ev"><td class="no">166</td><td>   13.3.1.2   The INVITE is Redirected ............................   84</td></tr>
+<tr class="ctx"><td class="no">167</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">168</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">169</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">170</td><td>Rosenberg, et. al.          Standards Track                     [Page 3]</td></tr>
+<tr class="ctx"><td class="no">171</td><td></td></tr>
+<tr class="ctx"><td class="no">172</td><td>RFC 3261            SIP: Session Initiation Protocol           June 2002</td></tr>
+<tr class="ctx"><td class="no">173</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">174</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">175</td><td>   13.3.1.3   The INVITE is Rejected ..............................   85</td></tr>
+<tr class="ctx"><td class="no">176</td><td>   13.3.1.4   The INVITE is Accepted ..............................   85</td></tr>
+</table>
+<h2>B-sip-rfc3261.txt-14796</h2>
+<div class="meta">协议 sip ｜ 文档 rfc3261.txt ｜
+章节类型 ⑤ 附录、元数据及其他 ｜ 证据行 <b>14796–14829</b> ｜
+rfc_sha256 <code>d513777f77fea01a…</code> ｜ 证据 sha256 <code>8fa60635ffc3279c…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">14786</td><td>Rosenberg, et. al.          Standards Track                   [Page 264]</td></tr>
+<tr class="ctx"><td class="no">14787</td><td></td></tr>
+<tr class="ctx"><td class="no">14788</td><td>RFC 3261            SIP: Session Initiation Protocol           June 2002</td></tr>
+<tr class="ctx"><td class="no">14789</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14790</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14791</td><td>A Table of Timer Values</td></tr>
+<tr class="ctx"><td class="no">14792</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14793</td><td>   Table 4 summarizes the meaning and defaults of the various timers</td></tr>
+<tr class="ctx"><td class="no">14794</td><td>   used by this specification.</td></tr>
+<tr class="ctx"><td class="no">14795</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">14796</td><td>Timer    Value            Section               Meaning</td></tr>
+<tr class="ev"><td class="no">14797</td><td>----------------------------------------------------------------------</td></tr>
+<tr class="ev"><td class="no">14798</td><td>T1       500ms default    Section 17.1.1.1     RTT Estimate</td></tr>
+<tr class="ev"><td class="no">14799</td><td>T2       4s               Section 17.1.2.2     The maximum retransmit</td></tr>
+<tr class="ev"><td class="no">14800</td><td>                                               interval for non-INVITE</td></tr>
+<tr class="ev"><td class="no">14801</td><td>                                               requests and INVITE</td></tr>
+<tr class="ev"><td class="no">14802</td><td>                                               responses</td></tr>
+<tr class="ev"><td class="no">14803</td><td>T4       5s               Section 17.1.2.2     Maximum duration a</td></tr>
+<tr class="ev"><td class="no">14804</td><td>                                               message will</td></tr>
+<tr class="ev"><td class="no">14805</td><td>                                               remain in the network</td></tr>
+<tr class="ev"><td class="no">14806</td><td>Timer A  initially T1     Section 17.1.1.2     INVITE request retransmit</td></tr>
+<tr class="ev"><td class="no">14807</td><td>                                               interval, for UDP only</td></tr>
+<tr class="ev"><td class="no">14808</td><td>Timer B  64*T1            Section 17.1.1.2     INVITE transaction</td></tr>
+<tr class="ev"><td class="no">14809</td><td>                                               timeout timer</td></tr>
+<tr class="ev"><td class="no">14810</td><td>Timer C  &gt; 3min           Section 16.6         proxy INVITE transaction</td></tr>
+<tr class="ev"><td class="no">14811</td><td>                           bullet 11            timeout</td></tr>
+<tr class="ev"><td class="no">14812</td><td>Timer D  &gt; 32s for UDP    Section 17.1.1.2     Wait time for response</td></tr>
+<tr class="ev"><td class="no">14813</td><td>         0s for TCP/SCTP                       retransmits</td></tr>
+<tr class="ev"><td class="no">14814</td><td>Timer E  initially T1     Section 17.1.2.2     non-INVITE request</td></tr>
+<tr class="ev"><td class="no">14815</td><td>                                               retransmit interval,</td></tr>
+<tr class="ev"><td class="no">14816</td><td>                                               UDP only</td></tr>
+<tr class="ev"><td class="no">14817</td><td>Timer F  64*T1            Section 17.1.2.2     non-INVITE transaction</td></tr>
+<tr class="ev"><td class="no">14818</td><td>                                               timeout timer</td></tr>
+<tr class="ev"><td class="no">14819</td><td>Timer G  initially T1     Section 17.2.1       INVITE response</td></tr>
+<tr class="ev"><td class="no">14820</td><td>                                               retransmit interval</td></tr>
+<tr class="ev"><td class="no">14821</td><td>Timer H  64*T1            Section 17.2.1       Wait time for</td></tr>
+<tr class="ev"><td class="no">14822</td><td>                                               ACK receipt</td></tr>
+<tr class="ev"><td class="no">14823</td><td>Timer I  T4 for UDP       Section 17.2.1       Wait time for</td></tr>
+<tr class="ev"><td class="no">14824</td><td>         0s for TCP/SCTP                       ACK retransmits</td></tr>
+<tr class="ev"><td class="no">14825</td><td>Timer J  64*T1 for UDP    Section 17.2.2       Wait time for</td></tr>
+<tr class="ev"><td class="no">14826</td><td>         0s for TCP/SCTP                       non-INVITE request</td></tr>
+<tr class="ev"><td class="no">14827</td><td>                                               retransmits</td></tr>
+<tr class="ev"><td class="no">14828</td><td>Timer K  T4 for UDP       Section 17.1.2.2     Wait time for</td></tr>
+<tr class="ev"><td class="no">14829</td><td>         0s for TCP/SCTP                       response retransmits</td></tr>
+<tr class="ctx"><td class="no">14830</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14831</td><td>                   Table 4: Summary of timers</td></tr>
+<tr class="ctx"><td class="no">14832</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14833</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14834</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14835</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14836</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14837</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14838</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">14839</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-sip-rfc3261.txt-1664</h2>
+<div class="meta">协议 sip ｜ 文档 rfc3261.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>1664–1678</b> ｜
+rfc_sha256 <code>d513777f77fea01a…</code> ｜ 证据 sha256 <code>33699386989813a1…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">1654</td><td>   extra line with at least one SP or horizontal tab (HT).  The line</td></tr>
+<tr class="ctx"><td class="no">1655</td><td>   break and the whitespace at the beginning of the next line are</td></tr>
+<tr class="ctx"><td class="no">1656</td><td>   treated as a single SP character.  Thus, the following are</td></tr>
+<tr class="ctx"><td class="no">1657</td><td>   equivalent:</td></tr>
+<tr class="ctx"><td class="no">1658</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1659</td><td>      Subject: I know you&#x27;re there, pick up the phone and talk to me!</td></tr>
+<tr class="ctx"><td class="no">1660</td><td>      Subject: I know you&#x27;re there,</td></tr>
+<tr class="ctx"><td class="no">1661</td><td>               pick up the phone</td></tr>
+<tr class="ctx"><td class="no">1662</td><td>               and talk to me!</td></tr>
+<tr class="ctx"><td class="no">1663</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">1664</td><td>   The relative order of header fields with different field names is not</td></tr>
+<tr class="ev"><td class="no">1665</td><td>   significant.  However, it is RECOMMENDED that header fields which are</td></tr>
+<tr class="ev"><td class="no">1666</td><td>   needed for proxy processing (Via, Route, Record-Route, Proxy-Require,</td></tr>
+<tr class="ev"><td class="no">1667</td><td>   Max-Forwards, and Proxy-Authorization, for example) appear towards</td></tr>
+<tr class="ev"><td class="no">1668</td><td>   the top of the message to facilitate rapid parsing.  The relative</td></tr>
+<tr class="ev"><td class="no">1669</td><td>   order of header field rows with the same field name is important.</td></tr>
+<tr class="ev"><td class="no">1670</td><td>   Multiple header field rows with the same field-name MAY be present in</td></tr>
+<tr class="ev"><td class="no">1671</td><td>   a message if and only if the entire field-value for that header field</td></tr>
+<tr class="ev"><td class="no">1672</td><td>   is defined as a comma-separated list (that is, if follows the grammar</td></tr>
+<tr class="ev"><td class="no">1673</td><td>   defined in Section 7.3).  It MUST be possible to combine the multiple</td></tr>
+<tr class="ev"><td class="no">1674</td><td>   header field rows into one &quot;field-name: field-value&quot; pair, without</td></tr>
+<tr class="ev"><td class="no">1675</td><td>   changing the semantics of the message, by appending each subsequent</td></tr>
+<tr class="ev"><td class="no">1676</td><td>   field-value to the first, each separated by a comma.  The exceptions</td></tr>
+<tr class="ev"><td class="no">1677</td><td>   to this rule are the WWW-Authenticate, Authorization, Proxy-</td></tr>
+<tr class="ev"><td class="no">1678</td><td>   Authenticate, and Proxy-Authorization header fields.  Multiple header</td></tr>
+<tr class="ctx"><td class="no">1679</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1680</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1681</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1682</td><td>Rosenberg, et. al.          Standards Track                    [Page 30]</td></tr>
+<tr class="ctx"><td class="no">1683</td><td></td></tr>
+<tr class="ctx"><td class="no">1684</td><td>RFC 3261            SIP: Session Initiation Protocol           June 2002</td></tr>
+<tr class="ctx"><td class="no">1685</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1686</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">1687</td><td>   field rows with these names MAY be present in a message, but since</td></tr>
+<tr class="ctx"><td class="no">1688</td><td>   their grammar does not follow the general form listed in Section 7.3,</td></tr>
+</table>
+<h2>B-sip-rfc3261.txt-231</h2>
+<div class="meta">协议 sip ｜ 文档 rfc3261.txt ｜
+章节类型 ③ 状态、响应与错误处理 ｜ 证据行 <b>231–278</b> ｜
+rfc_sha256 <code>d513777f77fea01a…</code> ｜ 证据 sha256 <code>e3e478e207de0b63…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">221</td><td>   18.2       Servers .............................................  145</td></tr>
+<tr class="ctx"><td class="no">222</td><td>   18.2.1     Receiving Requests ..................................  145</td></tr>
+<tr class="ctx"><td class="no">223</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">224</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">225</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">226</td><td>Rosenberg, et. al.          Standards Track                     [Page 4]</td></tr>
+<tr class="ctx"><td class="no">227</td><td></td></tr>
+<tr class="ctx"><td class="no">228</td><td>RFC 3261            SIP: Session Initiation Protocol           June 2002</td></tr>
+<tr class="ctx"><td class="no">229</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">230</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">231</td><td>   18.2.2     Sending Responses ...................................  146</td></tr>
+<tr class="ev"><td class="no">232</td><td>   18.3       Framing .............................................  147</td></tr>
+<tr class="ev"><td class="no">233</td><td>   18.4       Error Handling ......................................  147</td></tr>
+<tr class="ev"><td class="no">234</td><td>   19         Common Message Components ...........................  147</td></tr>
+<tr class="ev"><td class="no">235</td><td>   19.1       SIP and SIPS Uniform Resource Indicators ............  148</td></tr>
+<tr class="ev"><td class="no">236</td><td>   19.1.1     SIP and SIPS URI Components .........................  148</td></tr>
+<tr class="ev"><td class="no">237</td><td>   19.1.2     Character Escaping Requirements .....................  152</td></tr>
+<tr class="ev"><td class="no">238</td><td>   19.1.3     Example SIP and SIPS URIs ...........................  153</td></tr>
+<tr class="ev"><td class="no">239</td><td>   19.1.4     URI Comparison ......................................  153</td></tr>
+<tr class="ev"><td class="no">240</td><td>   19.1.5     Forming Requests from a URI .........................  156</td></tr>
+<tr class="ev"><td class="no">241</td><td>   19.1.6     Relating SIP URIs and tel URLs ......................  157</td></tr>
+<tr class="ev"><td class="no">242</td><td>   19.2       Option Tags .........................................  158</td></tr>
+<tr class="ev"><td class="no">243</td><td>   19.3       Tags ................................................  159</td></tr>
+<tr class="ev"><td class="no">244</td><td>   20         Header Fields .......................................  159</td></tr>
+<tr class="ev"><td class="no">245</td><td>   20.1       Accept ..............................................  161</td></tr>
+<tr class="ev"><td class="no">246</td><td>   20.2       Accept-Encoding .....................................  163</td></tr>
+<tr class="ev"><td class="no">247</td><td>   20.3       Accept-Language .....................................  164</td></tr>
+<tr class="ev"><td class="no">248</td><td>   20.4       Alert-Info ..........................................  164</td></tr>
+<tr class="ev"><td class="no">249</td><td>   20.5       Allow ...............................................  165</td></tr>
+<tr class="ev"><td class="no">250</td><td>   20.6       Authentication-Info .................................  165</td></tr>
+<tr class="ev"><td class="no">251</td><td>   20.7       Authorization .......................................  165</td></tr>
+<tr class="ev"><td class="no">252</td><td>   20.8       Call-ID .............................................  166</td></tr>
+<tr class="ev"><td class="no">253</td><td>   20.9       Call-Info ...........................................  166</td></tr>
+<tr class="ev"><td class="no">254</td><td>   20.10      Contact .............................................  167</td></tr>
+<tr class="ev"><td class="no">255</td><td>   20.11      Content-Disposition .................................  168</td></tr>
+<tr class="ev"><td class="no">256</td><td>   20.12      Content-Encoding ....................................  169</td></tr>
+<tr class="ev"><td class="no">257</td><td>   20.13      Content-Language ....................................  169</td></tr>
+<tr class="ev"><td class="no">258</td><td>   20.14      Content-Length ......................................  169</td></tr>
+<tr class="ev"><td class="no">259</td><td>   20.15      Content-Type ........................................  170</td></tr>
+<tr class="ev"><td class="no">260</td><td>   20.16      CSeq ................................................  170</td></tr>
+<tr class="ev"><td class="no">261</td><td>   20.17      Date ................................................  170</td></tr>
+<tr class="ev"><td class="no">262</td><td>   20.18      Error-Info ..........................................  171</td></tr>
+<tr class="ev"><td class="no">263</td><td>   20.19      Expires .............................................  171</td></tr>
+<tr class="ev"><td class="no">264</td><td>   20.20      From ................................................  172</td></tr>
+<tr class="ev"><td class="no">265</td><td>   20.21      In-Reply-To .........................................  172</td></tr>
+<tr class="ev"><td class="no">266</td><td>   20.22      Max-Forwards ........................................  173</td></tr>
+<tr class="ev"><td class="no">267</td><td>   20.23      Min-Expires .........................................  173</td></tr>
+<tr class="ev"><td class="no">268</td><td>   20.24      MIME-Version ........................................  173</td></tr>
+<tr class="ev"><td class="no">269</td><td>   20.25      Organization ........................................  174</td></tr>
+<tr class="ev"><td class="no">270</td><td>   20.26      Priority ............................................  174</td></tr>
+<tr class="ev"><td class="no">271</td><td>   20.27      Proxy-Authenticate ..................................  174</td></tr>
+<tr class="ev"><td class="no">272</td><td>   20.28      Proxy-Authorization .................................  175</td></tr>
+<tr class="ev"><td class="no">273</td><td>   20.29      Proxy-Require .......................................  175</td></tr>
+<tr class="ev"><td class="no">274</td><td>   20.30      Record-Route ........................................  175</td></tr>
+<tr class="ev"><td class="no">275</td><td>   20.31      Reply-To ............................................  176</td></tr>
+<tr class="ev"><td class="no">276</td><td>   20.32      Require .............................................  176</td></tr>
+<tr class="ev"><td class="no">277</td><td>   20.33      Retry-After .........................................  176</td></tr>
+<tr class="ev"><td class="no">278</td><td>   20.34      Route ...............................................  177</td></tr>
+<tr class="ctx"><td class="no">279</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">280</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">281</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">282</td><td>Rosenberg, et. al.          Standards Track                     [Page 5]</td></tr>
+<tr class="ctx"><td class="no">283</td><td></td></tr>
+<tr class="ctx"><td class="no">284</td><td>RFC 3261            SIP: Session Initiation Protocol           June 2002</td></tr>
+<tr class="ctx"><td class="no">285</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">286</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">287</td><td>   20.35      Server ..............................................  177</td></tr>
+<tr class="ctx"><td class="no">288</td><td>   20.36      Subject .............................................  177</td></tr>
+</table>
+<h2>B-sip-rfc3261.txt-7</h2>
+<div class="meta">协议 sip ｜ 文档 rfc3261.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>7–23</b> ｜
+rfc_sha256 <code>d513777f77fea01a…</code> ｜ 证据 sha256 <code>68ca86cd1dd1294e…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">1</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">2</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">3</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">4</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">5</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">6</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">7</td><td>Network Working Group                                       J. Rosenberg</td></tr>
+<tr class="ev"><td class="no">8</td><td>Request for Comments: 3261                                   dynamicsoft</td></tr>
+<tr class="ev"><td class="no">9</td><td>Obsoletes: 2543                                           H. Schulzrinne</td></tr>
+<tr class="ev"><td class="no">10</td><td>Category: Standards Track                                    Columbia U.</td></tr>
+<tr class="ev"><td class="no">11</td><td>                                                            G. Camarillo</td></tr>
+<tr class="ev"><td class="no">12</td><td>                                                                Ericsson</td></tr>
+<tr class="ev"><td class="no">13</td><td>                                                             A. Johnston</td></tr>
+<tr class="ev"><td class="no">14</td><td>                                                                WorldCom</td></tr>
+<tr class="ev"><td class="no">15</td><td>                                                             J. Peterson</td></tr>
+<tr class="ev"><td class="no">16</td><td>                                                                 Neustar</td></tr>
+<tr class="ev"><td class="no">17</td><td>                                                               R. Sparks</td></tr>
+<tr class="ev"><td class="no">18</td><td>                                                             dynamicsoft</td></tr>
+<tr class="ev"><td class="no">19</td><td>                                                              M. Handley</td></tr>
+<tr class="ev"><td class="no">20</td><td>                                                                    ICIR</td></tr>
+<tr class="ev"><td class="no">21</td><td>                                                             E. Schooler</td></tr>
+<tr class="ev"><td class="no">22</td><td>                                                                    AT&amp;T</td></tr>
+<tr class="ev"><td class="no">23</td><td>                                                               June 2002</td></tr>
+<tr class="ctx"><td class="no">24</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">25</td><td>                    SIP: Session Initiation Protocol</td></tr>
+<tr class="ctx"><td class="no">26</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">27</td><td>Status of this Memo</td></tr>
+<tr class="ctx"><td class="no">28</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">29</td><td>   This document specifies an Internet standards track protocol for the</td></tr>
+<tr class="ctx"><td class="no">30</td><td>   Internet community, and requests discussion and suggestions for</td></tr>
+<tr class="ctx"><td class="no">31</td><td>   improvements.  Please refer to the current edition of the &quot;Internet</td></tr>
+<tr class="ctx"><td class="no">32</td><td>   Official Protocol Standards&quot; (STD 1) for the standardization state</td></tr>
+<tr class="ctx"><td class="no">33</td><td>   and status of this protocol.  Distribution of this memo is unlimited.</td></tr>
+</table>
+<h2>B-smtp-rfc3207.txt-30</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc3207.txt ｜
+章节类型 ① 协议操作与行为规范 ｜ 证据行 <b>30–35</b> ｜
+rfc_sha256 <code>b004a203791a1ca6…</code> ｜ 证据 sha256 <code>d3ea5437a9cf3122…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">20</td><td>   improvements.  Please refer to the current edition of the &quot;Internet</td></tr>
+<tr class="ctx"><td class="no">21</td><td>   Official Protocol Standards&quot; (STD 1) for the standardization state</td></tr>
+<tr class="ctx"><td class="no">22</td><td>   and status of this protocol.  Distribution of this memo is unlimited.</td></tr>
+<tr class="ctx"><td class="no">23</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">24</td><td>Copyright Notice</td></tr>
+<tr class="ctx"><td class="no">25</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">26</td><td>   Copyright (C) The Internet Society (2002).  All Rights Reserved.</td></tr>
+<tr class="ctx"><td class="no">27</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">28</td><td>Abstract</td></tr>
+<tr class="ctx"><td class="no">29</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">30</td><td>   This document describes an extension to the SMTP (Simple Mail</td></tr>
+<tr class="ev"><td class="no">31</td><td>   Transfer Protocol) service that allows an SMTP server and client to</td></tr>
+<tr class="ev"><td class="no">32</td><td>   use TLS (Transport Layer Security) to provide private, authenticated</td></tr>
+<tr class="ev"><td class="no">33</td><td>   communication over the Internet.  This gives SMTP agents the ability</td></tr>
+<tr class="ev"><td class="no">34</td><td>   to protect some or all of their communications from eavesdroppers and</td></tr>
+<tr class="ev"><td class="no">35</td><td>   attackers.</td></tr>
+<tr class="ctx"><td class="no">36</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">37</td><td>1. Introduction</td></tr>
+<tr class="ctx"><td class="no">38</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">39</td><td>   SMTP [RFC2821] servers and clients normally communicate in the clear</td></tr>
+<tr class="ctx"><td class="no">40</td><td>   over the Internet.  In many cases, this communication goes through</td></tr>
+<tr class="ctx"><td class="no">41</td><td>   one or more router that is not controlled or trusted by either</td></tr>
+<tr class="ctx"><td class="no">42</td><td>   entity.  Such an untrusted router might allow a third party to</td></tr>
+<tr class="ctx"><td class="no">43</td><td>   monitor or alter the communications between the server and client.</td></tr>
+<tr class="ctx"><td class="no">44</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">45</td><td>   Further, there is often a desire for two SMTP agents to be able to</td></tr>
+</table>
+<h2>B-smtp-rfc3207.txt-404</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc3207.txt ｜
+章节类型 ⑤ 附录、元数据及其他 ｜ 证据行 <b>404–418</b> ｜
+rfc_sha256 <code>b004a203791a1ca6…</code> ｜ 证据 sha256 <code>85f5a16a8c1d24d3…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">394</td><td>Hoffman                     Standards Track                     [Page 7]</td></tr>
+<tr class="ctx"><td class="no">395</td><td></td></tr>
+<tr class="ctx"><td class="no">396</td><td>RFC 3207     SMTP Service Extension - Secure SMTP over TLS February 2002</td></tr>
+<tr class="ctx"><td class="no">397</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">398</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">399</td><td>Appendix</td></tr>
+<tr class="ctx"><td class="no">400</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">401</td><td>   This document is a revision of RFC 2487, which is a Proposed</td></tr>
+<tr class="ctx"><td class="no">402</td><td>   Standard. The changes from that document are:</td></tr>
+<tr class="ctx"><td class="no">403</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">404</td><td>   -  Section 5 and 7: More discussion of the man-in-the-middle attacks</td></tr>
+<tr class="ev"><td class="no">405</td><td>   -  Section 5: Additional discussion of when a server should and</td></tr>
+<tr class="ev"><td class="no">406</td><td>      should not advertise the STARTTLS extension</td></tr>
+<tr class="ev"><td class="no">407</td><td>   -  Section 5: Changed the requirements on SMTP clients after</td></tr>
+<tr class="ev"><td class="no">408</td><td>      receiving a 220 response.</td></tr>
+<tr class="ev"><td class="no">409</td><td>   -  Section 5.1: Clarified description of verifying certificates.</td></tr>
+<tr class="ev"><td class="no">410</td><td>   -  Section 5.3: Added the section on &quot;STARTTLS on the Submission</td></tr>
+<tr class="ev"><td class="no">411</td><td>      Port&quot;</td></tr>
+<tr class="ev"><td class="no">412</td><td>   -  Section 6: Bug fix in the example to indicate that the client</td></tr>
+<tr class="ev"><td class="no">413</td><td>      needs to issue a new EHLO command, as already is described in</td></tr>
+<tr class="ev"><td class="no">414</td><td>      section 5.2.</td></tr>
+<tr class="ev"><td class="no">415</td><td>   -  Section 7: Clarification of the paragraph on acceptable degree of</td></tr>
+<tr class="ev"><td class="no">416</td><td>      privacy. Significant change to the discussion of how to avoid a</td></tr>
+<tr class="ev"><td class="no">417</td><td>      man-in-the-middle attack.</td></tr>
+<tr class="ev"><td class="no">418</td><td>   -  Section A: Update reference from RFC 821 to RFC 2821.</td></tr>
+<tr class="ctx"><td class="no">419</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">420</td><td>Author&#x27;s Address</td></tr>
+<tr class="ctx"><td class="no">421</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">422</td><td>   Paul Hoffman</td></tr>
+<tr class="ctx"><td class="no">423</td><td>   Internet Mail Consortium</td></tr>
+<tr class="ctx"><td class="no">424</td><td>   127 Segre Place</td></tr>
+<tr class="ctx"><td class="no">425</td><td>   Santa Cruz, CA  95060</td></tr>
+<tr class="ctx"><td class="no">426</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">427</td><td>   Phone: (831) 426-9827</td></tr>
+<tr class="ctx"><td class="no">428</td><td>   EMail: phoffman@imc.org</td></tr>
+</table>
+<h2>B-smtp-rfc4954.txt-459</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc4954.txt ｜
+章节类型 ④ 定义、注册与参数说明 ｜ 证据行 <b>459–466</b> ｜
+rfc_sha256 <code>6bf118f556749d08…</code> ｜ 证据 sha256 <code>8021e5e37e5da280…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">449</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">450</td><td>Siemborski &amp; Melnikov       Standards Track                     [Page 8]</td></tr>
+<tr class="ctx"><td class="no">451</td><td></td></tr>
+<tr class="ctx"><td class="no">452</td><td>RFC 4954       SMTP Service Extension for Authentication       July 2007</td></tr>
+<tr class="ctx"><td class="no">453</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">454</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">455</td><td>5.  The AUTH Parameter to the MAIL FROM command</td></tr>
+<tr class="ctx"><td class="no">456</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">457</td><td>   AUTH=mailbox</td></tr>
+<tr class="ctx"><td class="no">458</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">459</td><td>   Arguments:</td></tr>
+<tr class="ev"><td class="no">460</td><td>        A &lt;mailbox&gt; (see Section 4.1.2 of [SMTP]) that is associated</td></tr>
+<tr class="ev"><td class="no">461</td><td>        with the identity that submitted the message to the delivery</td></tr>
+<tr class="ev"><td class="no">462</td><td>        system, or the two character sequence &quot;&lt;&gt;&quot; indicating such an</td></tr>
+<tr class="ev"><td class="no">463</td><td>        identity is unknown or insufficiently authenticated.  To comply</td></tr>
+<tr class="ev"><td class="no">464</td><td>        with restrictions imposed on ESMTP parameters, the &lt;mailbox&gt; is</td></tr>
+<tr class="ev"><td class="no">465</td><td>        encoded inside an xtext.  The syntax of an xtext is described in</td></tr>
+<tr class="ev"><td class="no">466</td><td>        Section 4 of [ESMTP-DSN].</td></tr>
+<tr class="ctx"><td class="no">467</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">468</td><td>   Note:</td></tr>
+<tr class="ctx"><td class="no">469</td><td>        For the purposes of this discussion, &quot;authenticated identity&quot;</td></tr>
+<tr class="ctx"><td class="no">470</td><td>        refers to the identity (if any) derived from the authorization</td></tr>
+<tr class="ctx"><td class="no">471</td><td>        identity of previous AUTH command, while the terms &quot;authorized</td></tr>
+<tr class="ctx"><td class="no">472</td><td>        identity&quot; and &quot;supplied &lt;mailbox&gt;&quot; refer to the sender identity</td></tr>
+<tr class="ctx"><td class="no">473</td><td>        that is being associated with a particular message.  Note that</td></tr>
+<tr class="ctx"><td class="no">474</td><td>        one authenticated identity may be able to identify messages as</td></tr>
+<tr class="ctx"><td class="no">475</td><td>        being sent by any number of authorized identities within a</td></tr>
+<tr class="ctx"><td class="no">476</td><td>        single session.  For example, this may be the case when an SMTP</td></tr>
+</table>
+<h2>B-smtp-rfc4954.txt-704</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc4954.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>704–711</b> ｜
+rfc_sha256 <code>6bf118f556749d08…</code> ｜ 证据 sha256 <code>eb9ef9249977d073…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">694</td><td>                        ;; US-ASCII except for &quot;+&quot;, &quot;=&quot;, SP, and CTL</td></tr>
+<tr class="ctx"><td class="no">695</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">696</td><td>      xtext           = *(xchar / hexchar)</td></tr>
+<tr class="ctx"><td class="no">697</td><td>                        ;; non-US-ASCII is only allowed as hexchar</td></tr>
+<tr class="ctx"><td class="no">698</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">699</td><td>      auth-command    = &quot;AUTH&quot; SP sasl-mech [SP initial-response]</td></tr>
+<tr class="ctx"><td class="no">700</td><td>                        *(CRLF [base64]) [CRLF cancel-response]</td></tr>
+<tr class="ctx"><td class="no">701</td><td>                        CRLF</td></tr>
+<tr class="ctx"><td class="no">702</td><td>                        ;; &lt;sasl-mech&gt; is defined in [SASL]</td></tr>
+<tr class="ctx"><td class="no">703</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">704</td><td>      auth-param      = &quot;AUTH=&quot; xtext</td></tr>
+<tr class="ev"><td class="no">705</td><td>                        ;; Parameter to the MAIL FROM command.</td></tr>
+<tr class="ev"><td class="no">706</td><td>                        ;; This non-terminal complies with</td></tr>
+<tr class="ev"><td class="no">707</td><td>                        ;; syntax defined by esmtp-param [SMTP].</td></tr>
+<tr class="ev"><td class="no">708</td><td>                        ;;</td></tr>
+<tr class="ev"><td class="no">709</td><td>                        ;; The decoded form of the xtext MUST be</td></tr>
+<tr class="ev"><td class="no">710</td><td>                        ;; either a &lt;mailbox&gt; or the two</td></tr>
+<tr class="ev"><td class="no">711</td><td>                        ;; characters &quot;&lt;&gt;&quot;</td></tr>
+<tr class="ctx"><td class="no">712</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">713</td><td>      base64          = base64-terminal /</td></tr>
+<tr class="ctx"><td class="no">714</td><td>                        ( 1*(4base64-char) [base64-terminal] )</td></tr>
+<tr class="ctx"><td class="no">715</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">716</td><td>      base64-char     = ALPHA / DIGIT / &quot;+&quot; / &quot;/&quot;</td></tr>
+<tr class="ctx"><td class="no">717</td><td>                        ;; Case-sensitive</td></tr>
+<tr class="ctx"><td class="no">718</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">719</td><td>      base64-terminal = (2base64-char &quot;==&quot;) / (3base64-char &quot;=&quot;)</td></tr>
+<tr class="ctx"><td class="no">720</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">721</td><td>      continue-req    = &quot;334&quot; SP [base64] CRLF</td></tr>
+</table>
+<h2>B-smtp-rfc5321.txt-175</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5321.txt ｜
+章节类型 ③ 状态、响应与错误处理 ｜ 证据行 <b>175–210</b> ｜
+rfc_sha256 <code>7d560eddff1b213c…</code> ｜ 证据 sha256 <code>8ec305c57148f28f…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">165</td><td>     5.2.  IPv6 and MX Records  . . . . . . . . . . . . . . . . . . . 71</td></tr>
+<tr class="ctx"><td class="no">166</td><td>   6.  Problem Detection and Handling . . . . . . . . . . . . . . . . 71</td></tr>
+<tr class="ctx"><td class="no">167</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">168</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">169</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">170</td><td>Klensin                     Standards Track                     [Page 3]</td></tr>
+<tr class="ctx"><td class="no">171</td><td></td></tr>
+<tr class="ctx"><td class="no">172</td><td>RFC 5321                          SMTP                      October 2008</td></tr>
+<tr class="ctx"><td class="no">173</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">174</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">175</td><td>     6.1.  Reliable Delivery and Replies by Email . . . . . . . . . . 71</td></tr>
+<tr class="ev"><td class="no">176</td><td>     6.2.  Unwanted, Unsolicited, and &quot;Attack&quot; Messages . . . . . . . 72</td></tr>
+<tr class="ev"><td class="no">177</td><td>     6.3.  Loop Detection . . . . . . . . . . . . . . . . . . . . . . 73</td></tr>
+<tr class="ev"><td class="no">178</td><td>     6.4.  Compensating for Irregularities  . . . . . . . . . . . . . 73</td></tr>
+<tr class="ev"><td class="no">179</td><td>   7.  Security Considerations  . . . . . . . . . . . . . . . . . . . 75</td></tr>
+<tr class="ev"><td class="no">180</td><td>     7.1.  Mail Security and Spoofing . . . . . . . . . . . . . . . . 75</td></tr>
+<tr class="ev"><td class="no">181</td><td>     7.2.  &quot;Blind&quot; Copies . . . . . . . . . . . . . . . . . . . . . . 76</td></tr>
+<tr class="ev"><td class="no">182</td><td>     7.3.  VRFY, EXPN, and Security . . . . . . . . . . . . . . . . . 76</td></tr>
+<tr class="ev"><td class="no">183</td><td>     7.4.  Mail Rerouting Based on the 251 and 551 Response Codes . . 77</td></tr>
+<tr class="ev"><td class="no">184</td><td>     7.5.  Information Disclosure in Announcements  . . . . . . . . . 77</td></tr>
+<tr class="ev"><td class="no">185</td><td>     7.6.  Information Disclosure in Trace Fields . . . . . . . . . . 78</td></tr>
+<tr class="ev"><td class="no">186</td><td>     7.7.  Information Disclosure in Message Forwarding . . . . . . . 78</td></tr>
+<tr class="ev"><td class="no">187</td><td>     7.8.  Resistance to Attacks  . . . . . . . . . . . . . . . . . . 78</td></tr>
+<tr class="ev"><td class="no">188</td><td>     7.9.  Scope of Operation of SMTP Servers . . . . . . . . . . . . 78</td></tr>
+<tr class="ev"><td class="no">189</td><td>   8.  IANA Considerations  . . . . . . . . . . . . . . . . . . . . . 79</td></tr>
+<tr class="ev"><td class="no">190</td><td>   9.  Acknowledgments  . . . . . . . . . . . . . . . . . . . . . . . 80</td></tr>
+<tr class="ev"><td class="no">191</td><td>   10. References . . . . . . . . . . . . . . . . . . . . . . . . . . 81</td></tr>
+<tr class="ev"><td class="no">192</td><td>     10.1. Normative References . . . . . . . . . . . . . . . . . . . 81</td></tr>
+<tr class="ev"><td class="no">193</td><td>     10.2. Informative References . . . . . . . . . . . . . . . . . . 82</td></tr>
+<tr class="ev"><td class="no">194</td><td>   Appendix A.  TCP Transport Service . . . . . . . . . . . . . . . . 85</td></tr>
+<tr class="ev"><td class="no">195</td><td>   Appendix B.  Generating SMTP Commands from RFC 822 Header</td></tr>
+<tr class="ev"><td class="no">196</td><td>                Fields  . . . . . . . . . . . . . . . . . . . . . . . 85</td></tr>
+<tr class="ev"><td class="no">197</td><td>   Appendix C.  Source Routes . . . . . . . . . . . . . . . . . . . . 86</td></tr>
+<tr class="ev"><td class="no">198</td><td>   Appendix D.  Scenarios . . . . . . . . . . . . . . . . . . . . . . 87</td></tr>
+<tr class="ev"><td class="no">199</td><td>     D.1.  A Typical SMTP Transaction Scenario  . . . . . . . . . . . 88</td></tr>
+<tr class="ev"><td class="no">200</td><td>     D.2.  Aborted SMTP Transaction Scenario  . . . . . . . . . . . . 89</td></tr>
+<tr class="ev"><td class="no">201</td><td>     D.3.  Relayed Mail Scenario  . . . . . . . . . . . . . . . . . . 90</td></tr>
+<tr class="ev"><td class="no">202</td><td>     D.4.  Verifying and Sending Scenario . . . . . . . . . . . . . . 92</td></tr>
+<tr class="ev"><td class="no">203</td><td>   Appendix E.  Other Gateway Issues  . . . . . . . . . . . . . . . . 92</td></tr>
+<tr class="ev"><td class="no">204</td><td>   Appendix F.  Deprecated Features of RFC 821  . . . . . . . . . . . 93</td></tr>
+<tr class="ev"><td class="no">205</td><td>     F.1.  TURN . . . . . . . . . . . . . . . . . . . . . . . . . . . 93</td></tr>
+<tr class="ev"><td class="no">206</td><td>     F.2.  Source Routing . . . . . . . . . . . . . . . . . . . . . . 93</td></tr>
+<tr class="ev"><td class="no">207</td><td>     F.3.  HELO . . . . . . . . . . . . . . . . . . . . . . . . . . . 93</td></tr>
+<tr class="ev"><td class="no">208</td><td>     F.4.  #-literals . . . . . . . . . . . . . . . . . . . . . . . . 94</td></tr>
+<tr class="ev"><td class="no">209</td><td>     F.5.  Dates and Years  . . . . . . . . . . . . . . . . . . . . . 94</td></tr>
+<tr class="ev"><td class="no">210</td><td>     F.6.  Sending versus Mailing . . . . . . . . . . . . . . . . . . 94</td></tr>
+<tr class="ctx"><td class="no">211</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">212</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">213</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">214</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">215</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">216</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">217</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">218</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">219</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">220</td><td>&nbsp;</td></tr>
+</table>
+<h2>B-smtp-rfc5321.txt-754</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5321.txt ｜
+章节类型 ③ 状态、响应与错误处理 ｜ 证据行 <b>754–761</b> ｜
+rfc_sha256 <code>7d560eddff1b213c…</code> ｜ 证据 sha256 <code>4b096fd6fc96dc1c…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">744</td><td>   may be used by the client to, for example, &quot;clear the buffer&quot; or</td></tr>
+<tr class="ctx"><td class="no">745</td><td>   &quot;reset the state table&quot;, causing the information in the buffer to be</td></tr>
+<tr class="ctx"><td class="no">746</td><td>   discarded and the state to be returned to some previous state.</td></tr>
+<tr class="ctx"><td class="no">747</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">748</td><td>2.3.7.  Commands and Replies</td></tr>
+<tr class="ctx"><td class="no">749</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">750</td><td>   SMTP commands and, unless altered by a service extension, message</td></tr>
+<tr class="ctx"><td class="no">751</td><td>   data, are transmitted from the sender to the receiver via the</td></tr>
+<tr class="ctx"><td class="no">752</td><td>   transmission channel in &quot;lines&quot;.</td></tr>
+<tr class="ctx"><td class="no">753</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">754</td><td>   An SMTP reply is an acknowledgment (positive or negative) sent in</td></tr>
+<tr class="ev"><td class="no">755</td><td>   &quot;lines&quot; from receiver to sender via the transmission channel in</td></tr>
+<tr class="ev"><td class="no">756</td><td>   response to a command.  The general form of a reply is a numeric</td></tr>
+<tr class="ev"><td class="no">757</td><td>   completion code (indicating failure or success) usually followed by a</td></tr>
+<tr class="ev"><td class="no">758</td><td>   text string.  The codes are for use by programs and the text is</td></tr>
+<tr class="ev"><td class="no">759</td><td>   usually intended for human users.  RFC 3463 [25], specifies further</td></tr>
+<tr class="ev"><td class="no">760</td><td>   structuring of the reply strings, including the use of supplemental</td></tr>
+<tr class="ev"><td class="no">761</td><td>   and more specific completion codes (see also RFC 5248 [26]).</td></tr>
+<tr class="ctx"><td class="no">762</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">763</td><td>2.3.8.  Lines</td></tr>
+<tr class="ctx"><td class="no">764</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">765</td><td>   Lines consist of zero or more data characters terminated by the</td></tr>
+<tr class="ctx"><td class="no">766</td><td>   sequence ASCII character &quot;CR&quot; (hex value 0D) followed immediately by</td></tr>
+<tr class="ctx"><td class="no">767</td><td>   ASCII character &quot;LF&quot; (hex value 0A).  This termination sequence is</td></tr>
+<tr class="ctx"><td class="no">768</td><td>   denoted as &lt;CRLF&gt; in this document.  Conforming implementations MUST</td></tr>
+<tr class="ctx"><td class="no">769</td><td>   NOT recognize or generate any other character or character sequence</td></tr>
+<tr class="ctx"><td class="no">770</td><td>   as a line terminator.  Limits MAY be imposed on line lengths by</td></tr>
+<tr class="ctx"><td class="no">771</td><td>   servers (see Section 4).</td></tr>
+</table>
+<h2>B-smtp-rfc5321.txt-853</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5321.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>853–860</b> ｜
+rfc_sha256 <code>7d560eddff1b213c…</code> ｜ 证据 sha256 <code>1ecb5fc629502303…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">843</td><td></td></tr>
+<tr class="ctx"><td class="no">844</td><td>RFC 5321                          SMTP                      October 2008</td></tr>
+<tr class="ctx"><td class="no">845</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">846</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">847</td><td>   optimize transport by modifying them, the local-part MUST be</td></tr>
+<tr class="ctx"><td class="no">848</td><td>   interpreted and assigned semantics only by the host specified in the</td></tr>
+<tr class="ctx"><td class="no">849</td><td>   domain part of the address.</td></tr>
+<tr class="ctx"><td class="no">850</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">851</td><td>2.4.  General Syntax Principles and Transaction Model</td></tr>
+<tr class="ctx"><td class="no">852</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">853</td><td>   SMTP commands and replies have a rigid syntax.  All commands begin</td></tr>
+<tr class="ev"><td class="no">854</td><td>   with a command verb.  All replies begin with a three digit numeric</td></tr>
+<tr class="ev"><td class="no">855</td><td>   code.  In some commands and replies, arguments are required following</td></tr>
+<tr class="ev"><td class="no">856</td><td>   the verb or reply code.  Some commands do not accept arguments (after</td></tr>
+<tr class="ev"><td class="no">857</td><td>   the verb), and some reply codes are followed, sometimes optionally,</td></tr>
+<tr class="ev"><td class="no">858</td><td>   by free form text.  In both cases, where text appears, it is</td></tr>
+<tr class="ev"><td class="no">859</td><td>   separated from the verb or reply code by a space character.  Complete</td></tr>
+<tr class="ev"><td class="no">860</td><td>   definitions of commands and replies appear in Section 4.</td></tr>
+<tr class="ctx"><td class="no">861</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">862</td><td>   Verbs and argument values (e.g., &quot;TO:&quot; or &quot;to:&quot; in the RCPT command</td></tr>
+<tr class="ctx"><td class="no">863</td><td>   and extension name keywords) are not case sensitive, with the sole</td></tr>
+<tr class="ctx"><td class="no">864</td><td>   exception in this specification of a mailbox local-part (SMTP</td></tr>
+<tr class="ctx"><td class="no">865</td><td>   Extensions may explicitly specify case-sensitive elements).  That is,</td></tr>
+<tr class="ctx"><td class="no">866</td><td>   a command verb, an argument value other than a mailbox local-part,</td></tr>
+<tr class="ctx"><td class="no">867</td><td>   and free form text MAY be encoded in upper case, lower case, or any</td></tr>
+<tr class="ctx"><td class="no">868</td><td>   mixture of upper and lower case with no impact on its meaning.  The</td></tr>
+<tr class="ctx"><td class="no">869</td><td>   local-part of a mailbox MUST BE treated as case sensitive.</td></tr>
+<tr class="ctx"><td class="no">870</td><td>   Therefore, SMTP implementations MUST take care to preserve the case</td></tr>
+</table>
+<h2>B-smtp-rfc5321.txt-862</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5321.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>862–875</b> ｜
+rfc_sha256 <code>7d560eddff1b213c…</code> ｜ 证据 sha256 <code>314037ed95b9ceb3…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">852</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">853</td><td>   SMTP commands and replies have a rigid syntax.  All commands begin</td></tr>
+<tr class="ctx"><td class="no">854</td><td>   with a command verb.  All replies begin with a three digit numeric</td></tr>
+<tr class="ctx"><td class="no">855</td><td>   code.  In some commands and replies, arguments are required following</td></tr>
+<tr class="ctx"><td class="no">856</td><td>   the verb or reply code.  Some commands do not accept arguments (after</td></tr>
+<tr class="ctx"><td class="no">857</td><td>   the verb), and some reply codes are followed, sometimes optionally,</td></tr>
+<tr class="ctx"><td class="no">858</td><td>   by free form text.  In both cases, where text appears, it is</td></tr>
+<tr class="ctx"><td class="no">859</td><td>   separated from the verb or reply code by a space character.  Complete</td></tr>
+<tr class="ctx"><td class="no">860</td><td>   definitions of commands and replies appear in Section 4.</td></tr>
+<tr class="ctx"><td class="no">861</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">862</td><td>   Verbs and argument values (e.g., &quot;TO:&quot; or &quot;to:&quot; in the RCPT command</td></tr>
+<tr class="ev"><td class="no">863</td><td>   and extension name keywords) are not case sensitive, with the sole</td></tr>
+<tr class="ev"><td class="no">864</td><td>   exception in this specification of a mailbox local-part (SMTP</td></tr>
+<tr class="ev"><td class="no">865</td><td>   Extensions may explicitly specify case-sensitive elements).  That is,</td></tr>
+<tr class="ev"><td class="no">866</td><td>   a command verb, an argument value other than a mailbox local-part,</td></tr>
+<tr class="ev"><td class="no">867</td><td>   and free form text MAY be encoded in upper case, lower case, or any</td></tr>
+<tr class="ev"><td class="no">868</td><td>   mixture of upper and lower case with no impact on its meaning.  The</td></tr>
+<tr class="ev"><td class="no">869</td><td>   local-part of a mailbox MUST BE treated as case sensitive.</td></tr>
+<tr class="ev"><td class="no">870</td><td>   Therefore, SMTP implementations MUST take care to preserve the case</td></tr>
+<tr class="ev"><td class="no">871</td><td>   of mailbox local-parts.  In particular, for some hosts, the user</td></tr>
+<tr class="ev"><td class="no">872</td><td>   &quot;smith&quot; is different from the user &quot;Smith&quot;.  However, exploiting the</td></tr>
+<tr class="ev"><td class="no">873</td><td>   case sensitivity of mailbox local-parts impedes interoperability and</td></tr>
+<tr class="ev"><td class="no">874</td><td>   is discouraged.  Mailbox domains follow normal DNS rules and are</td></tr>
+<tr class="ev"><td class="no">875</td><td>   hence not case sensitive.</td></tr>
+<tr class="ctx"><td class="no">876</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">877</td><td>   A few SMTP servers, in violation of this specification (and RFC 821)</td></tr>
+<tr class="ctx"><td class="no">878</td><td>   require that command verbs be encoded by clients in upper case.</td></tr>
+<tr class="ctx"><td class="no">879</td><td>   Implementations MAY wish to employ this encoding to accommodate those</td></tr>
+<tr class="ctx"><td class="no">880</td><td>   servers.</td></tr>
+<tr class="ctx"><td class="no">881</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">882</td><td>   The argument clause consists of a variable-length character string</td></tr>
+<tr class="ctx"><td class="no">883</td><td>   ending with the end of the line, i.e., with the character sequence</td></tr>
+<tr class="ctx"><td class="no">884</td><td>   &lt;CRLF&gt;.  The receiver will take no action until this sequence is</td></tr>
+<tr class="ctx"><td class="no">885</td><td>   received.</td></tr>
+</table>
+<h2>B-smtp-rfc5321.txt-903</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5321.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>903–919</b> ｜
+rfc_sha256 <code>7d560eddff1b213c…</code> ｜ 证据 sha256 <code>cd79e7524d4548f8…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">893</td><td>   right justified, in an octet with the high-order bit cleared to zero.</td></tr>
+<tr class="ctx"><td class="no">894</td><td>   More specifically, the unextended SMTP service provides 7-bit</td></tr>
+<tr class="ctx"><td class="no">895</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">896</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">897</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">898</td><td>Klensin                     Standards Track                    [Page 16]</td></tr>
+<tr class="ctx"><td class="no">899</td><td></td></tr>
+<tr class="ctx"><td class="no">900</td><td>RFC 5321                          SMTP                      October 2008</td></tr>
+<tr class="ctx"><td class="no">901</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">902</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">903</td><td>   transport only.  An originating SMTP client that has not successfully</td></tr>
+<tr class="ev"><td class="no">904</td><td>   negotiated an appropriate extension with a particular server (see the</td></tr>
+<tr class="ev"><td class="no">905</td><td>   next paragraph) MUST NOT transmit messages with information in the</td></tr>
+<tr class="ev"><td class="no">906</td><td>   high-order bit of octets.  If such messages are transmitted in</td></tr>
+<tr class="ev"><td class="no">907</td><td>   violation of this rule, receiving SMTP servers MAY clear the high-</td></tr>
+<tr class="ev"><td class="no">908</td><td>   order bit or reject the message as invalid.  In general, a relay SMTP</td></tr>
+<tr class="ev"><td class="no">909</td><td>   SHOULD assume that the message content it has received is valid and,</td></tr>
+<tr class="ev"><td class="no">910</td><td>   assuming that the envelope permits doing so, relay it without</td></tr>
+<tr class="ev"><td class="no">911</td><td>   inspecting that content.  Of course, if the content is mislabeled and</td></tr>
+<tr class="ev"><td class="no">912</td><td>   the data path cannot accept the actual content, this may result in</td></tr>
+<tr class="ev"><td class="no">913</td><td>   the ultimate delivery of a severely garbled message to the recipient.</td></tr>
+<tr class="ev"><td class="no">914</td><td>   Delivery SMTP systems MAY reject such messages, or return them as</td></tr>
+<tr class="ev"><td class="no">915</td><td>   undeliverable, rather than deliver them.  In the absence of a server-</td></tr>
+<tr class="ev"><td class="no">916</td><td>   offered extension explicitly permitting it, a sending SMTP system is</td></tr>
+<tr class="ev"><td class="no">917</td><td>   not permitted to send envelope commands in any character set other</td></tr>
+<tr class="ev"><td class="no">918</td><td>   than US-ASCII.  Receiving systems SHOULD reject such commands,</td></tr>
+<tr class="ev"><td class="no">919</td><td>   normally using &quot;500 syntax error - invalid character&quot; replies.</td></tr>
+<tr class="ctx"><td class="no">920</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">921</td><td>   8-bit message content transmission MAY be requested of the server by</td></tr>
+<tr class="ctx"><td class="no">922</td><td>   a client using extended SMTP facilities, notably the &quot;8BITMIME&quot;</td></tr>
+<tr class="ctx"><td class="no">923</td><td>   extension, RFC 1652 [22]. 8BITMIME SHOULD be supported by SMTP</td></tr>
+<tr class="ctx"><td class="no">924</td><td>   servers.  However, it MUST NOT be construed as authorization to</td></tr>
+<tr class="ctx"><td class="no">925</td><td>   transmit unrestricted 8-bit material, nor does 8BITMIME authorize</td></tr>
+<tr class="ctx"><td class="no">926</td><td>   transmission of any envelope material in other than ASCII. 8BITMIME</td></tr>
+<tr class="ctx"><td class="no">927</td><td>   MUST NOT be requested by senders for material with the high bit on</td></tr>
+<tr class="ctx"><td class="no">928</td><td>   that is not in MIME format with an appropriate content-transfer</td></tr>
+<tr class="ctx"><td class="no">929</td><td>   encoding; servers MAY reject such messages.</td></tr>
+</table>
+<h2>B-smtp-rfc5321.txt-921</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5321.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>921–929</b> ｜
+rfc_sha256 <code>7d560eddff1b213c…</code> ｜ 证据 sha256 <code>0297f7c99aef6dda…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">911</td><td>   inspecting that content.  Of course, if the content is mislabeled and</td></tr>
+<tr class="ctx"><td class="no">912</td><td>   the data path cannot accept the actual content, this may result in</td></tr>
+<tr class="ctx"><td class="no">913</td><td>   the ultimate delivery of a severely garbled message to the recipient.</td></tr>
+<tr class="ctx"><td class="no">914</td><td>   Delivery SMTP systems MAY reject such messages, or return them as</td></tr>
+<tr class="ctx"><td class="no">915</td><td>   undeliverable, rather than deliver them.  In the absence of a server-</td></tr>
+<tr class="ctx"><td class="no">916</td><td>   offered extension explicitly permitting it, a sending SMTP system is</td></tr>
+<tr class="ctx"><td class="no">917</td><td>   not permitted to send envelope commands in any character set other</td></tr>
+<tr class="ctx"><td class="no">918</td><td>   than US-ASCII.  Receiving systems SHOULD reject such commands,</td></tr>
+<tr class="ctx"><td class="no">919</td><td>   normally using &quot;500 syntax error - invalid character&quot; replies.</td></tr>
+<tr class="ctx"><td class="no">920</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">921</td><td>   8-bit message content transmission MAY be requested of the server by</td></tr>
+<tr class="ev"><td class="no">922</td><td>   a client using extended SMTP facilities, notably the &quot;8BITMIME&quot;</td></tr>
+<tr class="ev"><td class="no">923</td><td>   extension, RFC 1652 [22]. 8BITMIME SHOULD be supported by SMTP</td></tr>
+<tr class="ev"><td class="no">924</td><td>   servers.  However, it MUST NOT be construed as authorization to</td></tr>
+<tr class="ev"><td class="no">925</td><td>   transmit unrestricted 8-bit material, nor does 8BITMIME authorize</td></tr>
+<tr class="ev"><td class="no">926</td><td>   transmission of any envelope material in other than ASCII. 8BITMIME</td></tr>
+<tr class="ev"><td class="no">927</td><td>   MUST NOT be requested by senders for material with the high bit on</td></tr>
+<tr class="ev"><td class="no">928</td><td>   that is not in MIME format with an appropriate content-transfer</td></tr>
+<tr class="ev"><td class="no">929</td><td>   encoding; servers MAY reject such messages.</td></tr>
+<tr class="ctx"><td class="no">930</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">931</td><td>   The metalinguistic notation used in this document corresponds to the</td></tr>
+<tr class="ctx"><td class="no">932</td><td>   &quot;Augmented BNF&quot; used in other Internet mail system documents.  The</td></tr>
+<tr class="ctx"><td class="no">933</td><td>   reader who is not familiar with that syntax should consult the ABNF</td></tr>
+<tr class="ctx"><td class="no">934</td><td>   specification in RFC 5234 [7].  Metalanguage terms used in running</td></tr>
+<tr class="ctx"><td class="no">935</td><td>   text are surrounded by pointed brackets (e.g., &lt;CRLF&gt;) for clarity.</td></tr>
+<tr class="ctx"><td class="no">936</td><td>   The reader is cautioned that the grammar expressed in the</td></tr>
+<tr class="ctx"><td class="no">937</td><td>   metalanguage is not comprehensive.  There are many instances in which</td></tr>
+<tr class="ctx"><td class="no">938</td><td>   provisions in the text constrain or otherwise modify the syntax or</td></tr>
+<tr class="ctx"><td class="no">939</td><td>   semantics implied by the grammar.</td></tr>
+</table>
+<h2>B-smtp-rfc5322.txt-243</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5322.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>243–248</b> ｜
+rfc_sha256 <code>cb459acca15a2aa8…</code> ｜ 证据 sha256 <code>a560298602eb9d98…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">233</td><td>1.2.1.  Requirements Notation</td></tr>
+<tr class="ctx"><td class="no">234</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">235</td><td>   This document occasionally uses terms that appear in capital letters.</td></tr>
+<tr class="ctx"><td class="no">236</td><td>   When the terms &quot;MUST&quot;, &quot;SHOULD&quot;, &quot;RECOMMENDED&quot;, &quot;MUST NOT&quot;, &quot;SHOULD</td></tr>
+<tr class="ctx"><td class="no">237</td><td>   NOT&quot;, and &quot;MAY&quot; appear capitalized, they are being used to indicate</td></tr>
+<tr class="ctx"><td class="no">238</td><td>   particular requirements of this specification.  A discussion of the</td></tr>
+<tr class="ctx"><td class="no">239</td><td>   meanings of these terms appears in [RFC2119].</td></tr>
+<tr class="ctx"><td class="no">240</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">241</td><td>1.2.2.  Syntactic Notation</td></tr>
+<tr class="ctx"><td class="no">242</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">243</td><td>   This specification uses the Augmented Backus-Naur Form (ABNF)</td></tr>
+<tr class="ev"><td class="no">244</td><td>   [RFC5234] notation for the formal definitions of the syntax of</td></tr>
+<tr class="ev"><td class="no">245</td><td>   messages.  Characters will be specified either by a decimal value</td></tr>
+<tr class="ev"><td class="no">246</td><td>   (e.g., the value %d65 for uppercase A and %d97 for lowercase A) or by</td></tr>
+<tr class="ev"><td class="no">247</td><td>   a case-insensitive literal value enclosed in quotation marks (e.g.,</td></tr>
+<tr class="ev"><td class="no">248</td><td>   &quot;A&quot; for either uppercase or lowercase A).</td></tr>
+<tr class="ctx"><td class="no">249</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">250</td><td>1.2.3.  Structure of This Document</td></tr>
+<tr class="ctx"><td class="no">251</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">252</td><td>   This document is divided into several sections.</td></tr>
+<tr class="ctx"><td class="no">253</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">254</td><td>   This section, section 1, is a short introduction to the document.</td></tr>
+<tr class="ctx"><td class="no">255</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">256</td><td>   Section 2 lays out the general description of a message and its</td></tr>
+<tr class="ctx"><td class="no">257</td><td>   constituent parts.  This is an overview to help the reader understand</td></tr>
+<tr class="ctx"><td class="no">258</td><td>   some of the general principles used in the later portions of this</td></tr>
+</table>
+<h2>B-smtp-rfc5322.txt-415</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5322.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>415–421</b> ｜
+rfc_sha256 <code>cb459acca15a2aa8…</code> ｜ 证据 sha256 <code>969887246c1618d0…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">405</td><td>   colon.  A field body may be composed of printable US-ASCII characters</td></tr>
+<tr class="ctx"><td class="no">406</td><td>   as well as the space (SP, ASCII value 32) and horizontal tab (HTAB,</td></tr>
+<tr class="ctx"><td class="no">407</td><td>   ASCII value 9) characters (together known as the white space</td></tr>
+<tr class="ctx"><td class="no">408</td><td>   characters, WSP).  A field body MUST NOT include CR and LF except</td></tr>
+<tr class="ctx"><td class="no">409</td><td>   when used in &quot;folding&quot; and &quot;unfolding&quot;, as described in section</td></tr>
+<tr class="ctx"><td class="no">410</td><td>   2.2.3.  All field bodies MUST conform to the syntax described in</td></tr>
+<tr class="ctx"><td class="no">411</td><td>   sections 3 and 4 of this specification.</td></tr>
+<tr class="ctx"><td class="no">412</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">413</td><td>2.2.1.  Unstructured Header Field Bodies</td></tr>
+<tr class="ctx"><td class="no">414</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">415</td><td>   Some field bodies in this specification are defined simply as</td></tr>
+<tr class="ev"><td class="no">416</td><td>   &quot;unstructured&quot; (which is specified in section 3.2.5 as any printable</td></tr>
+<tr class="ev"><td class="no">417</td><td>   US-ASCII characters plus white space characters) with no further</td></tr>
+<tr class="ev"><td class="no">418</td><td>   restrictions.  These are referred to as unstructured field bodies.</td></tr>
+<tr class="ev"><td class="no">419</td><td>   Semantically, unstructured field bodies are simply to be treated as a</td></tr>
+<tr class="ev"><td class="no">420</td><td>   single line of characters with no further processing (except for</td></tr>
+<tr class="ev"><td class="no">421</td><td>   &quot;folding&quot; and &quot;unfolding&quot; as described in section 2.2.3).</td></tr>
+<tr class="ctx"><td class="no">422</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">423</td><td>2.2.2.  Structured Header Field Bodies</td></tr>
+<tr class="ctx"><td class="no">424</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">425</td><td>   Some field bodies in this specification have a syntax that is more</td></tr>
+<tr class="ctx"><td class="no">426</td><td>   restrictive than the unstructured field bodies described above.</td></tr>
+<tr class="ctx"><td class="no">427</td><td>   These are referred to as &quot;structured&quot; field bodies.  Structured field</td></tr>
+<tr class="ctx"><td class="no">428</td><td>   bodies are sequences of specific lexical tokens as described in</td></tr>
+<tr class="ctx"><td class="no">429</td><td>   sections 3 and 4 of this specification.  Many of these tokens are</td></tr>
+<tr class="ctx"><td class="no">430</td><td>   allowed (according to their syntax) to be introduced or end with</td></tr>
+<tr class="ctx"><td class="no">431</td><td>   comments (as described in section 3.2.2) as well as the white space</td></tr>
+</table>
+<h2>B-smtp-rfc5322.txt-425</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5322.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>425–434</b> ｜
+rfc_sha256 <code>cb459acca15a2aa8…</code> ｜ 证据 sha256 <code>119d0ae9554423d4…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">415</td><td>   Some field bodies in this specification are defined simply as</td></tr>
+<tr class="ctx"><td class="no">416</td><td>   &quot;unstructured&quot; (which is specified in section 3.2.5 as any printable</td></tr>
+<tr class="ctx"><td class="no">417</td><td>   US-ASCII characters plus white space characters) with no further</td></tr>
+<tr class="ctx"><td class="no">418</td><td>   restrictions.  These are referred to as unstructured field bodies.</td></tr>
+<tr class="ctx"><td class="no">419</td><td>   Semantically, unstructured field bodies are simply to be treated as a</td></tr>
+<tr class="ctx"><td class="no">420</td><td>   single line of characters with no further processing (except for</td></tr>
+<tr class="ctx"><td class="no">421</td><td>   &quot;folding&quot; and &quot;unfolding&quot; as described in section 2.2.3).</td></tr>
+<tr class="ctx"><td class="no">422</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">423</td><td>2.2.2.  Structured Header Field Bodies</td></tr>
+<tr class="ctx"><td class="no">424</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">425</td><td>   Some field bodies in this specification have a syntax that is more</td></tr>
+<tr class="ev"><td class="no">426</td><td>   restrictive than the unstructured field bodies described above.</td></tr>
+<tr class="ev"><td class="no">427</td><td>   These are referred to as &quot;structured&quot; field bodies.  Structured field</td></tr>
+<tr class="ev"><td class="no">428</td><td>   bodies are sequences of specific lexical tokens as described in</td></tr>
+<tr class="ev"><td class="no">429</td><td>   sections 3 and 4 of this specification.  Many of these tokens are</td></tr>
+<tr class="ev"><td class="no">430</td><td>   allowed (according to their syntax) to be introduced or end with</td></tr>
+<tr class="ev"><td class="no">431</td><td>   comments (as described in section 3.2.2) as well as the white space</td></tr>
+<tr class="ev"><td class="no">432</td><td>   characters, and those white space characters are subject to &quot;folding&quot;</td></tr>
+<tr class="ev"><td class="no">433</td><td>   and &quot;unfolding&quot; as described in section 2.2.3.  Semantic analysis of</td></tr>
+<tr class="ev"><td class="no">434</td><td>   structured field bodies is given along with their syntax.</td></tr>
+<tr class="ctx"><td class="no">435</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">436</td><td>2.2.3.  Long Header Fields</td></tr>
+<tr class="ctx"><td class="no">437</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">438</td><td>   Each header field is logically a single line of characters comprising</td></tr>
+<tr class="ctx"><td class="no">439</td><td>   the field name, the colon, and the field body.  For convenience</td></tr>
+<tr class="ctx"><td class="no">440</td><td>   however, and to deal with the 998/78 character limitations per line,</td></tr>
+<tr class="ctx"><td class="no">441</td><td>   the field body portion of a header field can be split into a</td></tr>
+<tr class="ctx"><td class="no">442</td><td>   multiple-line representation; this is called &quot;folding&quot;.  The general</td></tr>
+<tr class="ctx"><td class="no">443</td><td>   rule is that wherever this specification allows for folding white</td></tr>
+<tr class="ctx"><td class="no">444</td><td>   space (not simply WSP characters), a CRLF may be inserted before any</td></tr>
+</table>
+<h2>B-smtp-rfc5322.txt-679</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5322.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>679–689</b> ｜
+rfc_sha256 <code>cb459acca15a2aa8…</code> ｜ 证据 sha256 <code>de0ada294773e240…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">669</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">670</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">671</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">672</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">673</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">674</td><td>Resnick                     Standards Track                    [Page 12]</td></tr>
+<tr class="ctx"><td class="no">675</td><td></td></tr>
+<tr class="ctx"><td class="no">676</td><td>RFC 5322                Internet Message Format             October 2008</td></tr>
+<tr class="ctx"><td class="no">677</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">678</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">679</td><td>   atext           =   ALPHA / DIGIT /    ; Printable US-ASCII</td></tr>
+<tr class="ev"><td class="no">680</td><td>                       &quot;!&quot; / &quot;#&quot; /        ;  characters not including</td></tr>
+<tr class="ev"><td class="no">681</td><td>                       &quot;$&quot; / &quot;%&quot; /        ;  specials.  Used for atoms.</td></tr>
+<tr class="ev"><td class="no">682</td><td>                       &quot;&amp;&quot; / &quot;&#x27;&quot; /</td></tr>
+<tr class="ev"><td class="no">683</td><td>                       &quot;*&quot; / &quot;+&quot; /</td></tr>
+<tr class="ev"><td class="no">684</td><td>                       &quot;-&quot; / &quot;/&quot; /</td></tr>
+<tr class="ev"><td class="no">685</td><td>                       &quot;=&quot; / &quot;?&quot; /</td></tr>
+<tr class="ev"><td class="no">686</td><td>                       &quot;^&quot; / &quot;_&quot; /</td></tr>
+<tr class="ev"><td class="no">687</td><td>                       &quot;`&quot; / &quot;{&quot; /</td></tr>
+<tr class="ev"><td class="no">688</td><td>                       &quot;|&quot; / &quot;}&quot; /</td></tr>
+<tr class="ev"><td class="no">689</td><td>                       &quot;~&quot;</td></tr>
+<tr class="ctx"><td class="no">690</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">691</td><td>   atom            =   [CFWS] 1*atext [CFWS]</td></tr>
+<tr class="ctx"><td class="no">692</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">693</td><td>   dot-atom-text   =   1*atext *(&quot;.&quot; 1*atext)</td></tr>
+<tr class="ctx"><td class="no">694</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">695</td><td>   dot-atom        =   [CFWS] dot-atom-text [CFWS]</td></tr>
+<tr class="ctx"><td class="no">696</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">697</td><td>   specials        =   &quot;(&quot; / &quot;)&quot; /        ; Special characters that do</td></tr>
+<tr class="ctx"><td class="no">698</td><td>                       &quot;&lt;&quot; / &quot;&gt;&quot; /        ;  not appear in atext</td></tr>
+<tr class="ctx"><td class="no">699</td><td>                       &quot;[&quot; / &quot;]&quot; /</td></tr>
+</table>
+<h2>B-smtp-rfc5322.txt-697</h2>
+<div class="meta">协议 smtp ｜ 文档 rfc5322.txt ｜
+章节类型 ② 消息格式与 ABNF ｜ 证据行 <b>697–703</b> ｜
+rfc_sha256 <code>cb459acca15a2aa8…</code> ｜ 证据 sha256 <code>669b2d31b046d491…</code></div>
+<table class="ln">
+<tr class="ctx"><td class="no">687</td><td>                       &quot;`&quot; / &quot;{&quot; /</td></tr>
+<tr class="ctx"><td class="no">688</td><td>                       &quot;|&quot; / &quot;}&quot; /</td></tr>
+<tr class="ctx"><td class="no">689</td><td>                       &quot;~&quot;</td></tr>
+<tr class="ctx"><td class="no">690</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">691</td><td>   atom            =   [CFWS] 1*atext [CFWS]</td></tr>
+<tr class="ctx"><td class="no">692</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">693</td><td>   dot-atom-text   =   1*atext *(&quot;.&quot; 1*atext)</td></tr>
+<tr class="ctx"><td class="no">694</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">695</td><td>   dot-atom        =   [CFWS] dot-atom-text [CFWS]</td></tr>
+<tr class="ctx"><td class="no">696</td><td>&nbsp;</td></tr>
+<tr class="ev"><td class="no">697</td><td>   specials        =   &quot;(&quot; / &quot;)&quot; /        ; Special characters that do</td></tr>
+<tr class="ev"><td class="no">698</td><td>                       &quot;&lt;&quot; / &quot;&gt;&quot; /        ;  not appear in atext</td></tr>
+<tr class="ev"><td class="no">699</td><td>                       &quot;[&quot; / &quot;]&quot; /</td></tr>
+<tr class="ev"><td class="no">700</td><td>                       &quot;:&quot; / &quot;;&quot; /</td></tr>
+<tr class="ev"><td class="no">701</td><td>                       &quot;@&quot; / &quot;\&quot; /</td></tr>
+<tr class="ev"><td class="no">702</td><td>                       &quot;,&quot; / &quot;.&quot; /</td></tr>
+<tr class="ev"><td class="no">703</td><td>                       DQUOTE</td></tr>
+<tr class="ctx"><td class="no">704</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">705</td><td>   Both atom and dot-atom are interpreted as a single unit, comprising</td></tr>
+<tr class="ctx"><td class="no">706</td><td>   the string of characters that make it up.  Semantically, the optional</td></tr>
+<tr class="ctx"><td class="no">707</td><td>   comments and FWS surrounding the rest of the characters are not part</td></tr>
+<tr class="ctx"><td class="no">708</td><td>   of the atom; the atom is only the run of atext characters in an atom,</td></tr>
+<tr class="ctx"><td class="no">709</td><td>   or the atext and &quot;.&quot; characters in a dot-atom.</td></tr>
+<tr class="ctx"><td class="no">710</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">711</td><td>3.2.4.  Quoted Strings</td></tr>
+<tr class="ctx"><td class="no">712</td><td>&nbsp;</td></tr>
+<tr class="ctx"><td class="no">713</td><td>   Strings of characters that include characters other than those</td></tr>
+</table>
+</body></html>
