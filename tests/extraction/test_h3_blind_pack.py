@@ -104,9 +104,20 @@ def test_enum_sheet_hidden():
 # ══ ⑥ 不含机器预测 ══
 @pytest.mark.parametrize("tag", ["A", "B", "ARB"])
 def test_no_machine_prediction_leak(tag):
-    _forbid = ["prose_semantics", "prose_constraint",
-               "normative_rule_candidate", "rule_channel", "structured_channel",
-               "metadata_channel", "descriptive_channel", "pending_review"]
+    """模板不得预置机器类型预测。
+
+    区分两类内容：
+      - 机器类型名（prose_semantics 等）：任何工作表都不得出现，属泄露
+      - 目标路由名（rule_channel 等）：是审核列的合法填入值，
+        只允许出现在审核者已填写的工作表；模板的机器身份表与说明表不得出现
+    """
+    # ★ 机器类型名（★ 含模型自身的 kind 命名）：★ 任何工作表都不得出现
+    _machine = ["prose_semantics", "prose_constraint"]
+    # ★ 审核列的合法枚举值：★ 出现在审核者已填写的工作表属正常填写，
+    #   ★ 但模板的机器身份表与说明表不得出现
+    _enum_values = ["normative_rule_candidate", "rule_channel",
+                    "structured_channel", "metadata_channel",
+                    "descriptive_channel", "pending_review"]
     _wb = openpyxl.load_workbook(XL[tag])
     for _s in _wb.sheetnames:
         if _s == "_枚举":
@@ -114,8 +125,12 @@ def test_no_machine_prediction_leak(tag):
         for _row in _wb[_s].iter_rows():
             for _c in _row:
                 _v = str(_c.value or "")
-                for _f in _forbid:
+                for _f in _machine:
                     assert _f not in _v, f"{tag}/{_s}/{_c.coordinate}: {_f}"
+                if _s in ("说明", "机器身份"):
+                    for _f in _enum_values:
+                        assert _f not in _v, \
+                            f"{tag}/{_s}/{_c.coordinate}: {_f}"
     _wb.close()
 
 

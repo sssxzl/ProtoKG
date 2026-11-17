@@ -1,0 +1,47 @@
+{
+  "raw_response_files": [
+    {
+      "file": "r3-20261117-113023-batch01.json",
+      "sha256": "5657139f5c07ead6f1e9f91bd7a644c80ae263fdcfc2ede57a3ff670f75d21cf",
+      "bytes": 111774
+    },
+    {
+      "file": "r3-20261117-113023-batch02.json",
+      "sha256": "da81311938c7d3a1b50e86e7bbde8585a03b63cc2c2ef5672efe752886d29512",
+      "bytes": 4911547
+    },
+    {
+      "file": "r3-20261117-113023-batch03.json",
+      "sha256": "6add7f489d313160d11278ec0d765cec16845a7e0a500dc6b5f91ecd468c3a5b",
+      "bytes": 228925
+    },
+    {
+      "file": "r3-20261117-113023-batch04.json",
+      "sha256": "7ba797a8c05f02f8f7d255c0df0b920312e46571784b33a02308d2ddc2af004f",
+      "bytes": 735547
+    },
+    {
+      "file": "r3-20261117-113023-batch05.json",
+      "sha256": "55c61d3ba5d266577957a6c715a45320839625686a673a46c060994c94a1f3ab",
+      "bytes": 454693
+    },
+    {
+      "file": "r3-20261117-113023-batch06.json",
+      "sha256": "6a6fde2d6a25879ae890b12f9256173a45e4297d2fe5eb91175e85f79c489bc0",
+      "bytes": 6761853
+    },
+    {
+      "file": "r3-20261117-113023-batch07.json",
+      "sha256": "846cae3f559e8f49fd8a00783c81d00099c150826a4e2ea96c1c24d40f2848a2",
+      "bytes": 440243
+    },
+    {
+      "file": "r3-20261117-113023-batch08.json",
+      "sha256": "c45a0530221e5b647fa869f1b9db112ce70f9dc313b5374d3fe0e9e76bb86c3c",
+      "bytes": 439039
+    }
+  ],
+  "count": 8,
+  "total_bytes": 14083621,
+  "note": "原始响应按批留痕，与事件文件中的 raw_response_sha256 一一对应"
+}
