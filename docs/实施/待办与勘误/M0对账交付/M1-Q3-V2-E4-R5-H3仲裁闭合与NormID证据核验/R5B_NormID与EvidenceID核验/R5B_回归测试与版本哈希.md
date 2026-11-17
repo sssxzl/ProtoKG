@@ -17,7 +17,7 @@
 
 ### 1.2 回归测试
 
-`tests/extraction/test_r5_evidence_chain.py`，15 个用例全部通过。
+`tests/extraction/test_r5_evidence_chain.py`，18 个用例全部通过。
 
 | 覆盖 | 用例数 |
 |---|---:|
@@ -30,6 +30,9 @@
 | 真实错链风险识别 | 1 |
 | 复合索引唯一性与稳定性 | 1 |
 | evidence_id 复算与生产函数一致 | 1 |
+| 中枢产物无 evidence_id 字段 | 1 |
+| evidence_summary 携带可消歧信息 | 1 |
+| 原子知识对齐台账 5 条命题且裁定列全空 | 1 |
 | 生产代码未改、冻结记录不变、V0/V1/V2 不变、0 次 LLM | 4 |
 
 ### 1.3 护栏

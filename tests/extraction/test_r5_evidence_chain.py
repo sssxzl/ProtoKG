@@ -181,3 +181,70 @@ def test_no_llm_calls_in_r5():
         _t = _f.read_text(encoding="utf-8")
         assert "DeepSeekClient" not in _t, _f.name
         assert "chat_json" not in _t, _f.name
+
+# ===== 下游消费路径核查（★ R5B 新增） =====
+
+def test_hub_products_have_no_evidence_id_field():
+    """★ 中枢产物不含 evidence_id 与 evidence 数组 ⇒ 不存在按 evidence_id 建索引的路径。"""
+    import collections
+    _claims = 0
+    _evidence_elems = 0
+    _eids = []
+    for _p in sorted((ROOT / "derived/hub").rglob("*.jsonl")):
+        if _p.name == "sources.json":
+            continue
+        for _l in _p.read_text(encoding="utf-8").splitlines():
+            if not _l.strip():
+                continue
+            _r = json.loads(_l)
+            for _c in _r.get("all_claims") or []:
+                _claims += 1
+                _ev = _c.get("evidence")
+                if _ev:
+                    _evidence_elems += len(_ev)
+                    for _e in _ev:
+                        if _e.get("evidence_id"):
+                            _eids.append(_e["evidence_id"])
+    assert _claims > 0
+    assert _evidence_elems == 0, "★ 中枢产物含 evidence 元素，★ 需重新核查消费路径"
+    assert not _eids
+
+
+def test_hub_evidence_summary_carries_disambiguation_info():
+    """★ evidence_summary 格式为 authority:标识@路径，★ rfc 类含文档与跨度。"""
+    _found = 0
+    for _p in sorted((ROOT / "derived/hub").rglob("*.jsonl")):
+        if _p.name == "sources.json":
+            continue
+        for _l in _p.read_text(encoding="utf-8").splitlines():
+            if not _l.strip():
+                continue
+            _r = json.loads(_l)
+            for _c in _r.get("all_claims") or []:
+                if _c.get("authority") != "rfc":
+                    continue
+                for _s in (_c.get("evidence_summary") or []):
+                    if "file:" in str(_s) and "#@" in str(_s):
+                        _found += 1
+    assert _found > 0, "★ 未找到含文档与跨度的 rfc 类 evidence_summary"
+
+
+def test_alignment_ledger_exists_with_5_units():
+    """★ 原子知识对齐台账含 5 条独立命题，★ 裁定列全空。"""
+    _p = R5A / "H3_原子知识对齐与裁定台账.xlsx"
+    assert _p.is_file()
+    _wb = openpyxl.load_workbook(_p)
+    assert "独立命题与裁定" in _wb.sheetnames
+    assert "原始标注溯源" in _wb.sheetnames
+    _ws = _wb["独立命题与裁定"]
+    _n = _ws.max_row - 1
+    _hdr = [str(c.value or "") for c in _ws[1]]
+    _todo = [i for i, h in enumerate(_hdr, 1) if "待填" in h]
+    for _r in range(2, _ws.max_row + 1):
+        for _ci in _todo:
+            assert not str(_ws.cell(row=_r, column=_ci).value or "").strip()
+    _src = _wb["原始标注溯源"]
+    _n_src = _src.max_row - 1
+    _wb.close()
+    assert _n == 5
+    assert _n_src == 8
