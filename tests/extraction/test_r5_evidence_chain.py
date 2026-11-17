@@ -59,17 +59,20 @@ def test_arbitration_covers_all_44_field_diffs():
     """★ 全部 44 行逐字段差异必须有仲裁归宿（★ 含未列入关键待裁的 12 行）。"""
     _wb = openpyxl.load_workbook(R5A / "H3_第三方人工仲裁回收核验.xlsx")
     _ws = _wb["逐字段差异"]
-    _n = _ws.max_row - 1
+    # ★ 按非空数据行计数（★ 表尾预留了空行供审核者续写）
+    _n = sum(1 for _r in range(2, _ws.max_row + 1)
+             if str(_ws.cell(row=_r, column=1).value or "").strip())
     _wb.close()
-    assert _n == 44
+    assert _n == 44, _n
 
 
 def test_candidate_final_status_sheet_has_23_rows():
     _wb = openpyxl.load_workbook(R5A / "H3_第三方人工仲裁回收核验.xlsx")
     _ws = _wb["候选最终状态"]
-    _n = _ws.max_row - 1
+    _n = sum(1 for _r in range(2, _ws.max_row + 1)
+             if str(_ws.cell(row=_r, column=1).value or "").strip())
     _wb.close()
-    assert _n == 23
+    assert _n == 23, _n
 
 
 def test_unresolved_items_recorded():
@@ -237,14 +240,75 @@ def test_alignment_ledger_exists_with_5_units():
     assert "独立命题与裁定" in _wb.sheetnames
     assert "原始标注溯源" in _wb.sheetnames
     _ws = _wb["独立命题与裁定"]
-    _n = _ws.max_row - 1
+    _n = sum(1 for _r in range(2, _ws.max_row + 1)
+             if str(_ws.cell(row=_r, column=1).value or "").strip())
     _hdr = [str(c.value or "") for c in _ws[1]]
-    _todo = [i for i, h in enumerate(_hdr, 1) if "待填" in h]
+    _todo = [i for i, h in enumerate(_hdr, 1)
+             if "待填" in h and "归属候选" not in h]
     for _r in range(2, _ws.max_row + 1):
         for _ci in _todo:
             assert not str(_ws.cell(row=_r, column=_ci).value or "").strip()
     _src = _wb["原始标注溯源"]
-    _n_src = _src.max_row - 1
+    _n_src = sum(1 for _r in range(2, _src.max_row + 1)
+                 if str(_src.cell(row=_r, column=1).value or "").strip())
     _wb.close()
     assert _n == 5
     assert _n_src == 8
+
+# ===== 人工表可编辑性（★ 审核方反馈的缺陷） =====
+
+import zipfile
+
+
+def _xlsx_protection_scan(path):
+    """★ 返回 zip 内含 sheetProtection 或 locked=1 的 worksheet xml 列表。"""
+    _bad = []
+    with zipfile.ZipFile(path) as _z:
+        for _n in _z.namelist():
+            if not (_n.startswith("xl/worksheets/") and _n.endswith(".xml")):
+                continue
+            _x = _z.read(_n).decode("utf-8", "replace")
+            if "sheetProtection" in _x or 'locked="1"' in _x:
+                _bad.append(_n)
+    return _bad
+
+
+@pytest.mark.parametrize("name", [
+    "H3_第三方人工仲裁回收核验.xlsx", "H3_原子知识对齐与裁定台账.xlsx"])
+def test_r5a_review_workbooks_have_no_protection(name):
+    """★ 审核方可编辑：★ zip 内不得有 sheetProtection 节点或 locked=1 属性。"""
+    _p = R5A / name
+    assert _p.is_file(), name
+    assert not _xlsx_protection_scan(_p), name
+
+
+def test_r5a_all_sheets_unprotected():
+    import openpyxl as _ox
+    for _name in ("H3_第三方人工仲裁回收核验.xlsx",
+                  "H3_原子知识对齐与裁定台账.xlsx"):
+        _wb = _ox.load_workbook(R5A / _name)
+        for _s in _wb.sheetnames:
+            assert _wb[_s].protection.sheet is False, f"{_name}/{_s}"
+        _wb.close()
+
+
+def test_r5a_has_blank_rows_for_new_entries():
+    """★ 补充知识类表须预留空行（★ 审核者需要新增行）。"""
+    import openpyxl as _ox
+    _wb = _ox.load_workbook(R5A / "H3_第三方人工仲裁回收核验.xlsx")
+    _ws = _wb["补充知识对齐"]
+    _blank = sum(1 for _r in range(2, _ws.max_row + 1)
+                 if all(not str(_ws.cell(row=_r, column=_c).value or "").strip()
+                        for _c in range(1, _ws.max_column + 1)))
+    _wb.close()
+    assert _blank >= 8, _blank
+
+
+@pytest.mark.parametrize("proto,n", [("SIP", 27), ("RTSP", 7), ("SMTP", 23)])
+def test_r4a_review_workbooks_have_no_protection(proto, n):
+    """★ R4A 的 9 个盲审模板同样无锁。"""
+    _p = (ROOT / "docs/实施/待办与勘误/M0对账交付"
+          / "M1-Q3-V2-E4-R4跨协议盲审与NormID碰撞/R4A_跨协议人工盲审包"
+          / f"{proto}_{n}候选_审核者A_盲审模板.xlsx")
+    assert _p.is_file()
+    assert not _xlsx_protection_scan(_p), _p.name

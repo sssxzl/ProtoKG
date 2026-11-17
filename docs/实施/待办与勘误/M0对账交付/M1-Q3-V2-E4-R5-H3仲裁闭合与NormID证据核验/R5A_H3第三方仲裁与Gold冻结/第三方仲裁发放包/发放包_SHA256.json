@@ -13,21 +13,26 @@
       "sha256": "48df8959b38e87ec45d181b22aa8ee2123087ca8f267715984be056977285e20"
     },
     "H3_23候选_审核者B_盲审模板.xlsx": {
-      "bytes": 32119,
-      "sha256": "3d50147eccb4ca94e0e7fb1ca4b3fa76f8c123d5e8bdbf44072bfd283c173d28"
+      "bytes": 32182,
+      "sha256": "71ad912489b0139c82ec83a2d16a4c12be3bd0d5c3ac039d704cd676dbffc8f8"
     },
     "H3_原子知识对齐与裁定台账.xlsx": {
-      "bytes": 10354,
-      "sha256": "f375d1df837a50c5a53892891a511fad4f5a8479fe05a8d2cffeaf0a8e5b9f57"
+      "bytes": 11328,
+      "sha256": "b1cd4ba3d294a32879ecc6810ef5b7107972a27374a777b8e1cf66a3faf94cf6"
     },
     "H3_第三方人工仲裁回收核验.xlsx": {
-      "bytes": 18729,
-      "sha256": "8d13df3ee5cf5d9a97d2ddf43dcee864c31588d2220339e042b9ca0b4e9c5783"
+      "bytes": 22068,
+      "sha256": "cca8274e3bd67735be4d8fcc3e883e53e2e223f425685020a38a22e01135349a"
+    },
+    "第三方仲裁发放说明.md": {
+      "bytes": 4466,
+      "sha256": "df66dc2388a06de492850c56215ec21aac3ac6926cebcadc7ee6231afa5772e4"
     }
   },
   "★ A/B 原件哈希核对": {
     "A": "48df8959b38e87ec45d181b22aa8ee2123087ca8f267715984be056977285e20",
     "B": "3d50147eccb4ca94e0e7fb1ca4b3fa76f8c123d5e8bdbf44072bfd283c173d28",
     "★ 与差异台账记录一致": true
-  }
+  },
+  "★ 可编辑性": "★ 两份待填表无 sheetProtection 节点、无 locked 属性；★ 全部单元格可输入、可插入行；★ 机器列以灰底标注"
 }
