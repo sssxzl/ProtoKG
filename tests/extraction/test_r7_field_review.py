@@ -57,16 +57,35 @@ def test_field_review_table_has_all_30():
     assert _n == 30
 
 
-def test_field_review_human_columns_empty():
+def test_field_review_human_columns_filled():
+    """★ 第三方已回填（R8）：★ 确认结果、复核人、复核日期三列必须已填。
+
+    ★ 修正值与修正理由两列只在「修正」行填写，★ 其余行为空是正确用法。
+    """
     _wb = openpyxl.load_workbook(DELIV / "R7_H3_30项结构化字段人工复核.xlsx")
     _ws = _wb["30项字段复核"]
     _hdr = [str(c.value or "") for c in _ws[1]]
-    _todo = [i for i, h in enumerate(_hdr, 1) if "待填" in h]
-    assert len(_todo) == 5
+    _i_st = next(i for i, h in enumerate(_hdr, 1)
+                 if h.startswith("★ 第三方确认结果"))
+    _i_who = next(i for i, h in enumerate(_hdr, 1)
+                  if h.startswith("★ 复核人员"))
+    _i_date = next(i for i, h in enumerate(_hdr, 1)
+                   if h.startswith("★ 复核日期"))
+    _i_fix = next(i for i, h in enumerate(_hdr, 1)
+                  if h.startswith("★ 修正值"))
+    _n = 0
     for _r in range(2, _ws.max_row + 1):
-        for _ci in _todo:
-            assert not str(_ws.cell(row=_r, column=_ci).value or "").strip()
+        if not str(_ws.cell(row=_r, column=1).value or "").strip():
+            continue
+        _n += 1
+        _st = str(_ws.cell(row=_r, column=_i_st).value or "").strip()
+        assert _st in ("确认", "修正", "unresolved"), _st
+        assert str(_ws.cell(row=_r, column=_i_who).value or "").strip()
+        assert str(_ws.cell(row=_r, column=_i_date).value or "").strip()
+        if _st == "修正":
+            assert str(_ws.cell(row=_r, column=_i_fix).value or "").strip()
     _wb.close()
+    assert _n == 30
 
 
 def test_field_review_includes_evidence_and_versions():

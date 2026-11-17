@@ -107,10 +107,42 @@ def test_workbook_metadata_clean():
 
 
 # ===== 人工结论为空 =====
-def test_all_human_conclusions_empty():
-    _machine = ("★ 审核ID", "★ RFC 文档", "★ 证据跨度（行号）",
-                "★ 候选命题（待核）", "★ 候选命题（constraint 文本）",
-                "★ A:", "★ B:", "★ 仲裁后")
+def test_all_human_conclusions_filled_and_legal():
+    """★ 人工审核已回收（R8）。
+
+    ★ 断言从「人工列为空」改为「人工列已填且取值在允许集合内」；
+    ★ 机器预置列仍须保持未被改写。
+    """
+    _ALLOWED = {
+        "原文是否支持候选命题": {"yes", "no", "uncertain", "not_applicable"},
+        "是否属于目标协议知识": {"yes", "no", "uncertain", "not_applicable"},
+        "knowledge_kind": {"non_protocol_metadata", "protocol_syntax",
+                           "protocol_registry_or_enumeration",
+                           "protocol_descriptive_semantics",
+                           "normative_rule_candidate", "mixed_or_uncertain"},
+        "source_content_kind": {"non_protocol_metadata", "protocol_syntax",
+                                "protocol_registry_or_enumeration",
+                                "protocol_descriptive_semantics",
+                                "normative_rule_candidate", "mixed_or_uncertain"},
+        "rule_eligibility": {"eligible", "ineligible", "uncertain",
+                             "not_applicable"},
+        "evidence_sufficiency": {"sufficient", "partial", "insufficient",
+                                 "not_applicable"},
+        "人工认为正确的 V2 目标路由": {"rule_channel", "structured_channel",
+                                      "metadata_channel", "descriptive_channel",
+                                      "pending_review", "not_applicable"},
+    }
+    _machine = ("★ 审核ID", "★ RFC 文档", "★ RFC 编号", "★ RFC 标题",
+                "★ RFC 状态", "★ source_sha256", "★ 取得日期", "★ 来源 URL",
+                "★ 证据跨度（行号）", "★ 候选命题（待核）", "★ 候选含义（待核）",
+                "★ 候选声称的", "★ 证据引文（待核）", "★ block_id",
+                "★ block_sha256", "★ 行号", "★ 优先级", "★ 字段",
+                "★ 审核者 A", "★ 审核者 B", "★ 差异性质提示",
+                "★ A 目标知识", "★ B 目标知识", "★ A 知识类型", "★ B 知识类型",
+                "★ A 规则资格", "★ B 规则资格", "★ A 强度", "★ B 强度",
+                "★ A 完整性", "★ B 完整性", "★ A 路由", "★ B 路由",
+                "★ 补充序号", "★ 强度", "★ 极性", "★ 补充命题原文",
+                "★ 补充命题所在行号")
     for _p in sorted(R4A.glob("*.xlsx")):
         _wb = openpyxl.load_workbook(_p)
         for _s in _wb.sheetnames:
@@ -122,8 +154,13 @@ def test_all_human_conclusions_empty():
                     _h = _hdr[_c.column - 1] if _c.column - 1 < len(_hdr) else ""
                     if any(_h.startswith(_m) for _m in _machine):
                         continue
-                    assert not str(_c.value or "").strip(), \
-                        f"{_p.name}/{_s}/{_c.coordinate}"
+                    _v = str(_c.value or "").strip()
+                    if not _v:
+                        continue
+                    for _k, _allowed in _ALLOWED.items():
+                        if _h.startswith(_k):
+                            assert _v in _allowed, \
+                                f"{_p.name}/{_s}/{_c.coordinate}: {_v}"
         _wb.close()
 
 

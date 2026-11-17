@@ -1,0 +1,67 @@
+{
+  "★ 勘误版本": "v4 候选（★ 未冻结）",
+  "★ 基准版本": "H3_Gold冻结基线_v3候选.jsonl",
+  "★ 基准 SHA256": "bdc76a56873baa2f6f8800a15cf6de789187c063b6257f66a2614e0096b18e76",
+  "★ 前序版本 SHA256": {
+    "v1": "f4bfbdb5da1746416321ff2f20bcbf070330fa606f79c0715fccd8545fec6044",
+    "v2": "4f3df1a33a4ffab5bb9579a66a7ef7995365ea1cb1b67729b23b9aeaebd09014",
+    "v3": "bdc76a56873baa2f6f8800a15cf6de789187c063b6257f66a2614e0096b18e76"
+  },
+  "★ 依据": "★ R7_H3_30项结构化字段人工复核.xlsx 的人工回填",
+  "★ 复核人": [
+    "D"
+  ],
+  "★ 复核日期": [
+    "2026-11-17"
+  ],
+  "★ 确认条数": 25,
+  "★ 修正条数": 5,
+  "★ unresolved 条数": 0,
+  "★ 应用明细": [
+    {
+      "gold_id": "GK-H3-13-1",
+      "field": "规范义务动作",
+      "v3_value": "action=write、object=component values",
+      "v4_value": "write",
+      "reason": "C 原文：「Gold 取 action=write、object=component values，方式记入备注」。v3 把整句「action=write、object=component values」当作**动作值**，属错误截取：①混入字段名前缀 action=；②把对象 component values 写进动作列；③C 要求「方式记入备注」，而方式（written in mixed case, following the customary spelling）在 v1/v2/v3 中均无处记录 ⇒ 同时构成遗漏。正确：动作=write；对象=component values；方式入备注。",
+      "reviewer": "D",
+      "date": "2026-11-17"
+    },
+    {
+      "gold_id": "GK-H3-13-1",
+      "field": "规范义务对象",
+      "v3_value": "object=component values",
+      "v4_value": "component values",
+      "reason": "C 原文：「Gold 统一为 object=component values」。v3 为「object=component values」，字段名前缀 object= 未剥离，属错误截取；正确值 = component values。",
+      "reviewer": "D",
+      "date": "2026-11-17"
+    },
+    {
+      "gold_id": "GK-H3-19-1",
+      "field": "规范义务对象",
+      "v3_value": "object=the Captive Portal option",
+      "v4_value": "the Captive Portal option",
+      "reason": "C 原文：「Gold 取 object=the Captive Portal option，状语转备注」。v3 保留「object=」前缀，属错误截取；正确值 = the Captive Portal option，状语「without any explicit request」应移入备注（C 已判定它不是条件）。",
+      "reviewer": "D",
+      "date": "2026-11-17"
+    },
+    {
+      "gold_id": "GK-H3-19-1",
+      "field": "条件",
+      "v3_value": "条件为空（该状语不是触发条件）",
+      "v4_value": "",
+      "reason": "C 原文：「判条件为空（该状语不是触发条件）；采纳 A 的空值」。v3 把解释性整句「条件为空（该状语不是触发条件）」写进**条件字段**，属错误截取：条件字段应为空（null），解释文字应入备注；A 原值为「（空）」。",
+      "reviewer": "D",
+      "date": "2026-11-17"
+    },
+    {
+      "gold_id": "GK-H3-23-1",
+      "field": "规范义务动作",
+      "v3_value": "handle（as specified）",
+      "v4_value": "handle",
+      "reason": "C 原文：「handle 同指（as specified 属依据，不是动作的一部分）」。v3 取 A 原值「handle（as specified）」，保留了 C 明确排除在动作之外的 as specified，属**误用 A 值**（C 已给边界澄清，应按澄清取 handle）；「as specified」移入对象或备注。",
+      "reviewer": "D",
+      "date": "2026-11-17"
+    }
+  ]
+}
