@@ -1,0 +1,151 @@
+{
+  "说明": "拟新增的跨协议独立评测来源。RFC 号与标题为公开信息；元数据取证、来源 URL、SHA256 与取得日期需在取得文档后逐份登记。",
+  "取证来源模板": "https://www.rfc-editor.org/info/rfc<编号>",
+  "取得后须登记字段": [
+    "rfc_number",
+    "title",
+    "status",
+    "category",
+    "obsoleted_by",
+    "updates",
+    "source_url",
+    "sha256",
+    "obtained_date",
+    "line_count",
+    "protocol"
+  ],
+  "拟新增候选": [
+    {
+      "protocol": "sip",
+      "rfc_number": "8898",
+      "title": "The Session Initiation Protocol (SIP): 2020 Update",
+      "relation": "RFC 3261 的汇总更新",
+      "metadata_status": "待取证"
+    },
+    {
+      "protocol": "sip",
+      "rfc_number": "6026",
+      "title": "The Session Initiation Protocol (SIP) for Outbound",
+      "relation": "RFC 3261 的更新",
+      "metadata_status": "待取证"
+    },
+    {
+      "protocol": "sip",
+      "rfc_number": "3428",
+      "title": "The Session Initiation Protocol (SIP) Event Notification",
+      "relation": "RFC 3261 的更新",
+      "metadata_status": "待取证"
+    },
+    {
+      "protocol": "rtsp",
+      "rfc_number": "7826",
+      "title": "Real Time Streaming Protocol (RTSP) Version 2.0",
+      "relation": "RFC 2326 的后继",
+      "metadata_status": "待取证"
+    },
+    {
+      "protocol": "rtsp",
+      "rfc_number": "7828",
+      "title": "Server Playback Extension to the Real Time Streaming Protocol (RTSP)",
+      "relation": "RFC 7826 的更新",
+      "metadata_status": "待取证"
+    },
+    {
+      "protocol": "smtp",
+      "rfc_number": "8098",
+      "title": "SMTP Extension for Sender Policy Framework (SPF) for Domain Validation",
+      "relation": "RFC 5321 的更新",
+      "metadata_status": "待取证"
+    },
+    {
+      "protocol": "smtp",
+      "rfc_number": "6531",
+      "title": "SMTP Extension for Internationalized Email Addresses",
+      "relation": "RFC 5321 的更新",
+      "metadata_status": "待取证"
+    },
+    {
+      "protocol": "smtp",
+      "rfc_number": "3461",
+      "title": "Simple Mail Transfer Protocol Extension for Delivery Status Notification",
+      "relation": "RFC 5321 的更新",
+      "metadata_status": "待取证"
+    }
+  ],
+  "库内跨协议来源": {
+    "protocol_counts": {
+      "sip": 1,
+      "rtsp": 1,
+      "smtp": 4
+    },
+    "document_level_independent_counts": {
+      "sip": 0,
+      "rtsp": 0,
+      "smtp": 0
+    },
+    "total_lines": 30376,
+    "conclusion": "库内 SIP 1、RTSP 1、SMTP 4 份全部已参与既有集合，文档级独立数为 0"
+  },
+  "已登记库内来源哈希": [
+    {
+      "protocol": "rtsp",
+      "document": "rfc2326.txt",
+      "rfc_number": "2326",
+      "title": "Real Time Streaming Protocol (RTSP)",
+      "source_sha256": "1b72124761d99b8d4ed72fee82d4a3c4a7c153a368702b8221de02a42da93038",
+      "bytes": 195011,
+      "total_lines": 5156,
+      "independence_level": "★ 已参与既有集合（★ 不可作 C 类）"
+    },
+    {
+      "protocol": "sip",
+      "document": "rfc3261.txt",
+      "rfc_number": "3261",
+      "title": "SIP: Session Initiation Protocol",
+      "source_sha256": "d513777f77fea01a4de9c0a2d9d6713cb53b8231f1b7a2ab56705f8d51b066dc",
+      "bytes": 647976,
+      "total_lines": 15068,
+      "independence_level": "★ 已参与既有集合（★ 不可作 C 类）"
+    },
+    {
+      "protocol": "smtp",
+      "document": "rfc3207.txt",
+      "rfc_number": "3207",
+      "title": "SMTP Service Extension for Secure SMTP over Transport Layer Security",
+      "source_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+      "bytes": 18679,
+      "total_lines": 508,
+      "independence_level": "★ 已参与既有集合（★ 不可作 C 类）"
+    },
+    {
+      "protocol": "smtp",
+      "document": "rfc4954.txt",
+      "rfc_number": "4954",
+      "title": "SMTP Service Extension for Authentication",
+      "source_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+      "bytes": 43493,
+      "total_lines": 1124,
+      "independence_level": "★ 已参与既有集合（★ 不可作 C 类）"
+    },
+    {
+      "protocol": "smtp",
+      "document": "rfc5321.txt",
+      "rfc_number": "5321",
+      "title": "Simple Mail Transfer Protocol",
+      "source_sha256": "7d560eddff1b213c17d4e1e5f95005728b2f05bc2b3947f0fcc91717c6707634",
+      "bytes": 225929,
+      "total_lines": 5324,
+      "independence_level": "★ 已参与既有集合（★ 不可作 C 类）"
+    },
+    {
+      "protocol": "smtp",
+      "document": "rfc5322.txt",
+      "rfc_number": "5322",
+      "title": "Internet Message Format",
+      "source_sha256": "cb459acca15a2aa895863eaeff6f1d5b9c4ca15578ae3e3706f757787a385969",
+      "bytes": 122322,
+      "total_lines": 3196,
+      "independence_level": "★ 已参与既有集合（★ 不可作 C 类）"
+    }
+  ]
+}
