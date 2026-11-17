@@ -50,9 +50,9 @@ def test_arbitration_columns_all_empty():
     assert not _hits, _hits[:5]
 
 
-def test_gold_baseline_not_generated():
-    """★ 门禁未通过 ⇒ 不得存在 Gold 冻结基线。"""
-    assert not (R5A / "H3_Gold冻结基线.jsonl").exists()
+def test_gold_baseline_now_generated_after_arbitration():
+    """★ 第三方仲裁回收并通过门禁后 ⇒ Gold 冻结基线已生成。"""
+    assert (R5A / "H3_Gold冻结基线.jsonl").is_file()
 
 
 def test_arbitration_covers_all_44_field_diffs():
@@ -76,14 +76,14 @@ def test_candidate_final_status_sheet_has_23_rows():
 
 
 def test_unresolved_items_recorded():
+    """★ 仲裁后未决项：unresolved 0、excluded 1、★ 需人工复核项已登记。"""
     _v = _j(R5A / "H3_版本哈希与未决项.json")
     _u = _v["★ 未决项"]
-    assert _u["★ 关键待裁待仲裁"] == 8
-    assert _u["★ 逐字段差异待仲裁"] == 44
-    assert _u["★ 补充知识待裁定"] == 8
-    assert _u["★ 候选最终状态待填"] == 23
-    assert _u["★ 全部未决项已标记"] is False
-    assert _v["★ Gold 冻结状态"].startswith("★ 未冻结")
+    assert _u["unresolved 条数"] == 0
+    assert _u["excluded 条数"] == 1
+    assert _u["excluded 明细"]
+    assert len(_u["★ 需人工复核项"]) >= 1
+    assert _v["★ 门禁结论"] == "★ 10 项全部通过"
 
 
 # ===== R5B 证据链 =====
@@ -312,3 +312,84 @@ def test_r4a_review_workbooks_have_no_protection(proto, n):
           / f"{proto}_{n}候选_审核者A_盲审模板.xlsx")
     assert _p.is_file()
     assert not _xlsx_protection_scan(_p), _p.name
+
+# ===== Gold 冻结门禁（★ 第三方仲裁已回收） =====
+
+GOLD = R5A / "H3_Gold冻结基线.jsonl"
+FEED = R5A / "反馈"
+
+
+def test_gold_baseline_generated():
+    _rows = [json.loads(l) for l in
+             GOLD.read_text(encoding="utf-8").splitlines() if l.strip()]
+    assert len(_rows) == 28
+    assert len({r["gold_knowledge_id"] for r in _rows}) == 28
+
+
+def test_gold_has_four_states():
+    _rows = [json.loads(l) for l in
+             GOLD.read_text(encoding="utf-8").splitlines() if l.strip()]
+    _st = {r["status"] for r in _rows}
+    assert _st <= {"confirmed_valid", "confirmed_invalid", "unresolved",
+                   "excluded"}
+    _ex = [r for r in _rows if r["status"] == "excluded"]
+    assert len(_ex) == 1
+    assert _ex[0]["candidate_id"] == "H3-20"
+    # ★ excluded 不计入有效 Gold
+    assert _ex[0]["★ 计入有效 Gold"] is False
+    assert sum(1 for r in _rows if r["★ 计入有效 Gold"]) == 27
+
+
+def test_gold_preserves_original_ab_labels():
+    """★ 原始 A/B 标注必须保留在 Gold 中（★ 不得覆盖）。"""
+    _rows = [json.loads(l) for l in
+             GOLD.read_text(encoding="utf-8").splitlines() if l.strip()]
+    for _r in _rows:
+        if _r["gold_level"] == "candidate":
+            assert "★ 原始 A/B 标注" in _r
+            assert _r["★ 原始 A/B 标注"]["A 知识类型"]
+            assert _r["★ 原始 A/B 标注"]["B 知识类型"]
+            assert "★ 仲裁记录" in _r
+
+
+def test_gold_spans_match_r1_baseline():
+    _base = {}
+    for _l in (ROOT / "docs/实施/待办与勘误/M0对账交付"
+               / "M1-Q3-V2-E4-R1_H3候选人工盲审"
+               / "H3_23候选_冻结机器基线.jsonl").read_text(
+                   encoding="utf-8").splitlines():
+        if _l.strip():
+            _b = json.loads(_l)
+            _sp = _b["★ source_span"]
+            _base[_b["★ 审核ID"]] = f"{_sp[0]}-{_sp[1]}"
+    _rows = [json.loads(l) for l in
+             GOLD.read_text(encoding="utf-8").splitlines() if l.strip()]
+    for _r in _rows:
+        if _r["gold_level"] == "candidate":
+            assert _r["evidence_span"] == _base[_r["candidate_id"]], _r
+
+
+def test_arbitrator_independent_and_anonymous():
+    _v = _j(R5A / "H3_版本哈希与未决项.json")
+    assert _v["★ 仲裁者"]["标识"] == "C"
+    assert _v["★ 仲裁者"]["★ 与 A/B 独立"] is True
+    assert _v["★ 仲裁者"]["★ 真实姓名"] is False
+
+
+def test_feedback_files_recorded_with_hash():
+    _v = _j(R5A / "H3_版本哈希与未决项.json")
+    for _k in ("第三方回收主表", "第三方回收对齐台账",
+               "★ 原始审核者 A 原件", "★ 原始审核者 B 原件"):
+        assert len(_v["★ 输入"][_k]["sha256"]) == 64, _k
+
+
+def test_ab_originals_not_overwritten():
+    _v = _j(R5A / "H3_版本哈希与未决项.json")
+    for _k, _n in (("★ 原始审核者 A 原件",
+                    "H3_23候选_审核者A_盲审模板.xlsx"),
+                   ("★ 原始审核者 B 原件",
+                    "H3_23候选_审核者B_盲审模板.xlsx")):
+        _p = (ROOT / "docs/实施/待办与勘误/M0对账交付"
+              / "M1-Q3-V2-E4-R1_H3候选人工盲审" / _n)
+        assert hashlib.sha256(_p.read_bytes()).hexdigest() == \
+            _v["★ 输入"][_k]["sha256"], _k
