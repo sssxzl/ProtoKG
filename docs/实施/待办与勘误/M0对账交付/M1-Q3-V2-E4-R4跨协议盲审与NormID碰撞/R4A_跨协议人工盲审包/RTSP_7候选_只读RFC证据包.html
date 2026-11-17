@@ -1,0 +1,140 @@
+<!DOCTYPE html><html lang='zh-CN'><head><meta charset='utf-8'>
+<title>RTSP 候选只读 RFC 证据包</title><style>
+body{font-family:Consolas,'Microsoft YaHei',monospace;margin:24px;line-height:1.55}
+h2{font-size:15px;margin:22px 0 6px;padding:6px 10px;background:#eef3fa;border-left:4px solid #3a6ea5}
+.m{color:#555;font-size:12px}.q{background:#eef7ee;padding:6px 10px;margin:4px 0}
+table.ln{border-collapse:collapse;width:100%;margin:6px 0 12px}
+table.ln td{padding:1px 8px;font-size:12.5px;vertical-align:top}
+td.no{width:54px;color:#888;text-align:right;background:#f6f6f6}
+tr.ev td{background:#fff6d8;font-weight:600}
+.hint{background:#fffbe6;border:1px solid #e0c97a;padding:8px 12px;margin:10px 0}
+</style></head><body>
+<h1>RTSP 候选只读 RFC 证据包</h1>
+<div class='hint'>本包是<b>只读</b>的 RFC 原文证据。<br>候选命题与候选声称的字段是<b>待核对象</b>，不是人工标准答案。<br>本包不含任何机器类型预测、路由结果或另一审核者答案。</div>
+<h2>X-rtsp-rfc7826-01</h2>
+<div class='m'>rfc7826.txt ｜ 行 5388–5388 ｜ sha256 <code>8c4e777cf95f672f…</code></div>
+<div class='q'><b>候选命题（待核）：</b>请求仅包含单个参数（RECOMMENDED）<br><b>候选含义（待核）：</b>请求被建议只包含单个参数，以便客户端判断某个请求失败的原因</div>
+<table class='ln'>
+<tr class=''><td class='no'>5382</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>5383</td><td>   RTSP agents implementing support for responding to SET_PARAMETER</td></tr>
+<tr class=''><td class='no'>5384</td><td>   requests SHALL implement the text/parameters format (Appendix F).</td></tr>
+<tr class=''><td class='no'>5385</td><td>   This is to ensure that at least one known format for parameters is</td></tr>
+<tr class=''><td class='no'>5386</td><td>   implemented and, thus, prevent parameter format negotiation failure.</td></tr>
+<tr class=''><td class='no'>5387</td><td>&nbsp;</td></tr>
+<tr class='ev'><td class='no'>5388</td><td>   A request is RECOMMENDED to only contain a single parameter to allow</td></tr>
+<tr class=''><td class='no'>5389</td><td>   the client to determine why a particular request failed.  If the</td></tr>
+<tr class=''><td class='no'>5390</td><td>   request contains several parameters, the server MUST only act on the</td></tr>
+<tr class=''><td class='no'>5391</td><td>   request if all of the parameters can be set successfully.  A server</td></tr>
+<tr class=''><td class='no'>5392</td><td>   MUST allow a parameter to be set repeatedly to the same value, but it</td></tr>
+<tr class=''><td class='no'>5393</td><td>   MAY disallow changing parameter values.  If the receiver of the</td></tr>
+<tr class=''><td class='no'>5394</td><td>   request does not understand or cannot locate a parameter, error 451</td></tr>
+</table>
+<h2>X-rtsp-rfc7826-02</h2>
+<div class='m'>rfc7826.txt ｜ 行 5390–5390 ｜ sha256 <code>8c4e777cf95f672f…</code></div>
+<div class='q'><b>候选命题（待核）：</b>仅当所有参数均可成功设置时才处理请求<br><b>候选含义（待核）：</b>若请求包含多个参数，服务器只有在所有参数都能成功设置时才可作用于该请求</div>
+<table class='ln'>
+<tr class=''><td class='no'>5384</td><td>   requests SHALL implement the text/parameters format (Appendix F).</td></tr>
+<tr class=''><td class='no'>5385</td><td>   This is to ensure that at least one known format for parameters is</td></tr>
+<tr class=''><td class='no'>5386</td><td>   implemented and, thus, prevent parameter format negotiation failure.</td></tr>
+<tr class=''><td class='no'>5387</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>5388</td><td>   A request is RECOMMENDED to only contain a single parameter to allow</td></tr>
+<tr class=''><td class='no'>5389</td><td>   the client to determine why a particular request failed.  If the</td></tr>
+<tr class='ev'><td class='no'>5390</td><td>   request contains several parameters, the server MUST only act on the</td></tr>
+<tr class=''><td class='no'>5391</td><td>   request if all of the parameters can be set successfully.  A server</td></tr>
+<tr class=''><td class='no'>5392</td><td>   MUST allow a parameter to be set repeatedly to the same value, but it</td></tr>
+<tr class=''><td class='no'>5393</td><td>   MAY disallow changing parameter values.  If the receiver of the</td></tr>
+<tr class=''><td class='no'>5394</td><td>   request does not understand or cannot locate a parameter, error 451</td></tr>
+<tr class=''><td class='no'>5395</td><td>   (Parameter Not Understood) MUST be used.  When a parameter is not</td></tr>
+<tr class=''><td class='no'>5396</td><td>   allowed to change, the error code is 458 (Parameter Is Read-Only).</td></tr>
+</table>
+<h2>X-rtsp-rfc7826-03</h2>
+<div class='m'>rfc7826.txt ｜ 行 5392–5392 ｜ sha256 <code>8c4e777cf95f672f…</code></div>
+<div class='q'><b>候选命题（待核）：</b>可以禁止改变参数值<br><b>候选含义（待核）：</b>允许（可以）禁止改变参数值</div>
+<table class='ln'>
+<tr class=''><td class='no'>5386</td><td>   implemented and, thus, prevent parameter format negotiation failure.</td></tr>
+<tr class=''><td class='no'>5387</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>5388</td><td>   A request is RECOMMENDED to only contain a single parameter to allow</td></tr>
+<tr class=''><td class='no'>5389</td><td>   the client to determine why a particular request failed.  If the</td></tr>
+<tr class=''><td class='no'>5390</td><td>   request contains several parameters, the server MUST only act on the</td></tr>
+<tr class=''><td class='no'>5391</td><td>   request if all of the parameters can be set successfully.  A server</td></tr>
+<tr class='ev'><td class='no'>5392</td><td>   MUST allow a parameter to be set repeatedly to the same value, but it</td></tr>
+<tr class=''><td class='no'>5393</td><td>   MAY disallow changing parameter values.  If the receiver of the</td></tr>
+<tr class=''><td class='no'>5394</td><td>   request does not understand or cannot locate a parameter, error 451</td></tr>
+<tr class=''><td class='no'>5395</td><td>   (Parameter Not Understood) MUST be used.  When a parameter is not</td></tr>
+<tr class=''><td class='no'>5396</td><td>   allowed to change, the error code is 458 (Parameter Is Read-Only).</td></tr>
+<tr class=''><td class='no'>5397</td><td>   The response body MUST contain only the parameters that have errors.</td></tr>
+<tr class=''><td class='no'>5398</td><td>   Otherwise, a body MUST NOT be returned.  The response body MUST use</td></tr>
+</table>
+<h2>X-rtsp-rfc7826-04</h2>
+<div class='m'>rfc7826.txt ｜ 行 5394–5394 ｜ sha256 <code>8c4e777cf95f672f…</code></div>
+<div class='q'><b>候选命题（待核）：</b>必须使用 451 错误<br><b>候选含义（待核）：</b>当接收方不理解或无法定位某参数时，必须使用错误 451（Parameter Not Understood）</div>
+<table class='ln'>
+<tr class=''><td class='no'>5388</td><td>   A request is RECOMMENDED to only contain a single parameter to allow</td></tr>
+<tr class=''><td class='no'>5389</td><td>   the client to determine why a particular request failed.  If the</td></tr>
+<tr class=''><td class='no'>5390</td><td>   request contains several parameters, the server MUST only act on the</td></tr>
+<tr class=''><td class='no'>5391</td><td>   request if all of the parameters can be set successfully.  A server</td></tr>
+<tr class=''><td class='no'>5392</td><td>   MUST allow a parameter to be set repeatedly to the same value, but it</td></tr>
+<tr class=''><td class='no'>5393</td><td>   MAY disallow changing parameter values.  If the receiver of the</td></tr>
+<tr class='ev'><td class='no'>5394</td><td>   request does not understand or cannot locate a parameter, error 451</td></tr>
+<tr class=''><td class='no'>5395</td><td>   (Parameter Not Understood) MUST be used.  When a parameter is not</td></tr>
+<tr class=''><td class='no'>5396</td><td>   allowed to change, the error code is 458 (Parameter Is Read-Only).</td></tr>
+<tr class=''><td class='no'>5397</td><td>   The response body MUST contain only the parameters that have errors.</td></tr>
+<tr class=''><td class='no'>5398</td><td>   Otherwise, a body MUST NOT be returned.  The response body MUST use</td></tr>
+<tr class=''><td class='no'>5399</td><td>   the media type of the request for the response.</td></tr>
+<tr class=''><td class='no'>5400</td><td>&nbsp;</td></tr>
+</table>
+<h2>X-rtsp-rfc7826-05</h2>
+<div class='m'>rfc7826.txt ｜ 行 5396–5396 ｜ sha256 <code>8c4e777cf95f672f…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>当不允许参数改变时，使用错误码 458（Parameter Is Read-Only）</div>
+<table class='ln'>
+<tr class=''><td class='no'>5390</td><td>   request contains several parameters, the server MUST only act on the</td></tr>
+<tr class=''><td class='no'>5391</td><td>   request if all of the parameters can be set successfully.  A server</td></tr>
+<tr class=''><td class='no'>5392</td><td>   MUST allow a parameter to be set repeatedly to the same value, but it</td></tr>
+<tr class=''><td class='no'>5393</td><td>   MAY disallow changing parameter values.  If the receiver of the</td></tr>
+<tr class=''><td class='no'>5394</td><td>   request does not understand or cannot locate a parameter, error 451</td></tr>
+<tr class=''><td class='no'>5395</td><td>   (Parameter Not Understood) MUST be used.  When a parameter is not</td></tr>
+<tr class='ev'><td class='no'>5396</td><td>   allowed to change, the error code is 458 (Parameter Is Read-Only).</td></tr>
+<tr class=''><td class='no'>5397</td><td>   The response body MUST contain only the parameters that have errors.</td></tr>
+<tr class=''><td class='no'>5398</td><td>   Otherwise, a body MUST NOT be returned.  The response body MUST use</td></tr>
+<tr class=''><td class='no'>5399</td><td>   the media type of the request for the response.</td></tr>
+<tr class=''><td class='no'>5400</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>5401</td><td>   Note: transport parameters for the media stream MUST only be set with</td></tr>
+<tr class=''><td class='no'>5402</td><td>   the SETUP command.</td></tr>
+</table>
+<h2>X-rtsp-rfc7826-06</h2>
+<div class='m'>rfc7826.txt ｜ 行 5397–5397 ｜ sha256 <code>8c4e777cf95f672f…</code></div>
+<div class='q'><b>候选命题（待核）：</b>响应体只含出错参数<br><b>候选含义（待核）：</b>响应体必须只包含出错的参数</div>
+<table class='ln'>
+<tr class=''><td class='no'>5391</td><td>   request if all of the parameters can be set successfully.  A server</td></tr>
+<tr class=''><td class='no'>5392</td><td>   MUST allow a parameter to be set repeatedly to the same value, but it</td></tr>
+<tr class=''><td class='no'>5393</td><td>   MAY disallow changing parameter values.  If the receiver of the</td></tr>
+<tr class=''><td class='no'>5394</td><td>   request does not understand or cannot locate a parameter, error 451</td></tr>
+<tr class=''><td class='no'>5395</td><td>   (Parameter Not Understood) MUST be used.  When a parameter is not</td></tr>
+<tr class=''><td class='no'>5396</td><td>   allowed to change, the error code is 458 (Parameter Is Read-Only).</td></tr>
+<tr class='ev'><td class='no'>5397</td><td>   The response body MUST contain only the parameters that have errors.</td></tr>
+<tr class=''><td class='no'>5398</td><td>   Otherwise, a body MUST NOT be returned.  The response body MUST use</td></tr>
+<tr class=''><td class='no'>5399</td><td>   the media type of the request for the response.</td></tr>
+<tr class=''><td class='no'>5400</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>5401</td><td>   Note: transport parameters for the media stream MUST only be set with</td></tr>
+<tr class=''><td class='no'>5402</td><td>   the SETUP command.</td></tr>
+<tr class=''><td class='no'>5403</td><td>&nbsp;</td></tr>
+</table>
+<h2>X-rtsp-rfc7826-07</h2>
+<div class='m'>rfc7826.txt ｜ 行 5398–5398 ｜ sha256 <code>8c4e777cf95f672f…</code></div>
+<div class='q'><b>候选命题（待核）：</b>否则不返回 body<br><b>候选含义（待核）：</b>否则不得返回响应体</div>
+<table class='ln'>
+<tr class=''><td class='no'>5392</td><td>   MUST allow a parameter to be set repeatedly to the same value, but it</td></tr>
+<tr class=''><td class='no'>5393</td><td>   MAY disallow changing parameter values.  If the receiver of the</td></tr>
+<tr class=''><td class='no'>5394</td><td>   request does not understand or cannot locate a parameter, error 451</td></tr>
+<tr class=''><td class='no'>5395</td><td>   (Parameter Not Understood) MUST be used.  When a parameter is not</td></tr>
+<tr class=''><td class='no'>5396</td><td>   allowed to change, the error code is 458 (Parameter Is Read-Only).</td></tr>
+<tr class=''><td class='no'>5397</td><td>   The response body MUST contain only the parameters that have errors.</td></tr>
+<tr class='ev'><td class='no'>5398</td><td>   Otherwise, a body MUST NOT be returned.  The response body MUST use</td></tr>
+<tr class=''><td class='no'>5399</td><td>   the media type of the request for the response.</td></tr>
+<tr class=''><td class='no'>5400</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>5401</td><td>   Note: transport parameters for the media stream MUST only be set with</td></tr>
+<tr class=''><td class='no'>5402</td><td>   the SETUP command.</td></tr>
+<tr class=''><td class='no'>5403</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>5404</td><td>      Restricting setting transport parameters to SETUP is for the</td></tr>
+</table>
+</body></html>

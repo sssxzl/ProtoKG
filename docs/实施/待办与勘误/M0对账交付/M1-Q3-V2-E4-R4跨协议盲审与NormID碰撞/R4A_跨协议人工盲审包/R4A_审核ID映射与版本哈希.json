@@ -1,0 +1,1050 @@
+{
+  "id_map": [
+    {
+      "★ 审核ID": "X-sip-rfc2543-01",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_constraint_server",
+      "★ candidate_id": "prose_constraint_server",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        1824,
+        1824
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": true
+    },
+    {
+      "★ 审核ID": "X-sip-rfc2543-02",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_registrations",
+      "★ candidate_id": "prose_semantics_registrations",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        1825,
+        1825
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc2543-03",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_constraint_responses",
+      "★ candidate_id": "prose_constraint_responses",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        1826,
+        1826
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc2543-04",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_one hour",
+      "★ candidate_id": "prose_semantics_one hour",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        1829,
+        1829
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc2543-05",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_constraint_clients",
+      "★ candidate_id": "prose_constraint_clients",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        1829,
+        1829
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc2543-06",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_address",
+      "★ candidate_id": "prose_semantics_address",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        1832,
+        1832
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc2543-07",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_client",
+      "★ candidate_id": "prose_semantics_client",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        8148,
+        8148
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc2543-08",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_rfc 2052",
+      "★ candidate_id": "prose_semantics_rfc 2052",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        8151,
+        8151
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc2543-09",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_results",
+      "★ candidate_id": "prose_semantics_results",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        8152,
+        8152
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc2543-10",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_searching technique",
+      "★ candidate_id": "prose_semantics_searching technique",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        8153,
+        8153
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc2543-11",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_user",
+      "★ candidate_id": "prose_semantics_user",
+      "★ batch_id": "r3-20261117-113023-batch02",
+      "★ block_ids": [
+        "sip-rfc2543-b1",
+        "sip-rfc2543-b2"
+      ],
+      "★ document": "rfc2543.txt",
+      "★ source_span": [
+        8155,
+        8155
+      ],
+      "★ source_sha256": "ef3006d940a782c702d44364b845ae828253955ecb5fbfd6d42377223f366a21",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc3428-04",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_standards track",
+      "★ candidate_id": "prose_semantics_standards track",
+      "★ batch_id": "r3-20261117-113023-batch03",
+      "★ block_ids": [
+        "sip-rfc3428-b2",
+        "sip-rfc3428-b1"
+      ],
+      "★ document": "rfc3428.txt",
+      "★ source_span": [
+        9,
+        9
+      ],
+      "★ source_sha256": "5dea7897d8a34aae35719ce7582cc72436fb64f3b2c12a2251c6f48f5befc965",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc3428-01",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_message",
+      "★ candidate_id": "prose_semantics_message",
+      "★ batch_id": "r3-20261117-113023-batch03",
+      "★ block_ids": [
+        "sip-rfc3428-b2",
+        "sip-rfc3428-b1"
+      ],
+      "★ document": "rfc3428.txt",
+      "★ source_span": [
+        766,
+        766
+      ],
+      "★ source_sha256": "5dea7897d8a34aae35719ce7582cc72436fb64f3b2c12a2251c6f48f5befc965",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc3428-02",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_400 (incorrect date or time)",
+      "★ candidate_id": "prose_semantics_400 (incorrect date or time)",
+      "★ batch_id": "r3-20261117-113023-batch03",
+      "★ block_ids": [
+        "sip-rfc3428-b2",
+        "sip-rfc3428-b1"
+      ],
+      "★ document": "rfc3428.txt",
+      "★ source_span": [
+        770,
+        770
+      ],
+      "★ source_sha256": "5dea7897d8a34aae35719ce7582cc72436fb64f3b2c12a2251c6f48f5befc965",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc3428-03",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_response",
+      "★ candidate_id": "prose_semantics_response",
+      "★ batch_id": "r3-20261117-113023-batch03",
+      "★ block_ids": [
+        "sip-rfc3428-b2",
+        "sip-rfc3428-b1"
+      ],
+      "★ document": "rfc3428.txt",
+      "★ source_span": [
+        772,
+        772
+      ],
+      "★ source_sha256": "5dea7897d8a34aae35719ce7582cc72436fb64f3b2c12a2251c6f48f5befc965",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-01",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_sip_from_tag",
+      "★ candidate_id": "prose_semantics_sip_from_tag",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        351,
+        351
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-02",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_sip_date",
+      "★ candidate_id": "prose_semantics_sip_date",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        352,
+        352
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-03",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_sip_callid",
+      "★ candidate_id": "prose_semantics_sip_callid",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        353,
+        353
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-04",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_sip_cseq_num",
+      "★ candidate_id": "prose_semantics_sip_cseq_num",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        354,
+        354
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-05",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_sip_via_branch",
+      "★ candidate_id": "prose_semantics_sip_via_branch",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        355,
+        355
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-06",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_sip_via_opid",
+      "★ candidate_id": "prose_semantics_sip_via_opid",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        356,
+        356
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-07",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_invite",
+      "★ candidate_id": "prose_semantics_invite",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        485,
+        485
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-08",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_via",
+      "★ candidate_id": "prose_semantics_via",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        486,
+        486
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-09",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_ip_ua",
+      "★ candidate_id": "prose_semantics_ip_ua",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        486,
+        486
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-10",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_branch",
+      "★ candidate_id": "prose_semantics_branch",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        488,
+        488
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-11",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_received_realm",
+      "★ candidate_id": "prose_semantics_received_realm",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        489,
+        489
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-sip-rfc8055-12",
+      "★ 协议": "sip",
+      "★ norm_id": "prose_semantics_received",
+      "★ candidate_id": "prose_semantics_received",
+      "★ batch_id": "r3-20261117-113023-batch07",
+      "★ block_ids": [
+        "sip-rfc8055-b1",
+        "sip-rfc8055-b2"
+      ],
+      "★ document": "rfc8055.txt",
+      "★ source_span": [
+        492,
+        492
+      ],
+      "★ source_sha256": "181e4d18233eed60519bc7792a50ea2ca51422d148fe647b09703a4c20e5f806",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-rtsp-rfc7826-01",
+      "★ 协议": "rtsp",
+      "★ norm_id": "prose_semantics_request",
+      "★ candidate_id": "prose_semantics_request",
+      "★ batch_id": "r3-20261117-113023-batch06",
+      "★ block_ids": [
+        "rtsp-rfc7826-b1",
+        "rtsp-rfc7826-b2"
+      ],
+      "★ document": "rfc7826.txt",
+      "★ source_span": [
+        5388,
+        5388
+      ],
+      "★ source_sha256": "8c4e777cf95f672fbe730712228f4908c7931b785e790520bc7990da6159439f",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-rtsp-rfc7826-02",
+      "★ 协议": "rtsp",
+      "★ norm_id": "prose_constraint_server",
+      "★ candidate_id": "prose_constraint_server",
+      "★ batch_id": "r3-20261117-113023-batch06",
+      "★ block_ids": [
+        "rtsp-rfc7826-b1",
+        "rtsp-rfc7826-b2"
+      ],
+      "★ document": "rfc7826.txt",
+      "★ source_span": [
+        5390,
+        5390
+      ],
+      "★ source_sha256": "8c4e777cf95f672fbe730712228f4908c7931b785e790520bc7990da6159439f",
+      "★ norm_id_collision": true
+    },
+    {
+      "★ 审核ID": "X-rtsp-rfc7826-03",
+      "★ 协议": "rtsp",
+      "★ norm_id": "prose_semantics_parameter",
+      "★ candidate_id": "prose_semantics_parameter",
+      "★ batch_id": "r3-20261117-113023-batch06",
+      "★ block_ids": [
+        "rtsp-rfc7826-b1",
+        "rtsp-rfc7826-b2"
+      ],
+      "★ document": "rfc7826.txt",
+      "★ source_span": [
+        5392,
+        5392
+      ],
+      "★ source_sha256": "8c4e777cf95f672fbe730712228f4908c7931b785e790520bc7990da6159439f",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-rtsp-rfc7826-04",
+      "★ 协议": "rtsp",
+      "★ norm_id": "prose_semantics_error 451",
+      "★ candidate_id": "prose_semantics_error 451",
+      "★ batch_id": "r3-20261117-113023-batch06",
+      "★ block_ids": [
+        "rtsp-rfc7826-b1",
+        "rtsp-rfc7826-b2"
+      ],
+      "★ document": "rfc7826.txt",
+      "★ source_span": [
+        5394,
+        5394
+      ],
+      "★ source_sha256": "8c4e777cf95f672fbe730712228f4908c7931b785e790520bc7990da6159439f",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-rtsp-rfc7826-05",
+      "★ 协议": "rtsp",
+      "★ norm_id": "prose_semantics_458",
+      "★ candidate_id": "prose_semantics_458",
+      "★ batch_id": "r3-20261117-113023-batch06",
+      "★ block_ids": [
+        "rtsp-rfc7826-b1",
+        "rtsp-rfc7826-b2"
+      ],
+      "★ document": "rfc7826.txt",
+      "★ source_span": [
+        5396,
+        5396
+      ],
+      "★ source_sha256": "8c4e777cf95f672fbe730712228f4908c7931b785e790520bc7990da6159439f",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-rtsp-rfc7826-06",
+      "★ 协议": "rtsp",
+      "★ norm_id": "prose_semantics_response body",
+      "★ candidate_id": "prose_semantics_response body",
+      "★ batch_id": "r3-20261117-113023-batch06",
+      "★ block_ids": [
+        "rtsp-rfc7826-b1",
+        "rtsp-rfc7826-b2"
+      ],
+      "★ document": "rfc7826.txt",
+      "★ source_span": [
+        5397,
+        5397
+      ],
+      "★ source_sha256": "8c4e777cf95f672fbe730712228f4908c7931b785e790520bc7990da6159439f",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-rtsp-rfc7826-07",
+      "★ 协议": "rtsp",
+      "★ norm_id": "prose_semantics_body",
+      "★ candidate_id": "prose_semantics_body",
+      "★ batch_id": "r3-20261117-113023-batch06",
+      "★ block_ids": [
+        "rtsp-rfc7826-b1",
+        "rtsp-rfc7826-b2"
+      ],
+      "★ document": "rfc7826.txt",
+      "★ source_span": [
+        5398,
+        5398
+      ],
+      "★ source_sha256": "8c4e777cf95f672fbe730712228f4908c7931b785e790520bc7990da6159439f",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc1870-01",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_size",
+      "★ candidate_id": "prose_semantics_size",
+      "★ batch_id": "r3-20261117-113023-batch01",
+      "★ block_ids": [
+        "smtp-rfc1870-b1",
+        "smtp-rfc1870-b2"
+      ],
+      "★ document": "rfc1870.txt",
+      "★ source_span": [
+        206,
+        206
+      ],
+      "★ source_sha256": "7c560c3b4d017beeaf66a9a5c55f6e8449574b33f637c970259e4f54fe6498f9",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc1870-02",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_constraint_server",
+      "★ candidate_id": "prose_constraint_server",
+      "★ batch_id": "r3-20261117-113023-batch01",
+      "★ block_ids": [
+        "smtp-rfc1870-b1",
+        "smtp-rfc1870-b2"
+      ],
+      "★ document": "rfc1870.txt",
+      "★ source_span": [
+        207,
+        207
+      ],
+      "★ source_sha256": "7c560c3b4d017beeaf66a9a5c55f6e8449574b33f637c970259e4f54fe6498f9",
+      "★ norm_id_collision": true
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc1870-03",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_fixed maximum message size",
+      "★ candidate_id": "prose_semantics_fixed maximum message size",
+      "★ batch_id": "r3-20261117-113023-batch01",
+      "★ block_ids": [
+        "smtp-rfc1870-b1",
+        "smtp-rfc1870-b2"
+      ],
+      "★ document": "rfc1870.txt",
+      "★ source_span": [
+        208,
+        208
+      ],
+      "★ source_sha256": "7c560c3b4d017beeaf66a9a5c55f6e8449574b33f637c970259e4f54fe6498f9",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc1870-04",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_smtp",
+      "★ candidate_id": "prose_semantics_smtp",
+      "★ batch_id": "r3-20261117-113023-batch01",
+      "★ block_ids": [
+        "smtp-rfc1870-b1",
+        "smtp-rfc1870-b2"
+      ],
+      "★ document": "rfc1870.txt",
+      "★ source_span": [
+        380,
+        380
+      ],
+      "★ source_sha256": "7c560c3b4d017beeaf66a9a5c55f6e8449574b33f637c970259e4f54fe6498f9",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc3461-06",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_smtp client",
+      "★ candidate_id": "prose_semantics_smtp client",
+      "★ batch_id": "r3-20261117-113023-batch04",
+      "★ block_ids": [
+        "smtp-rfc3461-b2",
+        "smtp-rfc3461-b1"
+      ],
+      "★ document": "rfc3461.txt",
+      "★ source_span": [
+        31,
+        31
+      ],
+      "★ source_sha256": "7f9e2050ae8c38962d458bb4ee669100351e981f55a96e41f19cbb574b1c730d",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc3461-07",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_delivery status notifications (dsns)",
+      "★ candidate_id": "prose_semantics_delivery status notifications (dsns)",
+      "★ batch_id": "r3-20261117-113023-batch04",
+      "★ block_ids": [
+        "smtp-rfc3461-b2",
+        "smtp-rfc3461-b1"
+      ],
+      "★ document": "rfc3461.txt",
+      "★ source_span": [
+        32,
+        32
+      ],
+      "★ source_sha256": "7f9e2050ae8c38962d458bb4ee669100351e981f55a96e41f19cbb574b1c730d",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc3461-01",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_dsn sender address",
+      "★ candidate_id": "prose_semantics_dsn sender address",
+      "★ batch_id": "r3-20261117-113023-batch04",
+      "★ block_ids": [
+        "smtp-rfc3461-b2",
+        "smtp-rfc3461-b1"
+      ],
+      "★ document": "rfc3461.txt",
+      "★ source_span": [
+        1085,
+        1085
+      ],
+      "★ source_sha256": "7f9e2050ae8c38962d458bb4ee669100351e981f55a96e41f19cbb574b1c730d",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc3461-02",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_ret parameter",
+      "★ candidate_id": "prose_semantics_ret parameter",
+      "★ batch_id": "r3-20261117-113023-batch04",
+      "★ block_ids": [
+        "smtp-rfc3461-b2",
+        "smtp-rfc3461-b1"
+      ],
+      "★ document": "rfc3461.txt",
+      "★ source_span": [
+        1089,
+        1089
+      ],
+      "★ source_sha256": "7f9e2050ae8c38962d458bb4ee669100351e981f55a96e41f19cbb574b1c730d",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc3461-03",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_notify parameter",
+      "★ candidate_id": "prose_semantics_notify parameter",
+      "★ batch_id": "r3-20261117-113023-batch04",
+      "★ block_ids": [
+        "smtp-rfc3461-b2",
+        "smtp-rfc3461-b1"
+      ],
+      "★ document": "rfc3461.txt",
+      "★ source_span": [
+        1090,
+        1090
+      ],
+      "★ source_sha256": "7f9e2050ae8c38962d458bb4ee669100351e981f55a96e41f19cbb574b1c730d",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc3461-04",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_envid parameter",
+      "★ candidate_id": "prose_semantics_envid parameter",
+      "★ batch_id": "r3-20261117-113023-batch04",
+      "★ block_ids": [
+        "smtp-rfc3461-b2",
+        "smtp-rfc3461-b1"
+      ],
+      "★ document": "rfc3461.txt",
+      "★ source_span": [
+        1091,
+        1091
+      ],
+      "★ source_sha256": "7f9e2050ae8c38962d458bb4ee669100351e981f55a96e41f19cbb574b1c730d",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc3461-05",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_orcpt parameter",
+      "★ candidate_id": "prose_semantics_orcpt parameter",
+      "★ batch_id": "r3-20261117-113023-batch04",
+      "★ block_ids": [
+        "smtp-rfc3461-b2",
+        "smtp-rfc3461-b1"
+      ],
+      "★ document": "rfc3461.txt",
+      "★ source_span": [
+        1092,
+        1092
+      ],
+      "★ source_sha256": "7f9e2050ae8c38962d458bb4ee669100351e981f55a96e41f19cbb574b1c730d",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc6531-01",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_utf_8 string",
+      "★ candidate_id": "prose_semantics_utf_8 string",
+      "★ batch_id": "r3-20261117-113023-batch05",
+      "★ block_ids": [
+        "smtp-rfc6531-b2",
+        "smtp-rfc6531-b1"
+      ],
+      "★ document": "rfc6531.txt",
+      "★ source_span": [
+        139,
+        139
+      ],
+      "★ source_sha256": "4f48303f7b7659d0b3149730b51a03d59799a95b4d2ca7d913533f97b9db4b40",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc6531-02",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_rfc3629",
+      "★ candidate_id": "prose_semantics_rfc3629",
+      "★ batch_id": "r3-20261117-113023-batch05",
+      "★ block_ids": [
+        "smtp-rfc6531-b2",
+        "smtp-rfc6531-b1"
+      ],
+      "★ document": "rfc6531.txt",
+      "★ source_span": [
+        141,
+        141
+      ],
+      "★ source_sha256": "4f48303f7b7659d0b3149730b51a03d59799a95b4d2ca7d913533f97b9db4b40",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc6531-03",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_ascii address",
+      "★ candidate_id": "prose_semantics_ascii address",
+      "★ batch_id": "r3-20261117-113023-batch05",
+      "★ block_ids": [
+        "smtp-rfc6531-b2",
+        "smtp-rfc6531-b1"
+      ],
+      "★ document": "rfc6531.txt",
+      "★ source_span": [
+        144,
+        144
+      ],
+      "★ source_sha256": "4f48303f7b7659d0b3149730b51a03d59799a95b4d2ca7d913533f97b9db4b40",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc6531-04",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_smtputf8",
+      "★ candidate_id": "prose_semantics_smtputf8",
+      "★ batch_id": "r3-20261117-113023-batch05",
+      "★ block_ids": [
+        "smtp-rfc6531-b2",
+        "smtp-rfc6531-b1"
+      ],
+      "★ document": "rfc6531.txt",
+      "★ source_span": [
+        145,
+        145
+      ],
+      "★ source_sha256": "4f48303f7b7659d0b3149730b51a03d59799a95b4d2ca7d913533f97b9db4b40",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc6531-05",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_rfc6530",
+      "★ candidate_id": "prose_semantics_rfc6530",
+      "★ batch_id": "r3-20261117-113023-batch05",
+      "★ block_ids": [
+        "smtp-rfc6531-b2",
+        "smtp-rfc6531-b1"
+      ],
+      "★ document": "rfc6531.txt",
+      "★ source_span": [
+        147,
+        147
+      ],
+      "★ source_sha256": "4f48303f7b7659d0b3149730b51a03d59799a95b4d2ca7d913533f97b9db4b40",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc6531-06",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_constraint_smtp client",
+      "★ candidate_id": "prose_constraint_smtp client",
+      "★ batch_id": "r3-20261117-113023-batch05",
+      "★ block_ids": [
+        "smtp-rfc6531-b2",
+        "smtp-rfc6531-b1"
+      ],
+      "★ document": "rfc6531.txt",
+      "★ source_span": [
+        603,
+        603
+      ],
+      "★ source_sha256": "4f48303f7b7659d0b3149730b51a03d59799a95b4d2ca7d913533f97b9db4b40",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc6531-07",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_constraint_smtputf8_aware smtp server",
+      "★ candidate_id": "prose_constraint_smtputf8_aware smtp server",
+      "★ batch_id": "r3-20261117-113023-batch05",
+      "★ block_ids": [
+        "smtp-rfc6531-b2",
+        "smtp-rfc6531-b1"
+      ],
+      "★ document": "rfc6531.txt",
+      "★ source_span": [
+        605,
+        605
+      ],
+      "★ source_sha256": "4f48303f7b7659d0b3149730b51a03d59799a95b4d2ca7d913533f97b9db4b40",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc6531-08",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_250 or 550 responses",
+      "★ candidate_id": "prose_semantics_250 or 550 responses",
+      "★ batch_id": "r3-20261117-113023-batch05",
+      "★ block_ids": [
+        "smtp-rfc6531-b2",
+        "smtp-rfc6531-b1"
+      ],
+      "★ document": "rfc6531.txt",
+      "★ source_span": [
+        607,
+        607
+      ],
+      "★ source_sha256": "4f48303f7b7659d0b3149730b51a03d59799a95b4d2ca7d913533f97b9db4b40",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc8098-03",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_constraint_mdn generators",
+      "★ candidate_id": "prose_constraint_mdn generators",
+      "★ batch_id": "r3-20261117-113023-batch08",
+      "★ block_ids": [
+        "smtp-rfc8098-b1",
+        "smtp-rfc8098-b2"
+      ],
+      "★ document": "rfc8098.txt",
+      "★ source_span": [
+        489,
+        489
+      ],
+      "★ source_sha256": "3cf52c2a77826e0ee3dd5a2d57b9d069d2f5b5a46f480f6c46e1d1c1066cea33",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc8098-04",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_constraint_mdn parsers",
+      "★ candidate_id": "prose_constraint_mdn parsers",
+      "★ batch_id": "r3-20261117-113023-batch08",
+      "★ block_ids": [
+        "smtp-rfc8098-b1",
+        "smtp-rfc8098-b2"
+      ],
+      "★ document": "rfc8098.txt",
+      "★ source_span": [
+        494,
+        494
+      ],
+      "★ source_sha256": "3cf52c2a77826e0ee3dd5a2d57b9d069d2f5b5a46f480f6c46e1d1c1066cea33",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc8098-01",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_abnf",
+      "★ candidate_id": "prose_semantics_abnf",
+      "★ batch_id": "r3-20261117-113023-batch08",
+      "★ block_ids": [
+        "smtp-rfc8098-b1",
+        "smtp-rfc8098-b2"
+      ],
+      "★ document": "rfc8098.txt",
+      "★ source_span": [
+        2003,
+        2003
+      ],
+      "★ source_sha256": "3cf52c2a77826e0ee3dd5a2d57b9d069d2f5b5a46f480f6c46e1d1c1066cea33",
+      "★ norm_id_collision": false
+    },
+    {
+      "★ 审核ID": "X-smtp-rfc8098-02",
+      "★ 协议": "smtp",
+      "★ norm_id": "prose_semantics_fws",
+      "★ candidate_id": "prose_semantics_fws",
+      "★ batch_id": "r3-20261117-113023-batch08",
+      "★ block_ids": [
+        "smtp-rfc8098-b1",
+        "smtp-rfc8098-b2"
+      ],
+      "★ document": "rfc8098.txt",
+      "★ source_span": [
+        2010,
+        2010
+      ],
+      "★ source_sha256": "3cf52c2a77826e0ee3dd5a2d57b9d069d2f5b5a46f480f6c46e1d1c1066cea33",
+      "★ norm_id_collision": false
+    }
+  ],
+  "file_hashes": {
+    "SIP_27候选_审核者A_盲审模板.xlsx": "774d6d4537d5cad51373d7d99ccda8f550696e114f03b6c67cac5a7152490d24",
+    "SIP_27候选_审核者B_盲审模板.xlsx": "774d6d4537d5cad51373d7d99ccda8f550696e114f03b6c67cac5a7152490d24",
+    "SIP_27候选_第三方仲裁模板.xlsx": "4d6eeaa392ddead36e84da114b151e1e3ed6feb3ef2ca25171502720c2276aa9",
+    "SIP_27候选_只读RFC证据包.html": "26e14e0d0d8fbcbda32cbecd3c56557854c659fe1310d1e383efa343d8002363",
+    "RTSP_7候选_审核者A_盲审模板.xlsx": "d08350fc0960b754633462e3243f0db733687349b8581ac65f5ada9ae9d733fe",
+    "RTSP_7候选_审核者B_盲审模板.xlsx": "d08350fc0960b754633462e3243f0db733687349b8581ac65f5ada9ae9d733fe",
+    "RTSP_7候选_第三方仲裁模板.xlsx": "f230a58e2e0e9e4390eaa5a839640a581d51f2fcfb8a19c7a83c2f4fbe9caa97",
+    "RTSP_7候选_只读RFC证据包.html": "b184cd81c3d8dbbc1ae93d9e19a6cf5fa33294fc171f3f719e4c467710fec5c5",
+    "SMTP_23候选_审核者A_盲审模板.xlsx": "c27051194c34cb2d5834e165841bda97eb54808f61ea7257f1140966417ce90f",
+    "SMTP_23候选_审核者B_盲审模板.xlsx": "c27051194c34cb2d5834e165841bda97eb54808f61ea7257f1140966417ce90f",
+    "SMTP_23候选_第三方仲裁模板.xlsx": "a99b9b564bd0435e305606460f7e03dc36cba9b250d9a6af3bcbd2ac577654e8",
+    "SMTP_23候选_只读RFC证据包.html": "fd1af964ab2aff9316e41a87702f8484814555b0be6e84a49101d2ee97a2a9b3"
+  },
+  "counts": {
+    "SMTP": 23,
+    "SIP": 27,
+    "RTSP": 7
+  },
+  "total": 57
+}

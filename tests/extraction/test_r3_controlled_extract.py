@@ -33,11 +33,22 @@ def _jl(p):
 # ===== 来源门禁 =====
 
 def test_eligible_sources_cover_three_protocols():
+    """实际抽取的来源必须全部合格且覆盖三协议。
+
+    ★ R4 对账时把候选集补齐到 20 份，★ rfc3848 亦满足独立性门禁但未被抽取，
+    ★ 故 accepted 数可大于抽取数；★ 断言以【实际抽取的来源】为准。
+    """
     _g = _j(R3 / "r3_source_gate.json")
     _e = [r for r in _g["rows"] if r["eligible_for_extraction"]]
     _p = {r["protocol"] for r in _e}
     assert _p == {"sip", "rtsp", "smtp"}
-    assert len(_e) == 8
+    assert len(_e) >= 8
+    # ★ 实际抽取的来源必须是 accepted 的子集
+    _b = _j(R3 / "r3_blocks.json")
+    _extracted = {b["document"].replace("rfc", "").replace(".txt", "")
+                  for b in _b["blocks"]}
+    assert _extracted <= {r["rfc_number"] for r in _e}
+    assert len(_extracted) == 8
 
 
 def test_excluded_sources_have_reason():

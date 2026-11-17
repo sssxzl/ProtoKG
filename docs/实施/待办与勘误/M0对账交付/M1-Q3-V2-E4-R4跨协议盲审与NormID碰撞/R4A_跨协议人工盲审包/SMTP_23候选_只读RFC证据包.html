@@ -1,0 +1,428 @@
+<!DOCTYPE html><html lang='zh-CN'><head><meta charset='utf-8'>
+<title>SMTP 候选只读 RFC 证据包</title><style>
+body{font-family:Consolas,'Microsoft YaHei',monospace;margin:24px;line-height:1.55}
+h2{font-size:15px;margin:22px 0 6px;padding:6px 10px;background:#eef3fa;border-left:4px solid #3a6ea5}
+.m{color:#555;font-size:12px}.q{background:#eef7ee;padding:6px 10px;margin:4px 0}
+table.ln{border-collapse:collapse;width:100%;margin:6px 0 12px}
+table.ln td{padding:1px 8px;font-size:12.5px;vertical-align:top}
+td.no{width:54px;color:#888;text-align:right;background:#f6f6f6}
+tr.ev td{background:#fff6d8;font-weight:600}
+.hint{background:#fffbe6;border:1px solid #e0c97a;padding:8px 12px;margin:10px 0}
+</style></head><body>
+<h1>SMTP 候选只读 RFC 证据包</h1>
+<div class='hint'>本包是<b>只读</b>的 RFC 原文证据。<br>候选命题与候选声称的字段是<b>待核对象</b>，不是人工标准答案。<br>本包不含任何机器类型预测、路由结果或另一审核者答案。</div>
+<h2>X-smtp-rfc1870-01</h2>
+<div class='m'>rfc1870.txt ｜ 行 206–206 ｜ sha256 <code>7c560c3b4d017bee…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>扩展 MAIL 命令中所包含的一个参数，用于声明邮件大小</div>
+<table class='ln'>
+<tr class=''><td class='no'>200</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>201</td><td>   NOTE: Servers MUST NOT use the SIZE parameter to determine end of</td></tr>
+<tr class=''><td class='no'>202</td><td>   content in the DATA command.</td></tr>
+<tr class=''><td class='no'>203</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>204</td><td>6.1  Server action on receipt of the extended MAIL command</td></tr>
+<tr class=''><td class='no'>205</td><td>&nbsp;</td></tr>
+<tr class='ev'><td class='no'>206</td><td>   Upon receipt of an extended MAIL command containing a SIZE parameter,</td></tr>
+<tr class=''><td class='no'>207</td><td>   a server should determine whether the declared message size exceeds</td></tr>
+<tr class=''><td class='no'>208</td><td>   its fixed maximum message size.  If the declared message size is</td></tr>
+<tr class=''><td class='no'>209</td><td>   smaller than the fixed maximum message size, the server may also wish</td></tr>
+<tr class=''><td class='no'>210</td><td>   to determine whether sufficient resources are available to buffer a</td></tr>
+<tr class=''><td class='no'>211</td><td>   message of the declared message size and to maintain it in stable</td></tr>
+<tr class=''><td class='no'>212</td><td>   storage, until the message can be delivered or relayed to each of its</td></tr>
+</table>
+<h2>X-smtp-rfc1870-02</h2>
+<div class='m'>rfc1870.txt ｜ 行 207–207 ｜ sha256 <code>7c560c3b4d017bee…</code></div>
+<div class='q'><b>候选命题（待核）：</b>server should determine whether the declared message size exceeds its fixed maximum message size<br><b>候选含义（待核）：</b>接收扩展 MAIL 命令的服务器，需要判断声明的邮件大小是否超过其固定的最大邮件大小</div>
+<table class='ln'>
+<tr class=''><td class='no'>201</td><td>   NOTE: Servers MUST NOT use the SIZE parameter to determine end of</td></tr>
+<tr class=''><td class='no'>202</td><td>   content in the DATA command.</td></tr>
+<tr class=''><td class='no'>203</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>204</td><td>6.1  Server action on receipt of the extended MAIL command</td></tr>
+<tr class=''><td class='no'>205</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>206</td><td>   Upon receipt of an extended MAIL command containing a SIZE parameter,</td></tr>
+<tr class='ev'><td class='no'>207</td><td>   a server should determine whether the declared message size exceeds</td></tr>
+<tr class=''><td class='no'>208</td><td>   its fixed maximum message size.  If the declared message size is</td></tr>
+<tr class=''><td class='no'>209</td><td>   smaller than the fixed maximum message size, the server may also wish</td></tr>
+<tr class=''><td class='no'>210</td><td>   to determine whether sufficient resources are available to buffer a</td></tr>
+<tr class=''><td class='no'>211</td><td>   message of the declared message size and to maintain it in stable</td></tr>
+<tr class=''><td class='no'>212</td><td>   storage, until the message can be delivered or relayed to each of its</td></tr>
+<tr class=''><td class='no'>213</td><td>   recipients.</td></tr>
+</table>
+<h2>X-smtp-rfc1870-03</h2>
+<div class='m'>rfc1870.txt ｜ 行 208–208 ｜ sha256 <code>7c560c3b4d017bee…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>服务器自身的固定最大邮件大小，用于与声明的邮件大小比较</div>
+<table class='ln'>
+<tr class=''><td class='no'>202</td><td>   content in the DATA command.</td></tr>
+<tr class=''><td class='no'>203</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>204</td><td>6.1  Server action on receipt of the extended MAIL command</td></tr>
+<tr class=''><td class='no'>205</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>206</td><td>   Upon receipt of an extended MAIL command containing a SIZE parameter,</td></tr>
+<tr class=''><td class='no'>207</td><td>   a server should determine whether the declared message size exceeds</td></tr>
+<tr class='ev'><td class='no'>208</td><td>   its fixed maximum message size.  If the declared message size is</td></tr>
+<tr class=''><td class='no'>209</td><td>   smaller than the fixed maximum message size, the server may also wish</td></tr>
+<tr class=''><td class='no'>210</td><td>   to determine whether sufficient resources are available to buffer a</td></tr>
+<tr class=''><td class='no'>211</td><td>   message of the declared message size and to maintain it in stable</td></tr>
+<tr class=''><td class='no'>212</td><td>   storage, until the message can be delivered or relayed to each of its</td></tr>
+<tr class=''><td class='no'>213</td><td>   recipients.</td></tr>
+<tr class=''><td class='no'>214</td><td>&nbsp;</td></tr>
+</table>
+<h2>X-smtp-rfc1870-04</h2>
+<div class='m'>rfc1870.txt ｜ 行 380–380 ｜ sha256 <code>7c560c3b4d017bee…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>文中称这些扩展不会产生 SMTP 一直没有的漏洞</div>
+<table class='ln'>
+<tr class=''><td class='no'>374</td><td>   The size declaration extensions described in this memo can</td></tr>
+<tr class=''><td class='no'>375</td><td>   conceivably be used to facilitate crude service denial attacks.</td></tr>
+<tr class=''><td class='no'>376</td><td>   Specifically, both the information contained in the SIZE parameter</td></tr>
+<tr class=''><td class='no'>377</td><td>   and use of the extended MAIL command make it somewhat quicker and</td></tr>
+<tr class=''><td class='no'>378</td><td>   easier to devise an efficacious service denial attack.  However,</td></tr>
+<tr class=''><td class='no'>379</td><td>   unless implementations are very weak, these extensions do not create</td></tr>
+<tr class='ev'><td class='no'>380</td><td>   any vulnerability that has not always existed with SMTP. In addition,</td></tr>
+<tr class=''><td class='no'>381</td><td>   no issues are addressed involving trusted systems and possible</td></tr>
+<tr class=''><td class='no'>382</td><td>   release of information via the mechanisms described in this RFC.</td></tr>
+<tr class=''><td class='no'>383</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>384</td><td>10.  Acknowledgements</td></tr>
+<tr class=''><td class='no'>385</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>386</td><td>   This document was derived from an earlier Working Group work in</td></tr>
+</table>
+<h2>X-smtp-rfc3461-06</h2>
+<div class='m'>rfc3461.txt ｜ 行 31–31 ｜ sha256 <code>7f9e2050ae8c3896…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>允许 SMTP 客户端指定 DSN 生成条件、是否回传消息内容以及附加标识信息的实体</div>
+<table class='ln'>
+<tr class=''><td class='no'>25</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>26</td><td>   Copyright (C) The Internet Society (2003).  All Rights Reserved.</td></tr>
+<tr class=''><td class='no'>27</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>28</td><td>Abstract</td></tr>
+<tr class=''><td class='no'>29</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>30</td><td>   This memo defines an extension to the Simple Mail Transfer Protocol</td></tr>
+<tr class='ev'><td class='no'>31</td><td>   (SMTP) service, which allows an SMTP client to specify (a) that</td></tr>
+<tr class=''><td class='no'>32</td><td>   Delivery Status Notifications (DSNs) should be generated under</td></tr>
+<tr class=''><td class='no'>33</td><td>   certain conditions, (b) whether such notifications should return the</td></tr>
+<tr class=''><td class='no'>34</td><td>   contents of the message, and (c) additional information, to be</td></tr>
+<tr class=''><td class='no'>35</td><td>   returned with a DSN, that allows the sender to identify both the</td></tr>
+<tr class=''><td class='no'>36</td><td>   recipient(s) for which the DSN was issued, and the transaction in</td></tr>
+<tr class=''><td class='no'>37</td><td>   which the original message was sent.</td></tr>
+</table>
+<h2>X-smtp-rfc3461-07</h2>
+<div class='m'>rfc3461.txt ｜ 行 32–32 ｜ sha256 <code>7f9e2050ae8c3896…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>在特定条件下应被生成的投递状态通知</div>
+<table class='ln'>
+<tr class=''><td class='no'>26</td><td>   Copyright (C) The Internet Society (2003).  All Rights Reserved.</td></tr>
+<tr class=''><td class='no'>27</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>28</td><td>Abstract</td></tr>
+<tr class=''><td class='no'>29</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>30</td><td>   This memo defines an extension to the Simple Mail Transfer Protocol</td></tr>
+<tr class=''><td class='no'>31</td><td>   (SMTP) service, which allows an SMTP client to specify (a) that</td></tr>
+<tr class='ev'><td class='no'>32</td><td>   Delivery Status Notifications (DSNs) should be generated under</td></tr>
+<tr class=''><td class='no'>33</td><td>   certain conditions, (b) whether such notifications should return the</td></tr>
+<tr class=''><td class='no'>34</td><td>   contents of the message, and (c) additional information, to be</td></tr>
+<tr class=''><td class='no'>35</td><td>   returned with a DSN, that allows the sender to identify both the</td></tr>
+<tr class=''><td class='no'>36</td><td>   recipient(s) for which the DSN was issued, and the transaction in</td></tr>
+<tr class=''><td class='no'>37</td><td>   which the original message was sent.</td></tr>
+<tr class=''><td class='no'>38</td><td>&nbsp;</td></tr>
+</table>
+<h2>X-smtp-rfc3461-01</h2>
+<div class='m'>rfc3461.txt ｜ 行 1085–1085 ｜ sha256 <code>7f9e2050ae8c3896…</code></div>
+<div class='q'><b>候选命题（待核）：</b>MUST be a null reverse-path (&quot;&lt;&gt;&quot;)<br><b>候选含义（待核）：</b>DSN 邮件在 SMTP MAIL 命令中使用的发件人地址，必须为空反向路径 &lt;&gt;</div>
+<table class='ln'>
+<tr class=''><td class='no'>1079</td><td>   uses the framework defined in [5].  Delivery Status Notifications are</td></tr>
+<tr class=''><td class='no'>1080</td><td>   to be returned to the sender of the original message as outlined</td></tr>
+<tr class=''><td class='no'>1081</td><td>   below.</td></tr>
+<tr class=''><td class='no'>1082</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>1083</td><td>6.1 SMTP Envelope to be used with Delivery Status Notifications</td></tr>
+<tr class=''><td class='no'>1084</td><td>&nbsp;</td></tr>
+<tr class='ev'><td class='no'>1085</td><td>   The DSN sender address (in the SMTP MAIL command) MUST be a null</td></tr>
+<tr class=''><td class='no'>1086</td><td>   reverse-path (&quot;&lt;&gt;&quot;), as required by section 5.3.3 of [11].  The DSN</td></tr>
+<tr class=''><td class='no'>1087</td><td>   recipient address (in the RCPT command) is copied from the MAIL</td></tr>
+<tr class=''><td class='no'>1088</td><td>   command which accompanied the message for which the DSN is being</td></tr>
+<tr class=''><td class='no'>1089</td><td>   issued.  When transmitting a DSN via SMTP, the RET parameter MUST NOT</td></tr>
+<tr class=''><td class='no'>1090</td><td>   be used.  The NOTIFY parameter MAY be used, but its value MUST be</td></tr>
+<tr class=''><td class='no'>1091</td><td>   NEVER.  The ENVID parameter (with a newly generated envelope-id)</td></tr>
+</table>
+<h2>X-smtp-rfc3461-02</h2>
+<div class='m'>rfc3461.txt ｜ 行 1089–1089 ｜ sha256 <code>7f9e2050ae8c3896…</code></div>
+<div class='q'><b>候选命题（待核）：</b>MUST NOT be used when transmitting a DSN via SMTP<br><b>候选含义（待核）：</b>通过 SMTP 传输 DSN 时不得使用的 SMTP 参数</div>
+<table class='ln'>
+<tr class=''><td class='no'>1083</td><td>6.1 SMTP Envelope to be used with Delivery Status Notifications</td></tr>
+<tr class=''><td class='no'>1084</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>1085</td><td>   The DSN sender address (in the SMTP MAIL command) MUST be a null</td></tr>
+<tr class=''><td class='no'>1086</td><td>   reverse-path (&quot;&lt;&gt;&quot;), as required by section 5.3.3 of [11].  The DSN</td></tr>
+<tr class=''><td class='no'>1087</td><td>   recipient address (in the RCPT command) is copied from the MAIL</td></tr>
+<tr class=''><td class='no'>1088</td><td>   command which accompanied the message for which the DSN is being</td></tr>
+<tr class='ev'><td class='no'>1089</td><td>   issued.  When transmitting a DSN via SMTP, the RET parameter MUST NOT</td></tr>
+<tr class=''><td class='no'>1090</td><td>   be used.  The NOTIFY parameter MAY be used, but its value MUST be</td></tr>
+<tr class=''><td class='no'>1091</td><td>   NEVER.  The ENVID parameter (with a newly generated envelope-id)</td></tr>
+<tr class=''><td class='no'>1092</td><td>   and/or ORCPT parameter MAY be used.</td></tr>
+<tr class=''><td class='no'>1093</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>1094</td><td>6.2 Contents of the DSN</td></tr>
+<tr class=''><td class='no'>1095</td><td>&nbsp;</td></tr>
+</table>
+<h2>X-smtp-rfc3461-03</h2>
+<div class='m'>rfc3461.txt ｜ 行 1090–1090 ｜ sha256 <code>7f9e2050ae8c3896…</code></div>
+<div class='q'><b>候选命题（待核）：</b>its value MUST be NEVER<br><b>候选含义（待核）：</b>传输 DSN 时可使用但其值必须为 NEVER 的 SMTP 参数</div>
+<table class='ln'>
+<tr class=''><td class='no'>1084</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>1085</td><td>   The DSN sender address (in the SMTP MAIL command) MUST be a null</td></tr>
+<tr class=''><td class='no'>1086</td><td>   reverse-path (&quot;&lt;&gt;&quot;), as required by section 5.3.3 of [11].  The DSN</td></tr>
+<tr class=''><td class='no'>1087</td><td>   recipient address (in the RCPT command) is copied from the MAIL</td></tr>
+<tr class=''><td class='no'>1088</td><td>   command which accompanied the message for which the DSN is being</td></tr>
+<tr class=''><td class='no'>1089</td><td>   issued.  When transmitting a DSN via SMTP, the RET parameter MUST NOT</td></tr>
+<tr class='ev'><td class='no'>1090</td><td>   be used.  The NOTIFY parameter MAY be used, but its value MUST be</td></tr>
+<tr class=''><td class='no'>1091</td><td>   NEVER.  The ENVID parameter (with a newly generated envelope-id)</td></tr>
+<tr class=''><td class='no'>1092</td><td>   and/or ORCPT parameter MAY be used.</td></tr>
+<tr class=''><td class='no'>1093</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>1094</td><td>6.2 Contents of the DSN</td></tr>
+<tr class=''><td class='no'>1095</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>1096</td><td>   A DSN is transmitted as a MIME message with a top-level content-type</td></tr>
+</table>
+<h2>X-smtp-rfc3461-04</h2>
+<div class='m'>rfc3461.txt ｜ 行 1091–1091 ｜ sha256 <code>7f9e2050ae8c3896…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>可携带新生成的 envelope-id 使用的 SMTP 参数</div>
+<table class='ln'>
+<tr class=''><td class='no'>1085</td><td>   The DSN sender address (in the SMTP MAIL command) MUST be a null</td></tr>
+<tr class=''><td class='no'>1086</td><td>   reverse-path (&quot;&lt;&gt;&quot;), as required by section 5.3.3 of [11].  The DSN</td></tr>
+<tr class=''><td class='no'>1087</td><td>   recipient address (in the RCPT command) is copied from the MAIL</td></tr>
+<tr class=''><td class='no'>1088</td><td>   command which accompanied the message for which the DSN is being</td></tr>
+<tr class=''><td class='no'>1089</td><td>   issued.  When transmitting a DSN via SMTP, the RET parameter MUST NOT</td></tr>
+<tr class=''><td class='no'>1090</td><td>   be used.  The NOTIFY parameter MAY be used, but its value MUST be</td></tr>
+<tr class='ev'><td class='no'>1091</td><td>   NEVER.  The ENVID parameter (with a newly generated envelope-id)</td></tr>
+<tr class=''><td class='no'>1092</td><td>   and/or ORCPT parameter MAY be used.</td></tr>
+<tr class=''><td class='no'>1093</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>1094</td><td>6.2 Contents of the DSN</td></tr>
+<tr class=''><td class='no'>1095</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>1096</td><td>   A DSN is transmitted as a MIME message with a top-level content-type</td></tr>
+<tr class=''><td class='no'>1097</td><td>   of multipart/report (as defined in [3]).</td></tr>
+</table>
+<h2>X-smtp-rfc3461-05</h2>
+<div class='m'>rfc3461.txt ｜ 行 1092–1092 ｜ sha256 <code>7f9e2050ae8c3896…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>可与 ENVID 一同使用的 SMTP 参数</div>
+<table class='ln'>
+<tr class=''><td class='no'>1086</td><td>   reverse-path (&quot;&lt;&gt;&quot;), as required by section 5.3.3 of [11].  The DSN</td></tr>
+<tr class=''><td class='no'>1087</td><td>   recipient address (in the RCPT command) is copied from the MAIL</td></tr>
+<tr class=''><td class='no'>1088</td><td>   command which accompanied the message for which the DSN is being</td></tr>
+<tr class=''><td class='no'>1089</td><td>   issued.  When transmitting a DSN via SMTP, the RET parameter MUST NOT</td></tr>
+<tr class=''><td class='no'>1090</td><td>   be used.  The NOTIFY parameter MAY be used, but its value MUST be</td></tr>
+<tr class=''><td class='no'>1091</td><td>   NEVER.  The ENVID parameter (with a newly generated envelope-id)</td></tr>
+<tr class='ev'><td class='no'>1092</td><td>   and/or ORCPT parameter MAY be used.</td></tr>
+<tr class=''><td class='no'>1093</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>1094</td><td>6.2 Contents of the DSN</td></tr>
+<tr class=''><td class='no'>1095</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>1096</td><td>   A DSN is transmitted as a MIME message with a top-level content-type</td></tr>
+<tr class=''><td class='no'>1097</td><td>   of multipart/report (as defined in [3]).</td></tr>
+<tr class=''><td class='no'>1098</td><td>&nbsp;</td></tr>
+</table>
+<h2>X-smtp-rfc6531-01</h2>
+<div class='m'>rfc6531.txt ｜ 行 139–139 ｜ sha256 <code>4f48303f7b7659d0…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>术语“UTF-8 string”用于指代 UTF-8 编码的 Unicode 字符（可能是也可能不是 ASCII 子集成员）。</div>
+<table class='ln'>
+<tr class=''><td class='no'>133</td><td>1.1.  Terminology</td></tr>
+<tr class=''><td class='no'>134</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>135</td><td>   The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,</td></tr>
+<tr class=''><td class='no'>136</td><td>   &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this</td></tr>
+<tr class=''><td class='no'>137</td><td>   document are to be interpreted as described in RFC 2119 [RFC2119].</td></tr>
+<tr class=''><td class='no'>138</td><td>&nbsp;</td></tr>
+<tr class='ev'><td class='no'>139</td><td>   The terms &quot;UTF-8 string&quot; or &quot;UTF-8 character&quot; are used to refer to</td></tr>
+<tr class=''><td class='no'>140</td><td>   Unicode characters, which may or may not be members of the ASCII</td></tr>
+<tr class=''><td class='no'>141</td><td>   subset, in UTF-8 [RFC3629], a standard Unicode Encoding Form.  All</td></tr>
+<tr class=''><td class='no'>142</td><td>   other specialized terms used in this specification are defined in the</td></tr>
+<tr class=''><td class='no'>143</td><td>   framework document or in the base Internet email specifications.  In</td></tr>
+<tr class=''><td class='no'>144</td><td>   particular, the terms &quot;ASCII address&quot;, &quot;internationalized email</td></tr>
+<tr class=''><td class='no'>145</td><td>   address&quot;, &quot;non-ASCII address&quot;, &quot;SMTPUTF8&quot;, &quot;internationalized</td></tr>
+</table>
+<h2>X-smtp-rfc6531-02</h2>
+<div class='m'>rfc6531.txt ｜ 行 141–141 ｜ sha256 <code>4f48303f7b7659d0…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>UTF-8 所引用的标准 Unicode 编码形式规范文档。</div>
+<table class='ln'>
+<tr class=''><td class='no'>135</td><td>   The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,</td></tr>
+<tr class=''><td class='no'>136</td><td>   &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this</td></tr>
+<tr class=''><td class='no'>137</td><td>   document are to be interpreted as described in RFC 2119 [RFC2119].</td></tr>
+<tr class=''><td class='no'>138</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>139</td><td>   The terms &quot;UTF-8 string&quot; or &quot;UTF-8 character&quot; are used to refer to</td></tr>
+<tr class=''><td class='no'>140</td><td>   Unicode characters, which may or may not be members of the ASCII</td></tr>
+<tr class='ev'><td class='no'>141</td><td>   subset, in UTF-8 [RFC3629], a standard Unicode Encoding Form.  All</td></tr>
+<tr class=''><td class='no'>142</td><td>   other specialized terms used in this specification are defined in the</td></tr>
+<tr class=''><td class='no'>143</td><td>   framework document or in the base Internet email specifications.  In</td></tr>
+<tr class=''><td class='no'>144</td><td>   particular, the terms &quot;ASCII address&quot;, &quot;internationalized email</td></tr>
+<tr class=''><td class='no'>145</td><td>   address&quot;, &quot;non-ASCII address&quot;, &quot;SMTPUTF8&quot;, &quot;internationalized</td></tr>
+<tr class=''><td class='no'>146</td><td>   message&quot;, and &quot;message&quot; are used in this document according to the</td></tr>
+<tr class=''><td class='no'>147</td><td>   definitions in the framework document [RFC6530].</td></tr>
+</table>
+<h2>X-smtp-rfc6531-03</h2>
+<div class='m'>rfc6531.txt ｜ 行 144–144 ｜ sha256 <code>4f48303f7b7659d0…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>本文件中按框架文档定义使用的专门术语之一。</div>
+<table class='ln'>
+<tr class=''><td class='no'>138</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>139</td><td>   The terms &quot;UTF-8 string&quot; or &quot;UTF-8 character&quot; are used to refer to</td></tr>
+<tr class=''><td class='no'>140</td><td>   Unicode characters, which may or may not be members of the ASCII</td></tr>
+<tr class=''><td class='no'>141</td><td>   subset, in UTF-8 [RFC3629], a standard Unicode Encoding Form.  All</td></tr>
+<tr class=''><td class='no'>142</td><td>   other specialized terms used in this specification are defined in the</td></tr>
+<tr class=''><td class='no'>143</td><td>   framework document or in the base Internet email specifications.  In</td></tr>
+<tr class='ev'><td class='no'>144</td><td>   particular, the terms &quot;ASCII address&quot;, &quot;internationalized email</td></tr>
+<tr class=''><td class='no'>145</td><td>   address&quot;, &quot;non-ASCII address&quot;, &quot;SMTPUTF8&quot;, &quot;internationalized</td></tr>
+<tr class=''><td class='no'>146</td><td>   message&quot;, and &quot;message&quot; are used in this document according to the</td></tr>
+<tr class=''><td class='no'>147</td><td>   definitions in the framework document [RFC6530].</td></tr>
+<tr class=''><td class='no'>148</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>149</td><td>   Strings referred to in this document, including ASCII strings, MUST</td></tr>
+<tr class=''><td class='no'>150</td><td>   be expressed in UTF-8.</td></tr>
+</table>
+<h2>X-smtp-rfc6531-04</h2>
+<div class='m'>rfc6531.txt ｜ 行 145–145 ｜ sha256 <code>4f48303f7b7659d0…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>本文件中按框架文档（RFC6530）定义使用的专门术语之一。</div>
+<table class='ln'>
+<tr class=''><td class='no'>139</td><td>   The terms &quot;UTF-8 string&quot; or &quot;UTF-8 character&quot; are used to refer to</td></tr>
+<tr class=''><td class='no'>140</td><td>   Unicode characters, which may or may not be members of the ASCII</td></tr>
+<tr class=''><td class='no'>141</td><td>   subset, in UTF-8 [RFC3629], a standard Unicode Encoding Form.  All</td></tr>
+<tr class=''><td class='no'>142</td><td>   other specialized terms used in this specification are defined in the</td></tr>
+<tr class=''><td class='no'>143</td><td>   framework document or in the base Internet email specifications.  In</td></tr>
+<tr class=''><td class='no'>144</td><td>   particular, the terms &quot;ASCII address&quot;, &quot;internationalized email</td></tr>
+<tr class='ev'><td class='no'>145</td><td>   address&quot;, &quot;non-ASCII address&quot;, &quot;SMTPUTF8&quot;, &quot;internationalized</td></tr>
+<tr class=''><td class='no'>146</td><td>   message&quot;, and &quot;message&quot; are used in this document according to the</td></tr>
+<tr class=''><td class='no'>147</td><td>   definitions in the framework document [RFC6530].</td></tr>
+<tr class=''><td class='no'>148</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>149</td><td>   Strings referred to in this document, including ASCII strings, MUST</td></tr>
+<tr class=''><td class='no'>150</td><td>   be expressed in UTF-8.</td></tr>
+<tr class=''><td class='no'>151</td><td>&nbsp;</td></tr>
+</table>
+<h2>X-smtp-rfc6531-05</h2>
+<div class='m'>rfc6531.txt ｜ 行 147–147 ｜ sha256 <code>4f48303f7b7659d0…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>框架文档，定义了本规范中使用的各专门术语。</div>
+<table class='ln'>
+<tr class=''><td class='no'>141</td><td>   subset, in UTF-8 [RFC3629], a standard Unicode Encoding Form.  All</td></tr>
+<tr class=''><td class='no'>142</td><td>   other specialized terms used in this specification are defined in the</td></tr>
+<tr class=''><td class='no'>143</td><td>   framework document or in the base Internet email specifications.  In</td></tr>
+<tr class=''><td class='no'>144</td><td>   particular, the terms &quot;ASCII address&quot;, &quot;internationalized email</td></tr>
+<tr class=''><td class='no'>145</td><td>   address&quot;, &quot;non-ASCII address&quot;, &quot;SMTPUTF8&quot;, &quot;internationalized</td></tr>
+<tr class=''><td class='no'>146</td><td>   message&quot;, and &quot;message&quot; are used in this document according to the</td></tr>
+<tr class='ev'><td class='no'>147</td><td>   definitions in the framework document [RFC6530].</td></tr>
+<tr class=''><td class='no'>148</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>149</td><td>   Strings referred to in this document, including ASCII strings, MUST</td></tr>
+<tr class=''><td class='no'>150</td><td>   be expressed in UTF-8.</td></tr>
+<tr class=''><td class='no'>151</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>152</td><td>   This specification uses Augmented BNF (ABNF) rules [RFC5234].  Some</td></tr>
+<tr class=''><td class='no'>153</td><td>   basic rules in this document are identified in Section 3.3 as being</td></tr>
+</table>
+<h2>X-smtp-rfc6531-06</h2>
+<div class='m'>rfc6531.txt ｜ 行 603–603 ｜ sha256 <code>4f48303f7b7659d0…</code></div>
+<div class='q'><b>候选命题（待核）：</b>SMTP client MUST be able to accept and process UTF-8 characters in the email address associated with 251 and 551 reply-codes<br><b>候选含义（待核）：</b>当服务器在 251/551 回复中使用 UTF-8 字符时，SMTP 客户端必须能够接受并处理这些字符。</div>
+<table class='ln'>
+<tr class=''><td class='no'>597</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>598</td><td>3.7.4.1.  MAIL Command</td></tr>
+<tr class=''><td class='no'>599</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>600</td><td>   If an SMTP client follows this specification and sends any MAIL</td></tr>
+<tr class=''><td class='no'>601</td><td>   commands containing the SMTPUTF8 parameter, the SMTPUTF8-aware SMTP</td></tr>
+<tr class=''><td class='no'>602</td><td>   server is permitted to use UTF-8 characters in the email address</td></tr>
+<tr class='ev'><td class='no'>603</td><td>   associated with 251 and 551 reply-codes, and the SMTP client MUST be</td></tr>
+<tr class=''><td class='no'>604</td><td>   able to accept and process them.  If a given MAIL command does not</td></tr>
+<tr class=''><td class='no'>605</td><td>   include the SMTPUTF8 parameter, the SMTPUTF8-aware SMTP server MUST</td></tr>
+<tr class=''><td class='no'>606</td><td>   NOT return a 251 or 551 response containing a non-ASCII mailbox.</td></tr>
+<tr class=''><td class='no'>607</td><td>   Instead, it MUST transform such responses into 250 or 550 responses</td></tr>
+<tr class=''><td class='no'>608</td><td>   that do not contain non-ASCII addresses.</td></tr>
+<tr class=''><td class='no'>609</td><td>&nbsp;</td></tr>
+</table>
+<h2>X-smtp-rfc6531-07</h2>
+<div class='m'>rfc6531.txt ｜ 行 605–605 ｜ sha256 <code>4f48303f7b7659d0…</code></div>
+<div class='q'><b>候选命题（待核）：</b>SMTPUTF8-aware SMTP server MUST NOT return a 251 or 551 response containing a non-ASCII mailbox<br><b>候选含义（待核）：</b>当 MAIL 命令不含 SMTPUTF8 参数时，支持 SMTPUTF8 的 SMTP 服务器不得返回含非 ASCII 邮箱的 251 或 551 响应。</div>
+<table class='ln'>
+<tr class=''><td class='no'>599</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>600</td><td>   If an SMTP client follows this specification and sends any MAIL</td></tr>
+<tr class=''><td class='no'>601</td><td>   commands containing the SMTPUTF8 parameter, the SMTPUTF8-aware SMTP</td></tr>
+<tr class=''><td class='no'>602</td><td>   server is permitted to use UTF-8 characters in the email address</td></tr>
+<tr class=''><td class='no'>603</td><td>   associated with 251 and 551 reply-codes, and the SMTP client MUST be</td></tr>
+<tr class=''><td class='no'>604</td><td>   able to accept and process them.  If a given MAIL command does not</td></tr>
+<tr class='ev'><td class='no'>605</td><td>   include the SMTPUTF8 parameter, the SMTPUTF8-aware SMTP server MUST</td></tr>
+<tr class=''><td class='no'>606</td><td>   NOT return a 251 or 551 response containing a non-ASCII mailbox.</td></tr>
+<tr class=''><td class='no'>607</td><td>   Instead, it MUST transform such responses into 250 or 550 responses</td></tr>
+<tr class=''><td class='no'>608</td><td>   that do not contain non-ASCII addresses.</td></tr>
+<tr class=''><td class='no'>609</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>610</td><td>3.7.4.2.  VRFY and EXPN Commands and the SMTPUTF8 Parameter</td></tr>
+<tr class=''><td class='no'>611</td><td>&nbsp;</td></tr>
+</table>
+<h2>X-smtp-rfc6531-08</h2>
+<div class='m'>rfc6531.txt ｜ 行 607–607 ｜ sha256 <code>4f48303f7b7659d0…</code></div>
+<div class='q'><b>候选命题（待核）：</b>MUST transform such responses into 250 or 550 responses that do not contain non-ASCII addresses<br><b>候选含义（待核）：</b>服务器必须把此类响应转换为不含非 ASCII 地址的 250 或 550 响应。</div>
+<table class='ln'>
+<tr class=''><td class='no'>601</td><td>   commands containing the SMTPUTF8 parameter, the SMTPUTF8-aware SMTP</td></tr>
+<tr class=''><td class='no'>602</td><td>   server is permitted to use UTF-8 characters in the email address</td></tr>
+<tr class=''><td class='no'>603</td><td>   associated with 251 and 551 reply-codes, and the SMTP client MUST be</td></tr>
+<tr class=''><td class='no'>604</td><td>   able to accept and process them.  If a given MAIL command does not</td></tr>
+<tr class=''><td class='no'>605</td><td>   include the SMTPUTF8 parameter, the SMTPUTF8-aware SMTP server MUST</td></tr>
+<tr class=''><td class='no'>606</td><td>   NOT return a 251 or 551 response containing a non-ASCII mailbox.</td></tr>
+<tr class='ev'><td class='no'>607</td><td>   Instead, it MUST transform such responses into 250 or 550 responses</td></tr>
+<tr class=''><td class='no'>608</td><td>   that do not contain non-ASCII addresses.</td></tr>
+<tr class=''><td class='no'>609</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>610</td><td>3.7.4.2.  VRFY and EXPN Commands and the SMTPUTF8 Parameter</td></tr>
+<tr class=''><td class='no'>611</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>612</td><td>   If the SMTPUTF8 parameter is transmitted with the VRFY and EXPN</td></tr>
+<tr class=''><td class='no'>613</td><td>   commands, it indicates that the SMTP client can accept UTF-8 strings</td></tr>
+</table>
+<h2>X-smtp-rfc8098-03</h2>
+<div class='m'>rfc8098.txt ｜ 行 489–489 ｜ sha256 <code>3cf52c2a77826e0e…</code></div>
+<div class='q'><b>候选命题（待核）：</b>MDN generators SHOULD use &quot;*WSP&quot;<br><b>候选含义（待核）：</b>生成 MDN 消息的实现，原文要求其应使用 &quot;*WSP&quot; 作为 OWS</div>
+<table class='ln'>
+<tr class=''><td class='no'>483</td><td>   original-recipient-header =</td></tr>
+<tr class=''><td class='no'>484</td><td>             &quot;Original-Recipient&quot; &quot;:&quot; OWS address-type OWS</td></tr>
+<tr class=''><td class='no'>485</td><td>             &quot;;&quot; OWS generic-address OWS</td></tr>
+<tr class=''><td class='no'>486</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>487</td><td>   OWS = [CFWS]</td></tr>
+<tr class=''><td class='no'>488</td><td>         ; Optional whitespace.</td></tr>
+<tr class='ev'><td class='no'>489</td><td>         ; MDN generators SHOULD use &quot;*WSP&quot;</td></tr>
+<tr class=''><td class='no'>490</td><td>         ; (Typically a single space or nothing.</td></tr>
+<tr class=''><td class='no'>491</td><td>         ; It SHOULD be nothing at the end of a field.),</td></tr>
+<tr class=''><td class='no'>492</td><td>         ; unless an RFC 5322 &quot;comment&quot; is required.</td></tr>
+<tr class=''><td class='no'>493</td><td>         ;</td></tr>
+<tr class=''><td class='no'>494</td><td>         ; MDN parsers MUST parse it as &quot;[CFWS]&quot;.</td></tr>
+<tr class=''><td class='no'>495</td><td>&nbsp;</td></tr>
+</table>
+<h2>X-smtp-rfc8098-04</h2>
+<div class='m'>rfc8098.txt ｜ 行 494–494 ｜ sha256 <code>3cf52c2a77826e0e…</code></div>
+<div class='q'><b>候选命题（待核）：</b>MDN parsers MUST parse it as &quot;[CFWS]&quot;<br><b>候选含义（待核）：</b>解析 MDN 消息的实现，原文要求其必须将 OWS 解析为 &quot;[CFWS]&quot;</div>
+<table class='ln'>
+<tr class=''><td class='no'>488</td><td>         ; Optional whitespace.</td></tr>
+<tr class=''><td class='no'>489</td><td>         ; MDN generators SHOULD use &quot;*WSP&quot;</td></tr>
+<tr class=''><td class='no'>490</td><td>         ; (Typically a single space or nothing.</td></tr>
+<tr class=''><td class='no'>491</td><td>         ; It SHOULD be nothing at the end of a field.),</td></tr>
+<tr class=''><td class='no'>492</td><td>         ; unless an RFC 5322 &quot;comment&quot; is required.</td></tr>
+<tr class=''><td class='no'>493</td><td>         ;</td></tr>
+<tr class='ev'><td class='no'>494</td><td>         ; MDN parsers MUST parse it as &quot;[CFWS]&quot;.</td></tr>
+<tr class=''><td class='no'>495</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>496</td><td>   The address-type and generic-address tokens are as specified in the</td></tr>
+<tr class=''><td class='no'>497</td><td>   description of the Original-Recipient field in Section 3.2.3.</td></tr>
+<tr class=''><td class='no'>498</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>499</td><td>   The purpose of carrying the original recipient information and</td></tr>
+<tr class=''><td class='no'>500</td><td>   returning it in the MDN is to permit automatic correlation of MDNs</td></tr>
+</table>
+<h2>X-smtp-rfc8098-01</h2>
+<div class='m'>rfc8098.txt ｜ 行 2003–2003 ｜ sha256 <code>3cf52c2a77826e0e…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>扩展巴科斯范式语法，原文陈述其未标出所有允许空白（含折叠空白）的位置</div>
+<table class='ln'>
+<tr class=''><td class='no'>1997</td><td>   was restricted to not include semi-colon.  Semi-colon can still</td></tr>
+<tr class=''><td class='no'>1998</td><td>   appear in the ua-product.</td></tr>
+<tr class=''><td class='no'>1999</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>2000</td><td>   Removed recommendation to include the MUA DNS host name in the</td></tr>
+<tr class=''><td class='no'>2001</td><td>   &quot;Reporting-UA&quot; MDN field.</td></tr>
+<tr class=''><td class='no'>2002</td><td>&nbsp;</td></tr>
+<tr class='ev'><td class='no'>2003</td><td>   The ABNF did not indicate all places that whitespace was allowable,</td></tr>
+<tr class=''><td class='no'>2004</td><td>   in particular folding whitespace, although all implementations allow</td></tr>
+<tr class=''><td class='no'>2005</td><td>   whitespace and folding in the header fields just like any other</td></tr>
+<tr class=''><td class='no'>2006</td><td>   header field formatted as described in RFC-MSGFMT [RFC5322].  There</td></tr>
+<tr class=''><td class='no'>2007</td><td>   were also a number of places in the ABNF that inconsistently</td></tr>
+<tr class=''><td class='no'>2008</td><td>   permitted comments and whitespace in one leg of the production and</td></tr>
+<tr class=''><td class='no'>2009</td><td>   not another.  The ABNF now specifies FWS and CFWS in several places</td></tr>
+</table>
+<h2>X-smtp-rfc8098-02</h2>
+<div class='m'>rfc8098.txt ｜ 行 2010–2010 ｜ sha256 <code>3cf52c2a77826e0e…</code></div>
+<div class='q'><b>候选命题（待核）：</b><i>（空）</i><br><b>候选含义（待核）：</b>折叠空白语法元素，原文陈述现在的 ABNF 在若干处规定了 FWS 和 CFWS</div>
+<table class='ln'>
+<tr class=''><td class='no'>2004</td><td>   in particular folding whitespace, although all implementations allow</td></tr>
+<tr class=''><td class='no'>2005</td><td>   whitespace and folding in the header fields just like any other</td></tr>
+<tr class=''><td class='no'>2006</td><td>   header field formatted as described in RFC-MSGFMT [RFC5322].  There</td></tr>
+<tr class=''><td class='no'>2007</td><td>   were also a number of places in the ABNF that inconsistently</td></tr>
+<tr class=''><td class='no'>2008</td><td>   permitted comments and whitespace in one leg of the production and</td></tr>
+<tr class=''><td class='no'>2009</td><td>   not another.  The ABNF now specifies FWS and CFWS in several places</td></tr>
+<tr class='ev'><td class='no'>2010</td><td>   that should have already been specified by the grammar.</td></tr>
+<tr class=''><td class='no'>2011</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>2012</td><td>   Extension-field was defined in the collected grammar but not in the</td></tr>
+<tr class=''><td class='no'>2013</td><td>   main text.</td></tr>
+<tr class=''><td class='no'>2014</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>2015</td><td>&nbsp;</td></tr>
+<tr class=''><td class='no'>2016</td><td>&nbsp;</td></tr>
+</table>
+</body></html>
