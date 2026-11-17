@@ -68,7 +68,8 @@ def test_boundary_review_no_lock():
     _wb.close()
 
 
-def test_boundary_review_fill_columns_empty():
+def test_boundary_review_fill_columns_filled_after_return():
+    """★ 第三方已回填（R12）：★ 12 个待填列须全部有值。"""
     _wb = openpyxl.load_workbook(DELIV / "R11_SC05SC06原子知识边界复核.xlsx")
     _ws = _wb["SC05SC06边界复核"]
     _hr = _header_row(_ws, "Gold ID")
@@ -76,12 +77,16 @@ def test_boundary_review_fill_columns_empty():
             for c in range(1, _ws.max_column + 1)]
     _fill = [i for i, h in enumerate(_hdr, 1) if "待填" in h]
     assert len(_fill) == 12, _fill
+    _n = 0
     for _r in range(_hr + 1, _ws.max_row + 1):
         if not str(_ws.cell(row=_r, column=1).value or "").strip():
             continue
+        _n += 1
         for _ci in _fill:
-            assert not str(_ws.cell(row=_r, column=_ci).value or "").strip()
+            assert str(_ws.cell(row=_r, column=_ci).value or "").strip(), \
+                (_r, _ci)
     _wb.close()
+    assert _n == 4, _n
 
 
 def test_boundary_review_includes_required_context():
