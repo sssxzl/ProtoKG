@@ -1,0 +1,33 @@
+{
+  "★ 发放包清单": {
+    "H3_23候选_冻结机器基线.jsonl": {
+      "bytes": 31624,
+      "sha256": "f359abb54e335eed27baef3e4f622a6b0a9e95b51da96f1d69dfd5e4f3e29f48"
+    },
+    "H3_23候选_只读RFC证据包.html": {
+      "bytes": 48729,
+      "sha256": "73a4407a579998a7ee9ebda3fc0f71fe039e374112faa8081af173b40a757f38"
+    },
+    "H3_23候选_审核者A_盲审模板.xlsx": {
+      "bytes": 33188,
+      "sha256": "48df8959b38e87ec45d181b22aa8ee2123087ca8f267715984be056977285e20"
+    },
+    "H3_23候选_审核者B_盲审模板.xlsx": {
+      "bytes": 32119,
+      "sha256": "3d50147eccb4ca94e0e7fb1ca4b3fa76f8c123d5e8bdbf44072bfd283c173d28"
+    },
+    "H3_原子知识对齐与裁定台账.xlsx": {
+      "bytes": 10354,
+      "sha256": "f375d1df837a50c5a53892891a511fad4f5a8479fe05a8d2cffeaf0a8e5b9f57"
+    },
+    "H3_第三方人工仲裁回收核验.xlsx": {
+      "bytes": 18729,
+      "sha256": "8d13df3ee5cf5d9a97d2ddf43dcee864c31588d2220339e042b9ca0b4e9c5783"
+    }
+  },
+  "★ A/B 原件哈希核对": {
+    "A": "48df8959b38e87ec45d181b22aa8ee2123087ca8f267715984be056977285e20",
+    "B": "3d50147eccb4ca94e0e7fb1ca4b3fa76f8c123d5e8bdbf44072bfd283c173d28",
+    "★ 与差异台账记录一致": true
+  }
+}
