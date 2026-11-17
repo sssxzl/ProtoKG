@@ -128,9 +128,14 @@ def test_gate_has_one_unpassed_item():
     assert _np[0]["#"] == 2
 
 
-def test_no_frozen_gold_baseline_generated():
-    """★ 门禁未通过 ⇒ 不得生成冻结基线。"""
-    assert not (DELIV / "R10_跨协议Gold冻结基线.jsonl").exists()
+def test_frozen_gold_baseline_generated_after_gate_passed():
+    """★ R10B 起门禁已通过 ⇒ 冻结基线已生成且内容合法。"""
+    _p = DELIV / "R10_跨协议Gold冻结基线.jsonl"
+    assert _p.is_file()
+    _rows = [json.loads(l) for l in
+             _p.read_text(encoding="utf-8").splitlines() if l.strip()]
+    assert len(_rows) == 65
+    assert len({r["gold_id"] for r in _rows}) == 65
 
 
 def test_affected_records_are_five():

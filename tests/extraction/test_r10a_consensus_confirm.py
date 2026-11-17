@@ -70,13 +70,26 @@ def test_confirm_table_has_no_protection():
     _wb.close()
 
 
-def test_c_confirmation_columns_empty():
+def test_c_confirmation_columns_filled_after_return():
+    """★ 第三方已回填（R10B）：★ 7 个 C 列须有值且枚举合法。"""
     _rs = _rows_of(CONFIRM, "5条共识待确认")
     _fill = [k for k in _rs[0] if "待填" in k]
     assert len(_fill) == 7, _fill
+    _K = {"non_protocol_metadata", "protocol_syntax",
+          "protocol_registry_or_enumeration",
+          "protocol_descriptive_semantics", "normative_rule_candidate",
+          "mixed_or_uncertain"}
+    _E = {"eligible", "ineligible", "uncertain", "not_applicable"}
+    _R = {"rule_channel", "structured_channel", "metadata_channel",
+          "descriptive_channel", "pending_review", "not_applicable"}
     for _r in _rs:
         for _k in _fill:
-            assert not str(_r.get(_k) or "").strip(), (_r["★ candidate_id"], _k)
+            assert str(_r.get(_k) or "").strip(), (_r["★ candidate_id"], _k)
+        assert _r["★ C 确认知识类型（待填）"] in _K, _r["★ candidate_id"]
+        assert _r["★ C 确认规则资格（待填）"] in _E, _r["★ candidate_id"]
+        assert _r["★ C 确认目标路由（待填）"] in _R, _r["★ candidate_id"]
+        assert _r["★ C 确认状态（待填）"] == "confirmed", _r["★ candidate_id"]
+        assert _r["★ C 审核者 ID（待填）"] == "F", _r["★ candidate_id"]
 
 
 def test_ab_values_prefilled_with_evidence():
@@ -93,13 +106,14 @@ def test_ab_values_prefilled_with_evidence():
         assert str(_r["★ source_sha256"] or "").strip(), _r["★ candidate_id"]
 
 
-def test_ab_agreement_not_treated_as_c_confirmed():
-    """★ A/B 一致不得被自动当作 C 已确认。"""
+def test_ab_agreement_confirmed_by_fourth_reviewer():
+    """★ A/B 一致者由第四位审核者 F 确认，★ 而非自动视为已确认。"""
     _rs = _rows_of(CONFIRM, "5条共识待确认")
     for _r in _rs:
         assert _r["★ C 当前裁定状态"] == "agreed"
-        # ★ 三列仍须为空
-        assert not str(_r.get("★ C 确认知识类型（待填）") or "").strip()
+        # ★ 确认者须与 A/B 不同
+        assert _r["★ C 审核者 ID（待填）"] not in ("A", "B")
+        assert str(_r.get("★ C 确认理由（待填）") or "").strip()
 
 
 # ===== 分母对账 =====
@@ -144,9 +158,11 @@ def test_r3_baseline_unchanged():
     assert _h == "694836b4bf497a083125b2d8b89c81a2854356f5967797359ec9af097f1a3b4a"
 
 
-def test_no_frozen_gold_baseline_yet():
-    """★ 门禁未通过 ⇒ 不得生成跨协议 Gold 冻结基线。"""
-    assert not (DELIV / "R10_跨协议Gold冻结基线.jsonl").exists()
+def test_frozen_gold_baseline_present_after_r10b():
+    """★ R10B 起门禁已通过 ⇒ 冻结基线已生成。"""
+    _p = DELIV / "R10_跨协议Gold冻结基线.jsonl"
+    assert _p.is_file()
+    assert _p.stat().st_size > 0
 
 
 # ===== 生产隔离 =====
