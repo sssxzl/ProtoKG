@@ -1,0 +1,17 @@
+{
+  "★ 机器基线（★ 审核ID ↔ candidate_id 映射）": "h3_machine_baseline.jsonl",
+  "★ 机器基线 SHA256": "f359abb54e335eed27baef3e4f622a6b0a9e95b51da96f1d69dfd5e4f3e29f48",
+  "★ 机器基线条数": 23,
+  "★ 候选来源": "guard/_out/_n1c_v2/e4/pool/V2-E4_H3新增候选原始.jsonl",
+  "★ 候选来源 SHA256": "8beedc36a2055e87b74675ae9dfcdbf0cde306192e1ec1e8a53a391f68333152",
+  "★ 审核 ID 规则": "★ H3-01 … H3-23（★ 按冻结清单的 文档→行号→candidate_id 排序，★ 与内容无关）",
+  "★ ★ 为何不用 candidate_id": "★ **candidate_id 本身泄露模型类型判断**（★ 如 prose_semantics_must 含 kind）⇒ ★ **必须中性化**",
+  "★ 交付文件哈希": {
+    "H3_23候选_只读RFC证据包.html": "73a4407a579998a7ee9ebda3fc0f71fe039e374112faa8081af173b40a757f38",
+    "H3_23候选_审核者A_盲审模板.xlsx": "158a21219efa2e2e91253865fc4df95671b9a55eb3649c634ed1b238c3cce049",
+    "H3_23候选_审核者B_盲审模板.xlsx": "3396b84f1c7eca165763ec85699bf3218cec2e50444339d2c70b028a5a342519",
+    "H3_23候选_第三方仲裁模板.xlsx": "36bd51cbca27b8cda59790eced7fb4bd0b4f41acc1ee579440d8837e3f43b4bb",
+    "h3_machine_baseline.jsonl": "f359abb54e335eed27baef3e4f622a6b0a9e95b51da96f1d69dfd5e4f3e29f48"
+  },
+  "★ 校验报告": "r1_verification.json"
+}
