@@ -95,13 +95,21 @@ def test_route_column_moved_and_completeness_added(proto, n):
             "protocol_descriptive_semantics": "descriptive_channel",
             "non_protocol_metadata": "metadata_channel",
             "mixed_or_uncertain": "pending_review"}
+    _ALLOWED_COMP = {"not_applicable", "cross_sentence_missing",
+                     "cross_section_missing", "partial", "full"}
+    _ALLOWED_STAT = {"agreed", "arbitrated", "unresolved", "not_applicable"}
+    _i_stat = next(i for i, h in enumerate(_hdr, 1) if "最终裁定状态" in h)
     for _r in range(2, _ws.max_row + 1):
         _k = str(_ws.cell(row=_r, column=_i_kind).value or "").strip()
         _rt = str(_ws.cell(row=_r, column=_i_route).value or "").strip()
         if _k and _rt:
             assert _rt == _MAP[_k], (_r, _k, _rt)
-        # ★ 仲裁后抽取完整性全部留空（★ 不推断）
-        assert not str(_ws.cell(row=_r, column=_i_comp).value or "").strip()
+        # ★ 仲裁后抽取完整性已由第三方回填（★ R8 后续）
+        _cv = str(_ws.cell(row=_r, column=_i_comp).value or "").strip()
+        assert _cv in _ALLOWED_COMP, (_r, _cv)
+        # ★ 最终裁定状态已由第三方回填
+        _sv = str(_ws.cell(row=_r, column=_i_stat).value or "").strip()
+        assert _sv in _ALLOWED_STAT, (_r, _sv)
     _wb.close()
 
 
@@ -115,17 +123,26 @@ def test_completeness_diff_count_37():
     assert _n == 37, _n
 
 
-def test_completeness_confirm_columns_empty():
+def test_completeness_confirm_columns_filled_or_blank():
+    """★ 第三方已回填确认值（R8 后续）：★ 确认值与确认人须有值。
+
+    ★ 确认理由列允许为空（★ 非必填）。
+    """
     _wb = openpyxl.load_workbook(DELIV / "R8_抽取完整性待确认清单.xlsx")
     _ws = _wb["待确认清单"]
     _hr = _header_row(_ws, "候选 ID")
     _hdr = [str(c.value or "").strip() for c in _ws[_hr]]
-    _todo = [i for i, h in enumerate(_hdr, 1) if "待填" in h]
-    assert len(_todo) == 4
+    _i_val = next(i for i, h in enumerate(_hdr, 1) if "人工确认值" in h)
+    _i_who = next(i for i, h in enumerate(_hdr, 1) if "确认人" in h)
+    _n = 0
     for _r in range(_hr + 1, _ws.max_row + 1):
-        for _ci in _todo:
-            assert not str(_ws.cell(row=_r, column=_ci).value or "").strip()
+        if not str(_ws.cell(row=_r, column=1).value or "").strip():
+            continue
+        _n += 1
+        assert str(_ws.cell(row=_r, column=_i_val).value or "").strip()
+        assert str(_ws.cell(row=_r, column=_i_who).value or "").strip()
     _wb.close()
+    assert _n == 37, _n
 
 
 # ===== 拆分线索 =====
@@ -141,17 +158,27 @@ def test_split_clues_at_least_six():
     assert _n >= 6, _n
 
 
-def test_split_clue_gold_columns_empty():
-    """★ 机械拆分结果不得直接作为 Gold。"""
+def test_split_clues_confirmed_by_human():
+    """★ 第三方已逐条补录并裁定（R8 后续）：★ 命题与是否纳入 Gold 须有值。
+
+    ★ 确认理由、确认人、确认日期列允许为空（★ 非必填）。
+    """
     _wb = openpyxl.load_workbook(DELIV / "R8_原子知识补录表.xlsx")
     _ws = _wb["拆分线索与补录"]
     _hr = _header_row(_ws, "线索 ID")
     _hdr = [str(c.value or "").strip() for c in _ws[_hr]]
-    _todo = [i for i, h in enumerate(_hdr, 1) if "待填" in h]
+    _i_prop = next(i for i, h in enumerate(_hdr, 1) if "候选原子命题" in h)
+    _i_inc = next(i for i, h in enumerate(_hdr, 1) if "是否纳入 Gold" in h)
+    _n = 0
     for _r in range(_hr + 1, _ws.max_row + 1):
-        for _ci in _todo:
-            assert not str(_ws.cell(row=_r, column=_ci).value or "").strip()
+        if not str(_ws.cell(row=_r, column=1).value or "").strip().startswith("SC-"):
+            continue
+        _n += 1
+        assert str(_ws.cell(row=_r, column=_i_prop).value or "").strip(), _r
+        _inc = str(_ws.cell(row=_r, column=_i_inc).value or "").strip()
+        assert _inc.startswith(("是", "否", "unresolved")), _inc
     _wb.close()
+    assert _n == 7, _n
 
 
 # ===== 已有补充知识去重 =====
