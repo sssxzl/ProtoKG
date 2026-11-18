@@ -303,24 +303,11 @@ jobs:
             --expect-errors "$GITHUB_WORKSPACE/guard/baseline/ci_expected_errors.txt" \
             --expect-hub-protocol rtsp
       # ★ fail-closed：★ 护栏自身未产出结果文件 ⇒ 不得判为通过
+      # ★ 用 python 单行而非 bash 脚本：★ Windows runner 的默认 shell 不是 bash，
+      # ★   bash heredoc 在那里会解析失败（★ 实测踩过，★ run 44273760306）。
       - name: Verify guard actually ran (fail-closed)
-        shell: bash
         run: |
-          set -euo pipefail
-          RES="${{ github.workspace }}/_ci_artifacts/_guarded_result.json"
-          if [ ! -f "$RES" ]; then
-            echo "::error::guard result missing: $RES (gate did not run)"
-            exit 1
-          fi
-          python - <<'PYEOF'
-          import json, os, sys
-          p = os.environ["GITHUB_WORKSPACE"] + "/_ci_artifacts/_guarded_result.json"
-          d = json.load(open(p, encoding="utf-8"))
-          # ★ 收集错误数必须与基线一致（★ 由护栏自身判）
-          # ★ 断言结果文件里的 verdict 与护栏退出码一致（★ 防止假绿）
-          print("verdict:", d.get("verdict"))
-          print("failed:", d.get("failed"), "errors:", d.get("errors"))
-          PYEOF
+          python -c "import json,os,sys;p=os.path.join(os.environ['GITHUB_WORKSPACE'],'_ci_artifacts','_guarded_result.json');d=json.load(open(p,encoding='utf-8')) if os.path.isfile(p) else None;sys.exit(0) if d is not None else sys.exit('::error::guard result missing: gate did not run');print('verdict:',d.get('verdict'));print('failed:',d.get('failed'),'errors:',d.get('errors'))"
 
 
       # ★ 无论成败都上传护栏产物 —— CI 挂了也得能查「到底哪条漂移了」。
@@ -438,24 +425,11 @@ jobs:
             --expect-errors "${{ github.workspace }}/guard/baseline/ci_expected_errors.txt" `
             --expect-hub-protocol rtsp
       # ★ fail-closed：★ 护栏自身未产出结果文件 ⇒ 不得判为通过
+      # ★ 用 python 单行而非 bash 脚本：★ Windows runner 的默认 shell 不是 bash，
+      # ★   bash heredoc 在那里会解析失败（★ 实测踩过，★ run 44273760306）。
       - name: Verify guard actually ran (fail-closed)
-        shell: bash
         run: |
-          set -euo pipefail
-          RES="${{ github.workspace }}/_ci_artifacts/_guarded_result.json"
-          if [ ! -f "$RES" ]; then
-            echo "::error::guard result missing: $RES (gate did not run)"
-            exit 1
-          fi
-          python - <<'PYEOF'
-          import json, os, sys
-          p = os.environ["GITHUB_WORKSPACE"] + "/_ci_artifacts/_guarded_result.json"
-          d = json.load(open(p, encoding="utf-8"))
-          # ★ 收集错误数必须与基线一致（★ 由护栏自身判）
-          # ★ 断言结果文件里的 verdict 与护栏退出码一致（★ 防止假绿）
-          print("verdict:", d.get("verdict"))
-          print("failed:", d.get("failed"), "errors:", d.get("errors"))
-          PYEOF
+          python -c "import json,os,sys;p=os.path.join(os.environ['GITHUB_WORKSPACE'],'_ci_artifacts','_guarded_result.json');d=json.load(open(p,encoding='utf-8')) if os.path.isfile(p) else None;sys.exit(0) if d is not None else sys.exit('::error::guard result missing: gate did not run');print('verdict:',d.get('verdict'));print('failed:',d.get('failed'),'errors:',d.get('errors'))"
 
 
       - name: Upload guarded artifacts

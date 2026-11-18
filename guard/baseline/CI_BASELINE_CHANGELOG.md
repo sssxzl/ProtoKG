@@ -78,3 +78,27 @@
 ★ **★ 必须披露的覆盖边界**：★ 规则 ③④ 排除的测试在公开 CI 上是 **not_run**，
 ★ ★ **不是 passed**；★ 它们的必需文件、版本与 SHA256 记录在
 ★ ★ `docs/audits/CI-FIX/CI_实验依赖与正式测试分离方案.md`。
+
+
+---
+
+## 七、R24C 第三轮：CI 口径基线的平台差异修正
+
+★ 真机 run 44273760306（ubuntu）反馈：★ 期望 23 / 实测 25，★ 新增 2 条：
+
+```
+tests/extraction/test_binary_protocol.py::test_detect_kind_binary_protocol
+tests/extraction/test_binary_protocol.py::test_kind_decision_is_auditable
+```
+
+★ ★ **★ 这 2 条正是原基线里「ubuntu 独有 3 条」中的 2 条**（★ 原 ubuntu 70 / windows 67）
+★ ★ ⇒ ★ 它们是**平台差异**（★ 二进制文件在 Windows 的字节与 Linux 不同）
+★ ★ ⇒ ★ ★ 第三轮采集是在 Windows 本机做的，★ 因而漏掉了这 2 条。
+
+| 平台 | 第三轮 | 第四轮 |
+|---|---:|---:|
+| ★ ubuntu | 23 | **25** |
+| ★ windows | 23 | 23（★ 待真机校正） |
+
+★ ★ **★ 这是平台差异，★ 不是新增回归**；★ 按原基线已有的平台分离惯例，
+★ ★ ★ 归入 ubuntu 专用基线。★ **★ 未放宽任何断言、★ 未跳过任何测试。**
