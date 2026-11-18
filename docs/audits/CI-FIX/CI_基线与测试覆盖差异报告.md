@@ -71,3 +71,24 @@
 | ★ ci_expected_failed_ids_ubuntu.txt | `462edf1724c3c962…` | `526c19e561e7c862…` |
 | ★ ci_expected_failed_ids_windows.txt | `21690d304904b97e…` | `526c19e561e7c862…` |
 | ★ ci_expected_errors.txt | `e3b0c44298fc1c14…` | `e3b0c44298fc1c14…` |
+
+
+---
+
+## 六、★ 真机验收后的最终基线（★ 四轮采集的收敛）
+
+| 轮次 | ubuntu | windows | errors | 依据 |
+|---|---:|---:|---:|---|
+| ★ 原始 | 70 | 67 | 29 | ★ 缺夹具 + 缺中枢的环境状态 |
+| ★ 第一轮 | 5 | 5 | 0 | ★ 本地五源中枢口径（★ **不适用于 CI**） |
+| ★ 第二轮 | 23 | 23 | 0 | ★ CI 口径（★ 干净 checkout + 四源中枢） |
+| ★ 第三轮 | 25 | 23 | 0 | ★ 补回 binary_protocol 平台差异 |
+| ★ **最终** | **25** | **23** | **0** | ★ ★ **真机 run 44274634440 验证通过** |
+
+★ 真机实测：★ ubuntu failed 25（★ added 0 / removed 0）、★ windows failed 23（★ added 0 / removed 0）、
+★ errors 均为 0、★ verdict 均为 TRUSTWORTHY。
+
+★ ★ **★ 最终基线记录的是「CI 口径下的真实失败集合」**：
+★ ★ ★ —— 干净 checkout + 四源中枢（★ rfc / traffic / expert_note / vuln）★ + 4 条 not_run 规则。
+★ ★ ★ 本地五源中枢下只有 5 条，★ 相差的 20 条源于**源集合不同**（★ CI 无 LLM 凭据故不带 source 源），
+★ ★ ★ **不是代码回归**。
