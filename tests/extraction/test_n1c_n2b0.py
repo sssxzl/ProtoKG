@@ -21,7 +21,7 @@ DELIV = (ROOT / "docs/实施/待办与勘误/M0对账交付"
 N1B = (ROOT / "docs/实施/待办与勘误/M0对账交付/M1-Q3-N0-N3准入审查"
        / "N1-B人工真值与模型质量审查")
 import sys
-sys.path.insert(0, str(ROOT / "guard/_out/_n1c"))
+sys.path.insert(0, str(ROOT / "tests/_fixtures/n1c"))
 from n2b0_tristate import (CONTRADICTED, SUPPORTED, UNCERTAIN,
                            semantic_support_tristate, field_state)
 

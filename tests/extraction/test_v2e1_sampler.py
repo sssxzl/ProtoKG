@@ -15,7 +15,7 @@ import sys
 import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "guard/_out/_n1c_v2/e1"))
+sys.path.insert(0, str(ROOT / "tests/_fixtures/e1"))
 import sampler as SP
 import section_kinds as SK
 
