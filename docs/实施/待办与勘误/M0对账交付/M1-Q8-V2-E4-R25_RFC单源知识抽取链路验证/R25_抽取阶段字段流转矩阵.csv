@@ -1,10 +1,10 @@
-﻿★ 协议,★ 阶段,★ 输入数,★ 输出数,★ 关联 ID,★ 丢弃条件,★ 失败状态
-smtp,① RFC 原文,4,4,★ 文件名 + SHA256,★ 无,★ 无
-smtp,② Document Parser → Chunk,10152,6824,"★ (文件名, 行号)",★ 空行、页眉页脚,★ 无（★ 解析失败会记入 coverage）
-smtp,③ Raw Extraction → ④ Normalized → ⑤ Classification → ⑥ Norm,6824,63,★ norm_id,★ 质量闸（★ kind 未实现、fail-closed 失败）,★ coverage 台账记录
-rtsp,① RFC 原文,1,1,★ 文件名 + SHA256,★ 无,★ 无
-rtsp,② Document Parser → Chunk,5156,3505,"★ (文件名, 行号)",★ 空行、页眉页脚,★ 无（★ 解析失败会记入 coverage）
-rtsp,③ Raw Extraction → ④ Normalized → ⑤ Classification → ⑥ Norm,3505,107,★ norm_id,★ 质量闸（★ kind 未实现、fail-closed 失败）,★ coverage 台账记录
-DHCPv4,① RFC 原文,36,36,★ 文件名 + SHA256,★ 无,★ 无
-DHCPv4,② Document Parser → Chunk,26076,17173,"★ (文件名, 行号)",★ 空行、页眉页脚,★ 无（★ 解析失败会记入 coverage）
-DHCPv4,③ Raw Extraction → ④ Normalized → ⑤ Classification → ⑥ Norm,17173,92,★ norm_id,★ 质量闸（★ kind 未实现、fail-closed 失败）,★ coverage 台账记录
+协议,阶段,输入数,输出数,关联 ID,丢弃条件,失败状态
+smtp,① RFC 原文,4,4,文件名 + SHA256,无,无
+smtp,② Document Parser → Chunk,10152,6824,"(文件名, 行号)",空行、页眉页脚,无（解析失败会记入 coverage）
+smtp,③ Raw Extraction → ④ Normalized → ⑤ Classification → ⑥ Norm,6824,63,norm_id,质量闸（kind 未实现、fail-closed 失败）,coverage 台账记录
+rtsp,① RFC 原文,1,1,文件名 + SHA256,无,无
+rtsp,② Document Parser → Chunk,5156,3505,"(文件名, 行号)",空行、页眉页脚,无（解析失败会记入 coverage）
+rtsp,③ Raw Extraction → ④ Normalized → ⑤ Classification → ⑥ Norm,3505,107,norm_id,质量闸（kind 未实现、fail-closed 失败）,coverage 台账记录
+DHCPv4,① RFC 原文,36,36,文件名 + SHA256,无,无
+DHCPv4,② Document Parser → Chunk,26076,17173,"(文件名, 行号)",空行、页眉页脚,无（解析失败会记入 coverage）
+DHCPv4,③ Raw Extraction → ④ Normalized → ⑤ Classification → ⑥ Norm,17173,92,norm_id,质量闸（kind 未实现、fail-closed 失败）,coverage 台账记录
