@@ -129,7 +129,8 @@ def test_v4_declares_pending_fields():
         assert "未完整" in _r["★ 字段级 Gold 状态"], _r["gold_id"]
 
 
-def test_field_confirmation_table_exists_and_empty():
+def test_field_confirmation_table_filled_by_reviewer_d():
+    """★ 人工已回填（R17 接收）：★ 6 条全部填写，★ 审核者为 D，★ 日期含时区。"""
     _p = DELIV / "R16_主体动作对象字段人工确认表.xlsx"
     assert _p.is_file()
     _wb = openpyxl.load_workbook(_p)
@@ -141,12 +142,20 @@ def test_field_confirmation_table_exists_and_empty():
             for c in range(1, _ws.max_column + 1)]
     _fill = [i for i, h in enumerate(_hdr, 1) if "待填" in h]
     assert len(_fill) == 5, _fill
+    _i_who = next(i for i, h in enumerate(_hdr, 1) if "审核者" in h)
+    _i_date = next(i for i, h in enumerate(_hdr, 1) if "审核日期" in h)
+    _n = 0
     for _r in range(_hr + 1, _ws.max_row + 1):
         if not str(_ws.cell(row=_r, column=1).value or "").strip():
             continue
+        _n += 1
         for _ci in _fill:
-            assert not str(_ws.cell(row=_r, column=_ci).value or "").strip()
+            assert str(_ws.cell(row=_r, column=_ci).value or "").strip(), _r
+        assert str(_ws.cell(row=_r, column=_i_who).value or "").strip() == "D"
+        _d = str(_ws.cell(row=_r, column=_i_date).value or "")
+        assert "UTC" in _d or "Asia" in _d, _d
     _wb.close()
+    assert _n == 6, _n
 
 
 def test_timezone_unavailable_recorded_not_assumed():
