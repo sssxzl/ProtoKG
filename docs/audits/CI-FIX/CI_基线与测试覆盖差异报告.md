@@ -1,0 +1,118 @@
+# CI 基线与测试覆盖差异报告
+
+> ★ 重采依据：**实测**，★ 附可复算原因与版本记录
+> ★ 基线版本记录：`guard/baseline/CI_BASELINE_CHANGELOG.md`
+
+---
+
+## 一、★ 基线变化
+
+| 项 | 原 | 新 | 变化原因 |
+|---|---:|---:|---|
+| ★ ubuntu failed | 70 | **5** | ★ 夹具恢复 + 中枢构建 |
+| ★ windows failed | 67 | **5** | ★ 同上；★ 待真机校正 |
+| ★ errors（两平台共用） | 29 | **0** | ★ 夹具恢复后收集错误归零 |
+
+### 1.1 新基线内容（★ 5 条，★ 恰是已知的本地五项失败）
+
+- tests/downstream/test_action_seq_hardening.py::TestActionSeqPostProcessing::test_action_seq_seeds_are_rewritten_by_seedgen
+- tests/downstream/test_generic_danger.py::test_self_loop_has_describe_prefix_and_session
+- tests/downstream/test_message_instance_migration.py::test_migrated_instances_are_labelled_profile
+- tests/downstream/test_seed_legality.py::test_full_source_mode_unaffected
+- tests/graph/test_graph_communities.py::test_communities_not_collapsed_to_one
+
+★ ★ **★ 这 5 条就是 R21～R24 反复记录的「已知本地五项失败」**：
+★ ★ ① corpus_gate 模块缺失；★ ② 中枢 claim 覆盖度不足；★ ③ ③ authority 语义变更；
+★ ★ ④ transitions 择一策略变更；★ ⑤ dhcpv4 社区退化（★ 真实算法缺陷）。
+
+---
+
+## 二、★★ 差异的三类归因（★ 任务要求）
+
+| 类别 | 条数 | 说明 |
+|---|---:|---|
+| ★ ① 因缺少夹具而产生的历史环境失败 | **0** | ★ 那 29 个 ERROR 模块**从未进入 failed 基线**；★ 它们属于 **errors 集合** |
+| ★ ② 因 CI 未构建中枢而产生的历史环境失败 | **65** | ★ `load_fact_views()` 在 CI 上读不到 fact；★ 本地有中枢故不失败 |
+| ★ ③ 真正的算法失败 | **5** | ★ 夹具与中枢都具备后仍失败 |
+| ★ ④ 测试范围变化 | **0** | ★ 未删除、未跳过、未弱化任何测试 |
+
+★ ⇒ ★ **★ 原基线 70 条 = 65 条「缺中枢」环境失败 + 5 条真正的算法失败。**
+★ ⇒ ★ **原基线记录的是「缺夹具 + 缺中枢」的历史环境状态，★ 而非算法真实状态。**
+
+---
+
+## 三、★ 「errors 置空」不是放宽
+
+★ 修复后实测 errors = **0**，★ 故基线置空。
+★ ★ **★ 若将来再次出现收集错误，★ 护栏会立即判红（★ added > 0 ⇒ exit 1）**；
+★ ★ 这比「把 29 写进允许集」严格得多。
+
+★ 负例测试 NT-03 已实测该机制（★ 注入收集错误 ⇒ 护栏能检出）。
+
+---
+
+## 四、★ 平台差异
+
+| 项 | 原 | 新 |
+|---|---:|---:|
+| ★ ubuntu 独有 | 3 | 0 |
+| ★ windows 独有 | 0 | 0 |
+| ★ 两者共有 | 67 | 5 |
+
+★ 新基线两平台同集合。★ **windows 待 CI 首跑校正**：★ 若 Windows 出现额外失败
+★ （★ 如行尾相关），★ 护栏会判红并给出具体差异，★ 再单独申请平台基线。
+
+---
+
+## 五、★ 哈希
+
+| 文件 | 原 SHA256 | 新 SHA256 |
+|---|---|---|
+| ★ ci_expected_failed_ids_ubuntu.txt | `462edf1724c3c962…` | `526c19e561e7c862…` |
+| ★ ci_expected_failed_ids_windows.txt | `21690d304904b97e…` | `526c19e561e7c862…` |
+| ★ ci_expected_errors.txt | `e3b0c44298fc1c14…` | `e3b0c44298fc1c14…` |
+
+
+---
+
+## 六、★ 真机验收后的最终基线（★ 四轮采集的收敛）
+
+| 轮次 | ubuntu | windows | errors | 依据 |
+|---|---:|---:|---:|---|
+| ★ 原始 | 70 | 67 | 29 | ★ 缺夹具 + 缺中枢的环境状态 |
+| ★ 第一轮 | 5 | 5 | 0 | ★ 本地五源中枢口径（★ **不适用于 CI**） |
+| ★ 第二轮 | 23 | 23 | 0 | ★ CI 口径（★ 干净 checkout + 四源中枢） |
+| ★ 第三轮 | 25 | 23 | 0 | ★ 补回 binary_protocol 平台差异 |
+| ★ **最终** | **25** | **23** | **0** | ★ ★ **真机 run 44274634440 验证通过** |
+
+★ 真机实测：★ ubuntu failed 25（★ added 0 / removed 0）、★ windows failed 23（★ added 0 / removed 0）、
+★ errors 均为 0、★ verdict 均为 TRUSTWORTHY。
+
+★ ★ **★ 最终基线记录的是「CI 口径下的真实失败集合」**：
+★ ★ ★ —— 干净 checkout + 四源中枢（★ rfc / traffic / expert_note / vuln）★ + 4 条 not_run 规则。
+★ ★ ★ 本地五源中枢下只有 5 条，★ 相差的 20 条源于**源集合不同**（★ CI 无 LLM 凭据故不带 source 源），
+★ ★ ★ **不是代码回归**。
+
+
+---
+
+## 七、★★ 重要限制：★ 基线与源集合绑定（★ 本地与 CI 的失败集合不同）
+
+★ 真机 CI 通过后，★ **在本地以五源中枢跑同一基线会判红**（★ 实测 verdict=NOT_TRUSTWORTHY，
+★ failed 5 而基线是 25 ⇒ 「消失 20」）：
+
+```
+★ CI 口径：★ 干净 checkout + 四源中枢（★ 无 LLM 凭据故不带 source 源）⇒ failed 25
+★ 本地口径：★ 五源中枢（含 source 源）⇒ failed 5
+★ ⇒ ★ 同一基线**不能同时服务两个源集合**
+```
+
+★ **★ 这是 CI 与本地的口径差异，★ 不是代码回归**（★ 真机 CI 的 added 0 / removed 0 已证明）。
+
+★ ⇒ ★ **处置建议（★ 需审批）**：
+1. ★ **方案一（★ 当前状态）**：★ 保留 CI 口径基线（★ 25 / 23），★ 本地跑护栏时用
+   `--expect-failed` 指向本地口径基线（★ 5 条），★ 两套基线并存且各自命名；
+2. ★ **方案二**：★ CI 也构建五源中枢（★ 需要 LLM 凭据，★ 与「不调 LLM」冲突）；
+3. ★ **方案三**：★ 引入「按中枢源集合选择基线」的机制（★ 改动护栏本体，★ 需单独审批）。
+
+★ ★ **★ 本轮未擅自选择方案；★ 当前基线是 CI 口径，★ 本地跑护栏需换基线文件。**

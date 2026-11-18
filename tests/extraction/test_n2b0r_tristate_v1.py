@@ -20,7 +20,7 @@ import sys
 import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "guard/_out/_n1c"))
+sys.path.insert(0, str(ROOT / "tests/_fixtures/n1c"))
 from n2b0_tristate_v1 import (CONTRADICTED, SUPPORTED, UNCERTAIN,
                               semantic_support_tristate_v1, _clauses,
                               _neg_adjacent_to_action)
