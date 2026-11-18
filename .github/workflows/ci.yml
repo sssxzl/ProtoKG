@@ -217,6 +217,7 @@ jobs:
       #   ⇒ 校验器的核心判据（必填头 / 前置链 / 会话语义 / URI）来自
       #     profile.seedgen 的物化（**不需要 LLM**）⇒ 校验能力完整。
       - name: Build hub (rtsp) for seedcheck
+        shell: bash
         run: |
           python scripts/build_hub.py --protocol rtsp \
             --sources rfc traffic expert_note vuln --no-purge
@@ -224,6 +225,7 @@ jobs:
         run: |
           python scripts/seedgen.py --protocol rtsp --manifest
       - name: Run seedcheck (rtsp)
+        shell: bash
         run: |
           python seedcheck/run.py --protocol rtsp \
             --out-dir "$GITHUB_WORKSPACE/_ci_artifacts/seedcheck"
@@ -272,10 +274,10 @@ jobs:
       # ★ 不覆盖仓库冻结的正式中枢：★ build_hub.py 写固定的 derived/hub，
       # ★   但 CI 工作区是**全新 checkout** ⇒ 该目录原本不存在
       # ★   ⇒ 没有任何已提交的中枢产物会被覆盖（★ derived/ 本身被 gitignore）。
+      # ★ 命令写成**单行**：★ 反斜杠续行在 Windows runner 的默认 shell
+      # ★ （★ 不是 bash）★ 下是 ParserError（★ 实测踩过，★ run 44274179415）。
       - name: Build hub (rtsp) for guard 0
-        run: |
-          python scripts/build_hub.py --protocol rtsp \
-            --sources rfc traffic expert_note vuln --no-purge
+        run: python scripts/build_hub.py --protocol rtsp --sources rfc traffic expert_note vuln --no-purge
 
       # ★ fail-closed：★ 中枢没构建出来 ⇒ 立即失败，★ 不许让护栏 0 静默跳过
       - name: Verify hub artifact exists (fail-closed)
@@ -295,6 +297,7 @@ jobs:
           fi
 
       - name: Run guarded pytest (drift gate)
+        shell: bash
         run: |
           python guard/run_guarded_pytest.py \
             --repo-root "$GITHUB_WORKSPACE" \
@@ -394,10 +397,10 @@ jobs:
       # ★ 不覆盖仓库冻结的正式中枢：★ build_hub.py 写固定的 derived/hub，
       # ★   但 CI 工作区是**全新 checkout** ⇒ 该目录原本不存在
       # ★   ⇒ 没有任何已提交的中枢产物会被覆盖（★ derived/ 本身被 gitignore）。
+      # ★ 命令写成**单行**：★ 反斜杠续行在 Windows runner 的默认 shell
+      # ★ （★ 不是 bash）★ 下是 ParserError（★ 实测踩过，★ run 44274179415）。
       - name: Build hub (rtsp) for guard 0
-        run: |
-          python scripts/build_hub.py --protocol rtsp \
-            --sources rfc traffic expert_note vuln --no-purge
+        run: python scripts/build_hub.py --protocol rtsp --sources rfc traffic expert_note vuln --no-purge
 
       # ★ fail-closed：★ 中枢没构建出来 ⇒ 立即失败，★ 不许让护栏 0 静默跳过
       - name: Verify hub artifact exists (fail-closed)
