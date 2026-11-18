@@ -18,8 +18,8 @@ import sys
 import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "guard/_out/_n1c_v2/h2a"))
-sys.path.insert(0, str(ROOT / "guard/_out/_n1c_v2/h0"))
+sys.path.insert(0, str(ROOT / "tests/_fixtures/h2a"))
+sys.path.insert(0, str(ROOT / "tests/_fixtures/h0"))
 import sidecar as SC
 import source_contract as SRC
 

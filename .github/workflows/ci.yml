@@ -217,6 +217,7 @@ jobs:
       #   ⇒ 校验器的核心判据（必填头 / 前置链 / 会话语义 / URI）来自
       #     profile.seedgen 的物化（**不需要 LLM**）⇒ 校验能力完整。
       - name: Build hub (rtsp) for seedcheck
+        shell: bash
         run: |
           python scripts/build_hub.py --protocol rtsp \
             --sources rfc traffic expert_note vuln --no-purge
@@ -224,6 +225,7 @@ jobs:
         run: |
           python scripts/seedgen.py --protocol rtsp --manifest
       - name: Run seedcheck (rtsp)
+        shell: bash
         run: |
           python seedcheck/run.py --protocol rtsp \
             --out-dir "$GITHUB_WORKSPACE/_ci_artifacts/seedcheck"
@@ -261,7 +263,41 @@ jobs:
       # ★ 跑护栏脚本本体。它自己负责：解释器回退、mtime 快照、summary 行断言、
       #   FAILED/ERROR 抽取口径自检、与基线逐行比对、产物落盘。
       #   ★ 退出码：0 = 集合未漂移；1 = 漂移/护栏触发 ⇒ job 红（这就是闸门）。
+      # ★★★ M1-Q5-R24C：中枢构建（★ 护栏 0 的前置）
+      # ★ 为什么必须有：★ 护栏 0（中枢协议校验）需要 `derived/hub/` 产物；
+      # ★   此前两个 guarded job **都不构建中枢** ⇒ 护栏 0 在 CI 上实际被跳过
+      # ★   （R21/R22/R24 审计已报告，★ 此处首次真正执行）。
+      # ★ 为什么是确定性的：★ 只构建**纯确定性**的四个源
+      # ★   （rfc / traffic / expert_note / vuln），★ **不带 source 源**
+      # ★   （source 走 AutoSeeder 的 LLM 路径 ⇒ CI 无 LLM 凭据会崩）
+      # ★   ⇒ 与 seedcheck job 已验证的入口完全一致。
+      # ★ 不覆盖仓库冻结的正式中枢：★ build_hub.py 写固定的 derived/hub，
+      # ★   但 CI 工作区是**全新 checkout** ⇒ 该目录原本不存在
+      # ★   ⇒ 没有任何已提交的中枢产物会被覆盖（★ derived/ 本身被 gitignore）。
+      # ★ 命令写成**单行**：★ 反斜杠续行在 Windows runner 的默认 shell
+      # ★ （★ 不是 bash）★ 下是 ParserError（★ 实测踩过，★ run 44274179415）。
+      - name: Build hub (rtsp) for guard 0
+        run: python scripts/build_hub.py --protocol rtsp --sources rfc traffic expert_note vuln --no-purge
+
+      # ★ fail-closed：★ 中枢没构建出来 ⇒ 立即失败，★ 不许让护栏 0 静默跳过
+      - name: Verify hub artifact exists (fail-closed)
+        shell: bash
+        run: |
+          set -euo pipefail
+          HUB="${{ github.workspace }}/derived/hub"
+          if [ ! -d "$HUB" ]; then
+            echo "::error::hub artifact directory missing: $HUB"
+            exit 1
+          fi
+          N=$(find "$HUB" -name '*.jsonl' -type f | wc -l)
+          echo "hub jsonl files: $N"
+          if [ "$N" -lt 1 ]; then
+            echo "::error::hub artifact has no jsonl (guard 0 would be skipped)"
+            exit 1
+          fi
+
       - name: Run guarded pytest (drift gate)
+        shell: bash
         run: |
           python guard/run_guarded_pytest.py \
             --repo-root "$GITHUB_WORKSPACE" \
@@ -269,6 +305,13 @@ jobs:
             --expect-failed "$GITHUB_WORKSPACE/guard/baseline/ci_expected_failed_ids_ubuntu.txt" \
             --expect-errors "$GITHUB_WORKSPACE/guard/baseline/ci_expected_errors.txt" \
             --expect-hub-protocol rtsp
+      # ★ fail-closed：★ 护栏自身未产出结果文件 ⇒ 不得判为通过
+      # ★ 用 python 单行而非 bash 脚本：★ Windows runner 的默认 shell 不是 bash，
+      # ★   bash heredoc 在那里会解析失败（★ 实测踩过，★ run 44273760306）。
+      - name: Verify guard actually ran (fail-closed)
+        run: |
+          python -c "import json,os,sys;p=os.path.join(os.environ['GITHUB_WORKSPACE'],'_ci_artifacts','_guarded_result.json');d=json.load(open(p,encoding='utf-8')) if os.path.isfile(p) else None;sys.exit(0) if d is not None else sys.exit('::error::guard result missing: gate did not run');print('verdict:',d.get('verdict'));print('failed:',d.get('failed'),'errors:',d.get('errors'))"
+
 
       # ★ 无论成败都上传护栏产物 —— CI 挂了也得能查「到底哪条漂移了」。
       - name: Upload guarded artifacts
@@ -343,6 +386,39 @@ jobs:
       - name: Install test dependencies
         run: python -m pip install --upgrade "pytest==8.4.2" "numpy>=2.1"
 
+      # ★★★ M1-Q5-R24C：中枢构建（★ 护栏 0 的前置）
+      # ★ 为什么必须有：★ 护栏 0（中枢协议校验）需要 `derived/hub/` 产物；
+      # ★   此前两个 guarded job **都不构建中枢** ⇒ 护栏 0 在 CI 上实际被跳过
+      # ★   （R21/R22/R24 审计已报告，★ 此处首次真正执行）。
+      # ★ 为什么是确定性的：★ 只构建**纯确定性**的四个源
+      # ★   （rfc / traffic / expert_note / vuln），★ **不带 source 源**
+      # ★   （source 走 AutoSeeder 的 LLM 路径 ⇒ CI 无 LLM 凭据会崩）
+      # ★   ⇒ 与 seedcheck job 已验证的入口完全一致。
+      # ★ 不覆盖仓库冻结的正式中枢：★ build_hub.py 写固定的 derived/hub，
+      # ★   但 CI 工作区是**全新 checkout** ⇒ 该目录原本不存在
+      # ★   ⇒ 没有任何已提交的中枢产物会被覆盖（★ derived/ 本身被 gitignore）。
+      # ★ 命令写成**单行**：★ 反斜杠续行在 Windows runner 的默认 shell
+      # ★ （★ 不是 bash）★ 下是 ParserError（★ 实测踩过，★ run 44274179415）。
+      - name: Build hub (rtsp) for guard 0
+        run: python scripts/build_hub.py --protocol rtsp --sources rfc traffic expert_note vuln --no-purge
+
+      # ★ fail-closed：★ 中枢没构建出来 ⇒ 立即失败，★ 不许让护栏 0 静默跳过
+      - name: Verify hub artifact exists (fail-closed)
+        shell: bash
+        run: |
+          set -euo pipefail
+          HUB="${{ github.workspace }}/derived/hub"
+          if [ ! -d "$HUB" ]; then
+            echo "::error::hub artifact directory missing: $HUB"
+            exit 1
+          fi
+          N=$(find "$HUB" -name '*.jsonl' -type f | wc -l)
+          echo "hub jsonl files: $N"
+          if [ "$N" -lt 1 ]; then
+            echo "::error::hub artifact has no jsonl (guard 0 would be skipped)"
+            exit 1
+          fi
+
       - name: Run guarded pytest (drift gate)
         run: |
           python guard/run_guarded_pytest.py `
@@ -351,6 +427,13 @@ jobs:
             --expect-failed "${{ github.workspace }}/guard/baseline/ci_expected_failed_ids_windows.txt" `
             --expect-errors "${{ github.workspace }}/guard/baseline/ci_expected_errors.txt" `
             --expect-hub-protocol rtsp
+      # ★ fail-closed：★ 护栏自身未产出结果文件 ⇒ 不得判为通过
+      # ★ 用 python 单行而非 bash 脚本：★ Windows runner 的默认 shell 不是 bash，
+      # ★   bash heredoc 在那里会解析失败（★ 实测踩过，★ run 44273760306）。
+      - name: Verify guard actually ran (fail-closed)
+        run: |
+          python -c "import json,os,sys;p=os.path.join(os.environ['GITHUB_WORKSPACE'],'_ci_artifacts','_guarded_result.json');d=json.load(open(p,encoding='utf-8')) if os.path.isfile(p) else None;sys.exit(0) if d is not None else sys.exit('::error::guard result missing: gate did not run');print('verdict:',d.get('verdict'));print('failed:',d.get('failed'),'errors:',d.get('errors'))"
+
 
       - name: Upload guarded artifacts
         if: always()

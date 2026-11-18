@@ -15,7 +15,7 @@ import sys
 import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "guard/_out/_n1c_v2/h0"))
+sys.path.insert(0, str(ROOT / "tests/_fixtures/h0"))
 import source_contract as SC
 import run_events as RE
 import field_ledger as FL
