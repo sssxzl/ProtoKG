@@ -1,0 +1,43 @@
+RFC 编号,RFC 标题,版本/修订状态,官方来源,本地文件路径,字节数,SHA256,存在更新/替代关系,本轮参与实验
+1534,,Category: Standards Track October 1993,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc1534.txt,6966,e82c57f4688aadfb81442959c492788183561d7ec854fec1a27dd844e9b4805e,见 documents.json（抽取层登记）,是
+1542,,Updates: 951 October 1993,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc1542.txt,52948,791f988d45474c915f8260efdc9676729f0b7264f3af79c5910f3be4a489fdb4,见 documents.json（抽取层登记）,是
+2131,,Obsoletes: 1541 March 1997,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc2131.txt,113738,a043b705785b81762505ded4cf71d61392b2b1da2b4ce1e32c13bc984de5f4a5,见 documents.json（抽取层登记）,是
+2132,,Obsoletes: 1533 R. Droms,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc2132.txt,63670,0cfbedab7cfe859624ae78c07a722bc51bf8ea123a7b43b099fc546ddcf00b90,见 documents.json（抽取层登记）,是
+2563,,Category: Standards Track May 1999,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc2563.txt,17838,11decc3356b82748e60b078ec553499ea1ca875c95dd61c8ef81fe0e6e3ab6c4,见 documents.json（抽取层登记）,是
+2937,,Category: Standards Track September 2000,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc2937.txt,8368,11d8c332f073ddb390da2732369750ecd10e9d290c5ba60dc5dc9d605dea56ac,见 documents.json（抽取层登记）,是
+2939,,Obsoletes: 2489,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc2939.txt,13631,aeb311959b9596ee4afb0acd3200ba1fc980b80f1cb98371c17e790669bfc7ec,见 documents.json（抽取层登记）,是
+3004,,Category: Standards Track R. Droms,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3004.txt,10423,d1488dcc8274d1e8128b734e98709088998c91f926d5141019cb0b4d34232a7c,见 documents.json（抽取层登记）,是
+3011,,Category: Standards Track November 2000,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3011.txt,13967,b5809d9f053e6cdc3003c04a8c529f23fb24794c47c21370f8199a48743d0202,见 documents.json（抽取层登记）,是
+3046,,Category: Standards Track January 2001,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3046.txt,30633,6b343c02d5c495cd1f780a43ab2c4e3b9bca968b82024b9d2fdb90d75b98a5cf,见 documents.json（抽取层登记）,是
+3074,,Category: Standards Track S. Gonczi,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3074.txt,19374,1f3d5e93c2c7490b338b3028b0026f1570c9f2c1940b6cb65102ab0684a3a8b4,见 documents.json（抽取层登记）,是
+3118,,"Category: Standards Track W. Arbaugh, Editor",kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3118.txt,35536,23d81251e739d9618b9b7503c0d9848c8d54290c78302cd7f3c5ddb72f9fb4ce,见 documents.json（抽取层登记）,是
+3203,,Category: Standards Track Alcatel,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3203.txt,11857,979728f8cb0563e764f3e5ac9dae08ad348fd6c24178eacab2e718522852d1f1,见 documents.json（抽取层登记）,是
+3256,,Category: Standards Track R. Woundy,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3256.txt,8551,e0b852a4db917feb08c5abfadf5e5ed953272a9945aafa750dd7e6ec1641aa7a,见 documents.json（抽取层登记）,是
+3361,,Category: Standards Track August 2002,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3361.txt,12549,67f99fdee92d0510fb3484897917e7e636b4ea1f4fda0c5622a057236811a583,见 documents.json（抽取层登记）,是
+3396,,Updates: 2131 S. Cheshire,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3396.txt,18779,1093f376d3937e151cda05567f3b60ce29487c4c010ad77483001e70bfa49623,见 documents.json（抽取层登记）,是
+3442,,Updates: 2132 S. Cheshire,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3442.txt,19370,1601791a4a22d08ebb205b4dab88b034e376bdd4c233fb8458b1daeb371e5a0c,见 documents.json（抽取层登记）,是
+3456,,Category: Standards Track B. Aboba,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3456.txt,40340,79e86d7f30f22ec7b3395badc8e54205c220ccfac982ef8506c7766583ca29a9,见 documents.json（抽取层登记）,是
+3495,,"Category: Standards Track P. Duffy, Ed.",kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3495.txt,26817,39952493ab2c2362826718fe6403b047d3e3b9a1c7e091564b2d8f411873e8d4,见 documents.json（抽取层登记）,是
+3679,,Category: Informational January 2004,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3679.txt,13804,f962fd3bdb4ff7d6744ac05be880d71bdbea735578f8218d3c1d5cc72fa82852,见 documents.json（抽取层登记）,是
+3925,,Category: Standards Track October 2004,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc3925.txt,17999,bae9d07c4553f636f2fdf3e95a6f136581079a2e3112aab65bd04e7da389d77d,见 documents.json（抽取层登记）,是
+4361,,"Updates: 2131, 2132, 3315 B. Sommerfield",kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc4361.txt,28009,84a37802e74aad730cabcbf5fa3051c8d02ad286c6c46a044b0491bb765637d4,见 documents.json（抽取层登记）,是
+4702,,"Category: Standards Track Cisco Systems, Inc.",kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc4702.txt,37534,061fa042c6ebe7514d4d45dc44c4f9a87c012c0da2a93125849953f4e4d8fdfe,见 documents.json（抽取层登记）,是
+4776,is being published to correct an error in the assignment of,Obsoletes: 4676 November 2006,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc4776.txt,45495,fe1f91d6874c826dd447a5caddcb9952a90ba1dd32ac822b872713134cb14d94,见 documents.json（抽取层登记）,是
+4833,,Updates: 2132 P. Eggert,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc4833.txt,19573,f7e9c6e8f9274073eab9f5aaae20a22d20111cdd0b1cb479ecb52ef3a2f1cc80,见 documents.json（抽取层登记）,是
+5010,,Category: Standards Track M. Stapp,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc5010.txt,13834,9a07097efdf06e18a329ebb0fe497c6cb11911017ec09d3ce466596e1a2366c9,见 documents.json（抽取层登记）,是
+6607,,Updates: 3046 M. Stapp,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc6607.txt,60312,82fede29f151bec916be08d6466fa2b6eba15015dfd02a4bbb0ae4ad6546f186,见 documents.json（抽取层登记）,是
+6704,,Updates: 3203 W. Dec,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc6704.txt,26538,c1a78f027620589ae58bf573fcd386ccd041f9e3a684db643f0d4532fffb7f60,见 documents.json（抽取层登记）,是
+6842,,Updates: 2131 G. Halwasia,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc6842.txt,10030,fa5ee87eac46d97d8e4c6448e5588e9d5f87624622a45137de384873dbe87c4f,见 documents.json（抽取层登记）,是
+8357,,Category: Standards Track Cisco Systems,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc8357.txt,21266,feb6c804d795b990ca2f6958cd536fe50db77dbf01ac835b5a2e365e2c9905f0,见 documents.json（抽取层登记）,是
+8910,,Obsoletes: 7710 E. Kline,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc8910.txt,24634,26de2629fd165340696247278eeb95c4b49de7fccfa4d7cc39f89c116a7dac1a,见 documents.json（抽取层登记）,是
+2563,to specify DHCPv4 server behavior when the server receives a,Updates: 2563 Google,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc8925.txt,31421,28394e806620a78bc7f4a098f01c620689db1c706871aeab032c745cefe5f6b7,见 documents.json（抽取层登记）,是
+9445,,Updates: 4014 T. Reddy.K,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc9445.txt,38538,1ce7238e441cd569000207ce1853acab6989e5f82b836221dadb0e117aceddf9,见 documents.json（抽取层登记）,是
+9463,,"Category: Standards Track T. Reddy.K, Ed.",kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc9463.txt,54645,b1dc07732241f72fc5d2f718497918ed2fa456585eb313e7c7c37614985b1ca9,见 documents.json（抽取层登记）,是
+951,,,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc951.txt,28354,098809562693d95c502d59451fa8cc6a4a2f263448fad077f0af677088cb0c52,见 documents.json（抽取层登记）,是
+9928,,Category: Standards Track S. Krishnan,kb 内入库副本（原始 RFC 文本）,kb/DHCPv4/spec/rfc9928.txt,24455,33d4c7cbe90f6d58f2916895530159f3d8dc827786345497ee05cb7053a8b83c,见 documents.json（抽取层登记）,是
+2326,,Category: Standards Track A. Rao,kb 内入库副本（原始 RFC 文本）,kb/rtsp/spec/rfc2326.txt,195011,1b72124761d99b8d4ed72fee82d4a3c4a7c153a368702b8221de02a42da93038,见 documents.json（抽取层登记）,是
+3261,,Obsoletes: 2543 H. Schulzrinne,kb 内入库副本（原始 RFC 文本）,kb/sip/spec/rfc3261.txt,647976,d513777f77fea01a4de9c0a2d9d6713cb53b8231f1b7a2ab56705f8d51b066dc,见 documents.json（抽取层登记）,否（本轮只做 RFC-only 三协议）
+3207,,Obsoletes: 2487 February 2002,kb 内入库副本（原始 RFC 文本）,kb/smtp/spec/rfc3207.txt,18679,b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac,见 documents.json（抽取层登记）,是
+4954,,"Obsoletes: 2554 A. Melnikov, Ed.",kb 内入库副本（原始 RFC 文本）,kb/smtp/spec/rfc4954.txt,43493,6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a,见 documents.json（抽取层登记）,是
+5321,,Obsoletes: 2821,kb 内入库副本（原始 RFC 文本）,kb/smtp/spec/rfc5321.txt,225929,7d560eddff1b213c17d4e1e5f95005728b2f05bc2b3947f0fcc91717c6707634,见 documents.json（抽取层登记）,是
+5322,,Obsoletes: 2822 October 2008,kb 内入库副本（原始 RFC 文本）,kb/smtp/spec/rfc5322.txt,122322,cb459acca15a2aa895863eaeff6f1d5b9c4ca15578ae3e3706f757787a385969,见 documents.json（抽取层登记）,是
