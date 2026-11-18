@@ -1,0 +1,97 @@
+﻿★ 类别,★ 路径,★ 字节数,★ SHA256,★ 说明
+★ 来源登记表（★ 非原文）,derived/per_source/smtp/rfc/documents.json,2726,2751824cf2890fa896d449bb8325f42243c23a2e7a035c08d6b0a0e6d9632d0c,★ 抽取层的文档登记（★ 含 RFC 编号与状态标注）
+★ 来源登记表（★ 非原文）,derived/per_source/rtsp/rfc/documents.json,799,962ae9760b611994dc8023659226ebf1cba3e699641f0b5d40311d54d6a98003,★ 抽取层的文档登记（★ 含 RFC 编号与状态标注）
+★ 来源登记表（★ 非原文）,derived/per_source/DHCPv4/rfc/documents.json,22883,d01c5aff36749ec5649d67d77d4eecbe1fbfd2e78916f52ab1d0f41757a24338,★ 抽取层的文档登记（★ 含 RFC 编号与状态标注）
+★ 来源登记表（★ 非原文）,derived/per_source/sip/rfc/documents.json,781,874db9784fc4538519a9c9b9fa8eb36948bfef6c9a6594f28881e983e776b85a,★ 抽取层的文档登记（★ 含 RFC 编号与状态标注）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/DHCPv4.prose.json,43066,099928f85084fff6dd7811b0fb8b2b9d9ec39349656a73490ebdc2e775d39947,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/dhcpv4.transitions.json,2082,7e45a317b9de9a5e9b7bc30166c49f96b593c8b4d5ee8b2ce7fcde1318c49056,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/rtsp.prose.json,849,1149a345a8d50fcd73eb88d26ba64dbba8dd0f85053d3f82e2698528d21d9697,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/rtsp.state.json,11414,4780171be986b7ce195531af3c1d60bcf95501759af91a185b9813e490b7327a,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/rtsp.transitions.json,1367,08ce40fdb5019efdc64a148bc7e01c7e8cebfcada5d637c141757b7bd27b0195,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/sip.method_required_headers.json,1860,e8b754bd93c65be910fee280c99d948439eafd7ce226d084ad17ff7dcdcc973c,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/sip.prose.json,3260,8573791d6b535a608d79057cd8975ebaa44d736604f186f6c727e8ce67577b55,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/sip.state.json,16464,cb6cf6f109d2bbbe46a47a3a0e33ef0541525cd9a7f85579e82fa27b9c34d71c,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/sip.transitions.json,1229,a65e68cc313913614d2e47ef144daff4a51e4b3f12d6ca3c85b71eb059bd6c2a,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/smtp.prose.json,8099,cd9c8d99e9625382b59385f125300cfeccbf0a6da568a10e384f845b4087071b,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/smtp.state.json,14671,61e0e359d60dbff368fa1eb5a157e63036aa01a8854865e0bc2874791b24cb31,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/source_blocks/smtp.transitions.json,112,001ab1b4bbefd9097195c56af988311f5ec3a082cfb7da6de6f8eba08340fb92,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/vuln_pattern_vectors/rtsp.json,71583,4f95841588aecb9ec86d9a138bb5df5627cb600827dde8e1590aec0052a7f3c1,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/vuln_pattern_vectors/sip.json,34550,904343b8ad41fc2dcffef6504c2cb84cfab12a4a010791aa327534e873ef9889,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取缓存（★ 非原文）,derived/cache/vuln_pattern_vectors/smtp.json,85346,9468535f7171662997ed7f2344c72ae4c7416941d245d1676e6cf05ef05403b4,★ 块级抽取缓存（★ 输入指纹为块文本，★ 非 RFC 文件哈希）
+★ 抽取产物（★ 非原文）,derived/per_source/dhcpv4/expert_note/facts/expert_note.jsonl,0,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/dhcpv4/rfc/facts/binary_layout.jsonl,8126,778d737b8dcbb234d9d1cbfd9a4834b74ed781562e6ac436b4c9324c64530d6c,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/dhcpv4/rfc/facts/definition.jsonl,44387,54c5569107c259a6c2afb03853db2be48745ce1ccd3aed7d24e3b6269caff64e,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/dhcpv4/rfc/facts/option_layout.jsonl,20835,c242f761f2a75f4c61500431632e82b1f7496b510905c32b2e9e717bab888ec0,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/dhcpv4/rfc/facts/rfc.jsonl,94532,047ab91a404bb02a7a6606f33c3b3ed1261f7f32907fce746224b9e5f30cd8c4,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/dhcpv4/rfc/facts/syntax.jsonl,6519,675c5193a903fa2c61c74ac672e62ed5739679bdb2080f32c85f44acb882cdbb,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/dhcpv4/rfc/facts/target_state.jsonl,18108,734e3de4f2f40b50120cd1270eb6f18df94c1c8fc16efa6fade29302d1d398c1,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/dhcpv4/source/facts/source.jsonl,0,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/dhcpv4/traffic/facts/traffic.jsonl,0,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/dhcpv4/vuln/facts/vuln.jsonl,0,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/expert_note/facts/expert_note.jsonl,15640,088a529fed4617f8c9496ad04d00c334ee5430aab7f9b0d53359321821c87634,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/expert_note/facts/precondition.jsonl,3074,c13bc8b7f04be57cb314de136449dd562e6ea2ac9d23818d81eb147dddeee348,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/expert_note/facts/security_property.jsonl,5081,2f7a68886d09c749f5a408bd24e8bd413815d6b93086b8bf3a88be0f82aa9263,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/expert_note/facts/session_header.jsonl,3354,f957fb90d91293491a221ed2ccd5d29c53953ee4a45501201547fe463c9b09f8,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/expert_note/facts/url_template.jsonl,4131,9e97753b126739b0c954607fa1c985d4e632bb32ba146c015b86830804a5ef36,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/profile/facts/profile.jsonl,4603,bb36c17dce9ed3d70d465eede27e9309c70184eeb52df9777279538948057523,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/rfc/facts/definition.jsonl,38969,3daa78edd437868762c3d15024e2e97be3daa0110184ea8001d3a74a0a10480b,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/rfc/facts/existence.jsonl,1994,6321164268df34c155d1654027070830650b6dacd41658ab2caaeaaa8d3c4110,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/rfc/facts/required_header_by_method.jsonl,602,9e5f9df050e1c4480ad8d0987a5b61e7cf0930b6fe46bfc1d112f072b19af363,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/rfc/facts/required_header_global.jsonl,556,80085a9b5ee3735094b2539cd4ae288c9fe0215ac23b0da713d4db6677fd1992,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/rfc/facts/rfc.jsonl,84792,666e50bd536d4ad85a5ea87036af1724232e7104fa59bea6f40fbb84dbd2ff4a,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/rfc/facts/syntax.jsonl,21942,1cf7ea41140124f06b3aa27c7070ba20691c40d3d712058e4200b7d045c996d6,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/rfc/facts/target_state.jsonl,10736,0fc2d2db1825e01383674a8f486ce48b0cf3d74d51cdbac59748962f8c68c38d,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/rfc/facts/value_enum_spec.jsonl,9993,ff3e0bb513f38db2438b878c50d72b90cf2969436f4c7171ec549ed858ddb835,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/source/facts/definition.jsonl,8830,a98aebc8c9dabd1e63467abd0a916862398663c17bf06675c4320032e1af6425,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/source/facts/message_instance.jsonl,38795,b5948d84b08e2281935388fe65457e5d3717ae0027822dde1072c92c1e68e9ab,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/source/facts/source.jsonl,80248,c74a65f2785842d644b101ae63dac551b3fff8eb22fab19abfe064ee0073b9aa,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/source/facts/target_state.jsonl,32623,809a8bcc5748888fb6be48fec4923a9238db4d5f663d413ea5011ff8bf4767a5,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/traffic/facts/existence.jsonl,6262,66a75647f02d64082b1c4d720b70d711bfa152f7ed1942296e850be721bdf9e4,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/traffic/facts/method_sequence.jsonl,4018,1eb3d5f2ef969a395be3bc2538ba2a8a0f777ad0e9b383c2a4efabd8eb190b8e,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/traffic/facts/traffic.jsonl,31505,ac2b651d6120bb239e6c669b7647cf7be62f373265bbf58952d8640f9943f606,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/traffic/facts/value_enum_observed.jsonl,21225,4db4997ad1b05f253c8c1e7513f80fba3c27c9164a8c5a863dbf0b39be848b97,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/vuln/facts/security_property.jsonl,43992,3566974774b11df02c6f8db2aebf747f2e4d342f3cade56dd162ee867b220349,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/vuln/facts/vuln.jsonl,61990,a89b51981b24e389704ef3f691c697abe65717ca775b07c1e848c995cf582b07,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/rtsp/vuln/facts/vuln_pattern.jsonl,17998,9376fa9b74ca0bed8b4098815fc453ce464f69841a56d4751d24da9a7e7a5d30,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/expert_note/facts/expert_note.jsonl,16468,55453d9253cf66fb0524df42544a0e9d76a7b02934616de0872e1d85e487a957,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/expert_note/facts/precondition.jsonl,2009,b4834fe38234755c0d5bdfe8a44ead3ce4cdea9e215f3c95f22f2673cabcf425,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/expert_note/facts/security_property.jsonl,5072,fadd99485a888b34dee663acb0a0710b8ffef301d335c2ea82657e1db77fdfff,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/expert_note/facts/session_header.jsonl,2190,029406f531cb464721e240ac913c6cceca90138a4a36b967077137efd6d8c167,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/expert_note/facts/url_template.jsonl,7197,b39d26cb3447a87d97273d3348f0328a9b8ba031dc9a9ad38ad23ff9eba5e7a0,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/profile/facts/profile.jsonl,7614,0ce1963254a314a5d2242b2525bd225d4744e8cc4cb03f1d86f0d9ee4a3f01cf,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/rfc/facts/definition.jsonl,54418,e1d39a502f94cd1477ec7923ed5c3fa7cc8380389e08c3cf12d74dc0a70d054f,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/rfc/facts/required_header_by_method.jsonl,594,414704328ab4e4f3bc2533dd9e75af3d441ae557d151d62f584ed339a35dc50e,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/rfc/facts/required_header_global.jsonl,3348,89f81d1585af8e2484425c44f7949170771da39d92ebdc1b1704a9b8cc9c15da,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/rfc/facts/rfc.jsonl,93836,79f499aedf99ad949a856a12eaa570d3c727dc30a193ef1a92d680704c46c24f,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/rfc/facts/syntax.jsonl,21943,3eac7d1ba936d4872652468a6ac9ab957e510f63753a5c53e7b855e1d3446d5f,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/rfc/facts/target_state.jsonl,20459,689db133c8863b853e34781793781f36a0f7ebf6b26e1f2b16b83b89493d4c1e,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/rfc/facts/value_enum_spec.jsonl,13533,ac2a9319a5593e38ecabe98404934398175856cab13056a2cb99e4e18384c7e0,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/source/facts/definition.jsonl,13680,2468b26f1a047ceebedcbf144782bac249ebb0b130910a4ee5dbdf5b7aad443f,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/source/facts/message_instance.jsonl,45215,9803d47d79b21f1b00984456c855224e17f38c5efa787d6a22c3872cd5d287aa,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/source/facts/source.jsonl,93849,56b09579fc6c3db78325cfdb5de4e73d87d63b27b35a06135f275cd873f99ddd,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/source/facts/target_state.jsonl,34954,ff27ae1d950d49c296a21348851e52487327b4569b007827a7e680e50ccba982,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/traffic/facts/existence.jsonl,4730,e201e996021605cafdc0a8d3bc9bd73c3a583dbb334176296c3ec94eef6092d3,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/traffic/facts/method_sequence.jsonl,12904,82aa1bfb0e5ee83a5bd97584abe49383daf4c57382c50c8a7ced316c55a97e73,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/traffic/facts/traffic.jsonl,46101,b0f3838c8845f651d0992dfbe19eaed1815d2c3397bdbdea40a0596f7f4f53a3,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/traffic/facts/value_enum_observed.jsonl,28467,f266c7442a0984d9db04ac016ab662cf37e2ad2f49ec5002db4a82b298a96079,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/vuln/facts/security_property.jsonl,20463,3822c705d93f9766930a23d93ec368123e1222ed5f69f61d5110086eb5c2da7b,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/vuln/facts/vuln.jsonl,29355,9223f6156397a4e8c60f754be10e30b4a89e0cffe36631ebce8ac5012af0e188,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/sip/vuln/facts/vuln_pattern.jsonl,8892,f9ca102e23f256ac8765d45fe7fea15f2d194843580e36e95ca90966d1096c4f,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/expert_note/facts/expert_note.jsonl,6992,0b9a7f5970ce6aba541ba80d582b4828f993748a5a0593f925566130c4ecfe69,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/expert_note/facts/precondition.jsonl,2507,4100b87ad947521ac8bbbdb79855b19d456f601b14e9a37ea7294cf4b53ef478,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/expert_note/facts/security_property.jsonl,4485,55561c378693fdcf8fa6b3ce3cf62b6cc9763eb090ed938e6ac341e96b47f9a7,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/rfc/facts/definition.jsonl,29963,9bcdd0ac484f1c48063f8d95056f3fa1acb0bf5967339a1b51da2f261f339a70,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/rfc/facts/rfc.jsonl,44132,ba836f8b7fae612b4756fcdcf703dcdc4cc1f05cea47c90fdbb367fcf0c6617a,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/rfc/facts/syntax.jsonl,9303,b05fe309df805a10f512e4f9ce2e39b67c88ceb972fa8dadb63af3c83398ccb3,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/rfc/facts/value_enum_spec.jsonl,4866,19d90b7bb1764e739b05f99b5d461cec1edf4818856e305a8037639e7c2e4d8b,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/source/facts/definition.jsonl,14045,85f90a135e4b8478922c0f9fe0179a3ca429437855d12b7b831fbaf907722372,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/source/facts/message_instance.jsonl,69963,4246c922ed3860834971c3492b6536dab2d472a930cf48f03ca48c4451033082,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/source/facts/source.jsonl,148372,b7c083e44a34f6871aaa19ac249d7e56353a0f7cc6a81f41ac52fb667f6dffc7,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/source/facts/target_state.jsonl,64364,bfb6b4e9f916fbf293814721a1fdd56abed3043cb1263537ce132df6a0686167,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/traffic/facts/existence.jsonl,3438,822e39e979cb70c714fdd45220dd1c223865d0479104a460fae6abd2d83eea8c,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/traffic/facts/method_sequence.jsonl,170899,84bbd480f8094b75886f09723da4ad4d5edd5a87ce475f48d45d305f60ad8b5d,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/traffic/facts/traffic.jsonl,175090,92ce82617d68017a1dc3ec8bbcba60cd993e193ad92ba752c0993237b6841e8a,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/traffic/facts/value_enum_observed.jsonl,753,f72224810fb691386a6d0a32d6cda82b33666e618b9d9466418fb24ca2c1d931,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/vuln/facts/security_property.jsonl,48917,cc23e9d7fc3ecb6bfaa25997947164800836f7323850d42d33745d8fdeddd91d,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/vuln/facts/vuln.jsonl,70743,0ac337c90f2be29c8c8ca74ab4565743e49a31a6b65f025c41803bfa5e7658a5,★ 抽取层 Fact 落盘
+★ 抽取产物（★ 非原文）,derived/per_source/smtp/vuln/facts/vuln_pattern.jsonl,21826,b454348153aec3bd95e2aa0e98bcf20fd0c8590254acb3b629c39c169f6248c0,★ 抽取层 Fact 落盘
