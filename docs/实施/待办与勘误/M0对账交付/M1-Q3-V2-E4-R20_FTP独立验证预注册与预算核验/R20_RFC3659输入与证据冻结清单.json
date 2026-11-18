@@ -1,0 +1,38 @@
+{
+  "★ 清单版本": "R20-FTP-1.0",
+  "★ 生成时间": "2026-11-18",
+  "★ 主评估文档": {
+    "rfc_number": "3659",
+    "title": "Extensions to FTP",
+    "author": "P. Hethmon",
+    "date": "March 2007",
+    "status": "PROPOSED STANDARD",
+    "doi": "10.17487/RFC3659",
+    "updates": "959",
+    "source_url": "https://www.rfc-editor.org/rfc/rfc3659.txt",
+    "local_path": "guard/_out/_n1c_v2/r20/rfc_text/rfc3659.txt",
+    "★ 当前状态": "★ 本地尚不存在，★ 待下载后冻结 SHA256",
+    "★ SHA256": ""
+  },
+  "★ 背景参考文档": {
+    "rfc_number": "959",
+    "title": "File Transfer Protocol",
+    "author": "J. Postel, J. Reynolds",
+    "date": "October 1985",
+    "status": "INTERNET STANDARD",
+    "doi": "10.17487/RFC959",
+    "source_url": "https://www.rfc-editor.org/rfc/rfc959.txt",
+    "local_path": "guard/_out/_n1c_v2/r20/rfc_text/rfc959.txt",
+    "★ 当前状态": "★ 本地尚不存在，★ 待下载后冻结 SHA256",
+    "★ SHA256": "",
+    "★ 使用边界": "★ 仅提供必要的交叉引用上下文；★ 不纳入主评分分母；★ ★ 若作为模型输入，★ 须登记来源 SHA256、对应章节与使用位置"
+  },
+  "★ 适用与排除规则": {
+    "★ 主评分分母": "★ RFC 3659 中按预注册规则确定的目标知识片段",
+    "★ 排除": "★ RFC 959 的内容不计入分母；★ 非协议元数据（★ 出版类别、★ 作者、日期）不作为候选；★ 索引与目录不作为候选",
+    "★ 样本单位": "★ 一条原子知识（★ 允许一个片段含零条、一条或多条）",
+    "★ 片段选择规则": "★ 按预注册的章节范围与形态规则确定；★ ★ **不得根据预览到的模型输出或错误情况选择有利章节**"
+  },
+  "★ 独立性审计结论": "★ 通过；★ 详见 R20_FTP独立性审计报告.md",
+  "★ 后续跨表示协议候选": "★ DNS RFC 1035；★ 本轮不执行"
+}
