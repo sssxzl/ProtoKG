@@ -166,8 +166,8 @@ def test_deliverables_exist():
         assert _p.stat().st_size > 0, _n
 
 
-def test_atom_review_table_still_unfilled():
-    """★ 原子复核表本轮未回填。"""
+def test_atom_review_table_filled_by_reviewer_d():
+    """★ 原子复核表已于 R15 前回填（R15 接收）：★ 8 条全部有审核者。"""
     _wb = openpyxl.load_workbook(R13D / "R13_必要人工补充复核表.xlsx")
     _ws = _wb["待补充确认"]
     _hr = next(r for r in range(1, 20)
@@ -176,11 +176,14 @@ def test_atom_review_table_still_unfilled():
     _hdr = [str(_ws.cell(row=_hr, column=c).value or "").strip()
             for c in range(1, _ws.max_column + 1)]
     _i_who = next(i for i, h in enumerate(_hdr, 1) if "★ 审核者（" in h)
+    _n = 0
     for _r in range(_hr + 1, _ws.max_row + 1):
         if not str(_ws.cell(row=_r, column=1).value or "").strip():
             continue
-        assert not str(_ws.cell(row=_r, column=_i_who).value or "").strip()
+        _n += 1
+        assert str(_ws.cell(row=_r, column=_i_who).value or "").strip() == "D"
     _wb.close()
+    assert _n == 8, _n
 
 
 # ===== 生产隔离 =====

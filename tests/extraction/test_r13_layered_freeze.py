@@ -185,7 +185,8 @@ def test_deliverables_exist():
         assert _p.stat().st_size > 0, _n
 
 
-def test_supplement_review_has_empty_fill_columns():
+def test_supplement_review_filled_by_reviewer_d():
+    """★ 人工已回填（R15）：★ 8 条全部填写，★ 审核者为 D。"""
     _wb = openpyxl.load_workbook(R13D / "R13_必要人工补充复核表.xlsx")
     _ws = _wb["待补充确认"]
     _hr = _header_row(_ws, "Gold ID")
@@ -193,12 +194,17 @@ def test_supplement_review_has_empty_fill_columns():
             for c in range(1, _ws.max_column + 1)]
     _fill = [i for i, h in enumerate(_hdr, 1) if "待填" in h]
     assert len(_fill) == 13, _fill
+    _i_who = next(i for i, h in enumerate(_hdr, 1) if "★ 审核者（" in h)
+    _n = 0
     for _r in range(_hr + 1, _ws.max_row + 1):
         if not str(_ws.cell(row=_r, column=1).value or "").strip():
             continue
+        _n += 1
         for _ci in _fill:
-            assert not str(_ws.cell(row=_r, column=_ci).value or "").strip()
+            assert str(_ws.cell(row=_r, column=_ci).value or "").strip(), _r
+        assert str(_ws.cell(row=_r, column=_i_who).value or "").strip() == "D"
     _wb.close()
+    assert _n == 8, _n
 
 
 # ===== 生产隔离 =====
