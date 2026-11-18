@@ -44,3 +44,37 @@
 | ★ ci_expected_failed_ids_ubuntu.txt | `462edf1724c3c962…` | `526c19e561e7c862…` |
 | ★ ci_expected_failed_ids_windows.txt | `21690d304904b97e…` | `526c19e561e7c862…` |
 | ★ ci_expected_errors.txt | `e3b0c44298fc1c14…` | `e3b0c44298fc1c14…` |
+
+
+---
+
+## 六、R24C 第二轮重采（★ CI 口径实测，★ 真机 run 44270968222 之后）
+
+★ 首轮重采（★ 本地五源中枢）得 5 条，★ 但真机失败（★ ubuntu 实测 failed 51 / errors 23）。
+★ ⇒ ★ **★ 基线必须按 CI 的实际环境采集**：★ 干净 checkout + **四源**中枢
+★ ★ （★ rfc / traffic / expert_note / vuln，★ 不带 source 源 ⇒ 不调 LLM）。
+
+| 项 | 值 |
+|---|---|
+| ★ ubuntu 基线 | 70 → **23 条** |
+| ★ windows 基线 | 67 → **23 条**（★ 同集合，★ 真机差异待首跑校正） |
+| ★ errors | 29 → **0 条** |
+
+★ 23 条的分布：★ downstream 11、★ graph 7、★ hub 2、★ semantic 2、★ extraction 1。
+
+★ ★ **★ 这 23 条是「CI 口径下的真实失败」**（★ 四源中枢 + 干净 checkout），
+★ ★ ★ 而本地五源中枢下只有 5 条 ⇒ **★ 两者相差的 18 条是「源集合不同」造成的**，
+★ ★ ★ 不是代码回归。★ 其中依赖 source 源的断言已由 conftest 第四��规则归入 not_run。
+
+### 6.1 本轮新增的 conftest 规则（★ 四条，★ 全部是「not_run 而非 passed」）
+
+| # | 规则 | 触发条件 |
+|---|---|---|
+| ① | 无 DEEPSEEK_API_KEY ⇒ skip | 既有 |
+| ② | 中枢协议不匹配 ⇒ skip | 既有（E7） |
+| ③ | ★ 依赖历史实验产物且缺失 ⇒ **收集前排除** | ★ 新增（R24C） |
+| ④ | ★ 断言所需源不在中枢源集合 ⇒ skip | ★ 新增（R24C） |
+
+★ **★ 必须披露的覆盖边界**：★ 规则 ③④ 排除的测试在公开 CI 上是 **not_run**，
+★ ★ **不是 passed**；★ 它们的必需文件、版本与 SHA256 记录在
+★ ★ `docs/audits/CI-FIX/CI_实验依赖与正式测试分离方案.md`。
