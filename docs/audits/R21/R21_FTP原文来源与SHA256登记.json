@@ -1,0 +1,51 @@
+{
+  "★ 登记版本": "R21-FTP-1.0",
+  "★ 登记时间": "2026-11-18",
+  "★ 下载来源": "https://www.rfc-editor.org/rfc/",
+  "★ 下载方式": "curl（官方 RFC Editor 原文）",
+  "★ 是否做标准化": "★ 否。★ 保留官方原始字节（★ 含 CRLF 行尾）；★ ★ 未做换行、编码或空白转换",
+  "★ 隔离位置": "guard/_out/_n1c_v2/r21/rfc_text/（★ 隔离实验区，★ 不触发正式中枢重建）",
+  "★ 文档": [
+    {
+      "rfc_number": "3659",
+      "角色": "★ 主评估文档",
+      "title": "Extensions to FTP",
+      "author": "P. Hethmon（Hethmon Software）",
+      "date": "March 2007",
+      "status": "Standards Track / PROPOSED STANDARD",
+      "doi": "10.17487/RFC3659",
+      "updates": "959",
+      "source_url": "https://www.rfc-editor.org/rfc/rfc3659.txt",
+      "http_status": 200,
+      "bytes": 137962,
+      "lines": 3419,
+      "line_ending": "CRLF（★ 官方原始字节）",
+      "sha256": "76b266573f15c458b9cf847e7b27952016a01727c1243f3ec0c5ea60645fe714",
+      "local_path": "guard/_out/_n1c_v2/r21/rfc_text/rfc3659.txt"
+    },
+    {
+      "rfc_number": "959",
+      "角色": "★ 背景参考文档",
+      "title": "FILE TRANSFER PROTOCOL (FTP)",
+      "author": "J. Postel, J. Reynolds（ISI）",
+      "date": "October 1985",
+      "status": "INTERNET STANDARD",
+      "obsoletes": "RFC 765 (IEN 149)",
+      "doi": "10.17487/RFC959",
+      "source_url": "https://www.rfc-editor.org/rfc/rfc959.txt",
+      "http_status": 200,
+      "bytes": 147316,
+      "lines": 3933,
+      "line_ending": "CRLF（★ 官方原始字节）",
+      "sha256": "e2eb01566e64c12ed75a0c4bd02231e62f91eebb86f596abc40999d5e8bc5a91",
+      "local_path": "guard/_out/_n1c_v2/r21/rfc_text/rfc959.txt"
+    }
+  ],
+  "★ 交叉引用关系": {
+    "★ 3659 → 959": "★ RFC 3659 头部「Updates: 959」；★ 正文多处引用「RFC 959 [3]」",
+    "★ 959 → 3659": "★ RFC 959 头部「Updated by … RFC3659 …」",
+    "★ 结论": "★ 3659 的内容大量依赖 959 的基础规范；★ 这正是把 959 列为★ 背景参考文档的原因"
+  },
+  "★ 使用边界": "★ RFC 3659 为主评分分母；★ RFC 959 仅提供必要的交叉引用上下文，★ 不纳入主评分分母；★ 若作为模型输入须登记章节与使用位置",
+  "★ 本轮实际 LLM 调用": "0 次"
+}
