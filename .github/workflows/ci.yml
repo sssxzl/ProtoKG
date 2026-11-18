@@ -275,8 +275,7 @@ jobs:
       - name: Build hub (rtsp) for guard 0
         run: |
           python scripts/build_hub.py --protocol rtsp \
-            --sources rfc traffic expert_note vuln --no-purge \
-            --out-dir "${{ github.workspace }}/_ci_artifacts/hub"
+            --sources rfc traffic expert_note vuln --no-purge
 
       # ★ fail-closed：★ 中枢没构建出来 ⇒ 立即失败，★ 不许让护栏 0 静默跳过
       - name: Verify hub artifact exists (fail-closed)
@@ -411,8 +410,7 @@ jobs:
       - name: Build hub (rtsp) for guard 0
         run: |
           python scripts/build_hub.py --protocol rtsp \
-            --sources rfc traffic expert_note vuln --no-purge \
-            --out-dir "${{ github.workspace }}/_ci_artifacts/hub"
+            --sources rfc traffic expert_note vuln --no-purge
 
       # ★ fail-closed：★ 中枢没构建出来 ⇒ 立即失败，★ 不许让护栏 0 静默跳过
       - name: Verify hub artifact exists (fail-closed)
