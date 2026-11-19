@@ -2,8 +2,8 @@
   "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
-    "llm_calls": 7,
-    "status": "T0_A_quality_tuning_r4_completed"
+    "llm_calls": 9,
+    "status": "T0_A_prompt_v4_semantic_hit_evidence_wrong"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -181,6 +181,10 @@
     "T0A_PromptV3截断与批次策略验证.md": {
       "sha256": "c5ff7de55c5338f6a8c58bf0b7aecbc844e52ea06310b33cbf1733aafc18f854",
       "size": 1304
+    },
+    "T0A_PromptV4质量验证与Gold证据判定.md": {
+      "sha256": "103e460e4d883b0599d9d5e8d7e251e41370b4eb9f1c2a3d246ac75f9bb30bce",
+      "size": 3379
     },
     "T0A_Raw到Canonical隔离集成报告.md": {
       "sha256": "5dcdc8a5e6c19cb212a75b428bb13d4e3f11d3ae957142048da0bb24703796ed",
@@ -529,6 +533,42 @@
     "T0A_实跑3_20261119_max8000/SHA256清单.json": {
       "sha256": "63bddb31fbcd52b7dcc8e50dc6f83c46ef111784bc7f9abc7afbaef4d2d4229d",
       "size": 522
+    },
+    "T0A_实跑4_20261119_promptv4/cache.json": {
+      "sha256": "d8c5fbfe740c92c9eeb50a15dfaf909824211717188b005295266967bbd86233",
+      "size": 15065
+    },
+    "T0A_实跑4_20261119_promptv4/definition.jsonl": {
+      "sha256": "e9d5edbbca6255066e7fa65955a00d21034673d590d863e2c4dbca45e9115f2d",
+      "size": 8438
+    },
+    "T0A_实跑4_20261119_promptv4/entities.jsonl": {
+      "sha256": "4f5a64b1e310d8a75d711028046f6d811e9fa83e9e4e5ba718ba3160fc4fcef1",
+      "size": 1845
+    },
+    "T0A_实跑4_20261119_promptv4/guard.json": {
+      "sha256": "7bf7327024ad60bf03b4107be609f0920ecb663fb4fcf678ec24891af990f5fc",
+      "size": 213
+    },
+    "T0A_实跑4_20261119_promptv4/legal_boundary.jsonl": {
+      "sha256": "3b606669047c7646f52a18bbec65e79e3ebecd5d228b9c672f57f06a6a1e2850",
+      "size": 11901
+    },
+    "T0A_实跑4_20261119_promptv4/prompt_v4.txt": {
+      "sha256": "4e7b601999c4d48be56b96e579216fa96f7281878cd376bb8f33bc165520ada4",
+      "size": 3542
+    },
+    "T0A_实跑4_20261119_promptv4/prompt_v4_meta.json": {
+      "sha256": "0301501c4b10bea360e43eeb99a531512c38e4866bceef7444c1cd5cb9d510d0",
+      "size": 237
+    },
+    "T0A_实跑4_20261119_promptv4/result.json": {
+      "sha256": "7d279feefce754b72f95be79583b9bc80ede1dc2aac3a3eb8978041cc5169ff3",
+      "size": 1248
+    },
+    "T0A_实跑4_20261119_promptv4/SHA256清单.json": {
+      "sha256": "2289dfd921e786fd7580f000786c70e1347d29284c2e3a04ed48129f0b6b4484",
+      "size": 700
     }
   }
 }
