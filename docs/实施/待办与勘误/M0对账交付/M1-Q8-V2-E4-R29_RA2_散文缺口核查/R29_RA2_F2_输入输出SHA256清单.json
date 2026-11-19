@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 63,
-    "status": "value_type_registry_partial"
+    "status": "backup_prepared"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -225,6 +225,14 @@
     "R29_多段Evidence承载方案.md": {
       "sha256": "79bff646a67c15300d13f3f56b527f474014ab47d5aa58919f71cb6ad6ed9ba7",
       "size": 1381
+    },
+    "R29_完整项目资产与遗漏清单.md": {
+      "sha256": "d076cc731796a083a8db8374a2d5b91c29fc4bd73f1d762fd20fe78cdc63b015",
+      "size": 1377
+    },
+    "R29_当前项目完整源码审查索引.md": {
+      "sha256": "2c79589a5295b8c8e00cba6a559aaa6eae973605c0fae0cc57c013225a790a7b",
+      "size": 2380
     },
     "R29_最小双通道Canonical身份回归.md": {
       "sha256": "a772d4982adc2def25266be4435977230fa71b3d92d8aeca02ce18313b7328e0",
