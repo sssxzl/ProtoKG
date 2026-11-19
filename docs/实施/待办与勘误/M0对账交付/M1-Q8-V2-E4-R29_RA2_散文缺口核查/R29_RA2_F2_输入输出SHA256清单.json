@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 63,
-    "status": "structural_channel_shape_captured"
+    "status": "structural_minimal_closure_partial"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -21,6 +21,14 @@
     "R29_D1_ABNF通道历史实现与移出原因审计.md": {
       "sha256": "5f0c7bf6e10c72e85a26b160d9037a0145b30b275a05e70299bca596e38ce52d",
       "size": 1242
+    },
+    "R29_D4_siaddr结构化知识端到端闭环.md": {
+      "sha256": "de88a4f47ed86dc0188a275830ac7ab455f61402c9ea3ba3f592da4b355f239a",
+      "size": 1199
+    },
+    "R29_H2_request_line_Canonical适配性报告.md": {
+      "sha256": "09fa812b5eba022ca26f6475b0827908138b6bc39a4a4dad7e1a154d63908c04",
+      "size": 1129
     },
     "R29_RA2_14条缓存拒收归因.xlsx": {
       "sha256": "a56ab810c2831aa16d8355feea0a51289bfb78ba961362393d2f6548f7987c53",
@@ -138,6 +146,10 @@
       "sha256": "a1cff4b02b51cab3891f99e04f83364532e6bc4fcbb96f3d4f83a9b20eb8d580",
       "size": 1342
     },
+    "R29_最小双通道Canonical身份回归.md": {
+      "sha256": "a772d4982adc2def25266be4435977230fa71b3d92d8aeca02ce18313b7328e0",
+      "size": 1096
+    },
     "R29_结构化抽取架构是否正式接入的决策报告.md": {
       "sha256": "11454387e118418af2f945431cf820bfb6cc3795820a999a944bd357985aa49e",
       "size": 1394
@@ -213,6 +225,10 @@
     "RFC9112_容量验证及全文运行报告.md": {
       "sha256": "9694cd15a7140a133329f9b77b36082a347c1f2b128473147d911fb0e2889a8b",
       "size": 353
+    },
+    "structural_closure.json": {
+      "sha256": "554748120abc1c9e0504c9d33ddc25d0b9927abbd7f4edee0070d6149f4036a3",
+      "size": 827
     },
     "T0_Gold原文跨度核查.md": {
       "sha256": "91f0c9f60644e725cac75bed40cfdca70acbdd90f6e799ea0b3c6a44e44db35f",
@@ -737,6 +753,10 @@
     "scripts/ra2_probe.py": {
       "sha256": "6b2aa1f0229b6e49ba8876c0038b8f1527b69792d9f61c3498b4912116a28faf",
       "size": 4503
+    },
+    "scripts/structural_closure.py": {
+      "sha256": "dfdd663831cc8fd302d47549884280c853ec29776e4e99c2f09f3ec8a66f49f2",
+      "size": 3342
     },
     "scripts/structural_extract.py": {
       "sha256": "eb5e686f09f86993b20bb6828dcfd0d54e9564a3a9b20dd4a360fa03d618a3e4",

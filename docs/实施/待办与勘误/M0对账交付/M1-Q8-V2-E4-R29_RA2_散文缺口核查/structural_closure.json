@@ -1,0 +1,30 @@
+{
+ "rows": [
+  {
+   "tag": "D4",
+   "name": "siaddr",
+   "fact_id": "f2_12b22d0911565eb5",
+   "aspect": "syntax",
+   "subject_type": "header",
+   "claim_id": "c2_f57cc9c278f74c83",
+   "evidence": [
+    "rfc:@file:rfc2131.txt#@541"
+   ],
+   "value": "{'type': 'pattern', 'data': 'siaddr | 4 | IP address of next server to use in bootstrap'}"
+  },
+  {
+   "tag": "H2",
+   "name": "request-line",
+   "fact_id": "f2_f5d4a14ef8f136cf",
+   "aspect": "syntax",
+   "subject_type": "header",
+   "claim_id": "c2_e5c3e3015c01c883",
+   "evidence": [
+    "rfc:@file:rfc9112.txt#@261"
+   ],
+   "value": "{'type': 'pattern', 'data': 'request-line | method SP request-target SP HTTP-version CRLF | HTTP 请求行由方法、请求目标、协议版本依次以单个空格"
+  }
+ ],
+ "stable": true,
+ "entities": 2
+}
