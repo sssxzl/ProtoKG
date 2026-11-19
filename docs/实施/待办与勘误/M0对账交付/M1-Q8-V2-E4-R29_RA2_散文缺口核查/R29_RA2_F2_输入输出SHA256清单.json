@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 0,
-    "status": "T0_A_live_execution_ready_for_approval"
+    "status": "T0_A_live_execution_blocked_no_credentials"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -201,6 +201,10 @@
     "T0A_定点安全修正与负例结果.md": {
       "sha256": "a6f536f14710f29bd36f670ee4f98c6070861333ae4f437ea40af40d1981cd6b",
       "size": 2568
+    },
+    "T0A_实执放行记录与凭据阻断.md": {
+      "sha256": "838f5e6a19f78ab28005e1041360beb45f6c1a87578f47d3b63ab266eb8f8f9f",
+      "size": 2494
     },
     "T0A_审批复核回应.md": {
       "sha256": "0c912e9973c952984a11d5c8e5a807cf8b0e66448f35b2b6e908442e9f26a1ce",
