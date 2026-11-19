@@ -1,0 +1,18 @@
+{
+ "calls": 2,
+ "used_in": 6433,
+ "spent_cny": 0.069954,
+ "billing_status": "none",
+ "log": [
+  {
+   "attempt": 1,
+   "est_in": 3654,
+   "at": "2026-11-19T22:01:56"
+  },
+  {
+   "attempt": 2,
+   "est_in": 3094,
+   "at": "2026-11-19T22:02:12"
+  }
+ ]
+}

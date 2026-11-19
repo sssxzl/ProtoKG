@@ -2,8 +2,8 @@
   "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
-    "llm_calls": 9,
-    "status": "T0_A_prompt_v4_semantic_hit_evidence_wrong"
+    "llm_calls": 11,
+    "status": "T0_A_quote_locator_offline_ok_live_gold_miss"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -166,6 +166,10 @@
       "sha256": "fed06afc75fa3e30248e9d5a3f4f7c3a2a9e48618dc80de2250ae616fa3b4326",
       "size": 1971
     },
+    "T0A_Gold语义与Evidence双重验收.md": {
+      "sha256": "b3b48138b7cbd9f79a7e5c795cfbbeff6eb93054a235c91e0b87a65b7b0082ba",
+      "size": 1656
+    },
     "T0A_Hub最小隔离接口.patch": {
       "sha256": "1a9d3c3c1625f2c9d2a6ab29c28ffadaf8f1b185d6619630933f3cd538897bc2",
       "size": 2403
@@ -185,6 +189,10 @@
     "T0A_PromptV4质量验证与Gold证据判定.md": {
       "sha256": "103e460e4d883b0599d9d5e8d7e251e41370b4eb9f1c2a3d246ac75f9bb30bce",
       "size": 3379
+    },
+    "T0A_RawQuote最小契约修正.patch": {
+      "sha256": "9806c31537e9d99bf714b597424d06f194c32fc8062119f14154d6d55dd3a7d1",
+      "size": 35120
     },
     "T0A_Raw到Canonical隔离集成报告.md": {
       "sha256": "5dcdc8a5e6c19cb212a75b428bb13d4e3f11d3ae957142048da0bb24703796ed",
@@ -206,6 +214,10 @@
       "sha256": "5969e458cc8ce8a4530c6818e1cf729a6504dbb5a0c6197c82e835ceed5194df",
       "size": 5058
     },
+    "T0A_v4与新版本知识质量对照.md": {
+      "sha256": "5d52e9f67c2232109769bcbc61b3f862196c1feea03ccf9d55bba1938061c73c",
+      "size": 1098
+    },
     "T0A_三阻断修正与放行结论.md": {
       "sha256": "6be0ec20624e73a1f791db1f20bf691ea88455f7056bbaa83f60d9c662967e98",
       "size": 2405
@@ -225,6 +237,10 @@
     "T0A_六块完整性与入口核验.md": {
       "sha256": "c68d4b8f724caa291f18a87188b8e1a422e496e0590df4d9163a2af40cbf3b56",
       "size": 1981
+    },
+    "T0A_原文Quote确定性定位与负例.md": {
+      "sha256": "a7d8fd8bc6804dee6b7ffcd2a944afebeb745af8f672804fecff073e103ec9a0",
+      "size": 1717
     },
     "T0A_后续真实模型验证所需证据清单.md": {
       "sha256": "8f3c2c146a8454eb5fa7ebe912bcf815906fe3017e7c0a624bd0c636cd8a0ab8",
@@ -342,6 +358,10 @@
       "sha256": "84834189511da673071518542ce8c938130f052bc9f1e379e7f2a5d82fdd0c6b",
       "size": 623
     },
+    "T0A_行号偏移与Evidence失配根因.md": {
+      "sha256": "0c37cd462c3bb6e60c9d3300260ad58e0977815145db2952cf87adcff8ded9fb",
+      "size": 1218
+    },
     "T0A_请求前门禁与无重试验证.md": {
       "sha256": "4f5269946a3a1218c88a24338ae6ec92c5fda65f5a42c2d8c0be4199ef2d1595",
       "size": 1548
@@ -431,8 +451,8 @@
       "size": 2738
     },
     "scripts/t0a_executor.py": {
-      "sha256": "07dd3a56c867cb8cd02182090e98cd623194f7b37c7afec1ac83f97e26843572",
-      "size": 15766
+      "sha256": "07f4971657499bd86011b42341fc6478cd956e5c3ff0c0566406ba4bf8c6384d",
+      "size": 15776
     },
     "scripts/t0a_executor_checks.py": {
       "sha256": "40cbad4c52a1aae700eeafc5ea49527fc8525e40664f4fc117b5ef6bcce0f54d",
@@ -569,6 +589,46 @@
     "T0A_实跑4_20261119_promptv4/SHA256清单.json": {
       "sha256": "2289dfd921e786fd7580f000786c70e1347d29284c2e3a04ed48129f0b6b4484",
       "size": 700
+    },
+    "T0A_实跑5_20261119_promptv5/definition.jsonl": {
+      "sha256": "e74e7ab018f5245dd732c4d8208fd7fd91a1d5dfcad616308e976c73648807f2",
+      "size": 7553
+    },
+    "T0A_实跑5_20261119_promptv5/entities.jsonl": {
+      "sha256": "db8280500289e84ae5f6d65dae8d751ee66978b7ecbfd7a4f2f4790c4aee1337",
+      "size": 1757
+    },
+    "T0A_实跑5_20261119_promptv5/guard.json": {
+      "sha256": "3b5fe500d1acb0ed85f4882c73f343e15fd423507955b414999f10f142247186",
+      "size": 213
+    },
+    "T0A_实跑5_20261119_promptv5/legal_boundary.jsonl": {
+      "sha256": "51d539a5a5e3f962f806357ce66299101fcc2562461b3c8545c271949d29f7a3",
+      "size": 12766
+    },
+    "T0A_实跑5_20261119_promptv5/prompt_v5.txt": {
+      "sha256": "dae1c3c3f7d252965aad7249c11578a2669f0dfb83c926f37273dd54dbbca14a",
+      "size": 3816
+    },
+    "T0A_实跑5_20261119_promptv5/prompt_v5_meta.json": {
+      "sha256": "1077ec6bf3f516a2f2140f8e73716297b21f3a08cc2d74a0a945a4747a0e7ed4",
+      "size": 222
+    },
+    "T0A_实跑5_20261119_promptv5/result.json": {
+      "sha256": "fe86621f33a4c54620b02f3d069c42b90ee435b94587500246138ff8c68692ee",
+      "size": 1118
+    },
+    "T0A_实跑5_20261119_promptv5/runA_failed_guard.json": {
+      "sha256": "f979c90345967094d4d5c9b1cd65fa993d8a98fc0fc78d79cf4cc1fa4d277627",
+      "size": 266
+    },
+    "T0A_实跑5_20261119_promptv5/runA_failed_result.json": {
+      "sha256": "b1c2aac5d0017be8e62f25830f53b62d45ef857bf42430640dbca56b8835d329",
+      "size": 328
+    },
+    "T0A_实跑5_20261119_promptv5/SHA256清单.json": {
+      "sha256": "356079921b4cb6446e97b1e6e61ed6bbf5ffb0da4fa0fac94a481675e51718f2",
+      "size": 808
     }
   }
 }

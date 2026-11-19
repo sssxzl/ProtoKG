@@ -1,0 +1,7 @@
+{
+ "version": "prose-semantics-v5",
+ "chars": 2476,
+ "sha256": "dae1c3c3f7d252965aad7249c11578a2669f0dfb83c926f37273dd54dbbca14a",
+ "added": "evidence_quote 字段（逐字原文证据）",
+ "base": "prose-semantics-v4"
+}

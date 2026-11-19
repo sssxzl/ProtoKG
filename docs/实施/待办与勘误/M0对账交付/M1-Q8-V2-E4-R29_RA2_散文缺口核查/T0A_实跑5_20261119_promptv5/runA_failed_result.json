@@ -1,0 +1,14 @@
+{
+ "status": "request_failed",
+ "protocol": "smtp",
+ "doc": "rfc3207.txt",
+ "doc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+ "blocks": 6,
+ "calls": 2,
+ "reason": "TypeError: 'NoneType' object is not iterable",
+ "billing_status": "none",
+ "usage": {
+  "in": 6433,
+  "out": null
+ }
+}

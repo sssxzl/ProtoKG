@@ -216,7 +216,7 @@ def _run_body(protocol: str, doc_name: str, client, root: pathlib.Path,
     PS._cache_path = lambda p: root / "cache" / f"{p}.prose.json"  # type: ignore
     PS._MAX_TOKENS = MAX_TOKENS
     os.environ["PROSE_NO_RETRY"] = "1"
-    os.environ["PROSE_BATCH_BLOCKS"] = "5"
+    os.environ.setdefault("PROSE_BATCH_BLOCKS", "5")
 
     guard = Guard(root)
     gc = GuardedClient(client, guard)

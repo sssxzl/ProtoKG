@@ -1,0 +1,11 @@
+{"entity_id": "smtp:actor:client", "protocol": "smtp", "type": "actor", "name": "client", "canonical_name": "client", "aliases": []}
+{"entity_id": "smtp:actor:clients_and_servers", "protocol": "smtp", "type": "actor", "name": "clients and servers", "canonical_name": "clients and servers", "aliases": []}
+{"entity_id": "smtp:actor:publicly-referenced_smtp_server", "protocol": "smtp", "type": "actor", "name": "publicly-referenced SMTP server", "canonical_name": "publicly-referenced SMTP server", "aliases": []}
+{"entity_id": "smtp:actor:smtp_client", "protocol": "smtp", "type": "actor", "name": "SMTP client", "canonical_name": "SMTP client", "aliases": []}
+{"entity_id": "smtp:actor:smtp_server", "protocol": "smtp", "type": "actor", "name": "SMTP server", "canonical_name": "SMTP server", "aliases": []}
+{"entity_id": "smtp:actor:smtp_server_that_is_not_publicly_referenced", "protocol": "smtp", "type": "actor", "name": "SMTP server that is not publicly referenced", "canonical_name": "SMTP server that is not publicly referenced", "aliases": []}
+{"entity_id": "smtp:protocol:5.7.0", "protocol": "smtp", "type": "protocol", "name": "5.7.0", "canonical_name": "5.7.0", "aliases": []}
+{"entity_id": "smtp:protocol:sasl_external", "protocol": "smtp", "type": "protocol", "name": "SASL EXTERNAL", "canonical_name": "SASL EXTERNAL", "aliases": []}
+{"entity_id": "smtp:protocol:smtp", "protocol": "smtp", "type": "protocol", "name": "SMTP", "canonical_name": "SMTP", "aliases": []}
+{"entity_id": "smtp:protocol:starttls", "protocol": "smtp", "type": "protocol", "name": "STARTTLS", "canonical_name": "STARTTLS", "aliases": []}
+{"entity_id": "smtp:protocol:tls", "protocol": "smtp", "type": "protocol", "name": "TLS", "canonical_name": "TLS", "aliases": []}
