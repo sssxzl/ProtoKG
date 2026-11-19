@@ -1,0 +1,95 @@
+diff --git a/core/fused/extraction/norm.py b/core/fused/extraction/norm.py
+index aac7ec5..068b4d7 100644
+--- a/core/fused/extraction/norm.py
++++ b/core/fused/extraction/norm.py
+@@ -493,6 +493,32 @@ def required_header_by_method_norm_to_fact(norm: dict[str, Any]) -> list[Fact]:
+ 
+ 
+ #: rfc 源 kind → 映射函数（返回 list[Fact]）
++
++#: R29-RA2/T0-A：协议参与方词表（散文知识的主体不是头字段）
++_PROSE_ACTOR_HINTS = {
++    "client", "server", "user", "agent", "implementation", "party",
++    "parties", "both parties", "clients and servers", "sender", "receiver",
++    "smtp client", "smtp server", "smtp agent", "administrator",
++}
++
++
++def _prose_subject_type(name: str, norm: dict) -> str:
++    """散文知识的 Subject 类型：参与方 ⇒ actor；其余 ⇒ protocol。
++
++    ★ 只复用既有类型（actor / protocol / header），不新增主体类型。
++    ★ 只有 name 明确是头字段（norm 带 entity_type=header 或含连字符且全大写）
++      才保留 header —— 避免把「client」这类参与方伪装成邮件头。
++    """
++    low = str(name or "").strip().lower()
++    if norm.get("entity_type") == "header":
++        return "header"
++    if low in _PROSE_ACTOR_HINTS:
++        return "actor"
++    if any(k in low for k in ("client", "server", "parties", "user",
++                              "implementation", "agent", "sender", "receiver")):
++        return "actor"
++    return "protocol"            # 扩展名/关键字（如 STARTTLS）按协议级实体
++
+ def prose_semantics_norm_to_facts(n: dict) -> list[Fact]:
+     """散文语义 norm ⇒ ``definition`` fact（★ 通道 I，E6）。
+ 
+@@ -504,7 +530,7 @@ def prose_semantics_norm_to_facts(n: dict) -> list[Fact]:
+     meaning = str(n.get("meaning") or n.get("content") or "").strip()
+     if not name or not meaning:
+         return []
+-    _subj = Subject(type="header", name=name)
++    _subj = Subject(type=_prose_subject_type(name, n), name=name)
+     _val = Value(type="struct", data={"meaning": meaning})
+     return [_make_fact(_subj, "definition", _val,
+                        "normative_unspecified", n)]
+@@ -542,9 +568,10 @@ def prose_constraint_norm_to_facts(n: dict) -> list[Fact]:
+     _subj_name = _nsub or name
+     # ★ 主体未解析 ⇒ **不产 Rule Slot**（★ 不得为稳定 FactID 而猜主体）
+     if n.get("subject_status") and n.get("subject_status") != "resolved":
+-        _subj = Subject(type="header", name=_subj_name)
++        _subj = Subject(type=_prose_subject_type(_subj_name, n), name=_subj_name)
+         _val = Value(type="text", data=str(con))
+-        return [_make_fact(_subj, "definition", _val,
++        # 约束知识即便主体未解析，也属边界约束，不进 definition
++        return [_make_fact(_subj, "legal_boundary", _val,
+                            "normative_unspecified", n)]
+ 
+     # ---- ★ 主体归属（P0-1）：Rule Slot 的 subject 用**义务主体**，
+@@ -553,9 +580,9 @@ def prose_constraint_norm_to_facts(n: dict) -> list[Fact]:
+     _subj_name = _nsub or name
+     # ★ 主体未解析 ⇒ **不产 Rule Slot**（★ 不得为稳定 FactID 而猜主体）
+     if n.get("subject_status") and n.get("subject_status") != "resolved":
+-        _subj0 = Subject(type="header", name=_subj_name)
++        _subj0 = Subject(type=_prose_subject_type(_subj_name, n), name=_subj_name)
+         _val0 = Value(type="text", data=str(con))
+-        return [_make_fact(_subj0, "definition", _val0,
++        return [_make_fact(_subj0, "legal_boundary", _val0,
+                            "normative_unspecified", n)]
+ 
+ 
+@@ -568,7 +595,7 @@ def prose_constraint_norm_to_facts(n: dict) -> list[Fact]:
+     if (not _action or not _object
+             or (_action.lower() == name.lower()
+                 and _object.lower() == name.lower())):
+-        _subj = Subject(type="header", name=name)
++        _subj = Subject(type=_prose_subject_type(name, n), name=name)
+         _val = Value(type="text", data=str(con))
+         return [_make_fact(_subj, "definition", _val,
+                            "normative_unspecified", n)]
+@@ -595,10 +622,12 @@ def prose_constraint_norm_to_facts(n: dict) -> list[Fact]:
+     # ★ 若 LLM 未给出强度/极性 ⇒ 记 unknown（**不得凭推测赋值**）
+     _txt = rule_text(_payload)
+ 
+-    _subj = Subject(type="header", name=_subj_name, qualifiers=_quals)
++    _subj = Subject(type=_prose_subject_type(_subj_name, n),
++                    name=_subj_name, qualifiers=_quals)
+     _val = Value(type="text", data=_txt)
+     # ★ 映射函数必须返回 **list**（与其它 kind 一致）
+-    return [_make_fact(_subj, "definition", _val, "normative_unspecified", n)]
++    # 约束类知识进 legal_boundary（既有 aspect），不是 definition
++    return [_make_fact(_subj, "legal_boundary", _val, "normative_unspecified", n)]
+ RFC_KIND_MAP = {
+     "transition": lambda n: [transition_norm_to_fact(n)],
+     # ★ 2026-11-12（通道 I，E6）：**散文语义**（LLM 从纯散文 RFC 抽的）

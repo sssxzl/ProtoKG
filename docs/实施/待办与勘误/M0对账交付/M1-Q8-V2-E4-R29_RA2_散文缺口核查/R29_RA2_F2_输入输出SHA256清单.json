@@ -3,11 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 4,
-    "spent_cny_est": {
-      "peak": 0.0764,
-      "offpeak": 0.0384
-    },
-    "status": "T0_A_live_run_completed_once"
+    "status": "T0_A_gold_gap_attributed"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -178,6 +174,14 @@
       "sha256": "6e6994bc0bff4d1fb026599aafd2efe7b2e7e4118e52f6db01b6fe12c581f0b9",
       "size": 1491
     },
+    "T0A_Subject与Aspect映射根因.md": {
+      "sha256": "36b6ea7e3623f722f25b159330c233afeaaad57f5f7a2f296dbbe76058032cca",
+      "size": 2125
+    },
+    "T0A_Subject与Aspect最小修正.patch": {
+      "sha256": "5969e458cc8ce8a4530c6818e1cf729a6504dbb5a0c6197c82e835ceed5194df",
+      "size": 5058
+    },
     "T0A_三阻断修正与放行结论.md": {
       "sha256": "6be0ec20624e73a1f791db1f20bf691ea88455f7056bbaa83f60d9c662967e98",
       "size": 2405
@@ -185,6 +189,10 @@
     "T0A_三阻断最小修正.patch": {
       "sha256": "3a9264a3df3cbba2dc22ab89e23e0c5d31628c11bfc607925fe77139b9783581",
       "size": 15974
+    },
+    "T0A_两次真实运行授权与usage对账.md": {
+      "sha256": "1b301c277fef927b4fd8d636238715a4996a5050560f17e44d4aeaff3226d712",
+      "size": 1666
     },
     "T0A_全产物隔离路径核验.md": {
       "sha256": "c847d18b67b6130625d39557f74f9d58b1fcb5b3e948689d9d0fe6275377b7be",
@@ -249,6 +257,14 @@
     "T0A_正式产物保护及回滚验证.md": {
       "sha256": "5d29484742bb418a512fa1bb002b3224d2c7270b8ffe6e0d9dab090f608a6ed5",
       "size": 1163
+    },
+    "T0A_真实Gold漏抽逐层归因.md": {
+      "sha256": "0a46a10223c47601302d1f754f1ac54b3eaa87a3d36c2dc0ffc3a75fcfcc0721",
+      "size": 2177
+    },
+    "T0A_真实响应离线回放与最小修正.md": {
+      "sha256": "57cd2e75ab567dc9eee13f22493c134f414cd79ce19d0f5b90a1eb5246f3f215",
+      "size": 1481
     },
     "T0A_真实运行器完整链路离线报告.md": {
       "sha256": "e058b7e55245b2708493ef27c4b8804f86403cb1a168075daff1944a403d0ed2",
