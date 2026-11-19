@@ -1,0 +1,301 @@
+{
+ "items": [
+  {
+   "id": "p0",
+   "proposition": "参数必须通过客户端的 vendor class identifier 与服务器中标识的客户端类别精确匹配来识别。",
+   "model_span": 1649,
+   "status": "ok",
+   "quote": "the parameters\n      MUST be identified by an exact match between the client's vendor\n      class identifiers and the client's classes identified in the\n      server,",
+   "verified_span": [
+    1648,
+    1651
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p1",
+   "proposition": "服务器可在 DHCPOFFER 中返回用于确定参数的 vendor class identifier，以帮助客户端选择接受哪个 DHCPOFFER。",
+   "model_span": 1654,
+   "status": "ok",
+   "quote": "The server MAY choose to return the 'vendor class identifier' used to\n    determine the parameters in the DHCPOFFER message to assist the\n    client in selecting which DHCPOFFER to accept.",
+   "verified_span": [
+    1655,
+    1657
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p2",
+   "proposition": "服务器将 DHCPDISCOVER 的 xid 字段插入 DHCPOFFER 的 xid 字段并发送给请求客户端。",
+   "model_span": 1657,
+   "status": "ok",
+   "quote": "The server inserts\n    the 'xid' field from the DHCPDISCOVER message into the 'xid' field of\n    the DHCPOFFER message and sends the DHCPOFFER message to the\n    requesting client.",
+   "verified_span": [
+    1657,
+    1660
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p3",
+   "proposition": "DHCPREQUEST 消息可来自响应 DHCPOFFER 的客户端、验证已分配 IP 地址的客户端或延长租约的客户端。",
+   "model_span": 1663,
+   "status": "ok",
+   "quote": "A DHCPREQUEST message may come from a client responding to a\n    DHCPOFFER message from a server, from a client verifying a previously\n    allocated IP address or from a client extending the lease on a\n    network address.",
+   "verified_span": [
+    1664,
+    1667
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p4",
+   "proposition": "客户端必须在所有后续消息中使用相同的 client identifier。",
+   "model_span": 1672,
+   "status": "ok",
+   "quote": "If the client uses a 'client identifier' in a\n    DHCPREQUEST message, it MUST use that same 'client identifier' in all\n    subsequent messages.",
+   "verified_span": [
+    1670,
+    1672
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p5",
+   "proposition": "A DHCP server MAY extend a client's lease only if it has local administrative authority to do so.",
+   "model_span": 1802,
+   "status": "ok",
+   "quote": "A DHCP server MAY extend a client's lease only if it has local\n    administrative authority to do so.",
+   "verified_span": [
+    1802,
+    1803
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p6",
+   "proposition": "客户端通过其他方式发现建议的网络地址已被占用时发送 DHCPDECLINE 消息。",
+   "model_span": 1807,
+   "status": "ok",
+   "quote": "If the server receives a DHCPDECLINE message, the client has\n    discovered through some other means that the suggested network\n    address is already in use.",
+   "verified_span": [
+    1807,
+    1809
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p7",
+   "proposition": "The server MUST mark the network address as not available.",
+   "model_span": 1809,
+   "status": "ok",
+   "quote": "The server MUST mark the network address\n    as not available",
+   "verified_span": [
+    1809,
+    1810
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p8",
+   "proposition": "The server SHOULD notify the local system administrator of a possible configuration problem.",
+   "model_span": 1810,
+   "status": "ok",
+   "quote": "and SHOULD notify the local system administrator of\n    a possible configuration problem.",
+   "verified_span": [
+    1810,
+    1811
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p9",
+   "proposition": "收到 DHCPRELEASE 后，服务器将该网络地址标记为未分配。",
+   "model_span": 1815,
+   "status": "ok",
+   "quote": "Upon receipt of a DHCPRELEASE message, the server marks the network\n    address as not allocated.",
+   "verified_span": [
+    1815,
+    1816
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p10",
+   "proposition": "The server SHOULD retain a record of the client's initialization parameters for possible reuse in response to subsequent requests from the client.",
+   "model_span": 1817,
+   "status": "ok",
+   "quote": "The server SHOULD retain a record of the\n    client's initialization parameters for possible reuse in response to\n    subsequent requests from the client.",
+   "verified_span": [
+    1816,
+    1818
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p11",
+   "proposition": "若客户端在 DHCPDISCOVER 消息中包含请求参数列表，则必须在后续所有消息中包含该列表。",
+   "model_span": 1980,
+   "status": "ok",
+   "quote": "If the client included a list\n    of requested parameters in a DHCPDISCOVER message, it MUST include\n    that list in all subsequent messages.",
+   "verified_span": null,
+   "match": "ambiguous"
+  },
+  {
+   "id": "p12",
+   "proposition": "客户端生成并记录随机事务标识符，并插入到 'xid' 字段。",
+   "model_span": 1983,
+   "status": "ok",
+   "quote": "The client generates and records a random transaction identifier and\n    inserts that identifier into the 'xid' field.",
+   "verified_span": null,
+   "match": "ambiguous"
+  },
+  {
+   "id": "p13",
+   "proposition": "xid 不匹配的 DHCPOFFER 必须被静默丢弃。",
+   "model_span": 1990,
+   "status": "ok",
+   "quote": "If the 'xid' of an arriving DHCPOFFER message does not match the\n    'xid' of the most recent DHCPDISCOVER message, the DHCPOFFER message\n    must be silently discarded.",
+   "verified_span": [
+    1990,
+    1992
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p14",
+   "proposition": "到达的 DHCPACK 消息必须被静默丢弃。",
+   "model_span": 1992,
+   "status": "ok",
+   "quote": "Any arriving DHCPACK messages must be\n    silently discarded.",
+   "verified_span": [
+    1992,
+    1993
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p15",
+   "proposition": "客户端在一段时间内收集 DHCPOFFER 消息，从中选择一个，并从 'server identifier' 选项提取服务器地址。",
+   "model_span": 1994,
+   "status": "ok",
+   "quote": "The client collects DHCPOFFER messages over a period of time, selects\n    one DHCPOFFER message from the (possibly many) incoming DHCPOFFER\n    messages (e.g., the first DHCPOFFER message or the DHCPOFFER message\n    from the previously used server) and extracts the server address from\n    the 'server identifier' option in the DHCPOFFER message.",
+   "verified_span": [
+    1995,
+    1999
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p16",
+   "proposition": "在 DHCPDISCOVER 中 Requested IP address 选项为 MAY，在 DHCPINFORM 中为 MUST NOT。",
+   "model_span": 2082,
+   "status": "multi_source",
+   "quote": "",
+   "verified_span": null,
+   "match": "not_attempted"
+  },
+  {
+   "id": "p17",
+   "proposition": "客户端 MUST NOT 在 DHCPREQUEST 中包含 'server identifier'",
+   "model_span": 2150,
+   "status": "ok",
+   "quote": "The client MUST NOT include a\n    'server identifier' in the DHCPREQUEST message.",
+   "verified_span": null,
+   "match": "ambiguous"
+  },
+  {
+   "id": "p18",
+   "proposition": "客户端 SHOULD NOT 请求租期参数",
+   "model_span": 2170,
+   "status": "ok",
+   "quote": "The\n    client SHOULD NOT request lease time parameters.",
+   "verified_span": [
+    2167,
+    2168
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p19",
+   "proposition": "DHCPINFORM 消息 MUST 定向到 'DHCP server' UDP 端口",
+   "model_span": 2174,
+   "status": "ok",
+   "quote": "DHCPINFORM messages MUST be\n    directed to the 'DHCP server' UDP port.",
+   "verified_span": [
+    2172,
+    2173
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p20",
+   "proposition": "客户端 SHOULD 显示提示并 SHOULD 使用默认值开始网络处理",
+   "model_span": 2181,
+   "status": "ok",
+   "quote": "then it SHOULD display a message informing the user of the\n    problem, and then SHOULD begin network processing using suitable\n    defaults as per Appendix A.",
+   "verified_span": null,
+   "match": "quote_not_found"
+  },
+  {
+   "id": "p21",
+   "proposition": "T1 MUST 早于 T2",
+   "model_span": 2211,
+   "status": "ok",
+   "quote": "T1 MUST be\n    earlier than T2, which, in turn, MUST be earlier than the time at\n    which the client's lease will expire.",
+   "verified_span": [
+    2216,
+    2218
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p22",
+   "proposition": "T2 MUST 早于租期到期时间",
+   "model_span": 2211,
+   "status": "ok",
+   "quote": "T1 MUST be\n    earlier than T2, which, in turn, MUST be earlier than the time at\n    which the client's lease will expire.",
+   "verified_span": [
+    2216,
+    2218
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p23",
+   "proposition": "未经授权的 DHCP 服务器可能很容易被设置起来。",
+   "model_span": 2415,
+   "status": "ok",
+   "quote": "Unauthorized DHCP servers may be easily set up.",
+   "verified_span": [
+    2415,
+    2415
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p24",
+   "proposition": "未经授权的 DHCP 服务器可以向客户端发送虚假且可能具有破坏性的信息，例如错误或重复的 IP 地址、错误的路由信息、错误的域名服务器地址等。",
+   "model_span": 2415,
+   "status": "ok",
+   "quote": "Unauthorized DHCP servers may be easily set up.  Such servers can\n    then send false and potentially disruptive information to clients\n    such as incorrect or duplicate IP addresses, incorrect routing\n    information (including spoof routers, etc.), incorrect domain\n    nameserver addresses (such as spoof nameservers), and so on.",
+   "verified_span": [
+    2415,
+    2419
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p25",
+   "proposition": "恶意 DHCP 客户端可以伪装成合法客户端，并获取本应提供给这些合法客户端的信息。",
+   "model_span": 2423,
+   "status": "ok",
+   "quote": "Malicious DHCP clients could masquerade as legitimate clients and\n    retrieve information intended for those legitimate clients.",
+   "verified_span": [
+    2423,
+    2424
+   ],
+   "match": "whitespace_normalized_match"
+  }
+ ]
+}

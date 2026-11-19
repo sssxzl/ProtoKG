@@ -1,0 +1,577 @@
+{
+ "items": [
+  {
+   "id": "p0",
+   "proposition": "DHCP 沿用了 BOOTP 中继代理的行为，并且 DHCP 参与者可以与 BOOTP 参与者互操作。",
+   "model_span": 22,
+   "status": "ok",
+   "quote": "DHCP captures the behavior of\n   BOOTP relay agents [7, 21], and DHCP participants can interoperate\n   with BOOTP participants [9].",
+   "verified_span": [
+    28,
+    30
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p1",
+   "proposition": "DHCP 由两个组件构成：一个用于从 DHCP 服务器向主机传递主机特定配置参数的协议，以及一个用于向主机分配网络地址的机制。",
+   "model_span": 78,
+   "status": "ok",
+   "quote": "DHCP consists of two components: a\n   protocol for delivering host-specific configuration parameters from a\n   DHCP server to a host and a mechanism for allocation of network\n   addresses to hosts.",
+   "verified_span": [
+    90,
+    93
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p2",
+   "proposition": "DHCP 建立在客户端-服务器模型之上，由指定的 DHCP 服务器主机分配网络地址并向动态配置的主机传递配置参数。",
+   "model_span": 83,
+   "status": "ok",
+   "quote": "DHCP is built on a client-server model, where designated DHCP server\n   hosts allocate network addresses and deliver configuration parameters\n   to dynamically configured hosts.",
+   "verified_span": [
+    95,
+    97
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p3",
+   "proposition": "客户端在重传后未收到 DHCPACK 或 DHCPNAK 时，可以在剩余租期内继续使用先前分配的网络地址和配置参数。",
+   "model_span": 1074,
+   "status": "ok",
+   "quote": "If the client\n      receives neither a DHCPACK or a DHCPNAK message after employing\n      the retransmission algorithm, the client MAY choose to use the\n      previously allocated network address and configuration parameters\n      for the remainder of the unexpired lease.",
+   "verified_span": [
+    1072,
+    1076
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p4",
+   "proposition": "客户端可以通过向服务器发送 DHCPRELEASE 消息来放弃其网络地址租约。",
+   "model_span": 1080,
+   "status": "ok",
+   "quote": "The client may choose to relinquish its lease on a network\n      address by sending a DHCPRELEASE message to the server.",
+   "verified_span": [
+    1080,
+    1081
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p5",
+   "proposition": "客户端在 DHCPRELEASE 消息中用 'client identifier' 或 'chaddr' 加网络地址标识要释放的租约。",
+   "model_span": 1082,
+   "status": "ok",
+   "quote": "The\n      client identifies the lease to be released with its\n      'client identifier', or 'chaddr' and network address in the\n      DHCPRELEASE message.",
+   "verified_span": [
+    1081,
+    1084
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p6",
+   "proposition": "客户端在本地保留网络地址时，正常优雅关闭期间不会释放租约；仅在明确需要释放租约（如即将迁移到不同子网）时才发送 DHCPRELEASE。",
+   "model_span": 1088,
+   "status": "ok",
+   "quote": "Note that in this case, where the client retains its network\n      address locally, the client will not normally relinquish its\n      lease during a graceful shutdown.  Only in the case where the\n      client explicitly needs to relinquish its lease, e.g., the client\n      is about to be moved to a different subnet, will the client send\n      a DHCPRELEASE message.",
+   "verified_span": [
+    1086,
+    1091
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p7",
+   "proposition": "客户端为网络地址获取固定期限（可为无限）的租约。",
+   "model_span": 1095,
+   "status": "ok",
+   "quote": "A client acquires a lease for a network address for a fixed period of\n   time (which may be infinite).",
+   "verified_span": [
+    1095,
+    1096
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p8",
+   "proposition": "时间以秒为单位表示；0xffffffff 保留表示无限。",
+   "model_span": 1096,
+   "status": "ok",
+   "quote": "Throughout the protocol, times are to\n   be represented in units of seconds.  The time value of 0xffffffff is\n   reserved to represent \"infinity\".",
+   "verified_span": [
+    1096,
+    1098
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p9",
+   "proposition": "DHCP 服务器持有一个网络地址块，可用于满足新地址请求。",
+   "model_span": 1218,
+   "status": "ok",
+   "quote": "In this section, we assume that a DHCP server has a block of network\n   addresses from which it can satisfy requests for new addresses.",
+   "verified_span": [
+    1219,
+    1220
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p10",
+   "proposition": "每个服务器在本地永久存储中维护已分配地址和租约的数据库。",
+   "model_span": 1220,
+   "status": "ok",
+   "quote": "Each\n   server also maintains a database of allocated addresses and leases in\n   local permanent storage.",
+   "verified_span": [
+    1220,
+    1222
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p11",
+   "proposition": "DHCP 客户端和服务器通过填写固定格式字段并在可变长选项区附加带标签数据项来构造 DHCP 消息。",
+   "model_span": 1224,
+   "status": "ok",
+   "quote": "DHCP clients and servers both construct DHCP messages by filling in\n   fields in the fixed format section of the message and appending\n   tagged data items in the variable length option area.",
+   "verified_span": [
+    1226,
+    1228
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p12",
+   "proposition": "DHCP 服务器通常尝试使用单播投递将 DHCPOFFER、DHCPACK 和 DHCPNAK 消息直接发送给客户端。",
+   "model_span": 1349,
+   "status": "ok",
+   "quote": "Normally, DHCP servers and BOOTP relay agents attempt to deliver\n    DHCPOFFER, DHCPACK and DHCPNAK messages directly to the client using\n    uicast delivery.",
+   "verified_span": [
+    1351,
+    1353
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p13",
+   "proposition": "BOOTP 中继代理通常尝试使用单播投递将 DHCPOFFER、DHCPACK 和 DHCPNAK 消息直接发送给客户端。",
+   "model_span": 1349,
+   "status": "ok",
+   "quote": "Normally, DHCP servers and BOOTP relay agents attempt to deliver\n    DHCPOFFER, DHCPACK and DHCPNAK messages directly to the client using\n    uicast delivery.",
+   "verified_span": [
+    1351,
+    1353
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p14",
+   "proposition": "能接收单播的客户端应清除 BROADCAST 位",
+   "model_span": 1366,
+   "status": "ok",
+   "quote": "A client that can\n    receive unicast IP datagrams before its protocol software has been\n    configured SHOULD clear the BROADCAST bit to 0.",
+   "verified_span": [
+    1367,
+    1369
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p15",
+   "proposition": "服务器或中继代理应检查 BROADCAST 位",
+   "model_span": 1372,
+   "status": "ok",
+   "quote": "A server or relay agent sending or relaying a DHCP message directly\n    to a DHCP client (i.e., not to a relay agent specified in the\n    'giaddr' field) SHOULD examine the BROADCAST bit in the 'flags'\n    field.",
+   "verified_span": [
+    1373,
+    1376
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p16",
+   "proposition": "BROADCAST 位为 1 时应以 IP 广播发送",
+   "model_span": 1376,
+   "status": "ok",
+   "quote": "If this bit is set to 1, the DHCP message SHOULD be sent as\n    an IP broadcast using an IP broadcast address (preferably 0xffffffff)\n    as the IP destination address and the link-layer broadcast address as\n    the link-layer destination address.",
+   "verified_span": [
+    1376,
+    1379
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p17",
+   "proposition": "动态分配可用于将 IP 地址分配给永久连接网络的新客户端，前提是地址稀缺且回收旧客户端地址很重要。",
+   "model_span": 141,
+   "status": "ok",
+   "quote": "Dynamic allocation may also be a good choice\n    for assigning an IP address to a new client being permanently\n    connected to a network where IP addresses are sufficiently scarce\n    that it is important to reclaim them when old clients are retired.",
+   "verified_span": [
+    140,
+    143
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p18",
+   "proposition": "手动分配允许 DHCP 用于在 DHCP 机制之外管理 IP 地址分配的环境中消除手动配置主机的易错过程。",
+   "model_span": 145,
+   "status": "ok",
+   "quote": "Manual allocation allows DHCP to be used to eliminate the error-prone\n    process of manually configuring hosts with IP addresses in\n    environments where (for whatever reasons) it is desirable to manage\n    IP address assignment outside of the DHCP mechanisms.",
+   "verified_span": [
+    144,
+    147
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p19",
+   "proposition": "DHCP 消息格式基于 BOOTP 消息格式，以捕获 BOOTP 中继代理行为并允许现有 BOOTP 客户端与 DHCP 服务器互操作。",
+   "model_span": 151,
+   "status": "ok",
+   "quote": "The format of DHCP messages is based on the format of BOOTP messages,\n    to capture the BOOTP relay agent behavior described as part of the\n    BOOTP specification [7, 21] and to allow interoperability of existing\n    BOOTP clients with DHCP servers.",
+   "verified_span": [
+    149,
+    152
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p20",
+   "proposition": "使用 BOOTP 中继代理消除了在每个物理网段上都需要 DHCP 服务器的必要性。",
+   "model_span": 155,
+   "status": "ok",
+   "quote": "Using BOOTP relay agents eliminates\n    the necessity of having a DHCP server on each physical network\n    segment.",
+   "verified_span": [
+    152,
+    154
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p21",
+   "proposition": "本文件更新 RFC1541 的 DHCP 协议规范，新增了 DHCPINFORM 消息类型。",
+   "model_span": 161,
+   "status": "ok",
+   "quote": "This document updates the DHCP protocol specification that appears in\n    RFC1541.  A new DHCP message type, DHCPINFORM, has been added; see\n    section 3.4, 4.3 and 4.4 for details.",
+   "verified_span": [
+    158,
+    160
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p22",
+   "proposition": "用于向 DHCP 服务器标识 DHCP 客户端的分类机制已扩展为包含“vendor”类。",
+   "model_span": 163,
+   "status": "ok",
+   "quote": "The classing mechanism for\n    identifying DHCP clients to DHCP servers has been extended to include\n    \"vendor\" classes as defined in sections 4.2 and 4.3.",
+   "verified_span": [
+    160,
+    162
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p23",
+   "proposition": "DHCP 客户端可能被分配一个与 'giaddr' 中记录的子网不同的地址。",
+   "model_span": 1497,
+   "status": "ok",
+   "quote": "Note that, in some network architectures (e.g., internets with more\n    than one IP subnet assigned to a physical network segment), it may be\n    the case that the DHCP client should be assigned an address from a\n    different subnet than the address recorded in 'giaddr'.",
+   "verified_span": [
+    1495,
+    1498
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p24",
+   "proposition": "服务器可以自由选择其他子网，如何选择分配的 IP 地址超出 DHCP 规范范围。",
+   "model_span": 1500,
+   "status": "ok",
+   "quote": "Thus, DHCP\n    does not require that the client be assigned as address from the\n    subnet in 'giaddr'.  A server is free to choose some other subnet,\n    and it is beyond the scope of the DHCP specification to describe ways\n    in which the assigned IP address might be chosen.",
+   "verified_span": [
+    1498,
+    1502
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p25",
+   "proposition": "服务器在客户端响应 DHCPOFFER 之前不应重用所选网络地址",
+   "model_span": 1505,
+   "status": "ok",
+   "quote": "While not required for correct operation of DHCP, the server SHOULD\n    NOT reuse the selected network address before the client responds to\n    the server's DHCPOFFER message.",
+   "verified_span": [
+    1504,
+    1506
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p26",
+   "proposition": "服务器可以选择将地址记录为已提供给客户端。",
+   "model_span": 1507,
+   "status": "ok",
+   "quote": "The server may choose to record the\n    address as offered to the client.",
+   "verified_span": [
+    1506,
+    1507
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p27",
+   "proposition": "服务器必须为租约选择过期时间",
+   "model_span": 1509,
+   "status": "ok",
+   "quote": "The server must also choose an expiration time for the lease, as\n    follows:",
+   "verified_span": [
+    1509,
+    1510
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p54",
+   "proposition": "DHCP 使用与 BOOTP 协议规范相同的中继代理行为。",
+   "model_span": 313,
+   "status": "ok",
+   "quote": "DHCP is designed to use the same relay agent behavior as specified\n       in the BOOTP protocol specification.",
+   "verified_span": [
+    313,
+    314
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p55",
+   "proposition": "绑定是与 DHCP 客户端关联（绑定）的一组配置参数，至少包含一个 IP 地址。",
+   "model_span": 317,
+   "status": "ok",
+   "quote": "A binding is a collection of configuration parameters, including\n       at least an IP address, associated with or \"bound to\" a DHCP\n       client.",
+   "verified_span": [
+    318,
+    320
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p56",
+   "proposition": "绑定由 DHCP 服务器管理。",
+   "model_span": 319,
+   "status": "ok",
+   "quote": "Bindings are managed by DHCP servers.",
+   "verified_span": [
+    320,
+    320
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p57",
+   "proposition": "DHCP should be a mechanism rather than a policy",
+   "model_span": 325,
+   "status": "ok",
+   "quote": "DHCP should be a mechanism rather than a policy.",
+   "verified_span": [
+    326,
+    326
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p58",
+   "proposition": "DHCP must allow local system administrators control over configuration parameters where desired",
+   "model_span": 325,
+   "status": "ok",
+   "quote": "DHCP must\n         allow local system administrators control over configuration\n         parameters where desired; e.g., local system administrators\n         should be able to enforce local policies concerning allocation\n         and access to local resources where desired.",
+   "verified_span": [
+    326,
+    330
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p59",
+   "proposition": "local system administrators should be able to enforce local policies concerning allocation and access to local resources where desired",
+   "model_span": 327,
+   "status": "ok",
+   "quote": "DHCP must\n         allow local system administrators control over configuration\n         parameters where desired; e.g., local system administrators\n         should be able to enforce local policies concerning allocation\n         and access to local resources where desired.",
+   "verified_span": [
+    326,
+    330
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p60",
+   "proposition": "DHCP 客户端选择的 'client identifier' 在该客户端所连子网内必须唯一。",
+   "model_span": 495,
+   "status": "ok",
+   "quote": "The 'client identifier' chosen by a\n    DHCP client MUST be unique to that client within the subnet to which\n    the client is attached.",
+   "verified_span": [
+    497,
+    499
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p61",
+   "proposition": "若客户端在一条消息中使用了 'client identifier'，则必须在所有后续消息中使用同一标识符。",
+   "model_span": 497,
+   "status": "ok",
+   "quote": "If the client uses a 'client identifier' in\n    one message, it MUST use that same identifier in all subsequent\n    messages, to ensure that all servers correctly identify the client.",
+   "verified_span": [
+    499,
+    501
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p62",
+   "proposition": "客户端可以查询 DHCP 服务以获取其配置参数。",
+   "model_span": 635,
+   "status": "ok",
+   "quote": "A client can query the DHCP service to\n    retrieve its configuration parameters.",
+   "verified_span": [
+    634,
+    635
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p63",
+   "proposition": "网络地址分配给客户端的期间称为 lease。",
+   "model_span": 651,
+   "status": "ok",
+   "quote": "In this document, the period over which a network address\n    is allocated to a client is referred to as a \"lease\" [11].",
+   "verified_span": [
+    649,
+    650
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p64",
+   "proposition": "分配机制（DHCP 服务器集合）保证在请求时间内不重新分配该地址，并尝试每次返回相同地址。",
+   "model_span": 647,
+   "status": "ok",
+   "quote": "The\n    allocation mechanism (the collection of DHCP servers) guarantees not\n    to reallocate that address within the requested time and attempts to\n    return the same network address each time the client requests an\n    address.",
+   "verified_span": [
+    645,
+    649
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p65",
+   "proposition": "客户端可通过后续请求延长其租约。",
+   "model_span": 653,
+   "status": "ok",
+   "quote": "The\n    client may extend its lease with subsequent requests.",
+   "verified_span": [
+    650,
+    651
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p66",
+   "proposition": "客户端不再需要地址时可发消息将地址释放回服务器。",
+   "model_span": 654,
+   "status": "ok",
+   "quote": "The client may\n    issue a message to release the address back to the server when the\n    client no longer needs the address.",
+   "verified_span": [
+    651,
+    653
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p67",
+   "proposition": "DHCPREQUEST 消息 MUST 使用与原 DHCPDISCOVER 消息相同的 'secs' 字段值并发送到相同 IP 广播地址",
+   "model_span": 815,
+   "status": "ok",
+   "quote": "To help\n      ensure that any BOOTP relay agents forward the DHCPREQUEST message\n      to the same set of DHCP servers that received the original\n      DHCPDISCOVER message, the DHCPREQUEST message MUST use the same\n      value in the DHCP message header's 'secs' field and be sent to the\n      same IP broadcast address as the original DHCPDISCOVER message.",
+   "verified_span": [
+    857,
+    862
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p68",
+   "proposition": "服务器此时 SHOULD NOT 检查所提供的网络地址",
+   "model_span": 831,
+   "status": "ok",
+   "quote": "The server SHOULD NOT check the offered\n      network address at this point.",
+   "verified_span": [
+    878,
+    879
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p69",
+   "proposition": "客户端应通知用户初始化失败并重启",
+   "model_span": 926,
+   "status": "ok",
+   "quote": "The client SHOULD notify the\n      user that the initialization process has failed and is restarting.",
+   "verified_span": [
+    925,
+    926
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p70",
+   "proposition": "客户端可通过向服务器发送 DHCPRELEASE 消息放弃其网络地址租约",
+   "model_span": 929,
+   "status": "ok",
+   "quote": "The client may choose to relinquish its lease on a network address\n      by sending a DHCPRELEASE message to the server.",
+   "verified_span": null,
+   "match": "ambiguous"
+  },
+  {
+   "id": "p71",
+   "proposition": "若客户端在获取租约时使用了 client identifier，则必须在 DHCPRELEASE 消息中使用相同的 client identifier",
+   "model_span": 933,
+   "status": "ok",
+   "quote": "If the\n      client used a 'client identifier' when it obtained the lease, it\n      MUST use the same 'client identifier' in the DHCPRELEASE message.",
+   "verified_span": [
+    931,
+    933
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p72",
+   "proposition": "客户端可选择省略上一节描述的部分步骤以复用先前分配的网络地址",
+   "model_span": 939,
+   "status": "ok",
+   "quote": "If a client remembers and wishes to reuse a previously allocated\n    network address, a client may choose to omit some of the steps\n    described in the previous section.",
+   "verified_span": [
+    938,
+    940
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p73",
+   "proposition": "客户端不得填写 'ciaddr' 字段",
+   "model_span": 959,
+   "status": "ok",
+   "quote": "As the client has not received its\n       network address, it MUST NOT fill in the 'ciaddr' field.",
+   "verified_span": [
+    961,
+    962
+   ],
+   "match": "whitespace_normalized_match"
+  }
+ ]
+}

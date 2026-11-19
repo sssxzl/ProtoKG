@@ -2,8 +2,8 @@
   "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
-    "llm_calls": 44,
-    "status": "rfc2131_fulltext_done_gold_pending"
+    "llm_calls": 51,
+    "status": "rfc2131_done_gold_2of6"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -126,6 +126,10 @@
       "sha256": "4721be6391f6ca716f66c1265a9cdb3a3915125e7c141755deee9b22548ec351",
       "size": 863
     },
+    "RFC2131_74条Evidence对齐完整结果.md": {
+      "sha256": "dbbac34b7f8fba7977feca05e335a36cb6fbbbfb8a4645b3ebac83813991b7e8",
+      "size": 826
+    },
     "RFC2131_batch2容量验证报告.md": {
       "sha256": "bf170273bd66e2de8f511afe9f990713cf1258b9b6cc16848dadeb51267d8fb6",
       "size": 410
@@ -134,6 +138,14 @@
       "sha256": "c9ae5d6c4435122388f87e8660113b2b0da73b089365da78df795a74018bcccf",
       "size": 788
     },
+    "RFC2131_全文知识质量与失败归因.md": {
+      "sha256": "4780c1cc3e63c2557b5f3ea24e810b77909581c4c798931b6e1f7007624c0743",
+      "size": 1175
+    },
+    "RFC2131_六条Gold语义召回及证据核验.md": {
+      "sha256": "235f996cd24b34c3183d8dbef72202400d3f9e93185b965d07c6bf6e2b185553",
+      "size": 1664
+    },
     "RFC2131_六条Gold逐条召回审查.md": {
       "sha256": "35fc4a0ee6bbca8ecfbaed9b0b628f46ef1cc968083d6bbb4bdb0a242b323da6",
       "size": 1441
@@ -141,6 +153,10 @@
     "RFC2131_断点续跑与失败留证核验.md": {
       "sha256": "8a957ccdac5331950a2e72415a4fa0d503b46663daefe09f2ebcdf15d9f5f798",
       "size": 643
+    },
+    "RFC2131_隔离Hub及Evidence读回报告.md": {
+      "sha256": "1923b9935efb4e266a32a6edb04fd37dacd6c57cd280d486e4d140780a5985a0",
+      "size": 379
     },
     "RFC2131全文抽取与Evidence验收.md": {
       "sha256": "90a77ac487ee71462a44037313fcd62a2735483ae6050b489f72fcf9ad0f639e",
@@ -610,6 +626,10 @@
       "sha256": "b343cb422e663f1b5383d395d813dd9a9bb457053eae0aa27ce23731601c7741",
       "size": 817
     },
+    "跨RFC下一阶段执行条件报告.md": {
+      "sha256": "78d93d118e5d56f7ca37527b0ccc17416c6ff9d72cc42534b53aa34a60f44707",
+      "size": 981
+    },
     "跨RFC全文输入覆盖与调用计划.md": {
       "sha256": "9a60d39f32e90e2c67807b239c9d6e37c4f1c24367adf3db947a4af315846c8a",
       "size": 757
@@ -957,6 +977,14 @@
     "T0A_跨RFC_20261119/SHA256清单.json": {
       "sha256": "0756a00b5482d77dcc21a468d08b87d10dd8dd0244559680bee7e7d9d0d9830e",
       "size": 169
+    },
+    "跨RFC全文_20261119/align_partial.json": {
+      "sha256": "1fb56902a489d7ab2906bf6ed03141359eb3808ac8bc8b8e267efdc435cc2bce",
+      "size": 10999
+    },
+    "跨RFC全文_20261119/align_rest48.json": {
+      "sha256": "cb229073d0ecdd20b561190935da215113a84c1f1dcfabfcf959214e6d6fd059",
+      "size": 22029
     },
     "跨RFC全文_20261119/norms_17batches.json": {
       "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
