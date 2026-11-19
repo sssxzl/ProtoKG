@@ -10,6 +10,10 @@
     "R29_RA2_F2_清单自哈希.sha256"
   ],
   "outputs": {
+    "evidence_join_result.json": {
+      "sha256": "6fc19aa18a2ee607aec4e5def91fa24cf0562c79d1f0e5a43c5d3f468ccaf38a",
+      "size": 234
+    },
     "R29_ABNF表格位域逐项解析结果.md": {
       "sha256": "3b442b08c657eb7c9c0ead65f5ae8e7ab508cedfd9af3b0f3d4055a541537c24",
       "size": 1132

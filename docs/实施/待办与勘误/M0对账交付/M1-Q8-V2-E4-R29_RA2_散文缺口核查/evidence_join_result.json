@@ -1,0 +1,13 @@
+{
+ "facts": 30,
+ "metas": 30,
+ "dup_key": false,
+ "supported": 30,
+ "origin": {
+  "model": 27,
+  "corrected": 3
+ },
+ "readback": 30,
+ "join_ok": true,
+ "out_dir": "C:\\Users\\13594\\AppData\\Local\\Temp\\t0a_ev_tb35grfl"
+}
