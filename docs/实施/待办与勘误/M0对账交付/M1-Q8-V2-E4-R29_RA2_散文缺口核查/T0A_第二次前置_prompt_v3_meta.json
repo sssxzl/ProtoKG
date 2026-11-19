@@ -1,0 +1,13 @@
+{
+ "version": "prose-semantics-v3",
+ "chars": 1508,
+ "sha256": "84cc0e5b5f4379acc6fb8928d7a25ecf827b7f5347d4d687146c2143f7327938",
+ "added": "覆盖范围（Abstract/Introduction 等段落）条款",
+ "unchanged": [
+  "JSON Schema",
+  "模型",
+  "thinking=disabled",
+  "max_tokens",
+  "21 aspects"
+ ]
+}

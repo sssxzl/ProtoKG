@@ -1,0 +1,23 @@
+span,entity,constraint,norm,norm_id,fact,aspect,subject_type
+76,STARTTLS,,yes,prose_semantics_starttls,1,definition,protocol
+88,STARTTLS,,no,,0,,
+94,STARTTLS,,no,,0,,
+127,SMTP server,MUST NOT require use of the STARTTLS extension in order to d,yes,prose_semantics_smtp server,1,definition,actor
+146,SMTP server,SHOULD return the reply code 530 to every command other than,no,,0,,
+155,client,MUST start the TLS negotiation before giving any other SMTP ,yes,prose_constraint_client,1,legal_boundary,actor
+158,client,SHOULD abort the connection,no,,0,,
+172,both parties,MUST immediately decide whether or not to continue based on ,yes,prose_constraint_both parties,1,legal_boundary,actor
+183,SMTP client,SHOULD issue an SMTP QUIT command immediately after the TLS ,yes,prose_constraint_smtp client,1,legal_boundary,actor
+186,SMTP server,SHOULD reply to every SMTP command from the client (other th,yes,prose_constraint_smtp server,1,legal_boundary,actor
+211,server,MUST discard any knowledge obtained from the client ... whic,yes,prose_constraint_server,1,legal_boundary,actor
+214,client,MUST discard any knowledge obtained from the server ... whic,no,,0,,
+217,client,SHOULD send an EHLO command as the first command after a suc,no,,0,,
+220,SMTP service extensions,,yes,prose_semantics_smtp service extensions,1,definition,protocol
+230,client and the server,MUST know if there is a TLS session active,yes,prose_constraint_client and the server,1,legal_boundary,actor
+231,client,MUST NOT attempt to start a TLS session if a TLS session is ,no,,0,,
+232,server,MUST NOT return the STARTTLS extension in response to an EHL,no,,0,,
+309,clients and servers,MUST be able to be configured to require successful TLS nego,yes,prose_constraint_clients and servers,1,legal_boundary,actor
+313,TLS,SHOULD also be provided,yes,prose_semantics_tls,1,definition,protocol
+315,implementation,MAY provide the ability to record that TLS was used in commu,yes,prose_constraint_implementation,1,legal_boundary,actor
+341,clients and servers,MUST discard any knowledge obtained prior to the start of th,no,,0,,
+352,SASL EXTERNAL mechanism,MAY be used in conjunction with the STARTTLS command to prov,yes,prose_semantics_sasl external mechanism,1,definition,protocol

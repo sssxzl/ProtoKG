@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 4,
-    "status": "T0_A_gold_gap_attributed"
+    "status": "T0_A_second_run_blocked_identity_collision"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -162,6 +162,10 @@
       "sha256": "090770854ec1f6a6c19f8e26357ac6a72dac16b3d410181b7ddc90f707bbaa5f",
       "size": 2121
     },
+    "T0A_prompt_v3修正.patch": {
+      "sha256": "0d3a765f5377429d032a247bf8a90f0cab2bb38546be69e43b35788de41ad264",
+      "size": 18401
+    },
     "T0A_Raw到Canonical隔离集成报告.md": {
       "sha256": "5dcdc8a5e6c19cb212a75b428bb13d4e3f11d3ae957142048da0bb24703796ed",
       "size": 1496
@@ -273,6 +277,22 @@
     "T0A_确定性与散文去重实证.md": {
       "sha256": "720b351799d3d8e82cf60b5cca83a94536ba6e17544f3fa412f645caa9eb748c",
       "size": 1641
+    },
+    "T0A_第二次前置_prompt_v3.txt": {
+      "sha256": "84cc0e5b5f4379acc6fb8928d7a25ecf827b7f5347d4d687146c2143f7327938",
+      "size": 2650
+    },
+    "T0A_第二次前置_prompt_v3_meta.json": {
+      "sha256": "6948da5df53286a0ad6391eac191699e19099af5838454db0d553427c9bc2697",
+      "size": 304
+    },
+    "T0A_第二次前置_Raw到Fact对照.csv": {
+      "sha256": "e335b00683be9d24bb14df5d9630f783794677f0490e9c2dd4f96e25093305d5",
+      "size": 2238
+    },
+    "T0A_第二次前置检查与暂停说明.md": {
+      "sha256": "792f6d245bdbc51d06e2b53350133ea2277888ca85dbd3a8de2ca2ed1a84b83b",
+      "size": 3167
     },
     "T0A_缓存与异常闭环验证.md": {
       "sha256": "f7280a3764c02577a56c34d4915a5ee1d2d161907e610d6d17ccdb61a0c39a77",
