@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 63,
-    "status": "structural_d4_verified"
+    "status": "structural_d4_canonical_evidence_verified"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -26,9 +26,29 @@
       "sha256": "5f0c7bf6e10c72e85a26b160d9037a0145b30b275a05e70299bca596e38ce52d",
       "size": 1242
     },
+    "R29_D4_Canonical与Evidence完整闭环报告.md": {
+      "sha256": "6fb6b3bdc2cf995f83e81d214167813129b5e96462476f373cf0cb392ef2d61e",
+      "size": 1027
+    },
+    "R29_D4_field_content格式错误根因与修复.md": {
+      "sha256": "fa4940f348fa979e596af3e2694fc822ee7676348a766d22e9f4e76341f23191",
+      "size": 1212
+    },
     "R29_D4_siaddr结构化知识端到端闭环.md": {
       "sha256": "48cbdf180c69d983e5843ebd8ed0c4f1e6485c2d6b2e72e4792d1c84d27775f5",
       "size": 1376
+    },
+    "R29_D4_syntax_definition双知识映射核验.md": {
+      "sha256": "38b3b6ceb043e34d9235cce5c36bd4dcc4973588c95fa20ed644dfc877d5acbc",
+      "size": 833
+    },
+    "R29_D4_解析器回归与历史知识保护报告.md": {
+      "sha256": "89e4a23b93ade26899e5f3cd686ee719c4a1dfb5bd10972def87dc754a64f410",
+      "size": 913
+    },
+    "R29_D4_隔离Hub构建及稳定读回报告.md": {
+      "sha256": "3ec1421cc9a9db16f73ee4730b658998937c83980877642c2bf913afd43e7e80",
+      "size": 432
     },
     "R29_H2_request_line_Canonical适配性报告.md": {
       "sha256": "61f54c34e59329af185c967ccd28e54b4c5f6c3191d64a6cfd9b306fb54c0a6d",
@@ -841,6 +861,10 @@
     "scripts/t0a_run.py": {
       "sha256": "6d7f085e3ff7dc743c4458d73ec3be721d0ad4a408c1f3db5cd3e0c6f642e196",
       "size": 2698
+    },
+    "scripts/test_structural_field.py": {
+      "sha256": "d9e18e6a5e11b75243dcedd8d2fd600c32be18ed8228ed8af89e7f142c3b03eb",
+      "size": 3072
     },
     "scripts/verify_manifest.py": {
       "sha256": "f76e70f65260cd36f88ae57130a1da00472c1a22a9b72aa6fabfad617278b2ec",
