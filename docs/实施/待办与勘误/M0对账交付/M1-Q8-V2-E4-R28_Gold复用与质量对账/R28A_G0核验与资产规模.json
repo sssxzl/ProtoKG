@@ -1,0 +1,13 @@
+{
+  "main_sha": "0f99da8445ea093246824e62d1244b88732e009e",
+  "protected_hashes": {
+    "derived/cache/source_blocks/rtsp.prose.json": "1149a345a8d50fcd73eb88d26ba64dbba8dd0f85053d3f82e2698528d21d9697",
+    "derived/cache/source_blocks/DHCPv4.prose.json": "558767f24bf2e80745567fbd0e417a8a38dfa5fe318822b1746e2c95e6fc5f49",
+    "derived/cache/source_blocks/dhcpv4.transitions.json": "7e45a317b9de9a5e9b7bc30166c49f96b593c8b4d5ee8b2ce7fcde1318c49056",
+    "guard/baseline/ci_expected_failed_ids_windows.txt": "c1a8bc5f04ee0b225115123de2eeb6919cf4d21ee878427d3fbe2e64992e543b",
+    "guard/baseline/expected_b_class_failed_ids.txt": "0cb0d19e179734ab8007bed5afd9bc065ae44c18bf375e172bad05a70953e626",
+    ".github/workflows/ci.yml": "b5787b6f4c7b47e48b772d450a0ef1819478c1e2a3a0d13410e9fcebc0915cfb"
+  },
+  "gold_dirs": 31,
+  "gold_files": 440
+}
