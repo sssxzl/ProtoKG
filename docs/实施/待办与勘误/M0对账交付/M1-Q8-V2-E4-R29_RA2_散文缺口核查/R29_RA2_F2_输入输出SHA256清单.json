@@ -2,7 +2,8 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 0,
-    "worktree": "guard/_out/_ra2f2_wt"
+    "worktree": "guard/_out/_ra2f2_wt",
+    "status": "offline_engineering_verified"
   },
   "outputs": {
     "R29_RA2_14条缓存拒收归因.xlsx": {
@@ -21,9 +22,17 @@
       "sha256": "86f6903027d920cebb07ae2fe8a807c50554fe8e027eafacc050d725ea2cbf41",
       "size": 1588
     },
+    "R29_RA2_F2_关键正确性缺口与源码证据.md": {
+      "sha256": "b16f80277625f660e76da05d2d03c1d9130cd803294f9dc94f331efd58950824",
+      "size": 2754
+    },
     "R29_RA2_F2_历史缓存兼容性与不可用记录清单.md": {
       "sha256": "79339cb78a43246221e5e6eb149ea9b6d54146d8a9bc4a1d74d4d0becf659496",
       "size": 1733
+    },
+    "R29_RA2_F2_失败恢复及缓存身份补强.patch": {
+      "sha256": "cf3998afa28d91b3ffdadd33b5e1586fb71ac0e796cbfbbed32e385a34cdb261",
+      "size": 10089
     },
     "R29_RA2_F2_影子补丁.patch": {
       "sha256": "606a820e127026f57081feed5dab7535ca65bc16e339214763e6b35e21de278a",
@@ -33,9 +42,21 @@
       "sha256": "e14ad09e15d6807304f516c00e7b06151af4a37f345e4fb3faac66481a17f2f5",
       "size": 2818
     },
+    "R29_RA2_F2_新增正反测试与失败注入报告.md": {
+      "sha256": "1d763eb93d9e6418562493fa56f08a6ee440a641cd036e6c512a48041ad63649",
+      "size": 1719
+    },
     "R29_RA2_F2_新旧抽取结果差异对账.md": {
       "sha256": "d12f65997486a26d688161768980c4f2c2eb20ceed45aba3faef319a0b793e55",
       "size": 1231
+    },
+    "R29_RA2_F2_旧缓存读取策略一致性验证.md": {
+      "sha256": "4ab3c95d65326bcd0b7b8e91b358d8c01e66545e63a8ec20a076a0adc03e4e71",
+      "size": 1723
+    },
+    "R29_RA2_F2_最终影子验收与剩余限制.md": {
+      "sha256": "3b16120a55aa4f7bf7673c181cfa79072394fcaf45ee75cd63e7934d6def70c2",
+      "size": 2350
     },
     "R29_RA2_F2_正式合入风险与回滚方案.md": {
       "sha256": "f95fc9f44bcb46734e318642da05ce73f11cfaea47a9a2a8ee0d4d27da03ec79",
@@ -48,6 +69,10 @@
     "R29_RA2_F2_缓存隔离正反测试报告.md": {
       "sha256": "c215e4e22bf3599260d085e7a03b22edc55c2e0fe2357b8ab02571f60cd9bba5",
       "size": 2079
+    },
+    "R29_RA2_F2_输入输出SHA256清单.json": {
+      "sha256": "8546175d1b1475117f767c9793b120d74e428c24b13d27c76c7f8100d1063b6b",
+      "size": 3576
     },
     "R29_RA2_散文通道真实调用链报告.md": {
       "sha256": "b5f165b308aaad9de9790f71f49c014f37cd240bad721f6b54ee667c121082ba",
@@ -73,6 +98,10 @@
       "sha256": "6f1eae2b8f88444b2920e230a2d793be1e36a9066a0c522da5e49f88df8409e9",
       "size": 3740
     },
+    "scripts/f2_checks_v2.py": {
+      "sha256": "e265df09803ffd7f24e21919adcba93eac2338dafbee7e947c16523f27962073",
+      "size": 7042
+    },
     "scripts/f2_docs.json": {
       "sha256": "257b1c896e5b45dd6150a1b0b7eaa1c2a6c44baee16f2d90118d9ba4a9615104",
       "size": 1114
@@ -82,15 +111,8 @@
       "size": 4503
     }
   },
-  "inputs": {
-    "main prose_semantics": {
-      "sha256": "4c1057037ffb1717416fabb920646489fb5ad94948eedd8d6f4e5fb1a2db2ab4"
-    },
-    "历史批次缓存": {
-      "sha256": "558767f24bf2e80745567fbd0e417a8a38dfa5fe318822b1746e2c95e6fc5f49"
-    },
-    "机器 Norm 索引": {
-      "sha256": "1469d16e80b4daabef66f13817ab95b55e14ebf395d10b4450d1e2a2ca7aa0d4"
-    }
+  "protected": {
+    "历史批次缓存": "558767f24bf2e80745567fbd0e417a8a38dfa5fe318822b1746e2c95e6fc5f49",
+    "main 抽取器": "6959d1d42af6c3127fdf4b51ffad5516a5c23a8af34c4e7bdffb8ada8e5f094a"
   }
 }
