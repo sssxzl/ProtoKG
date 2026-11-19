@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 63,
-    "status": "backup_prepared"
+    "status": "backup_pushed"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -53,6 +53,10 @@
     "R29_get_fact_view与Hub导出读回核验.md": {
       "sha256": "f0511e9b36d5e763a22452364c8123af0a044b910de822dc35427aa36d60dcc3",
       "size": 629
+    },
+    "R29_GitHub备份与安全检查报告.md": {
+      "sha256": "ebc43f22fbfc4bfb66145840496e3aa09518cb50a2a8574c9745c4feea32440d",
+      "size": 1587
     },
     "R29_Grammar_Value最小契约变更建议.md": {
       "sha256": "aef30303d626debcc7f091428f6c4ab775b30628496b31c015ff17cf57b06b2d",
