@@ -2,8 +2,8 @@
   "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
-    "llm_calls": 22,
-    "status": "T0_A_single_rfc_closed_cross_rfc_probe_passed"
+    "llm_calls": 23,
+    "status": "cross_rfc_fulltext_blocked"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -121,6 +121,10 @@
     "R29_RA2_输入输出SHA256清单.json": {
       "sha256": "52e15fbc604bc58fc3309d38af0c81c1afb0e548754b4741e976b45bcbc49fd2",
       "size": 1875
+    },
+    "RFC2131全文抽取与Evidence验收.md": {
+      "sha256": "90a77ac487ee71462a44037313fcd62a2735483ae6050b489f72fcf9ad0f639e",
+      "size": 820
     },
     "T0_Gold原文跨度核查.md": {
       "sha256": "91f0c9f60644e725cac75bed40cfdca70acbdd90f6e799ea0b3c6a44e44db35f",
@@ -578,9 +582,25 @@
       "sha256": "b343cb422e663f1b5383d395d813dd9a9bb457053eae0aa27ce23731601c7741",
       "size": 817
     },
+    "跨RFC全文输入覆盖与调用计划.md": {
+      "sha256": "9a60d39f32e90e2c67807b239c9d6e37c4f1c24367adf3db947a4af315846c8a",
+      "size": 757
+    },
+    "跨RFC分层全文样本与Gold预登记.md": {
+      "sha256": "0882411f91ab0ac169d295481af4ad0cbad15c357738ec057f177bcd2102fccf",
+      "size": 2413
+    },
+    "跨RFC分层知识质量对照报告.md": {
+      "sha256": "eb4dba944e144c82d0acaa20c80d24ae4c9205aaf07154285b47a864814d756f",
+      "size": 531
+    },
     "跨RFC小样本试验设计与预登记.md": {
       "sha256": "ff89be98c2dde1584563312658faa672663385adafa0d39f0fb08d0dc4330773",
       "size": 954
+    },
+    "跨RFC泛化验收结论与剩余缺口.md": {
+      "sha256": "07fea83bf161f9f14d8fc60c37b32d887f6747d7d5ec49ba62d5fe4c638707ea",
+      "size": 1110
     },
     "跨RFC真实模型抽取结果.md": {
       "sha256": "44fb0c7a474b60bc0b083219de5b0ced171a3857a3a7b88456490a3105d15e9e",
