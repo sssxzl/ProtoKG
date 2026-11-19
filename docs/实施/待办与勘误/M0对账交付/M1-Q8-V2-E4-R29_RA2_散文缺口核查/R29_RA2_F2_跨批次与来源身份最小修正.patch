@@ -1,0 +1,60 @@
+--- a/core/fused/extraction/prose_semantics.py
++++ b/core/fused/extraction/prose_semantics.py
+@@ -674,15 +674,20 @@
+     meta: dict[str, dict] = {}
+     for b in blocks:
+         d = b.get("doc") or ""
+-        m = meta.setdefault(d, {"blocks": [], "src_sha256": "", "has_src": False})
++        m = meta.setdefault(d, {"blocks": [], "src_sha256": "",
++                                "has_src": False, "conflict": False})
+         m["blocks"].append(b)
+         s = str(b.get("src_sha256") or "")
+-        if s:
+-            if not m["has_src"]:
+-                m["src_sha256"], m["has_src"] = s, True
+-            elif m["src_sha256"] != s:
+-                m["src_sha256"] = ""      # 同文档不同来源 ⇒ 不认，按缺失处理
+-                m["has_src"] = False
++        if m.get("conflict"):
++            continue                      # 已判冲突 ⇒ 保持不可用（粘性）
++        if not s:
++            # 部分块无来源 ⇒ 整份文档来源不可证（同样粘性）
++            m["src_sha256"], m["has_src"], m["conflict"] = "", False, True
++            continue
++        if not m["has_src"]:
++            m["src_sha256"], m["has_src"] = s, True
++        elif m["src_sha256"] != s:
++            m["src_sha256"], m["has_src"], m["conflict"] = "", False, True
+     for d, m in meta.items():
+         m["block_sig"] = _block_signature(m["blocks"])
+     return meta
+@@ -1028,7 +1033,8 @@
+     _dmeta = _doc_meta(blocks)
+     _hit, _miss = _load_doc_caches(protocol, _dmeta, _PV)
+     _prefix_items: list[dict] = []
+-    _doc_ok: dict[str, bool] = {d: False for d in _miss}
++    _doc_ok: dict[str, bool] = {d: True for d in _miss}   # 与运算初值 True
++    _doc_seen: set[str] = set()
+     if _dmeta and not _miss:
+         cached = {"items": [it for _d in _hit for it in _hit[_d]]}
+     elif _hit:
+@@ -1204,7 +1210,9 @@
+             for _b in batch:
+                 _d = _b.get("doc") or ""
+                 if _d in _doc_ok:
+-                    _doc_ok[_d] = bool(ok)
++                    # 跨批次取「与」：任一批失败 ⇒ 该文档不可标成功（不得被后续成功覆盖）
++                    _doc_seen.add(_d)
++                    _doc_ok[_d] = _doc_ok[_d] and bool(ok)
+             if ok:
+                 # ★ 分批增量落缓存（成功的批不重跑）；★ **未跑完 ⇒ complete=False**
+                 # R29-RA2/F2：启用文档级缓存时不写批次级旧缓存（避免覆盖历史记录）
+@@ -1222,7 +1230,7 @@
+         # R29-RA2/F2：合并已命中文档的结果，并按文档落缓存
+         raw_items = _prefix_items + raw_items
+         _save_doc_caches(protocol, _dmeta, raw_items, _PV, _doc_ok,
+-                         only_docs=set(_miss))
++                         only_docs=_doc_seen)
+ 
+     stats["raw_items"] = len(raw_items)
+     stats["raw_items_total"] = len(raw_items)   # ★ M1-Q3：★ 与「解析成功调用数」区分

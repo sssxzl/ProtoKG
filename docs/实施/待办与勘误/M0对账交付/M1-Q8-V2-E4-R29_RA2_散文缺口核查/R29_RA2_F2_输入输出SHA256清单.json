@@ -2,8 +2,11 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 0,
-    "worktree": "guard/_out/_ra2f2_wt",
-    "status": "offline_engineering_verified"
+    "status": "offline_engineering_verified",
+    "flags": [
+      "real_output_equivalence_unavailable",
+      "production_merge_not_approved"
+    ]
   },
   "outputs": {
     "R29_RA2_14条缓存拒收归因.xlsx": {
@@ -17,6 +20,26 @@
     "R29_RA2_45条散文知识缺口逐条核查.xlsx": {
       "sha256": "95cf74b5eaf58c3895316590eb99bdae4b0d71e17fdb0ab7b2ea648730ebbdba",
       "size": 8697
+    },
+    "R29_RA2_F1_45条Gold机会对照.md": {
+      "sha256": "44013792e791e74d8b66077a14da07f925abdbdb625cd265a3e6555de3532aee",
+      "size": 1354
+    },
+    "R29_RA2_F1_散文触发范围设计.md": {
+      "sha256": "308b971e59d8b978baa5bb031df09d89e6d1b7a271a69c6a8ff05e7db19d5162",
+      "size": 1994
+    },
+    "R29_RA2_F1_文档与候选块范围表.xlsx": {
+      "sha256": "e411ef931ebcde59614b7f8f3b1167b1ef8b0be7ef4ce8e30c7b1483bdec29b7",
+      "size": 7273
+    },
+    "R29_RA2_F1_最小真实试验审批申请.md": {
+      "sha256": "ec8804ab054f4d102ac7d9d7a2e6475a666da3f4d3200db2804e3ea01c760868",
+      "size": 1802
+    },
+    "R29_RA2_F1_离线触发模拟与预算.md": {
+      "sha256": "e259d0355175adf6f2f0d46a3dc2201fc13c68bc68bae30b28a113098cc67223",
+      "size": 2321
     },
     "R29_RA2_F2_12与36份文档范围说明.md": {
       "sha256": "86f6903027d920cebb07ae2fe8a807c50554fe8e027eafacc050d725ea2cbf41",
@@ -33,6 +56,10 @@
     "R29_RA2_F2_失败恢复及缓存身份补强.patch": {
       "sha256": "cf3998afa28d91b3ffdadd33b5e1586fb71ac0e796cbfbbed32e385a34cdb261",
       "size": 10089
+    },
+    "R29_RA2_F2_定点核验与冻结.md": {
+      "sha256": "c05b3ef89aff4dbf9a1711eba3019d1b22765fa8a141e42589ae58476802c392",
+      "size": 2177
     },
     "R29_RA2_F2_影子补丁.patch": {
       "sha256": "606a820e127026f57081feed5dab7535ca65bc16e339214763e6b35e21de278a",
@@ -70,9 +97,13 @@
       "sha256": "c215e4e22bf3599260d085e7a03b22edc55c2e0fe2357b8ab02571f60cd9bba5",
       "size": 2079
     },
+    "R29_RA2_F2_跨批次与来源身份最小修正.patch": {
+      "sha256": "2dfb4bc759bb5e07c8ef677a9c790fc2aa2a04828d2567b3402aec9207b53395",
+      "size": 2932
+    },
     "R29_RA2_F2_输入输出SHA256清单.json": {
-      "sha256": "8546175d1b1475117f767c9793b120d74e428c24b13d27c76c7f8100d1063b6b",
-      "size": 3576
+      "sha256": "171605f4d85c686e51242591491fe1beda1ecf092a405d6c65023f639c377ed6",
+      "size": 4607
     },
     "R29_RA2_散文通道真实调用链报告.md": {
       "sha256": "b5f165b308aaad9de9790f71f49c014f37cd240bad721f6b54ee667c121082ba",
@@ -94,6 +125,10 @@
       "sha256": "52e15fbc604bc58fc3309d38af0c81c1afb0e548754b4741e976b45bcbc49fd2",
       "size": 1875
     },
+    "scripts/f1_docs.json": {
+      "sha256": "52debe4b049b9fb6d6770656d0be318251cf9c36b106eabf82c899840face104",
+      "size": 7341
+    },
     "scripts/f2_checks.py": {
       "sha256": "6f1eae2b8f88444b2920e230a2d793be1e36a9066a0c522da5e49f88df8409e9",
       "size": 3740
@@ -101,6 +136,10 @@
     "scripts/f2_checks_v2.py": {
       "sha256": "e265df09803ffd7f24e21919adcba93eac2338dafbee7e947c16523f27962073",
       "size": 7042
+    },
+    "scripts/f2_checks_v3.py": {
+      "sha256": "e38176918754e07b6844b53cab96ecec0a99312f9b54c9518a46bce938cc66c7",
+      "size": 5184
     },
     "scripts/f2_docs.json": {
       "sha256": "257b1c896e5b45dd6150a1b0b7eaa1c2a6c44baee16f2d90118d9ba4a9615104",
@@ -110,9 +149,5 @@
       "sha256": "6b2aa1f0229b6e49ba8876c0038b8f1527b69792d9f61c3498b4912116a28faf",
       "size": 4503
     }
-  },
-  "protected": {
-    "历史批次缓存": "558767f24bf2e80745567fbd0e417a8a38dfa5fe318822b1746e2c95e6fc5f49",
-    "main 抽取器": "6959d1d42af6c3127fdf4b51ffad5516a5c23a8af34c4e7bdffb8ada8e5f094a"
   }
 }
