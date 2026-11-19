@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 20,
-    "status": "T0_A_v6_semantic_support_23_28"
+    "status": "T0_A_v6_semantic_support_28_28_verified"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -274,6 +274,10 @@
       "sha256": "5d52e9f67c2232109769bcbc61b3f862196c1feea03ccf9d55bba1938061c73c",
       "size": 1098
     },
+    "T0A_v6_23条既有supported复核报告.md": {
+      "sha256": "047394071fa2a75b690971239e305cbe8fe89538233ee8492b1f1fa9ceb9901f",
+      "size": 1354
+    },
     "T0A_v6_28Raw到16Norm逐条丢失归因.md": {
       "sha256": "c43d741f8f80a48d464ee2f875c85759c0898e53bfb8b7f01d489216c9a4fc03",
       "size": 1896
@@ -281,6 +285,10 @@
     "T0A_v6_28Raw到16Norm逐条去向.csv": {
       "sha256": "20a77bbe9fee37879377f07ec6a8bb7dcd56fc223bd63cf772c6c34166e9c236",
       "size": 2137
+    },
+    "T0A_v6_28条Evidence映射复核与修正.csv": {
+      "sha256": "11fdacc50e3fd5f9410e5eb44686ed4158cabbca77bc54e8f2556d5424b37396",
+      "size": 11452
     },
     "T0A_v6_28条Evidence语义审查.csv": {
       "sha256": "2f2e2a35c3b56a3badb736c96ac8964ed4ea0e05001313ba73f825a93fbe6377",
@@ -310,9 +318,17 @@
       "sha256": "b20730fddd71e12961f5c3c464eba69f925b50de6b647903bcb178c6022b6017",
       "size": 1279
     },
+    "T0A_v6_五条异常修正逐项证据.md": {
+      "sha256": "74e0c02890e762419ec245519bfbbb402164f3514e4522a60058418c31043ef7",
+      "size": 2081
+    },
     "T0A_v6_知识保留最小修正.patch": {
       "sha256": "b33c7e3556119a6da82c4e3307eb5743332147632f480f640a399bbcdc9323ff",
       "size": 35834
+    },
+    "T0A_v6_离线回放与身份回归报告.md": {
+      "sha256": "da910d1b71ec1ccd901f0ef2e45a0ff8dac9b0b1f09172d66109cb3fb04c7544",
+      "size": 795
     },
     "T0A_v6_离线重放与Evidence保留结果.md": {
       "sha256": "4243f0a8326aa61f728150e49f0593a469e8285a50e9110c7e01a4fe7244d4fb",
@@ -321,6 +337,10 @@
     "T0A_v6_第二阶段Evidence对齐真实运行报告.md": {
       "sha256": "cdb8bfb5cb00151449aff4f83e29e19a56bee430673ffc8370486a04129a516b",
       "size": 1310
+    },
+    "T0A_v6_隔离Hub与Evidence关联最终读回.md": {
+      "sha256": "1cd65d258864f1e1a1e1f85c2dff37dba3ecb4c5d8fdc5c5e3e6e64b756d0532",
+      "size": 844
     },
     "T0A_v6_隔离Hub重建及读回报告.md": {
       "sha256": "614eb7e0aa0d8e845ece7c7c131637dbfcdf00f585df81d6c4d16312e503f2dc",
@@ -349,6 +369,10 @@
     "T0A_单RFC知识质量最终状态与剩余缺口.md": {
       "sha256": "1e8a3e785c4cd37d71de9b22029a6b02d4fbe5d156d1fbb2b64cd08832803ac3",
       "size": 1042
+    },
+    "T0A_单RFC知识质量闭环判定.md": {
+      "sha256": "3f707134849949a515ca887c2012367a2f166114a9b7d342f258bbce8ba4fc3d",
+      "size": 1565
     },
     "T0A_原始v4知识Evidence回填验证.md": {
       "sha256": "59d0bbe68d21332a749cebbf40205459080d617d68d96b414aeee4449a0eacc3",
