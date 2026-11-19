@@ -3,10 +3,10 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 0,
-    "status": "T0_A_preflight_verified",
+    "status": "T0_A_runtime_payload_verified",
     "flags": [
       "live_llm_execution_pending_explicit_approval",
-      "non_thinking_mode_unavailable"
+      "real_output_equivalence_unavailable"
     ]
   },
   "excluded": [
@@ -166,6 +166,10 @@
       "sha256": "6e692532888ac1b220bc2e34a849fbb6a9060c124b7f9351380d5e5d5299643f",
       "size": 1563
     },
+    "T0A_运行时载荷核验.md": {
+      "sha256": "46f1b4178c7197d7e001750afed45b19e8765217e23286444d9d2510211b075c",
+      "size": 2611
+    },
     "T0A_预检退出报告.md": {
       "sha256": "b62ac55228bc7e0f92f479e38fd4d81823f41dca41346ecf69b9601b65b61f8d",
       "size": 2048
@@ -202,13 +206,25 @@
       "sha256": "dc33d01fef7d80713885708046c088e962a6f461c80b03644949119ac381410a",
       "size": 6616
     },
+    "scripts/t0a_adapter.py": {
+      "sha256": "8f1c350ebac16b1b9e8dfe7080ea0aa358b075272a6e8ed85c085090681888a0",
+      "size": 3603
+    },
     "scripts/t0a_evidence.json": {
       "sha256": "7bd837c8a3897f88e974e18528e07a7b707bb98219345d62919ff66c2c179ded",
       "size": 2738
     },
+    "scripts/t0a_payload_checks.py": {
+      "sha256": "84246ba04840f9bb75b24ff5cf8767642ebee826aa6e2c99e08711f14d279496",
+      "size": 5658
+    },
     "scripts/t0a_preflight.py": {
       "sha256": "e40c58ea30f910306622e4bcacad4c5bf31691be0d760043b562fb35664c87aa",
       "size": 4753
+    },
+    "scripts/t0a_run.py": {
+      "sha256": "546060cb42ae9605eaf5833c64cdc6ae46abd18f94ec1d1f885dd11b9e9bcd5b",
+      "size": 4014
     },
     "scripts/verify_manifest.py": {
       "sha256": "f76e70f65260cd36f88ae57130a1da00472c1a22a9b72aa6fabfad617278b2ec",
