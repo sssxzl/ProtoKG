@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 63,
-    "status": "structural_minimal_closure_partial"
+    "status": "structural_d4_verified"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -23,12 +23,12 @@
       "size": 1242
     },
     "R29_D4_siaddr结构化知识端到端闭环.md": {
-      "sha256": "de88a4f47ed86dc0188a275830ac7ab455f61402c9ea3ba3f592da4b355f239a",
-      "size": 1199
+      "sha256": "48cbdf180c69d983e5843ebd8ed0c4f1e6485c2d6b2e72e4792d1c84d27775f5",
+      "size": 1376
     },
     "R29_H2_request_line_Canonical适配性报告.md": {
-      "sha256": "09fa812b5eba022ca26f6475b0827908138b6bc39a4a4dad7e1a154d63908c04",
-      "size": 1129
+      "sha256": "61f54c34e59329af185c967ccd28e54b4c5f6c3191d64a6cfd9b306fb54c0a6d",
+      "size": 1032
     },
     "R29_RA2_14条缓存拒收归因.xlsx": {
       "sha256": "a56ab810c2831aa16d8355feea0a51289bfb78ba961362393d2f6548f7987c53",
@@ -154,9 +154,21 @@
       "sha256": "11454387e118418af2f945431cf820bfb6cc3795820a999a944bd357985aa49e",
       "size": 1394
     },
+    "R29_结构化最小过滤与重复识别测试.md": {
+      "sha256": "7662ac94d904515dfa8d6b485298d0edddf32d843de568a2536bbea7d36dc66d",
+      "size": 820
+    },
+    "R29_结构化知识正式接入前剩余契约缺口.md": {
+      "sha256": "248a2ebe35b5d617156fe6621cf6204627bd4be7d2f2a431ab88e890fbbdd757",
+      "size": 804
+    },
     "R29_结构化知识确定性通道最小恢复方案.md": {
       "sha256": "9c32965d26ee4bb747c364f0edab4010434306e0f64e3bbe7d55197a0fd81126",
       "size": 876
+    },
+    "R29_隔离Hub与Evidence逐条读回报告.md": {
+      "sha256": "d6dc28909aab3aa9a62235a268accf8eab62e9da5bf71ff544044f074941422c",
+      "size": 564
     },
     "RFC2131_17批全文完成与输入覆盖核验.md": {
       "sha256": "4721be6391f6ca716f66c1265a9cdb3a3915125e7c141755deee9b22548ec351",
@@ -227,8 +239,8 @@
       "size": 353
     },
     "structural_closure.json": {
-      "sha256": "554748120abc1c9e0504c9d33ddc25d0b9927abbd7f4edee0070d6149f4036a3",
-      "size": 827
+      "sha256": "14aa890c1eda13d36ab22436a2551a34ff1c5d0760b5212976461ff23aa57492",
+      "size": 1393
     },
     "T0_Gold原文跨度核查.md": {
       "sha256": "91f0c9f60644e725cac75bed40cfdca70acbdd90f6e799ea0b3c6a44e44db35f",
@@ -755,8 +767,8 @@
       "size": 4503
     },
     "scripts/structural_closure.py": {
-      "sha256": "dfdd663831cc8fd302d47549884280c853ec29776e4e99c2f09f3ec8a66f49f2",
-      "size": 3342
+      "sha256": "356cf7c4ff8d1b429c50f80f84c2d76add3d16c846acaed739b376391af66e8b",
+      "size": 3338
     },
     "scripts/structural_extract.py": {
       "sha256": "eb5e686f09f86993b20bb6828dcfd0d54e9564a3a9b20dd4a360fa03d618a3e4",

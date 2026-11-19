@@ -21,10 +21,10 @@ def _norm(name, content, source, doc):
 
 
 def build() -> dict:
-    d4 = _norm("siaddr", "siaddr | 4 | IP address of next server to use in bootstrap",
+    d4 = _norm("siaddr", "4 | optional: IP address of next server to use in bootstrap",
                "file:rfc2131.txt#@541", "DHCPv4")
     h2 = _norm("request-line",
-               "request-line | method SP request-target SP HTTP-version CRLF | "
+               "method SP request-target SP HTTP-version CRLF | optional: "
                "HTTP 请求行由方法、请求目标、协议版本依次以单个空格分隔组成",
                "file:rfc9112.txt#@261", "http")
     out = {}

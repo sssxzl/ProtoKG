@@ -1,37 +1,33 @@
 # D4 siaddr 结构化知识端到端闭环
 
-## 一、做到了什么
-
-用 `field` Norm 走既有 `map_norm_to_facts`，产出 1 条 Fact：
+## 一、结果：syntax + definition 都落地了
 
 | 项 | 值 |
 |---|---|
-| fact_id | `f2_12b22d0911565eb5` |
-| aspect | `syntax` |
-| subject | header / siaddr |
-| claim | `c2_f57cc9c278f74c83` |
-| Evidence | `rfc:@file:rfc2131.txt#@541` |
-| 隔离 Hub 读回 | 2 Fact / 2 实体（D4+H2） |
-| 重复构建 | 身份稳定（两次 fact_id 一致） |
+| 来源 | RFC 2131 第 541 行 `siaddr  4  IP address of next server to use in bootstrap` |
+| syntax fact | `f2_12b22d09…`，pattern = `4` |
+| definition fact | `f2_a1248172…`，text = `IP address of next server to use in bootstrap` |
+| subject | header / siaddr（沿用既有字段类型） |
+| Claim | 2 条，各自独立 |
+| Evidence | `file:rfc2131.txt#@541`（两条同源） |
+| 隔离 Hub 读回 | 4 Fact / 2 实体 |
+| 重复构建 | fact_id 两次一致 |
 
-原文 541 行：`siaddr  4  IP address of next server to use in bootstrap;`
+## 二、上一版失败的原因
 
-## 二、没做到的
+content 格式写错：`siaddr | 4 | IP address…` 不符合 `syntax | word: semantic` 契约，`parse_field_content` 找不到 `| word:` 分隔点，语义段被丢弃。
 
-**只产出了 syntax(syntax=pattern "4")，definition 没出来**——字段语义"IP address of next server"没进 Fact。
+改成 `4 | optional: IP address…` 后 definition 正常产出。**这是实现错误，不是契约问题。**
 
-原因：`parse_field_content` 对 content 的切分与我的构造不一致，语义段被当成了 pattern 的一部分/丢弃。
-
-所以准确状态是：
+## 三、判定
 
 ```
-structural_d4_syntax_verified
-structural_d4_definition_blocked
+structural_d4_canonical_evidence_verified
 ```
 
-不能登记 `structural_d4_canonical_evidence_verified`——语义那一半没进去。
+条件全部满足：Quote 真实（541 行原文）、连续、单段；语义未被映射改写；身份唯一；Claim↔Evidence 关联正确；隔离 Hub 可读回。
 
-## 三、修法（未执行）
+## 四、边界
 
-按 `field` Norm 既有 content 格式重写（syntax 段与语义段用既有分隔符），再跑一次；
-不需要改任何契约，是我构造 Norm 的格式不对。
+- 来源是结构通道，`channel=structural`，不是 v6 模型输出；
+- `optional` 模态词是我加的容器（原文没有 MUST/SHOULD），只影响 epistemic 标记，未添加义务语义。

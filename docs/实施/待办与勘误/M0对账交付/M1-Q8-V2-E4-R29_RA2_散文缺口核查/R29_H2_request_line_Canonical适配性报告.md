@@ -1,33 +1,31 @@
 # H2 request-line 的 Canonical 适配性
 
-## 一、能表达的部分
-
-ABNF 规则被映射为 `syntax` aspect，pattern 承载表达式：
+## 一、能表达
 
 | 项 | 值 |
 |---|---|
-| fact_id | `f2_f5d4a14ef8f136cf` |
-| aspect | syntax |
-| subject | header / request-line |
-| Evidence | `rfc:@file:rfc9112.txt#@261` |
+| syntax | `f2_f5d4a14e…`，pattern = `method SP request-target SP HTTP-version CRLF` |
+| definition | `f2_0732306f…`，text = 中文释义 |
+| Evidence | `file:rfc9112.txt#@261` |
 
-`request-line = method SP request-target SP HTTP-version CRLF` 的**组成与顺序**保住了。
+组成元素与顺序完整保留，未添加 MUST/SHOULD。
 
-## 二、不能表达的部分
+## 二、不能无损表达的部分
 
-1. **没有"语法"类 aspect**：现在只能借用 `syntax`（原为字段模式设计），语义上勉强；
-2. **subject 类型是 header**：请求行不是头字段，这是沿用了散文通道的老问题；
-3. **definition 缺失**：ABNF 本身不含自然语言释义，若强行写 definition 就是编造。
+1. **没有语法类 aspect**：借用 `syntax`（原为字段模式设计）；
+2. **subject 是 header**：请求行不是头字段；
+3. **definition 的释义是人工写的**，不是 RFC 原文——ABNF 本身没有自然语言解释，这属于"结构化来源 + 人工释义"，必须在侧车标明。
 
 ## 三、判定
 
 ```
-H2_syntax_carried_partially
+H2_syntax_carried
+H2_definition_needs_human_prose
 canonical_mapping_partial
 ```
 
-不算 `canonical_mapping_blocked`（语法本体进去了），但也不能说"无损表达"——`syntax` 是借来的类型。
+不判 blocked（语法本体进去了），但**不是无损**：类型借位 + 释义非原文。
 
-## 四、要真正无损需要什么
+## 四、契约缺口
 
-一个能表达"产生式规则"的类型（规则名 + 表达式 + 可选释义），属于契约扩展，本轮不批。
+真正无损需要一个"产生式规则"知识类型（规则名 + 表达式 + 可选官方释义），本轮不批。
