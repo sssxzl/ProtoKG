@@ -1,0 +1,17 @@
+--- a/core/fused/extraction/prose_semantics.py
++++ b/core/fused/extraction/prose_semantics.py
+@@ -1397,9 +1397,11 @@
+         _is_placeholder = (not _act or not _obj
+                            or (_act.lower() == ent.lower()
+                                and _obj.lower() == ent.lower()))
+-        # ★ ★ 主体未解析 ⇒ **不成规则**（★ P0-1：不得为稳定 FactID 而猜主体）
+-        if _subject_status != "resolved":
+-            _is_placeholder = True
++        # ★ R29-RA2：**主体未解析 ≠ 不是规范义务**
++        #   原实现把二者绑定 ⇒ 有 constraint/action/object 的条目被降级成
++        #   prose_semantics ⇒ 落 definition 且不带 qualifiers ⇒ 同主体多义务撞 FactID。
++        #   现仅由「动作/对象缺失或占位」决定描述/规范分流；
++        #   主体不确定性由 prose_constraint 的未解析分支保留（不伪造 Rule Slot）。
+         kind = ("prose_semantics" if _is_placeholder
+                 else ("prose_constraint" if con else "prose_semantics"))
+         # ★ ★ M1-Q3-P0.8：★ **实验性类型复核**（★ 默认关闭 ⇒ 不产生任何字段）

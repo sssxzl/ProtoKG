@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 4,
-    "status": "T0_A_prose_norm_identity_verified / fact_collision_open"
+    "status": "T0_A_prose_fact_identity_verified"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -142,9 +142,21 @@
       "sha256": "1627ff02e38c774ac8f4f36b07ffeef232f35e74b0074dd30549cba22c31816f",
       "size": 2391
     },
+    "T0A_22条Raw到Fact及Claim无损回放.md": {
+      "sha256": "9ed953d6f8a05532b97834043efc001ec86ffbdba9efbfce6c662422096a174a",
+      "size": 1640
+    },
     "T0A_Evidence原文与缓存污染负例.md": {
       "sha256": "38dcce75ff992568bb1deef47572c42be0dd2c9e16224a7ea638cd63fb720bb9",
       "size": 1570
+    },
+    "T0A_Fact映射最小修正.patch": {
+      "sha256": "7d89add86d31e30580c345c91dac368635a1f7223d76fbeb6451d2d93fbcfdf7",
+      "size": 1173
+    },
+    "T0A_Fact错误分流根因与源码定位.md": {
+      "sha256": "0bfd78ff856598e2438bb93b7af5563c8969ae2a6bed3ce2805f65369a34de38",
+      "size": 2826
     },
     "T0A_G1-G4执行器安全修正.patch": {
       "sha256": "4cbddc91a620496041d01368ae7705b8f476faea24a311aa830953bbc047dc36",
@@ -325,6 +337,10 @@
     "T0A_链路接入最小修正.patch": {
       "sha256": "6d70391da1b966cbd51089ac58c07d3844a5d964df0d9c9154b792b01c92e79f",
       "size": 3504
+    },
+    "T0A_隔离Hub读回与生产哈希保护.md": {
+      "sha256": "0b6d50cb898181319a57d0ca89911a49153180bdf306f38c6e023b18c8ee3f56",
+      "size": 1067
     },
     "T0A_隔离中枢接入结果.md": {
       "sha256": "e452f5ffd2c94b3bf6a917d6c89cb1dd522347cbb64819601d611691ebbf3a0d",
