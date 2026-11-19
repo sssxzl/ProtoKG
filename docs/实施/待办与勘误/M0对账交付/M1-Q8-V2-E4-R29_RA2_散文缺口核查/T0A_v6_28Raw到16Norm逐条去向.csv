@@ -1,0 +1,29 @@
+span,entity,constraint,entity_occurrences,outcome
+22,SMTP,False,70,Gold 候选；实体出现 70 次，无法确定性重锚，需 quote 对齐
+25,TLS,False,90,Gold 候选；实体出现 90 次，无法确定性重锚，需 quote 对齐
+68,STARTTLS,False,33,实体多处出现（33 次），不确定；不猜测，待 quote 对齐
+82,STARTTLS,False,33,kept（span 命中或唯一重锚）
+89,STARTTLS,False,33,kept（span 命中或唯一重锚）
+128,SMTP server,True,13,kept（span 命中或唯一重锚）
+141,SMTP server,False,13,kept（span 命中或唯一重锚）
+145,server,True,44,kept（span 命中或唯一重锚）
+152,client,True,49,kept（span 命中或唯一重锚）
+155,client,True,49,kept（span 命中或唯一重锚）
+159,STARTTLS,True,33,kept（span 命中或唯一重锚）
+168,both parties,True,1,唯一候选可重锚（168→177 / 226→235）
+177,SMTP client,True,13,kept（span 命中或唯一重锚）
+180,SMTP server,True,13,实体多处出现（13 次），不确定；不猜测，待 quote 对齐
+207,server,True,44,实体多处出现（44 次），不确定；不猜测，待 quote 对齐
+210,client,True,49,kept（span 命中或唯一重锚）
+213,client,True,49,kept（span 命中或唯一重锚）
+217,SMTP service extensions,False,2,kept（span 命中或唯一重锚）
+226,client and the server,True,1,唯一候选可重锚（168→177 / 226→235）
+228,client,True,49,实体多处出现（49 次），不确定；不猜测，待 quote 对齐
+229,server,True,44,实体多处出现（44 次），不确定；不猜测，待 quote 对齐
+234,STARTTLS,False,33,kept（span 命中或唯一重锚）
+285,SMTP client and server,True,3,实体多处出现（3 次），不确定；不猜测，待 quote 对齐
+306,clients and servers,True,2,实体多处出现（2 次），不确定；不猜测，待 quote 对齐
+310,TLS,True,90,kept（span 命中或唯一重锚）
+311,implementation,True,3,实体多处出现（3 次），不确定；不猜测，待 quote 对齐
+341,clients and servers,True,2,kept（span 命中或唯一重锚）
+353,SASL EXTERNAL mechanism,True,1,kept（span 命中或唯一重锚）

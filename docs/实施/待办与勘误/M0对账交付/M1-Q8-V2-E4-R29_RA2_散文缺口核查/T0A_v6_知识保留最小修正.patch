@@ -1,0 +1,673 @@
+diff --git a/core/fused/extraction/prose_semantics.py b/core/fused/extraction/prose_semantics.py
+index 4352685..0fcfc31 100644
+--- a/core/fused/extraction/prose_semantics.py
++++ b/core/fused/extraction/prose_semantics.py
+@@ -24,13 +24,14 @@ import collections
+ import hashlib
+ import json
+ import os
++import re
+ import os
+ import sys
+ from pathlib import Path
+ from typing import Optional
+ 
+ #: ★ prompt 版本（改动 ⇒ 缓存键变 ⇒ 自动失效）
+-PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v2"
++PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v6"
+ 
+ #: 每块的最大字符数（喂给 LLM 的上限 ⇒ 控制 token）
+ _MAX_BLOCK_CHARS = 3500
+@@ -67,6 +68,24 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
+   `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+   `unknown` 无引用）。
+ ★ 若**不是**规范性要求，上述字段**全部留空**。
++★ 说明性章节（Abstract / Introduction / 背景段）中的实质性技术陈述同样要抽：
++  Treat substantive technical statements in the Abstract, Introduction and other
++  descriptive sections as extractable protocol knowledge, even when they are not
++  expressed as MUST, SHOULD or formal commands. Pay particular attention to a
++  specification's purpose, an extension's capabilities, intended security
++  properties, threat-mitigation goals and the technical behaviour it enables.
++  Statements introduced by "This document describes", "This specification defines"
++  or "This extension allows" may carry substantive facts: extract the underlying
++  technical proposition, not merely the fact that a document describes something.
++  Each proposition must keep evidence from its actual source sentence; never
++  substitute a nearby statement, and never infer capabilities not stated.
++★ 覆盖范围：Abstract、Introduction 及其他段落中的**实质性知识**都要抽取
++  （协议能力、用途、安全属性、定义、行为、规范性约束）；**不要**只抽章节标题之后的正文，
++  也不要因为段落没有 MUST/SHOULD 就跳过其中的能力或用途陈述。
++★ 承接型规范句也要抽：以 "For this reason"、"Therefore"、"In this case" 等
++  discourse connector 开头的句子，若含 MUST/MUST NOT/SHOULD 等规范词，仍要抽取；
++  保留主体、动作、对象、强度与原文明确支持的条件；不要把前文的解释当作条件，
++  也不要因为理由在前一段或跨页就丢弃该要求。
+ ★ 只输出 JSON，不要解释文字。
+ 
+ 格式：
+@@ -145,7 +164,7 @@ from pathlib import Path
+ from typing import Optional
+ 
+ #: ★ prompt 版本（改动 ⇒ 缓存键变 ⇒ 自动失效）
+-PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v2"
++PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v6"
+ 
+ #: 每块的最大字符数（喂给 LLM 的上限 ⇒ 控制 token）
+ _MAX_BLOCK_CHARS = 3500
+@@ -182,6 +201,24 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
+   `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+   `unknown` 无引用）。
+ ★ 若**不是**规范性要求，上述字段**全部留空**。
++★ 说明性章节（Abstract / Introduction / 背景段）中的实质性技术陈述同样要抽：
++  Treat substantive technical statements in the Abstract, Introduction and other
++  descriptive sections as extractable protocol knowledge, even when they are not
++  expressed as MUST, SHOULD or formal commands. Pay particular attention to a
++  specification's purpose, an extension's capabilities, intended security
++  properties, threat-mitigation goals and the technical behaviour it enables.
++  Statements introduced by "This document describes", "This specification defines"
++  or "This extension allows" may carry substantive facts: extract the underlying
++  technical proposition, not merely the fact that a document describes something.
++  Each proposition must keep evidence from its actual source sentence; never
++  substitute a nearby statement, and never infer capabilities not stated.
++★ 覆盖范围：Abstract、Introduction 及其他段落中的**实质性知识**都要抽取
++  （协议能力、用途、安全属性、定义、行为、规范性约束）；**不要**只抽章节标题之后的正文，
++  也不要因为段落没有 MUST/SHOULD 就跳过其中的能力或用途陈述。
++★ 承接型规范句也要抽：以 "For this reason"、"Therefore"、"In this case" 等
++  discourse connector 开头的句子，若含 MUST/MUST NOT/SHOULD 等规范词，仍要抽取；
++  保留主体、动作、对象、强度与原文明确支持的条件；不要把前文的解释当作条件，
++  也不要因为理由在前一段或跨页就丢弃该要求。
+ ★ 只输出 JSON，不要解释文字。
+ 
+ 格式：
+@@ -255,7 +292,7 @@ from pathlib import Path
+ from typing import Optional
+ 
+ #: ★ prompt 版本（改动 ⇒ 缓存键变 ⇒ 自动失效）
+-PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v2"
++PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v6"
+ 
+ #: 每块的最大字符数（喂给 LLM 的上限 ⇒ 控制 token）
+ _MAX_BLOCK_CHARS = 3500
+@@ -292,6 +329,24 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
+   `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+   `unknown` 无引用）。
+ ★ 若**不是**规范性要求，上述字段**全部留空**。
++★ 说明性章节（Abstract / Introduction / 背景段）中的实质性技术陈述同样要抽：
++  Treat substantive technical statements in the Abstract, Introduction and other
++  descriptive sections as extractable protocol knowledge, even when they are not
++  expressed as MUST, SHOULD or formal commands. Pay particular attention to a
++  specification's purpose, an extension's capabilities, intended security
++  properties, threat-mitigation goals and the technical behaviour it enables.
++  Statements introduced by "This document describes", "This specification defines"
++  or "This extension allows" may carry substantive facts: extract the underlying
++  technical proposition, not merely the fact that a document describes something.
++  Each proposition must keep evidence from its actual source sentence; never
++  substitute a nearby statement, and never infer capabilities not stated.
++★ 覆盖范围：Abstract、Introduction 及其他段落中的**实质性知识**都要抽取
++  （协议能力、用途、安全属性、定义、行为、规范性约束）；**不要**只抽章节标题之后的正文，
++  也不要因为段落没有 MUST/SHOULD 就跳过其中的能力或用途陈述。
++★ 承接型规范句也要抽：以 "For this reason"、"Therefore"、"In this case" 等
++  discourse connector 开头的句子，若含 MUST/MUST NOT/SHOULD 等规范词，仍要抽取；
++  保留主体、动作、对象、强度与原文明确支持的条件；不要把前文的解释当作条件，
++  也不要因为理由在前一段或跨页就丢弃该要求。
+ ★ 只输出 JSON，不要解释文字。
+ 
+ 格式：
+@@ -365,7 +420,7 @@ from pathlib import Path
+ from typing import Optional
+ 
+ #: ★ prompt 版本（改动 ⇒ 缓存键变 ⇒ 自动失效）
+-PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v2"
++PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v6"
+ 
+ #: 每块的最大字符数（喂给 LLM 的上限 ⇒ 控制 token）
+ _MAX_BLOCK_CHARS = 3500
+@@ -402,6 +457,24 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
+   `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+   `unknown` 无引用）。
+ ★ 若**不是**规范性要求，上述字段**全部留空**。
++★ 说明性章节（Abstract / Introduction / 背景段）中的实质性技术陈述同样要抽：
++  Treat substantive technical statements in the Abstract, Introduction and other
++  descriptive sections as extractable protocol knowledge, even when they are not
++  expressed as MUST, SHOULD or formal commands. Pay particular attention to a
++  specification's purpose, an extension's capabilities, intended security
++  properties, threat-mitigation goals and the technical behaviour it enables.
++  Statements introduced by "This document describes", "This specification defines"
++  or "This extension allows" may carry substantive facts: extract the underlying
++  technical proposition, not merely the fact that a document describes something.
++  Each proposition must keep evidence from its actual source sentence; never
++  substitute a nearby statement, and never infer capabilities not stated.
++★ 覆盖范围：Abstract、Introduction 及其他段落中的**实质性知识**都要抽取
++  （协议能力、用途、安全属性、定义、行为、规范性约束）；**不要**只抽章节标题之后的正文，
++  也不要因为段落没有 MUST/SHOULD 就跳过其中的能力或用途陈述。
++★ 承接型规范句也要抽：以 "For this reason"、"Therefore"、"In this case" 等
++  discourse connector 开头的句子，若含 MUST/MUST NOT/SHOULD 等规范词，仍要抽取；
++  保留主体、动作、对象、强度与原文明确支持的条件；不要把前文的解释当作条件，
++  也不要因为理由在前一段或跨页就丢弃该要求。
+ ★ 只输出 JSON，不要解释文字。
+ 
+ 格式：
+@@ -475,7 +548,7 @@ from pathlib import Path
+ from typing import Optional
+ 
+ #: ★ prompt 版本（改动 ⇒ 缓存键变 ⇒ 自动失效）
+-PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v2"
++PROSE_SEMANTICS_PROMPT_VERSION = "prose-semantics-v6"
+ 
+ #: 每块的最大字符数（喂给 LLM 的上限 ⇒ 控制 token）
+ _MAX_BLOCK_CHARS = 3500
+@@ -512,6 +585,24 @@ _PROMPT = """你是协议规范分析员。下面给出若干份 RFC 文档的**
+   `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+   `unknown` 无引用）。
+ ★ 若**不是**规范性要求，上述字段**全部留空**。
++★ 说明性章节（Abstract / Introduction / 背景段）中的实质性技术陈述同样要抽：
++  Treat substantive technical statements in the Abstract, Introduction and other
++  descriptive sections as extractable protocol knowledge, even when they are not
++  expressed as MUST, SHOULD or formal commands. Pay particular attention to a
++  specification's purpose, an extension's capabilities, intended security
++  properties, threat-mitigation goals and the technical behaviour it enables.
++  Statements introduced by "This document describes", "This specification defines"
++  or "This extension allows" may carry substantive facts: extract the underlying
++  technical proposition, not merely the fact that a document describes something.
++  Each proposition must keep evidence from its actual source sentence; never
++  substitute a nearby statement, and never infer capabilities not stated.
++★ 覆盖范围：Abstract、Introduction 及其他段落中的**实质性知识**都要抽取
++  （协议能力、用途、安全属性、定义、行为、规范性约束）；**不要**只抽章节标题之后的正文，
++  也不要因为段落没有 MUST/SHOULD 就跳过其中的能力或用途陈述。
++★ 承接型规范句也要抽：以 "For this reason"、"Therefore"、"In this case" 等
++  discourse connector 开头的句子，若含 MUST/MUST NOT/SHOULD 等规范词，仍要抽取；
++  保留主体、动作、对象、强度与原文明确支持的条件；不要把前文的解释当作条件，
++  也不要因为理由在前一段或跨页就丢弃该要求。
+ ★ 只输出 JSON，不要解释文字。
+ 
+ 格式：
+@@ -629,12 +720,147 @@ def _load_cache(protocol: str, block_hash: str) -> Optional[dict]:
+     return d
+ 
+ 
++# ===========================================================================
++# R29-RA2/F2：文档级散文缓存（影子）
++# ===========================================================================
++#   ★ 与批次级旧缓存并存：旧文件（单协议单条目、complete=false）**一律不读**，
++#     76 条历史记录继续隔离；新缓存按 (协议, 文档) 分文件，各自独立完成状态。
++
++_DOC_CACHE_SCHEMA = "prose-cache-doc-v1"
++
++
++def _doc_cache_dir(protocol: str) -> Path:
++    return _cache_path(protocol).parent / f"{protocol}.prose.d"
++
++
++def _doc_cache_file(protocol: str, doc: str) -> Path:
++    safe = "".join(c if (c.isalnum() or c in "._-") else "_" for c in doc)
++    return _doc_cache_dir(protocol) / f"{safe}.json"
++
++
++def _block_signature(blocks: list[dict]) -> str:
++    """选块集合指纹：起始行 + 长度 + 块内容哈希（避免直接拼接的边界歧义）。"""
++    parts = []
++    for b in blocks:
++        t = str(b.get("text", ""))
++        parts.append(f"{b.get('start')}:{len(t)}:"
++                     f"{hashlib.sha256(t.encode('utf-8')).hexdigest()[:16]}")
++    return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()
++
++
++def _doc_key(protocol: str, doc: str, block_sig: str, src_sha: str,
++             parser_version: str) -> str:
++    """文档级键：原始文件 SHA + 选块指纹 + 解析器/prompt/模型/schema 版本。"""
++    from core.fused.extraction.cache_key import cache_key as _ck
++    return _ck(prompt_version=PROSE_SEMANTICS_PROMPT_VERSION,
++               input_fingerprint=f"{doc}\x00{src_sha}\x00{block_sig}",
++               temperature=0.1, max_tokens=_MAX_TOKENS,
++               prompt_digest=_hash_text(_PROMPT),
++               parser_version=parser_version,
++               schema_version=_DOC_CACHE_SCHEMA)
++
++
++def _doc_meta(blocks: list[dict]) -> dict:
++    """按文档汇总 (块集合, 块指纹, 原始 SHA)。原始 SHA 缺失记空串，不臆造。"""
++    meta: dict[str, dict] = {}
++    for b in blocks:
++        d = b.get("doc") or ""
++        m = meta.setdefault(d, {"blocks": [], "src_sha256": "",
++                                "has_src": False, "conflict": False})
++        m["blocks"].append(b)
++        s = str(b.get("src_sha256") or "")
++        if m.get("conflict"):
++            continue                      # 已判冲突 ⇒ 保持不可用（粘性）
++        if not s:
++            # 部分块无来源 ⇒ 整份文档来源不可证（同样粘性）
++            m["src_sha256"], m["has_src"], m["conflict"] = "", False, True
++            continue
++        if not m["has_src"]:
++            m["src_sha256"], m["has_src"] = s, True
++        elif m["src_sha256"] != s:
++            m["src_sha256"], m["has_src"], m["conflict"] = "", False, True
++    for d, m in meta.items():
++        m["block_sig"] = _block_signature(m["blocks"])
++    return meta
++
++
++def _load_doc_caches(protocol: str, meta: dict, parser_version: str
++                     ) -> tuple[dict[str, list[dict]], set[str]]:
++    """读文档级缓存。只接受 schema/key/来源三者全部一致的 complete=true。"""
++    hit: dict[str, list[dict]] = {}
++    miss: set[str] = set()
++    for doc, m in meta.items():
++        f = _doc_cache_file(protocol, doc)
++        if not f.is_file():
++            miss.add(doc); continue
++        try:
++            d = json.loads(f.read_text(encoding="utf-8"))
++        except (OSError, ValueError):
++            miss.add(doc); continue
++        if not isinstance(d, dict):
++            miss.add(doc); continue
++        if d.get("schema") != _DOC_CACHE_SCHEMA or d.get("complete") is not True:
++            miss.add(doc); continue
++        if d.get("doc") != doc:
++            miss.add(doc); continue
++        # 来源必须可证且一致：任一侧为空（含来源冲突）⇒ 拒收，不猜
++        if not m["src_sha256"] or d.get("doc_sha256") != m["src_sha256"]:
++            miss.add(doc); continue
++        if d.get("key") != _doc_key(protocol, doc, m["block_sig"],
++                                    m["src_sha256"], parser_version):
++            miss.add(doc); continue
++        if not isinstance(d.get("items"), list):
++            miss.add(doc); continue
++        # 内部条目归属必须与文件名一致，否则整条缓存拒收（防跨文档污染）
++        if any((it.get("doc") if isinstance(it, dict) else None) != doc
++               for it in d["items"]):
++            miss.add(doc); continue
++        hit[doc] = list(d["items"])
++    return hit, miss
++
++
++def _save_doc_caches(protocol: str, meta: dict, items: list[dict],
++                     parser_version: str, doc_ok: dict[str, bool],
++                     only_docs: set[str] | None = None) -> None:
++    """按文档写缓存：只写本次实际处理且成功的文档；失败文档不写（保持无缓存）。"""
++    by_doc: dict[str, list[dict]] = {d: [] for d in meta}
++    for it in items or []:
++        d = it.get("doc")
++        if d in by_doc:
++            by_doc[d].append(it)
++    out_dir = _doc_cache_dir(protocol)
++    out_dir.mkdir(parents=True, exist_ok=True)
++    for doc, m in meta.items():
++        if only_docs is not None and doc not in only_docs:
++            continue
++        if not doc_ok.get(doc):
++            continue
++        if not m["src_sha256"]:      # 来源不可证 ⇒ 不写缓存（写入也会被拒读）
++            continue
++        payload = {"schema": _DOC_CACHE_SCHEMA,
++                   "doc": doc,
++                   "doc_sha256": m["src_sha256"],
++                   "block_sig": m["block_sig"],
++                   "key": _doc_key(protocol, doc, m["block_sig"],
++                                   m["src_sha256"], parser_version),
++                   "complete": True,
++                   "status": "success_nonempty" if by_doc[doc] else "success_empty",
++                   "items": by_doc[doc]}
++        f = _doc_cache_file(protocol, doc)
++        tmp = f.with_suffix(".json.tmp")
++        tmp.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
++        tmp.replace(f)
++
++
+ def _save_cache(protocol: str, block_hash: str, items: list[dict],
+                 complete: bool = True, *,
+                 status: Optional[str] = None,
+                 drop_reasons: Optional[dict] = None,
+                 mapped_count: Optional[int] = None,
+                 llm_calls: Optional[int] = None) -> None:
++    # R29-RA2/F2：启用文档级缓存后，旧批次缓存只读不写（防覆盖历史记录）
++    if _doc_cache_dir(protocol).is_dir():
++        return
+     """写缓存（★ M1-①：**显式状态 + 拒收原因 + 诊断计数**）。
+ 
+     ★ ``complete=False`` ⇒ 未跑完 ⇒ **下次会重跑**（★ 失败不固化）
+@@ -771,6 +997,7 @@ def _collect_blocks(files: list[Path], max_blocks: Optional[int] = None,
+     for f in files:
+         try:
+             text = f.read_text(encoding="utf-8", errors="replace")
++            _src_sha = hashlib.sha256(f.read_bytes()).hexdigest()
+         except OSError:
+             continue
+         _bl = _split_blocks(text, _mpd)
+@@ -782,7 +1009,8 @@ def _collect_blocks(files: list[Path], max_blocks: Optional[int] = None,
+                 budget.skip(f.name, _st, "budget_exhausted")
+             continue
+         for start, block in _bl:
+-            out.append({"doc": f.name, "start": start, "text": block})
++            out.append({"doc": f.name, "start": start, "text": block,
++                        "src_sha256": _src_sha})
+     return out
+ 
+ 
+@@ -853,6 +1081,106 @@ def _cache_key_str(block_hash: str) -> Optional[str]:
+     return f"prose-semantics-v2:{block_hash}"
+ 
+ 
++
++# ===========================================================================
++# R29-RA2/T0-A：散文 Norm 的确定性 rule_slot（限定范围身份例外）
++# ===========================================================================
++_RULE_SLOT_VERSION = "prose-rule-slot-v1"
++
++
++def _rule_slot(it: dict) -> str:
++    """由知识命题本身生成稳定摘要，用于区分同实体的不同规范义务。
++
++    纳入：主体、动作、对象、条件、例外、极性、强度、约束/含义文本。
++    排除：文档名、行号、批次、数组下标 —— 这些不是规则身份。
++    """
++    payload = {
++        "v": _RULE_SLOT_VERSION,
++        "subject": str(it.get("normative_subject") or it.get("entity") or "").strip().lower(),
++        "action": str(it.get("action") or "").strip().lower(),
++        "object": str(it.get("object") or "").strip().lower(),
++        "condition": str(it.get("condition") or "").strip().lower(),
++        "exception": str(it.get("exception") or "").strip().lower(),
++        "polarity": str(it.get("polarity") or "").strip().lower(),
++        "strength": str(it.get("strength") or "").strip().lower(),
++        "text": (str(it.get("constraint") or "") or str(it.get("meaning") or "")).strip(),
++    }
++    blob = json.dumps(payload, ensure_ascii=False, sort_keys=True,
++                      separators=(",", ":"))
++    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:12]
++
++
++
++# ===========================================================================
++# R29-RA2/T0-A：quote 确定性定位（以冻结原文为权威，不看模型行号）
++# ===========================================================================
++def _norm_ws(t: str) -> str:
++    return re.sub(r"\s+", " ", (t or "")).strip().lower()
++
++
++def locate_quote(lines: list[str], quote: str) -> tuple[int | None, int | None, str]:
++    """把 quote 定位到原文行区间。
++
++    Returns: (start_line, end_line, status)
++    status ∈ exact_match / whitespace_normalized_match / ambiguous / quote_not_found
++    """
++    q_raw = (quote or "").strip()
++    if not q_raw:
++        return None, None, "quote_not_found"
++
++    # 原文按行拼接（保留换行），同时记录每行在拼接串中的起点
++    starts, buf = [], []
++    pos = 0
++    for i, ln in enumerate(lines, start=1):
++        starts.append((pos, i))
++        buf.append(ln)
++        pos += len(ln) + 1
++    text = "\n".join(buf)
++
++    # 1) 原文精确匹配（含换行）
++    hits = []
++    idx = text.find(q_raw)
++    while idx != -1:
++        hits.append(idx)
++        idx = text.find(q_raw, idx + 1)
++    status = "exact_match"
++    if not hits:
++        # 2) 空白归一化后匹配：只在单一空白形态差异时接受
++        ntext, nmap = [], []
++        for i, ch in enumerate(text):
++            if ch.isspace():
++                if ntext and ntext[-1] == " ":
++                    continue
++                ntext.append(" ")
++            else:
++                ntext.append(ch)
++            nmap.append(i)
++        nq = _norm_ws(q_raw)
++        joined = "".join(ntext).lower()
++        idx = joined.find(nq)
++        if idx == -1:
++            return None, None, "quote_not_found"
++        start_char = nmap[idx]
++        end_char = nmap[min(idx + len(nq) - 1, len(nmap) - 1)]
++        hits = [start_char]
++        status = "whitespace_normalized_match"
++        if joined.find(nq, idx + 1) != -1:
++            return None, None, "ambiguous"
++    else:
++        if len(hits) > 1:
++            return None, None, "ambiguous"
++        start_char, end_char = hits[0], hits[0] + len(q_raw) - 1
++
++    def _line_of(c):
++        lo = 0
++        for k, (p0, ln) in enumerate(starts):
++            if p0 > c:
++                return starts[k - 1][1] if k else 1
++        return starts[-1][1]
++
++    return _line_of(start_char), _line_of(end_char), status
++
++
+ def _extract_blocks(protocol: str, blocks: list[dict], *,
+                     entities: Optional[list] = None,
+                     llm=None,
+@@ -880,6 +1208,24 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+     if not blocks:
+         return [], stats
+ 
++    # R29-RA2：未显式传 doc_lines 时，用块内容重建（块按起始行连续）
++    if not doc_lines:
++        _rebuilt: dict[str, list[str]] = {}
++        for _b in blocks:
++            _d = _b.get("doc") or ""
++            _st = int(_b.get("start") or 1)
++            _ls = str(_b.get("text") or "").split("\n")
++            _cur = _rebuilt.setdefault(_d, [])
++            while len(_cur) < _st - 1:
++                _cur.append("")
++            for _i, _ln in enumerate(_ls):
++                _pos = _st - 1 + _i
++                if _pos < len(_cur):
++                    _cur[_pos] = _ln
++                else:
++                    _cur.append(_ln)
++        doc_lines = _rebuilt
++
+     if guard is None:
+         from core.fused.extraction.window_candidates import RunGuard
+         guard = RunGuard()
+@@ -896,7 +1242,27 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+                             #   ⇒ 否则「改了 prompt 但没改版本号」⇒ 命中旧缓存
+                             #   ⇒ ⇒ **用旧结果冒充新结果**
+                             prompt_digest=_hash_text(_PROMPT))
+-    cached = _load_cache(protocol, block_hash)
++    # R29-RA2/F2：文档级身份；旧批次缓存**不参与**（不只读兜底，避免绕过来源约束）
++    from core.fused.extraction.cache_key import PARSER_VERSION as _PV
++    _dmeta = _doc_meta(blocks)
++    _hit, _miss = _load_doc_caches(protocol, _dmeta, _PV)
++    _prefix_items: list[dict] = []
++    _doc_ok: dict[str, bool] = {d: True for d in _miss}   # 与运算初值 True
++    _doc_seen: set[str] = set()
++    # 预算/异常提前终止时，文档只处理了部分块 ⇒ 不得标 complete
++    _doc_expect: dict[str, int] = {}
++    _doc_done: dict[str, int] = {}
++    for _b in blocks:
++        _dd = _b.get("doc") or ""
++        _doc_expect[_dd] = _doc_expect.get(_dd, 0) + 1
++    if _dmeta and not _miss:
++        cached = {"items": [it for _d in _hit for it in _hit[_d]]}
++    elif _hit:
++        _prefix_items = [it for _d in _hit for it in _hit[_d]]
++        blocks = [b for b in blocks if (b.get("doc") or "") in _miss]
++        cached = None
++    else:
++        cached = None
+     if cached is not None:
+         raw_items = list(cached.get("items") or [])
+         stats["cache_hit"] = True
+@@ -969,7 +1335,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+                 break
+             ok = False
+             _batch_failed = False
+-            for _attempt in (1, 2):
++            # T0-A：显式关闭链路内重试（真实请求数必须可控）
++            _attempts = (1,) if os.environ.get("PROSE_NO_RETRY") == "1" else (1, 2)
++            for _attempt in _attempts:
+                 stats["calls"] += 1
+                 # ★ M1-③：每次调用一条结构化记录（★ 阶段可区分）
+                 _rec = None
+@@ -1047,6 +1415,18 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+                         _rec.error_message = f"payload type={type(out).__name__}"
+                         _rec.outcome = "failed"
+                     continue
++                # R29-RA2/T0-A：截断响应不得当作成功（length ⇒ 结果不完整）
++                _fr = (getattr(llm, "last_call_meta", None) or {}).get("finish_reason")
++                if _fr == "length":
++                    stats["failures"] += 1
++                    _batch_failed = True
++                    if _rec is not None:
++                        _rec.error_stage = "truncated"
++                        _rec.error_type = "FinishReasonLength"
++                        _rec.error_message = "finish_reason=length"
++                        _rec.outcome = "failed"
++                    guard.on_failure()
++                    continue
+                 got = 0
+                 for it in (out.get("items") or []):
+                     if not isinstance(it, dict):
+@@ -1061,17 +1441,35 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+                     _rec.outcome = "success"
+                     _rec.blocks_without_candidate = got
+                 break
++            for _b in batch:
++                _d = _b.get("doc") or ""
++                if _d in _doc_ok:
++                    # 跨批次取「与」：任一批失败 ⇒ 该文档不可标成功（不得被后续成功覆盖）
++                    _doc_seen.add(_d)
++                    _doc_ok[_d] = _doc_ok[_d] and bool(ok)
++                    if ok:
++                        _doc_done[_d] = _doc_done.get(_d, 0) + 1
+             if ok:
+                 # ★ 分批增量落缓存（成功的批不重跑）；★ **未跑完 ⇒ complete=False**
+-                _save_cache(protocol, block_hash, raw_items, complete=False)
++                # R29-RA2/F2：启用文档级缓存时不写批次级旧缓存（避免覆盖历史记录）
++                if not _dmeta:
++                    _save_cache(protocol, block_hash, raw_items, complete=False)
+             elif _batch_failed and _diag is not None:
+                 # ★ 重试后仍失败 ⇒ 标记「放弃」（★ 与「重试恢复」区分）
+                 _last = _diag.records[-1] if _diag.records else None
+                 if _last is not None and _last.outcome == "failed":
+                     _last.outcome = "abandoned"
+         # ★ 全部批次跑完 ⇒ complete=True（★ 失败留下的缓存会被忽略）
+-        _save_cache(protocol, block_hash, raw_items,
+-                    complete=(not stats.get("failures")))
++        if not _dmeta:
++            _save_cache(protocol, block_hash, raw_items,
++                        complete=(not stats.get("failures")))
++        # R29-RA2/F2：合并已命中文档的结果，并按文档落缓存
++        raw_items = _prefix_items + raw_items
++        for _dd in list(_doc_ok):
++            if _doc_done.get(_dd, 0) < _doc_expect.get(_dd, 0):
++                _doc_ok[_dd] = False      # 块未跑全 ⇒ 不得标完成
++        _save_doc_caches(protocol, _dmeta, raw_items, _PV, _doc_ok,
++                         only_docs=_doc_seen)
+ 
+     stats["raw_items"] = len(raw_items)
+     stats["raw_items_total"] = len(raw_items)   # ★ M1-Q3：★ 与「解析成功调用数」区分
+@@ -1135,11 +1533,27 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+             if _sp_ev["span_mode"] in ("absolute", "relative"):
+                 span_line = _sp_ev["resolved_span"]     # ★ 采用解析后的**锚点行**
+             else:
+-                stats["rejected"] += 1
+-                _drop["entity_not_in_span"] += 1   # ★ M1-③
+-                _drop_by_mode[_sp_ev["span_mode"]] = \
+-                    _drop_by_mode.get(_sp_ev["span_mode"], 0) + 1
+-                continue
++                # ★ R29-RA2：模型行号错但命题有效 ⇒ 在全文内确定性重锚
++                #   唯一命中才接受；多处命中或找不到 ⇒ 仍拒收（不放宽证据标准）
++                _cand = [i + 1 for i, ln in enumerate(lines)
++                         if ent and ent.lower() in ln.lower()]
++                if len(_cand) == 1:
++                    span_line = _cand[0]
++                    _sp_ev = _resolve_span_evidence(lines, span_line, ent,
++                                                    chunk_start=None)
++                    _rea = _sp_ev.get("resolved_span") or span_line
++                    span_line = _rea
++                    _sp_matched = _sp_ev.get("matched_evidence_lines")
++                    _sp_mode = _sp_ev.get("span_mode") or "absolute"
++                    _sp_evidence = _build_evidence(lines, _sp_ev, entity=ent)
++                    stats.setdefault("reanchored", 0)
++                    stats["reanchored"] += 1
++                else:
++                    stats["rejected"] += 1
++                    _drop["entity_not_in_span"] += 1   # ★ M1-③
++                    _drop_by_mode[_sp_ev["span_mode"]] = \
++                        _drop_by_mode.get(_sp_ev["span_mode"], 0) + 1
++                    continue
+         con = str(it.get("constraint") or "").strip()
+         # ★ ★ **主体归属核验**（★ P0-1）：★ `entity` 只是**原文提及的实体**
+         #   ⇒ 义务主体可能是别的 ⇒ ⇒ 用 `normative_subject`（来自原文主语）
+@@ -1164,9 +1578,11 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+         _is_placeholder = (not _act or not _obj
+                            or (_act.lower() == ent.lower()
+                                and _obj.lower() == ent.lower()))
+-        # ★ ★ 主体未解析 ⇒ **不成规则**（★ P0-1：不得为稳定 FactID 而猜主体）
+-        if _subject_status != "resolved":
+-            _is_placeholder = True
++        # ★ R29-RA2：**主体未解析 ≠ 不是规范义务**
++        #   原实现把二者绑定 ⇒ 有 constraint/action/object 的条目被降级成
++        #   prose_semantics ⇒ 落 definition 且不带 qualifiers ⇒ 同主体多义务撞 FactID。
++        #   现仅由「动作/对象缺失或占位」决定描述/规范分流；
++        #   主体不确定性由 prose_constraint 的未解析分支保留（不伪造 Rule Slot）。
+         kind = ("prose_semantics" if _is_placeholder
+                 else ("prose_constraint" if con else "prose_semantics"))
+         # ★ ★ M1-Q3-P0.8：★ **实验性类型复核**（★ 默认关闭 ⇒ 不产生任何字段）
+@@ -1181,8 +1597,8 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+         _kind_review = None
+         if _kind_review_enabled() and kind == "prose_semantics":
+             _kind_review = _build_kind_review(it, con)
+-        # ★ 按「实体 + 类别」去重（fact_key 不含 span ⇒ 同实体必撞）
+-        _dedup_key = (kind, ent.lower())
++        # ★ 按「实体 + 类别 + 命题摘要」去重：同实体的不同义务不再互相覆盖
++        _dedup_key = (kind, ent.lower(), _rule_slot(it))
+         if _dedup_key in seen:
+             continue
+         seen.add(_dedup_key)
+@@ -1205,7 +1621,9 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+             "kb_source_type": "rfc",
+             "name": ent,
+             "content": (meaning + (" | constraint: " + con if con else "")),
+-            "norm_id": f"{kind}_{ent.lower().replace('-', '_')}",
++            # ★ 散文知识：追加确定性 rule_slot（同实体的不同义务不再互相覆盖）
++            "norm_id": (f"{kind}_{ent.lower().replace('-', '_')}"
++                        f".{_rule_slot(it)}"),
+             "source": f"file:{doc}#@{span_line}",
+             "entity": ent,
+             "meaning": meaning,
+@@ -1244,6 +1662,25 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+             "rule_text": _rule_text_of(it),
+             "_doc_lines": lines,
+         })
++        # ★ R29-RA2：quote 确定性定位（以冻结原文为准，不信任模型行号）
++        _n2 = norms.pop()
++        _q = str(it.get("evidence_quote") or "").strip()
++        if _q:
++            _vs, _ve, _st = locate_quote(lines, _q)
++            _n2["model_span"] = _n2["span_line"]
++            _n2["evidence_quote_raw"] = _q
++            _n2["evidence_match_status"] = _st
++            if _st in ("exact_match", "whitespace_normalized_match"):
++                _n2["verified_span"] = [_vs, _ve]
++                if _vs != _n2["model_span"]:
++                    _n2["evidence_match_status"] = "reanchored"
++                _n2["span_line"] = _vs
++                _n2["source"] = f"file:{doc}#@{_vs}"
++            else:
++                stats["rejected"] += 1
++                _drop["quote_unverified"] = _drop.get("quote_unverified", 0) + 1
++                continue
++        norms.append(_n2)
+     # ---- ★★ **真实接入 L1 / L2**（★ P0-2）--------------------------------
+     #   ⇒ ★ 此前 L1/L2 **只在测试里**被调用 ⇒ 真实抽取**从不校验**
+     #   ⇒ ⇒ 现在：**L1（确定性）→ L2（真实独立调用）→ 最终状态** ⇒ 写入影子产物
