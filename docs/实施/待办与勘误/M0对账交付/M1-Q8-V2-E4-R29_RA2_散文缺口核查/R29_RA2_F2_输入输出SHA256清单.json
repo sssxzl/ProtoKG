@@ -1,9 +1,13 @@
 {
-  "note": "本文件不计入自身 outputs（避免自引用）",
+  "note": "本文件不计入自身：自哈希见 R29_RA2_F2_清单自哈希.sha256",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 0,
-    "status": "T0_preflight_verified"
+    "status": "T0_A_preflight_verified",
+    "flags": [
+      "live_llm_execution_pending_explicit_approval",
+      "pricing_approval_blocked"
+    ]
   },
   "outputs": {
     "R29_RA2_14条缓存拒收归因.xlsx": {
@@ -86,6 +90,10 @@
       "sha256": "f95fc9f44bcb46734e318642da05ce73f11cfaea47a9a2a8ee0d4d27da03ec79",
       "size": 1657
     },
+    "R29_RA2_F2_清单自哈希.sha256": {
+      "sha256": "2b8c36e0780427d0268caf44cec33eeb567ad73cd7769863d36cdb4d8b6659b7",
+      "size": 107
+    },
     "R29_RA2_F2_现有缓存身份与失效审计.md": {
       "sha256": "aa10d60c82b4c33cc18817328e155df50ac7e38f917d0d48f7df9d94bd104035",
       "size": 2093
@@ -123,8 +131,8 @@
       "size": 1392
     },
     "T0_执行入口与7块实证.md": {
-      "sha256": "5582159628d913a45afd6d744b7c457b926f3b8a2c8514b8935a0041ab8568fe",
-      "size": 2249
+      "sha256": "6cdb44a8f8feff8b04210d5f040a38482f37bcf290fec31af242f5c78450c6ac",
+      "size": 2852
     },
     "T0_执行前最终审批单.md": {
       "sha256": "e53b8d1e9bd5fe9dbc420cd10f76dc4639dfdc1d6d3be23945a35c5095646db6",
@@ -137,6 +145,26 @@
     "T0_缓存安全及结果验收门禁.md": {
       "sha256": "1627ff02e38c774ac8f4f36b07ffeef232f35e74b0074dd30549cba22c31816f",
       "size": 2391
+    },
+    "T0A_Gold原文证据纠偏.md": {
+      "sha256": "fed06afc75fa3e30248e9d5a3f4f7c3a2a9e48618dc80de2250ae616fa3b4326",
+      "size": 1971
+    },
+    "T0A_六块完整性与入口核验.md": {
+      "sha256": "c68d4b8f724caa291f18a87188b8e1a422e496e0590df4d9163a2af40cbf3b56",
+      "size": 1981
+    },
+    "T0A_完整Token与费用硬预算.md": {
+      "sha256": "179814a124d68b20a1d87a431b6064ebf9f29367e01a94e7368eede3d986f07d",
+      "size": 2980
+    },
+    "T0A_最终审批单.md": {
+      "sha256": "31df2a1f676982741359e226376f7d086975eed75af76a5684f54160b1e8fec1",
+      "size": 1235
+    },
+    "T0A_预检退出报告.md": {
+      "sha256": "b62ac55228bc7e0f92f479e38fd4d81823f41dca41346ecf69b9601b65b61f8d",
+      "size": 2048
     },
     "scripts/f1_docs.json": {
       "sha256": "52debe4b049b9fb6d6770656d0be318251cf9c36b106eabf82c899840face104",
@@ -165,6 +193,14 @@
     "scripts/t0_preflight.py": {
       "sha256": "bdcf8a48d85233577bfbc8f6628098d246829ad97f24b27bc976a08deaec8e8c",
       "size": 5119
+    },
+    "scripts/t0_preflight_output.json": {
+      "sha256": "dc33d01fef7d80713885708046c088e962a6f461c80b03644949119ac381410a",
+      "size": 6616
+    },
+    "scripts/t0a_evidence.json": {
+      "sha256": "1112a1ae642dc04201f0e591384985fdf7f96b887413eb84d16f019440b7f12b",
+      "size": 2242
     }
   }
 }

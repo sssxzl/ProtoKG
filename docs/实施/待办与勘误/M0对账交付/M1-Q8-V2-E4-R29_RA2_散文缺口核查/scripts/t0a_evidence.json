@@ -1,0 +1,85 @@
+{
+ "doc": "rfc3207.txt",
+ "bytes": 18679,
+ "src_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+ "chars": 18679,
+ "lines": 508,
+ "max_block_chars": 3500,
+ "block_count": 6,
+ "blocks": [
+  {
+   "start": 1,
+   "end": 114,
+   "chars": 3555,
+   "text_sha256": "da8a9aca585c60217f96f5d97710d047c91b73f77fedb7a01b6d609f737399bd",
+   "sig": "9ce4e98185a6c4b2"
+  },
+  {
+   "start": 115,
+   "end": 191,
+   "chars": 3520,
+   "text_sha256": "a79cc87ecd38dfe24017eee5534ebf6febb491bcf590f163af5b726641732442",
+   "sig": "27191f4c9e764aeb"
+  },
+  {
+   "start": 192,
+   "end": 277,
+   "chars": 3555,
+   "text_sha256": "ee174fdd9f9e00002b6db6680a94052efda0ea0ed2e494f00ed61854feaec1f7",
+   "sig": "16d59ad52cc4f548"
+  },
+  {
+   "start": 278,
+   "end": 347,
+   "chars": 3550,
+   "text_sha256": "5c52ce728974c579bfa0a8364279e522e76f16eef40d6b7614422ca777346377",
+   "sig": "43695efcd7f8a8a5"
+  },
+  {
+   "start": 348,
+   "end": 467,
+   "chars": 3539,
+   "text_sha256": "281cbfe13f51626aad1424f65b1bfe1f47d3787a6e3e72c45b9d897772321723",
+   "sig": "e522f7644aac9c82"
+  },
+  {
+   "start": 468,
+   "end": 508,
+   "chars": 955,
+   "text_sha256": "39c8f88177eb3f144c93b05f039273d61506e3f41a421246eace990afe5ac2fe",
+   "sig": "955d0416b35fd64b"
+  }
+ ],
+ "recon_chars": 18679,
+ "char_diff": 0,
+ "diff_is_trailing": true,
+ "gold": [
+  {
+   "gold_id": "GK-B-smtp-rfc3207.txt-30-1",
+   "span": "30-33",
+   "text": "   This document describes an extension to the SMTP (Simple Mail /    Transfer Protocol) service that allows an SMTP server and client to /    use TLS (Transpor",
+   "block_start": 1,
+   "block_end": 114,
+   "covered": true
+  },
+  {
+   "gold_id": "GK-B-smtp-rfc3207.txt-30-2",
+   "span": "33-35",
+   "text": "   communication over the Internet.  This gives SMTP agents the ability /    to protect some or all of their communications from eavesdroppers and /    attacker",
+   "block_start": 1,
+   "block_end": 114,
+   "covered": true
+  }
+ ],
+ "prompt": {
+  "system_chars": 19,
+  "user_prompt_chars": 1371,
+  "block_header_chars": 41
+ },
+ "batches": {
+  "b1_blocks": 5,
+  "b1_block_chars": 17719,
+  "b2_blocks": 1,
+  "b2_block_chars": 955
+ }
+}
