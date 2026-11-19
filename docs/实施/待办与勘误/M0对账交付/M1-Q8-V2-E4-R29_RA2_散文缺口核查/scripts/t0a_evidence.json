@@ -1,11 +1,14 @@
 {
  "doc": "rfc3207.txt",
+ "protocol": "smtp",
  "bytes": 18679,
  "src_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
  "chars": 18679,
  "lines": 508,
  "max_block_chars": 3500,
  "block_count": 6,
+ "recon_chars": 18679,
+ "recon_identical": true,
  "blocks": [
   {
    "start": 1,
@@ -50,14 +53,11 @@
    "sig": "955d0416b35fd64b"
   }
  ],
- "recon_chars": 18679,
- "char_diff": 0,
- "diff_is_trailing": true,
  "gold": [
   {
    "gold_id": "GK-B-smtp-rfc3207.txt-30-1",
    "span": "30-33",
-   "text": "   This document describes an extension to the SMTP (Simple Mail /    Transfer Protocol) service that allows an SMTP server and client to /    use TLS (Transpor",
+   "text": "   This document describes an extension to the SMTP (Simple Mail    Transfer Protocol) service that allows an SMTP server and client to    use TLS (Transport Layer Security) to provide private, authen",
    "block_start": 1,
    "block_end": 114,
    "covered": true
@@ -65,7 +65,7 @@
   {
    "gold_id": "GK-B-smtp-rfc3207.txt-30-2",
    "span": "33-35",
-   "text": "   communication over the Internet.  This gives SMTP agents the ability /    to protect some or all of their communications from eavesdroppers and /    attacker",
+   "text": "   communication over the Internet.  This gives SMTP agents the ability    to protect some or all of their communications from eavesdroppers and    attackers.",
    "block_start": 1,
    "block_end": 114,
    "covered": true
@@ -76,10 +76,33 @@
   "user_prompt_chars": 1371,
   "block_header_chars": 41
  },
- "batches": {
-  "b1_blocks": 5,
-  "b1_block_chars": 17719,
-  "b2_blocks": 1,
-  "b2_block_chars": 955
- }
+ "batches": [
+  {
+   "name": "batch1",
+   "blocks": [
+    1,
+    115,
+    192,
+    278,
+    348
+   ],
+   "block_chars": 17719,
+   "request_chars": 19307,
+   "tokens": 4924,
+   "token_method": "tiktoken/cl100k_base（近似，非供应商 tokenizer）"
+  },
+  {
+   "name": "batch2",
+   "blocks": [
+    468
+   ],
+   "block_chars": 955,
+   "request_chars": 2385,
+   "tokens": 1034,
+   "token_method": "tiktoken/cl100k_base（近似，非供应商 tokenizer）"
+  }
+ ],
+ "token_total": 5958,
+ "token_threshold": 7500,
+ "threshold_ok": true
 }

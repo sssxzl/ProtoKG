@@ -1,14 +1,18 @@
 {
-  "note": "本文件不计入自身：自哈希见 R29_RA2_F2_清单自哈希.sha256",
+  "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 0,
     "status": "T0_A_preflight_verified",
     "flags": [
       "live_llm_execution_pending_explicit_approval",
-      "pricing_approval_blocked"
+      "non_thinking_mode_unavailable"
     ]
   },
+  "excluded": [
+    "R29_RA2_F2_输入输出SHA256清单.json",
+    "R29_RA2_F2_清单自哈希.sha256"
+  ],
   "outputs": {
     "R29_RA2_14条缓存拒收归因.xlsx": {
       "sha256": "a56ab810c2831aa16d8355feea0a51289bfb78ba961362393d2f6548f7987c53",
@@ -90,10 +94,6 @@
       "sha256": "f95fc9f44bcb46734e318642da05ce73f11cfaea47a9a2a8ee0d4d27da03ec79",
       "size": 1657
     },
-    "R29_RA2_F2_清单自哈希.sha256": {
-      "sha256": "2b8c36e0780427d0268caf44cec33eeb567ad73cd7769863d36cdb4d8b6659b7",
-      "size": 107
-    },
     "R29_RA2_F2_现有缓存身份与失效审计.md": {
       "sha256": "aa10d60c82b4c33cc18817328e155df50ac7e38f917d0d48f7df9d94bd104035",
       "size": 2093
@@ -158,9 +158,13 @@
       "sha256": "179814a124d68b20a1d87a431b6064ebf9f29367e01a94e7368eede3d986f07d",
       "size": 2980
     },
+    "T0A_审批复核回应.md": {
+      "sha256": "0c912e9973c952984a11d5c8e5a807cf8b0e66448f35b2b6e908442e9f26a1ce",
+      "size": 3322
+    },
     "T0A_最终审批单.md": {
-      "sha256": "31df2a1f676982741359e226376f7d086975eed75af76a5684f54160b1e8fec1",
-      "size": 1235
+      "sha256": "6e692532888ac1b220bc2e34a849fbb6a9060c124b7f9351380d5e5d5299643f",
+      "size": 1563
     },
     "T0A_预检退出报告.md": {
       "sha256": "b62ac55228bc7e0f92f479e38fd4d81823f41dca41346ecf69b9601b65b61f8d",
@@ -199,8 +203,16 @@
       "size": 6616
     },
     "scripts/t0a_evidence.json": {
-      "sha256": "1112a1ae642dc04201f0e591384985fdf7f96b887413eb84d16f019440b7f12b",
-      "size": 2242
+      "sha256": "7bd837c8a3897f88e974e18528e07a7b707bb98219345d62919ff66c2c179ded",
+      "size": 2738
+    },
+    "scripts/t0a_preflight.py": {
+      "sha256": "e40c58ea30f910306622e4bcacad4c5bf31691be0d760043b562fb35664c87aa",
+      "size": 4753
+    },
+    "scripts/verify_manifest.py": {
+      "sha256": "f76e70f65260cd36f88ae57130a1da00472c1a22a9b72aa6fabfad617278b2ec",
+      "size": 1358
     }
   }
 }
