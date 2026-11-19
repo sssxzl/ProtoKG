@@ -1,0 +1,54 @@
+{
+  "baseline": {
+    "main": "0f99da8445ea093246824e62d1244b88732e009e",
+    "llm_calls": 0
+  },
+  "outputs": {
+    "R29_RA2_14条缓存拒收归因.xlsx": {
+      "sha256": "a56ab810c2831aa16d8355feea0a51289bfb78ba961362393d2f6548f7987c53",
+      "size": 6483
+    },
+    "R29_RA2_31条关闭通道归因.xlsx": {
+      "sha256": "8154cc4c8cfed698f011ea4f858a88e4038263ba683561e130467786de6181d0",
+      "size": 7630
+    },
+    "R29_RA2_45条散文知识缺口逐条核查.xlsx": {
+      "sha256": "95cf74b5eaf58c3895316590eb99bdae4b0d71e17fdb0ab7b2ea648730ebbdba",
+      "size": 8697
+    },
+    "R29_RA2_散文通道真实调用链报告.md": {
+      "sha256": "b5f165b308aaad9de9790f71f49c014f37cd240bad721f6b54ee667c121082ba",
+      "size": 3288
+    },
+    "R29_RA2_无需LLM与需LLM问题分离清单.md": {
+      "sha256": "0f89286a37865e03c8859a35eabad1ebe622026c7405dd0871511308c2c8c386",
+      "size": 2050
+    },
+    "R29_RA2_最小修复候选与审批建议.md": {
+      "sha256": "055cfc2c28755a2137898358ee2c43085503fe4f2b0f6ddad2ad481c24211cf1",
+      "size": 2943
+    },
+    "R29_RA2_缓存加载与版本约束核查.md": {
+      "sha256": "5edd16e8256ba82080dabd9261cff546923cd05a8156b50bbbac2d195518756e",
+      "size": 3052
+    },
+    "scripts/ra2_probe.py": {
+      "sha256": "6b2aa1f0229b6e49ba8876c0038b8f1527b69792d9f61c3498b4912116a28faf",
+      "size": 4503
+    }
+  },
+  "inputs": {
+    "R28-C 对账表": {
+      "sha256": "4414884d4a2bb39adfbd9e4c04d75fc4e1f7adb1b75a99545668b192a418e32c"
+    },
+    "散文缓存": {
+      "sha256": "558767f24bf2e80745567fbd0e417a8a38dfa5fe318822b1746e2c95e6fc5f49"
+    },
+    "机器 Norm 索引": {
+      "sha256": "1469d16e80b4daabef66f13817ab95b55e14ebf395d10b4450d1e2a2ca7aa0d4"
+    },
+    "prose_semantics": {
+      "sha256": "4c1057037ffb1717416fabb920646489fb5ad94948eedd8d6f4e5fb1a2db2ab4"
+    }
+  }
+}

@@ -36,6 +36,10 @@
     "scripts/d1_checks.py": {
       "sha256": "18bc7ada9e64a2f649c12fddc90a26753b6f34280be88167bcd7c1af827e60a2",
       "size": 2945
+    },
+    "R29_RA1_D1_审批结论登记.md": {
+      "sha256": "b0a59e6ab5e8934d64278add51cb47b111492d0298ef6efe77f1b2043edd442e",
+      "size": 1653
     }
   },
   "inputs": {
@@ -51,5 +55,11 @@
     "机器索引": {
       "sha256": "1469d16e80b4daabef66f13817ab95b55e14ebf395d10b4450d1e2a2ca7aa0d4"
     }
+  },
+  "decision": {
+    "status": "shadow_verified / canonical_blocked / production_merge_not_approved",
+    "q1": "ABNF 产生式属知识",
+    "q2": "不新增正式 subject type",
+    "q3": "156 条留影子"
   }
 }
