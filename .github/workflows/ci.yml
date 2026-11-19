@@ -248,8 +248,6 @@ jobs:
     name: guarded-pytest (windows)
     runs-on: windows-latest
     timeout-minutes: 40
-    name: guarded-pytest (windows)
-    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
