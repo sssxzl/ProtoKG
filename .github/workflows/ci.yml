@@ -8,29 +8,32 @@
 #   ⇒ 本 CI 的判据是：**新增任何失败/错误 ⇒ job 红；旧的失败消失 ⇒ 同样报出**
 #     （消失也报，是为了防止有人「改测试/改基线」把失败偷偷洗掉）。
 #
-# ★ 三层基线（为什么不止一份）
-#   失败集合**依赖运行环境**，不是纯代码属性。实测（2026-11-02）：
+# 基线（三份，按环境区分）
+#   失败集合依赖运行环境，不是纯代码属性。实测（2026-11-02）：
 #     · 本机工作区（有 derived/ 产物）：失败数少
 #     · 全新 checkout（无 derived/ 产物）：失败数多
-#   差额**全部**源于 `derived/` 是 gitignored 的中间产物
-#   （`.gitignore` 明写「derived/* … 由 kb/ 重建」），**不是代码缺陷**。
-#   ⇒ 因此基线分两份：
-#       guard/baseline/expected_b_class_failed_ids.txt          ← 本机/完整环境
-#       guard/baseline/ci_expected_failed_ids_ubuntu.txt    ← CI/Ubuntu 干净 checkout
-#       guard/baseline/ci_expected_failed_ids_windows.txt  ← CI/Windows 干净 checkout
-#     两个 job 各用各的，**语义一致**：都是「相对本环境的已知集合不许漂移」。
-#     ⚠ 这两份基线**不可互换**：拿 68 的基线去比本机、或拿 37 的去比 CI，
-#       都会报出大量漂移 —— 那是**环境不匹配**，不是回归。
+#   差额全部源于 `derived/` 是 gitignored 的中间产物
+#   （`.gitignore` 明写「derived/* 由 kb/ 重建」），不是代码缺陷。
+#   因此基线分三份，各自只在对应环境下有效：
+#       guard/baseline/expected_b_class_failed_ids.txt       本机/完整环境（5 条）
+#       guard/baseline/ci_expected_failed_ids_windows.txt    CI/Windows 干净 checkout（23 条）
+#       guard/baseline/ci_expected_failed_ids_ubuntu.txt     CI/Ubuntu 干净 checkout（25 条，当前未使用）
+#   ⚠ 三份基线不可互换：用 windows 基线比本机、或用本机基线比 CI，都会报出大量
+#     漂移 —— 那是环境不匹配，不是回归。
+#   ⚠ 2026-11-19 起 CI 只在 Windows 上执行；ubuntu 基线保留但不再被引用。
+#     恢复 Ubuntu 时必须重新采集该文件，不能直接复用旧内容。
 #
-# ★ 为什么 Windows 与 Ubuntu 各一个 job
-#   本仓 `core.autocrlf=true`（Windows 默认）会把 LF blob **物化成 CRLF**。
-#   ⇒ 已在仓库层根治（提交 beadb38）：.gitattributes 加 `* text=auto eol=lf`
-#     ⇒ 代码 / 文档 / 测试在所有平台检出都是 LF ⇒ 两平台失败集合可比。
-#     ⚠ `kb/** text=auto -eol`：kb/ 是**五源的抽取输入**，改行尾会改 fact_id
-#       ⇒ 必须保持平台默认行尾（Windows CRLF / Linux LF），不动。
-#   实测（干净 clone）：非 kb/ 范围 CRLF=0 / LF=386；kb/ 内 CRLF=6440（保持现状）。
-#   ⇒ 本 workflow 的 Windows job 仍保留**显式归一化**步骤作为双保险
-#     （checkout-index 对 stat 缓存命中的文件会跳过重写，显式归一化更可靠）。
+# 为什么只在 Windows 上跑
+#   1. 本仓 `core.autocrlf=true` 会把 LF blob 物化成 CRLF，Windows 是唯一能暴露
+#      这类行尾问题的平台；仓库层已用 `.gitattributes` 的 `* text=auto eol=lf`
+#      归一化，job 内的显式归一化是双保险（checkout-index 对 stat 缓存命中的
+#      文件会跳过重写，显式归一化更可靠）。
+#   2. `*.dict` / `*.raw` / `*.sip` 是按字节比对的数据文件，其 md5 记在
+#      DICT_FROZEN.json；行尾被改会让指纹失效，而 `git diff` 看不出来 ——
+#      所以由 byte-contract job 在 Windows 上做 blob / filtered / worktree 三方比对。
+#   3. `kb/**` 由 `.gitattributes` 的 `-eol` 保护，保持平台默认行尾（改行尾会改
+#      fact_id），这类差异只有 Windows 侧会真实出现。
+#   代价：不再有跨平台对照，Linux 侧行为未验证；若日后要恢复，需补采 ubuntu 基线。
 
 name: CI
 
@@ -58,14 +61,15 @@ env:
 
 jobs:
   # ==========================================================================
-  # Job 1 —— 静态检查（Ubuntu）
-  # 验证什么：CI 闸门工具自身（guard/）的 lint + **全仓语法可解析**。
-  # 为什么放 Ubuntu：不需要 pytest 依赖，秒级完成，是最便宜的第一道网。
+  # Job 1 —— 静态检查（Windows）
+  # 验证什么：CI 闸门工具自身（guard/）的 lint + 全仓语法可解析 + 文档-机器一致性。
+  # 为什么不需要 pytest 依赖：本 job 只做静态解析，秒级完成，是最便宜的第一道网。
   # 闸门语义：任一检查失败 ⇒ job 红。
   # ==========================================================================
   static-checks:
-    name: static-checks (ubuntu)
-    runs-on: ubuntu-latest
+    name: static-checks (windows)
+    runs-on: windows-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -97,6 +101,7 @@ jobs:
       #   （实测 `print res` → Missing parentheses in call to 'print'）。
       #   ⇒ 扫描本仓自己的代码，素材目录不纳入语法门。
       - name: Syntax scan (ast.parse over core/scripts/tests/guard)
+        shell: bash
         run: |
           python - <<'PY'
           import ast, pathlib, sys
@@ -114,7 +119,7 @@ jobs:
                       ast.parse(p.read_text(encoding="utf-8-sig"), filename=str(p))
                   except SyntaxError as e:
                       bad.append(f"{p}: {e}")
-          print(f"scanned {n} python files under core/scripts/tests/tools")
+          print(f"scanned {n} python files under core/scripts/tests/guard")
           for b in bad:
               print("SYNTAX ERROR:", b)
           sys.exit(1 if bad else 0)
@@ -133,6 +138,7 @@ jobs:
   byte-contract:
     name: byte-contract (windows)
     runs-on: windows-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -171,24 +177,17 @@ jobs:
           echo "all -text protected files are byte-identical to their blobs"
 
   # ==========================================================================
-  # Job 3 —— 护栏全量 pytest（Ubuntu，主闸门）
-  # 验证什么：全量测试套件的**失败集合相对 CI 基线不漂移**。
-  # 闸门语义：**不是零失败**。CI 基线里有 68 个已知失败（其中 31 个源于
-  #   `derived/` 中间产物未入库，见文件头说明），允许它们存在；
-  #   **任何新增失败/错误 ⇒ job 红**（护栏脚本退出码 1 ⇒ step 失败）。
-  # 为什么放 Ubuntu：checkout 天然是 LF，与本机工作区字节一致 ⇒
-  #   失败集合可复现（Windows 的 CRLF 物化问题见 Job 4）。
-  # 依赖：实测 `pytest + numpy` 即足够（matplotlib/docx/sentence_transformers
-  #   只被 scripts/ 与可选降级路径用到，不在测试路径上；实测两者都装不上
-  #   也不影响失败集合 —— 见文件末尾「实测记录」）。
+  # Job 3 —— 种子产物审查（Windows）
+  # 验证什么：生成的种子是否满足校验器判据（V1 格式必假 / V2~V5 质量项）。
+  # 为什么与 guarded-pytest 分开：一个查「产物对不对」，一个查「代码回归没」。
+  # 闸门语义：V1 失败即 job 红（唯一阻断级）；V2~V5 只告警，报告进 artifact。
+  # 数据前提：只构建四个确定性源（rfc / traffic / expert_note / vuln），
+  #   不带 source 源（AutoSeeder 走 LLM，CI 无凭据）。
   # ==========================================================================
-  # ★ 种子校验层（产物审查）：**独立于代码审查**的 job
-  #   ⇒ 查「生成的种子质量」⇒ 而非「代码有没有回归」
-  #   ⇒ V1（格式必假）失败 ⇒ job 红（唯一阻断级）
-  #   ⇒ V2~V5 只告警（报告进 artifact）
   seedcheck:
     name: seedcheck (seeds quality)
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -237,107 +236,18 @@ jobs:
           name: seedcheck-report
           path: ${{ github.workspace }}/_ci_artifacts/seedcheck
 
+  # ==========================================================================
+  # Job 4 —— 护栏全量 pytest（Windows，唯一全量门禁）
+  # 验证什么：全量测试套件的失败集合相对 CI 基线不漂移。
+  # 闸门语义：不是零失败。windows 基线里 23 条已知失败（多源于 derived/ 未入库）
+  #   允许存在；任何新增失败/错误即 job 红；旧的失败消失同样报出。
+  # 为什么先归一化：Windows 的 core.autocrlf=true 会把 LF 物化成 CRLF，
+  #   checkout 之后必须改配置并按 blob 重新物化，否则失败集合会比 Linux 多约 10 条。
+  # ==========================================================================
   guarded-pytest:
-    name: guarded-pytest (ubuntu)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      # ★ 依赖版本**不要钉死到具体小版本**：
-      #   首版写死 `numpy==2.5.4`，而 numpy 2.5.0~2.5.4 都要求 Python >= 3.12
-      #   ⇒ 在 python-version=3.11 的 runner 上 pip 直接报
-      #     "No matching distribution found for numpy==2.5.4" ⇒ **两个 pytest job 全红**
-      #     （实测：2026-11-01 首次真机运行即因此失败，日志见 CI run 41355877501）
-      #   ⇒ 改用 `numpy>=2.1`（下界随 Python 版本自动选可用的最新版）
-      #   ⇒ ★ 且 Python 版本必须与**基线采集时一致**（本仓基线在 Python 3.13.9 采集）
-      #     ⇒ 统一用 3.13，否则失败集合会随解释器版本漂移 ⇒ 闸门误报。
-      - name: Install test dependencies
-        run: python -m pip install --upgrade "pytest==8.4.2" "numpy>=2.1"
-
-      # ★ 跑护栏脚本本体。它自己负责：解释器回退、mtime 快照、summary 行断言、
-      #   FAILED/ERROR 抽取口径自检、与基线逐行比对、产物落盘。
-      #   ★ 退出码：0 = 集合未漂移；1 = 漂移/护栏触发 ⇒ job 红（这就是闸门）。
-      # ★★★ M1-Q5-R24C：中枢构建（★ 护栏 0 的前置）
-      # ★ 为什么必须有：★ 护栏 0（中枢协议校验）需要 `derived/hub/` 产物；
-      # ★   此前两个 guarded job **都不构建中枢** ⇒ 护栏 0 在 CI 上实际被跳过
-      # ★   （R21/R22/R24 审计已报告，★ 此处首次真正执行）。
-      # ★ 为什么是确定性的：★ 只构建**纯确定性**的四个源
-      # ★   （rfc / traffic / expert_note / vuln），★ **不带 source 源**
-      # ★   （source 走 AutoSeeder 的 LLM 路径 ⇒ CI 无 LLM 凭据会崩）
-      # ★   ⇒ 与 seedcheck job 已验证的入口完全一致。
-      # ★ 不覆盖仓库冻结的正式中枢：★ build_hub.py 写固定的 derived/hub，
-      # ★   但 CI 工作区是**全新 checkout** ⇒ 该目录原本不存在
-      # ★   ⇒ 没有任何已提交的中枢产物会被覆盖（★ derived/ 本身被 gitignore）。
-      # ★ 命令写成**单行**：★ 反斜杠续行在 Windows runner 的默认 shell
-      # ★ （★ 不是 bash）★ 下是 ParserError（★ 实测踩过，★ run 44274179415）。
-      - name: Build hub (rtsp) for guard 0
-        run: python scripts/build_hub.py --protocol rtsp --sources rfc traffic expert_note vuln --no-purge
-
-      # ★ fail-closed：★ 中枢没构建出来 ⇒ 立即失败，★ 不许让护栏 0 静默跳过
-      - name: Verify hub artifact exists (fail-closed)
-        shell: bash
-        run: |
-          set -euo pipefail
-          HUB="${{ github.workspace }}/derived/hub"
-          if [ ! -d "$HUB" ]; then
-            echo "::error::hub artifact directory missing: $HUB"
-            exit 1
-          fi
-          N=$(find "$HUB" -name '*.jsonl' -type f | wc -l)
-          echo "hub jsonl files: $N"
-          if [ "$N" -lt 1 ]; then
-            echo "::error::hub artifact has no jsonl (guard 0 would be skipped)"
-            exit 1
-          fi
-
-      - name: Run guarded pytest (drift gate)
-        shell: bash
-        run: |
-          python guard/run_guarded_pytest.py \
-            --repo-root "$GITHUB_WORKSPACE" \
-            --out-dir "$GITHUB_WORKSPACE/_ci_artifacts" \
-            --expect-failed "$GITHUB_WORKSPACE/guard/baseline/ci_expected_failed_ids_ubuntu.txt" \
-            --expect-errors "$GITHUB_WORKSPACE/guard/baseline/ci_expected_errors.txt" \
-            --expect-hub-protocol rtsp
-      # ★ fail-closed：★ 护栏自身未产出结果文件 ⇒ 不得判为通过
-      # ★ 用 python 单行而非 bash 脚本：★ Windows runner 的默认 shell 不是 bash，
-      # ★   bash heredoc 在那里会解析失败（★ 实测踩过，★ run 44273760306）。
-      - name: Verify guard actually ran (fail-closed)
-        run: |
-          python -c "import json,os,sys;p=os.path.join(os.environ['GITHUB_WORKSPACE'],'_ci_artifacts','_guarded_result.json');d=json.load(open(p,encoding='utf-8')) if os.path.isfile(p) else None;sys.exit(0) if d is not None else sys.exit('::error::guard result missing: gate did not run');print('verdict:',d.get('verdict'));print('failed:',d.get('failed'),'errors:',d.get('errors'))"
-
-
-      # ★ 无论成败都上传护栏产物 —— CI 挂了也得能查「到底哪条漂移了」。
-      - name: Upload guarded artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: guarded-pytest-ubuntu
-          path: |
-            _ci_artifacts/_guarded_raw.txt
-            _ci_artifacts/_guarded_result.json
-            _ci_artifacts/_guarded_before.txt
-            _ci_artifacts/_guarded_after.txt
-          if-no-files-found: warn
-          retention-days: 14
-
-  # ==========================================================================
-  # Job 4 —— 护栏全量 pytest（Windows，与 Ubuntu 对照）
-  # 验证什么：同一套护栏在 **Windows** 上也得到与 Ubuntu 一致的失败集合。
-  #   这是本仓的**特有必要验证**：Windows 的 `core.autocrlf=true` 默认会把
-  #   LF 物化成 CRLF。★ 仓库层已根治（提交 beadb38，.gitattributes 的
-  #   `* text=auto eol=lf`），本 job 的显式归一化是**双保险**。
-  #   注意：`actions/checkout` 没有 autocrlf 开关，且 checkout 发生在 `run` 步骤之前
-  #   ⇒ 只能在 checkout **之后**改配置并按 blob 重新物化工作区（见下一步）。
-  # 闸门语义：与 Ubuntu 完全相同 —— 相对 CI 基线不许漂移。
-  # ==========================================================================
-  guarded-pytest-windows:
+    name: guarded-pytest (windows)
+    runs-on: windows-latest
+    timeout-minutes: 40
     name: guarded-pytest (windows)
     runs-on: windows-latest
     steps:

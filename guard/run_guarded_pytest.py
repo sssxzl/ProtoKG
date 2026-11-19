@@ -239,6 +239,24 @@ def _read_expected(path: Path) -> list[str]:
     return sorted(out)
 
 
+def _resolve_baselines(pairs: list[tuple[str, "Path"]]) -> tuple[dict, list]:
+    """读取期望集文件，返回 (已加载, 缺失清单)。
+
+    R27C-CI：**缺失即失败**（fail-closed）。此前的实现是「文件不存在就跳过该项
+    比对」，等于 CI 上少了一道门；CI 依赖的基线一旦被误删，门禁会静默失效。
+    文件存在但只有注释 ⇒ 合法的空集合（表示「任何新增都判漂移」）。
+    """
+    loaded: dict[str, list[str]] = {}
+    missing: list[tuple[str, str]] = []
+    for label, path in pairs:
+        p = Path(path)
+        if not p.is_file():
+            missing.append((label, str(p)))
+            continue
+        loaded[label] = _read_expected(p)
+    return loaded, missing
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="带三道护栏的全量 pytest 验收跑法")
     ap.add_argument("paths", nargs="*", default=["tests/"], help="要跑的路径（默认 tests/）")
@@ -433,14 +451,34 @@ def main() -> int:
         print("   [窄化态] 中枢为全源态 ⇒ 窄化豁免**不生效**"
               "（依赖多源的断言照常计入漂移）")
     drift = {}
+    missing_baselines: list = []
     if not args.no_compare:
-        for label, ids, exp_path in (
-                ("failed", failed_ids, Path(args.expect_failed)),
-                ("errors", err_ids, Path(args.expect_errors))):
-            if not exp_path.is_file():
-                print(f"   （跳过 {label} 比对：期望集 {exp_path.name} 不存在）")
-                continue
-            exp = _read_expected(exp_path)
+        _loaded, missing_baselines = _resolve_baselines([
+            ("failed", Path(args.expect_failed)),
+            ("errors", Path(args.expect_errors)),
+        ])
+        if missing_baselines:
+            print()
+            print("== 结论：❌ 基线文件缺失，比对无法进行（fail-closed）==")
+            for _label, _p in missing_baselines:
+                print(f"   [{_label}] 期望集不存在：{_p}")
+            print("   说明：文件存在但只有注释 = 合法的空集合；文件缺失 = 门禁失效，"
+                  "必须先补文件再跑。")
+            result = {
+                "repo_root": str(root), "targets": targets, "command": cmd,
+                "failed": failed_n, "passed": passed_n, "errors": errors_n,
+                "skipped": skipped_n,
+                "failed_ids": failed_ids, "error_ids": err_ids,
+                "missing_baselines": [{"label": _lab, "path": _pth}
+                                      for _lab, _pth in missing_baselines],
+                "verdict": "BASELINE_MISSING",
+            }
+            result_json.write_text(
+                json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"   结果 json: {result_json}")
+            return 2
+        for label, ids in (("failed", failed_ids), ("errors", err_ids)):
+            exp = _loaded[label]
             # ★ 命中环境相关清单的 id：**不算漂移**（可存在也可缺席）。
             hit_env = sorted(set(ids) & env_set)
             hit_narrow = sorted(set(ids) & narrow_set)
@@ -492,7 +530,8 @@ def main() -> int:
         "skipped": skipped_n,
         "failed_ids": failed_ids, "error_ids": err_ids,
         "extract_consistent": extract_consistent,
-        "drift": drift, "verdict": "TRUSTWORTHY" if ok else "NOT_TRUSTWORTHY",
+        "drift": drift, "missing_baselines": missing_baselines,
+        "verdict": "TRUSTWORTHY" if ok else "NOT_TRUSTWORTHY",
     }
     result_json.write_text(json.dumps(result, ensure_ascii=False, indent=2),
                            encoding="utf-8")
