@@ -48,10 +48,13 @@ class Guard:
         worst = est_in * PRICE_IN_PEAK / 1e6 + MAX_TOKENS * PRICE_OUT_PEAK / 1e6
         if self.spent + worst > CAP_CNY:
             raise RuntimeError("cost_limit_exceeded")
-        AC.assert_payload_ok({**params, "max_tokens": MAX_TOKENS})
+        AC.assert_payload_ok(params)      # 校验真实即将发送的参数，不做常量替换
         self.calls += 1
         self.log.append({"attempt": self.calls, "est_in": est_in,
                          "at": time.strftime("%Y-%m-%dT%H:%M:%S")})
+        _atomic_write(self.root / "evidence" / "guard.json",
+                      {"calls": self.calls, "used_in": self.used_in,
+                       "spent_cny": round(self.spent, 6), "log": self.log})
 
     def after(self, meta: dict) -> None:
         _in = int(meta.get("input_tokens") or 0)
@@ -93,6 +96,45 @@ class GuardedClient:
         return out
 
 
+PROTECTED = [ROOT / "derived", ROOT / "kb", ROOT / ".git", ROOT / "profiles"]
+
+
+def _unsafe_reason(root) -> str:
+    """在 resolve 之前检查原始路径；再查每一级父目录的符号链接与受保护目录。"""
+    raw = pathlib.Path(root)
+    if not raw.is_absolute():
+        return "not_absolute"
+    if ".." in raw.parts:
+        return "dotdot"
+    # 任一父级是符号链接即拒绝（含 root 自身）
+    cur = raw
+    for _ in range(60):
+        if cur.is_symlink():
+            return f"symlink:{cur.name}"
+        if cur.parent == cur:
+            break
+        cur = cur.parent
+    resolved = raw.resolve()
+    for p in PROTECTED:
+        if resolved == p or p in resolved.parents:
+            return f"protected:{p.name}"
+    return ""
+
+
+def write_facts_by_aspect(facts, fdir: pathlib.Path) -> dict:
+    """用官方 view 序列化，并按 fact_key.aspect 分文件；返回 aspect → 条数。"""
+    from core.fused.hub.export import get_fact_view
+    fdir.mkdir(parents=True, exist_ok=True)
+    groups: dict[str, list] = {}
+    for f in facts:
+        groups.setdefault(f.fact_key.aspect, []).append(get_fact_view(f))
+    for aspect, rows in groups.items():
+        (fdir / f"{aspect}.jsonl").write_text(
+            "\n".join(json.dumps(x, ensure_ascii=False) for x in rows) + "\n",
+            encoding="utf-8")
+    return {k: len(v) for k, v in groups.items()}
+
+
 def _atomic_write(path: pathlib.Path, obj) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
@@ -100,12 +142,33 @@ def _atomic_write(path: pathlib.Path, obj) -> None:
     tmp.replace(path)
 
 
-def run(protocol: str, doc_name: str, client, root: pathlib.Path,
-        *, on_canonical=None, on_hub=None) -> dict:
+def run(protocol: str, doc_name: str, client, root, *, on_canonical=None,
+        on_hub=None) -> dict:
+    """对外入口：负责隔离根校验与全局状态恢复。"""
+    bad = _unsafe_reason(root)
+    if bad:
+        return {"status": "preflight_failed", "reason": f"unsafe_root:{bad}"}
+    snap = {"cache_path": PS._cache_path, "max_tokens": PS._MAX_TOKENS,
+            "no_retry": os.environ.get("PROSE_NO_RETRY"),
+            "batch": os.environ.get("PROSE_BATCH_BLOCKS")}
+    try:
+        return _run_body(protocol, doc_name, client, root,
+                         on_canonical=on_canonical, on_hub=on_hub)
+    finally:
+        PS._cache_path = snap["cache_path"]
+        PS._MAX_TOKENS = snap["max_tokens"]
+        for k, v in (("PROSE_NO_RETRY", snap["no_retry"]),
+                     ("PROSE_BATCH_BLOCKS", snap["batch"])):
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+def _run_body(protocol: str, doc_name: str, client, root: pathlib.Path,
+              *, on_canonical=None, on_hub=None) -> dict:
     """执行一次 T0-A；root 必须是隔离目录。"""
     root = pathlib.Path(root).resolve()
-    if ".." in root.parts or root.is_symlink():
-        return {"status": "preflight_failed", "reason": "unsafe_root"}
 
     doc = ROOT / "kb" / protocol / "spec" / doc_name
     text = doc.read_text(encoding="utf-8", errors="replace")
@@ -113,6 +176,9 @@ def run(protocol: str, doc_name: str, client, root: pathlib.Path,
     blocks = [{"doc": doc_name, "start": st, "text": bt, "src_sha256": src}
               for st, bt in PS._split_blocks(text, (len(text) // PS._MAX_BLOCK_CHARS) + 1)]
 
+    _saved = {"cache_path": PS._cache_path, "max_tokens": PS._MAX_TOKENS,
+              "no_retry": os.environ.get("PROSE_NO_RETRY"),
+              "batch": os.environ.get("PROSE_BATCH_BLOCKS")}
     PS._cache_path = lambda p: root / "cache" / f"{p}.prose.json"  # type: ignore
     PS._MAX_TOKENS = MAX_TOKENS
     os.environ["PROSE_NO_RETRY"] = "1"
@@ -171,14 +237,9 @@ def run(protocol: str, doc_name: str, client, root: pathlib.Path,
     try:
         if on_hub:
             on_hub()
-        import dataclasses
-        payload = []
-        for f in facts:
-            d = dataclasses.asdict(f); d.pop("claims", None); payload.append(d)
-        fdir = root / "per_source" / "facts"; fdir.mkdir(parents=True, exist_ok=True)
-        (fdir / "definition.jsonl").write_text(
-            "\n".join(json.dumps(x, ensure_ascii=False) for x in payload) + "\n",
-            encoding="utf-8")
+        from core.fused.hub.export import get_fact_view
+        payload = [get_fact_view(f) for f in facts]
+        write_facts_by_aspect(facts, root / "per_source" / "facts")
         with isolated_hub(root):
             loaded = HE.load_facts(protocol)
             ents, _ = HE.build_entity_index(loaded)
@@ -191,6 +252,27 @@ def run(protocol: str, doc_name: str, client, root: pathlib.Path,
     except Exception as exc:                       # noqa: BLE001
         result.update(status="hub_failed", reason=str(exc))
         _atomic_write(root / "evidence" / "result.json", result); return result
+
+    # 完成前置：所有块处理完、无失败、未被门禁中止、缓存 complete
+    expect_batches = (len(blocks) + 4) // 5
+    cache_file = root / "cache" / f"{protocol}.prose.d" / f"{doc_name}.json"
+    cache_ok = False
+    if cache_file.is_file():
+        try:
+            cache_ok = json.loads(cache_file.read_text(encoding="utf-8")).get("complete") is True
+        except ValueError:
+            cache_ok = False
+    if (guard.calls < expect_batches or stats.get("failures")
+            or guard.stopped or not cache_ok):
+        result["status"] = "cache_incomplete"
+        result["reason"] = {"calls": guard.calls, "expect": expect_batches,
+                            "failures": stats.get("failures"),
+                            "stopped": guard.stopped, "cache_complete": cache_ok}
+        _atomic_write(root / "evidence" / "result.json", result)
+        _atomic_write(root / "evidence" / "guard.json",
+                      {"calls": guard.calls, "used_in": guard.used_in,
+                       "spent_cny": round(guard.spent, 6), "log": guard.log})
+        return result
 
     result["status"] = "completed"
     result["spent_cny"] = round(guard.spent, 6)

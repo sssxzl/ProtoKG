@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 0,
-    "status": "T0_A_live_runner_engineering_verified",
+    "status": "T0_A_live_execution_ready_for_approval",
     "flags": [
       "real_llm_output_pending_validation",
       "production_merge_not_approved"
@@ -194,13 +194,25 @@
       "sha256": "179814a124d68b20a1d87a431b6064ebf9f29367e01a94e7368eede3d986f07d",
       "size": 2980
     },
+    "T0A_定点安全修正与负例结果.md": {
+      "sha256": "a6f536f14710f29bd36f670ee4f98c6070861333ae4f437ea40af40d1981cd6b",
+      "size": 2568
+    },
     "T0A_审批复核回应.md": {
       "sha256": "0c912e9973c952984a11d5c8e5a807cf8b0e66448f35b2b6e908442e9f26a1ce",
       "size": 3322
     },
+    "T0A_异常停止与证据留存证明.md": {
+      "sha256": "288e4085ef3118b0243f78c69ccfa143846b7837a9d52b4acd892d9589696486",
+      "size": 1127
+    },
     "T0A_异常退出及证据留存测试.md": {
       "sha256": "1d507622ad45c45d3e5cb0d495bcf115098094745671670d9cca4058a1700dbb",
       "size": 1796
+    },
+    "T0A_执行器定点安全修正.patch": {
+      "sha256": "2931acb1b03f9167cf38a1d606b732f8a9bb13cd20e14d31ef32e6d46ba6c6fb",
+      "size": 14129
     },
     "T0A_最终审批单.md": {
       "sha256": "6e692532888ac1b220bc2e34a849fbb6a9060c124b7f9351380d5e5d5299643f",
@@ -213,6 +225,10 @@
     "T0A_模型适配器安全修正.patch": {
       "sha256": "4b5afa0f81c86e5e87c3c73a4b9091c740ba6135a0ae1af1871bd066256028d1",
       "size": 5241
+    },
+    "T0A_正式产物保护与放行检查表.md": {
+      "sha256": "fd08e73cef90e962b0196b82ddeb74cba2776ce5c0d75d1b6d27c602b01c04ed",
+      "size": 1084
     },
     "T0A_正式产物保护与最终状态.md": {
       "sha256": "e4b59e3fdc0c1469594245d39dbb900fa5a3a4c154c486948f618f635fb85f51",
@@ -307,12 +323,16 @@
       "size": 2738
     },
     "scripts/t0a_executor.py": {
-      "sha256": "4ea0a990fb12d8b07e816ec2191a79be3fac655497105ec1e4c821c4408c13d8",
-      "size": 9868
+      "sha256": "22a2a0c1e32ca01434a4bb7b43d94d4855da75623a10008f62849af368ba7bf5",
+      "size": 13432
     },
     "scripts/t0a_executor_checks.py": {
       "sha256": "40cbad4c52a1aae700eeafc5ea49527fc8525e40664f4fc117b5ef6bcce0f54d",
       "size": 5461
+    },
+    "scripts/t0a_executor_checks2.py": {
+      "sha256": "265a131b816a0e3828c6453eb4b2a0e75a62b19a42cd548486e1f72de8093b6e",
+      "size": 6853
     },
     "scripts/t0a_hub_isolated.py": {
       "sha256": "a39f6ae0fc7fea6340789fe5b7349dd8aa0eeef444334c4cb0891db90a10c0eb",
