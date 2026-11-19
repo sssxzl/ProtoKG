@@ -22,7 +22,9 @@
    "evidence": [
     "rfc:@file:rfc2131.txt#@541"
    ],
-   "value": "{'type': 'text', 'data': 'IP address of next server to use in bootstrap'}"
+   "value": "{'type': 'text', 'data': 'IP address of next server to use in bootstrap'}",
+   "provenance": "rfc_table",
+   "verified": true
   },
   {
    "tag": "H2",
@@ -46,7 +48,9 @@
    "evidence": [
     "rfc:@file:rfc9112.txt#@261"
    ],
-   "value": "{'type': 'text', 'data': 'HTTP 请求行由方法、请求目标、协议版本依次以单个空格分隔组成'}"
+   "value": "{'type': 'text', 'data': 'HTTP 请求行由方法、请求目标、协议版本依次以单个空格分隔组成'}",
+   "provenance": "test_constructed",
+   "verified": false
   }
  ],
  "stable": true,

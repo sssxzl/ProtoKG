@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 63,
-    "status": "structural_d4_canonical_evidence_verified"
+    "status": "struct_contract_design_only"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -53,6 +53,10 @@
     "R29_H2_request_line_Canonical适配性报告.md": {
       "sha256": "61f54c34e59329af185c967ccd28e54b4c5f6c3191d64a6cfd9b306fb54c0a6d",
       "size": 1032
+    },
+    "R29_H2新增definition来源审查.md": {
+      "sha256": "ea22cca79d9faee31e08708a999a28fc5fcaa1b6656c036875f33dd6164cc583",
+      "size": 1457
     },
     "R29_RA2_14条缓存拒收归因.xlsx": {
       "sha256": "a56ab810c2831aa16d8355feea0a51289bfb78ba961362393d2f6548f7987c53",
@@ -166,9 +170,21 @@
       "sha256": "52e15fbc604bc58fc3309d38af0c81c1afb0e548754b4741e976b45bcbc49fd2",
       "size": 1875
     },
+    "R29_下一阶段最小实施审批建议.md": {
+      "sha256": "255817cfcae8db75db536a0e8e18c99c819300bd83dcad8762a5201f9728b72f",
+      "size": 1180
+    },
     "R29_两通道Gold召回与误抽对照.md": {
       "sha256": "a1cff4b02b51cab3891f99e04f83364532e6bc4fcbb96f3d4f83a9b20eb8d580",
       "size": 1342
+    },
+    "R29_协议字段与语法主体建模方案.md": {
+      "sha256": "e5aab4258c589b5fbd59df900daf1e72aefcff11b2f8b02d88b9995d5670eb47",
+      "size": 1378
+    },
+    "R29_多段Evidence承载方案.md": {
+      "sha256": "79bff646a67c15300d13f3f56b527f474014ab47d5aa58919f71cb6ad6ed9ba7",
+      "size": 1381
     },
     "R29_最小双通道Canonical身份回归.md": {
       "sha256": "a772d4982adc2def25266be4435977230fa71b3d92d8aeca02ce18313b7328e0",
@@ -182,6 +198,10 @@
       "sha256": "7662ac94d904515dfa8d6b485298d0edddf32d843de568a2536bbea7d36dc66d",
       "size": 820
     },
+    "R29_结构化知识契约扩展影响分析.md": {
+      "sha256": "fe77eeb05faf8c62f6413fe72a8ee3a2acb101f632cce01377a910a0df3f2ff0",
+      "size": 1647
+    },
     "R29_结构化知识正式接入前剩余契约缺口.md": {
       "sha256": "248a2ebe35b5d617156fe6621cf6204627bd4be7d2f2a431ab88e890fbbdd757",
       "size": 804
@@ -189,6 +209,10 @@
     "R29_结构化知识确定性通道最小恢复方案.md": {
       "sha256": "9c32965d26ee4bb747c364f0edab4010434306e0f64e3bbe7d55197a0fd81126",
       "size": 876
+    },
+    "R29_通用语法知识类型契约设计.md": {
+      "sha256": "7792411debf48823ef8240b45088d762b2d2fa5c3e251f256fc904b07b45ed37",
+      "size": 1729
     },
     "R29_隔离Hub与Evidence逐条读回报告.md": {
       "sha256": "d6dc28909aab3aa9a62235a268accf8eab62e9da5bf71ff544044f074941422c",
@@ -263,8 +287,8 @@
       "size": 353
     },
     "structural_closure.json": {
-      "sha256": "14aa890c1eda13d36ab22436a2551a34ff1c5d0760b5212976461ff23aa57492",
-      "size": 1393
+      "sha256": "2a3f37f69177187a51532e033787f27de293889eda95c50006ee41a335df2e31",
+      "size": 1451
     },
     "T0_Gold原文跨度核查.md": {
       "sha256": "91f0c9f60644e725cac75bed40cfdca70acbdd90f6e799ea0b3c6a44e44db35f",
