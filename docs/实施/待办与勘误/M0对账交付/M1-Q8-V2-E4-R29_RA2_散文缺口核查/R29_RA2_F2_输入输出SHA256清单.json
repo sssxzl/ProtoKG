@@ -2,8 +2,8 @@
   "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
-    "llm_calls": 4,
-    "status": "T0_A_prose_fact_identity_verified"
+    "llm_calls": 5,
+    "status": "T0_A_second_run_failed_truncated"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -314,6 +314,10 @@
       "sha256": "792f6d245bdbc51d06e2b53350133ea2277888ca85dbd3a8de2ca2ed1a84b83b",
       "size": 3167
     },
+    "T0A_第二次真实试验结果.md": {
+      "sha256": "46f1fd12925c4d5b21846761de21e80b25151230577778001c8236a0720b441f",
+      "size": 2402
+    },
     "T0A_缓存与异常闭环验证.md": {
       "sha256": "f7280a3764c02577a56c34d4915a5ee1d2d161907e610d6d17ccdb61a0c39a77",
       "size": 2268
@@ -403,8 +407,8 @@
       "size": 2738
     },
     "scripts/t0a_executor.py": {
-      "sha256": "bf5dc37f68f942662a494aee1cb6e6128079ccc2c6abdc6357ee7e7d5d422ec6",
-      "size": 15628
+      "sha256": "b166df7e382827acb6a409edefe973df9370f839085db7d4c65c937714f2537f",
+      "size": 15801
     },
     "scripts/t0a_executor_checks.py": {
       "sha256": "40cbad4c52a1aae700eeafc5ea49527fc8525e40664f4fc117b5ef6bcce0f54d",
@@ -465,6 +469,18 @@
     "T0A_实跑_20261119/SHA256清单.json": {
       "sha256": "263e31adfe4d1e969b360b967fbf3180664b486328a07ffa0d33cefe89eaecfa",
       "size": 539
+    },
+    "T0A_实跑2_20261119_promptv3/guard.json": {
+      "sha256": "b7a96f6bd04b17ccc3b1338127b763e47f04a227283d5fff8d87a2af84334730",
+      "size": 187
+    },
+    "T0A_实跑2_20261119_promptv3/result.json": {
+      "sha256": "751932bbbb3c8c5bb453fd2cb7a1d9dd6280a1fa1b3c57ecfd73413cd4f269d7",
+      "size": 333
+    },
+    "T0A_实跑2_20261119_promptv3/SHA256清单.json": {
+      "sha256": "2021766065fa05739b66825424127cf32000bb6c8a269ab4bacb288b5378f70d",
+      "size": 170
     }
   }
 }

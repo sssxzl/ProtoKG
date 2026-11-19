@@ -61,6 +61,7 @@ class Guard:
         _in = int(meta.get("input_tokens") or 0)
         _out = int(meta.get("output_tokens") or 0)
         self.used_in += _in
+        self.used_out = getattr(self, "used_out", 0) + _out
         self.spent += (_in * PRICE_IN_PEAK + _out * PRICE_OUT_PEAK) / 1e6
         if _in > 0 and _in > 1.3 * (self.log[-1]["est_in"] or 1):
             self.stopped = True
@@ -249,6 +250,8 @@ def _run_body(protocol: str, doc_name: str, client, root: pathlib.Path,
         result["reason"] = guard.last_error
         result["partial_norms"] = len(norms)
         result["calls"] = guard.calls
+        result["usage"] = {"in": guard.used_in,
+                           "out": getattr(guard, "used_out", 0)}
         result["billing_status"] = guard.billing_status
         _atomic_write(root / "evidence" / "result.json", result)
         _dump_guard()
