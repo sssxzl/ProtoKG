@@ -1,0 +1,7 @@
+协议,文件,相对路径,行数,大小,sha256,当前是否零产出,人工_应有知识条数,人工_已识别条数,人工_漏抽条数,备注
+smtp,rfc5321.txt,kb/smtp/spec/rfc5321.txt,5324,225929,7d560eddff1b213c17d4e1e5f95005728b2f05bc2b3947f0fcc91717c6707634,否,,,,
+smtp,rfc5322.txt,kb/smtp/spec/rfc5322.txt,3196,122322,cb459acca15a2aa895863eaeff6f1d5b9c4ca15578ae3e3706f757787a385969,否,,,,
+rtsp,rfc2326.txt,kb/rtsp/spec/rfc2326.txt,5156,195011,1b72124761d99b8d4ed72fee82d4a3c4a7c153a368702b8221de02a42da93038,否,,,,
+DHCPv4,rfc2131.txt,kb/DHCPv4/spec/rfc2131.txt,2524,113738,a043b705785b81762505ded4cf71d61392b2b1da2b4ce1e32c13bc984de5f4a5,否,,,,
+DHCPv4,rfc2132.txt,kb/DHCPv4/spec/rfc2132.txt,1908,63670,0cfbedab7cfe859624ae78c07a722bc51bf8ea123a7b43b099fc546ddcf00b90,否,,,,
+DHCPv4,rfc4361.txt,kb/DHCPv4/spec/rfc4361.txt,676,28009,84a37802e74aad730cabcbf5fa3051c8d02ad286c6c46a044b0491bb765637d4,是,,,,
