@@ -42,7 +42,8 @@ VERIFIER = ROOT / "guard" / "verify_encoding.py"
 def _run_verifier() -> dict:
     """跑编码护栏，返回其 JSON 结果（失败则抛 AssertionError 带明细）。"""
     assert VERIFIER.is_file(), f"编码护栏脚本缺失: {VERIFIER}"
-    out = ROOT / "local" / "encoding_guard_result.json"
+    out = ROOT / "guard" / "_out" / "encoding_guard_result.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
     proc = subprocess.run(
         [sys.executable, str(VERIFIER), "--json", str(out)],
         cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8",
@@ -69,7 +70,7 @@ def test_encoding_hygiene_no_violations():
     assert not real, (
         f"编码违规 {len(real)} 项：\n"
         + "\n".join(f"  [{v['code']}] {v['path']} — {v['detail']}" for v in real[:20])
-        + f"\n（完整清单见 {ROOT / 'local' / 'encoding_guard_result.json'}）\n"
+        + f"\n（完整清单见 {ROOT / 'guard' / '_out' / 'encoding_guard_result.json'}）\n"
         + "修复命令：python guard/verify_encoding.py --fix"
     )
 

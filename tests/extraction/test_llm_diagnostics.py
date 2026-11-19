@@ -21,6 +21,22 @@ from core.fused.extraction.llm_diagnostics import (LLMDiagnostics, summarize_run
 from core.fused.extraction.prose_semantics import _extract_blocks
 
 
+@pytest.fixture(autouse=True)
+def _isolate_prose_cache(tmp_path, monkeypatch):
+    """R27：把散文缓存目录重定向到临时目录，避免测试桩写进 derived/。
+
+    背景：本文件多处调用 ``_extract_blocks("rtsp", ...)``，历史上会把块结果
+    写进受版本管理的 ``derived/cache/source_blocks/rtsp.prose.json``，
+    导致每次跑测试后都要手工 ``git checkout --`` 还原。
+    """
+    from core.fused.extraction import source_retrieval as _sr
+    _d = tmp_path / "prose_cache"
+    _d.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(_sr, "CACHE_DIR", _d, raising=False)
+    return _d
+
+
+
 class _FakeLLM:
     """★ 可编排的假 LLM（★ 记录调用次数，模拟各种失败）。"""
 
@@ -182,3 +198,21 @@ def test_no_diagnostics_no_side_effect():
     _norms, stats = _extract_blocks("rtsp", _blocks(), llm=llm)
     assert stats["calls"] == 1
     assert "diagnostics" not in stats
+
+
+# ══════════════════════ ⑨ 真实缓存不被污染（R27 反向测试）══════════════
+def test_real_prose_cache_untouched(tmp_path):
+    """跑完抽取后，受版本管理的真实缓存必须逐字节不变。"""
+    import hashlib
+
+    _root = pathlib.Path(__file__).resolve().parents[2]
+    _real = _root / "derived" / "cache" / "source_blocks" / "rtsp.prose.json"
+    _before = hashlib.sha256(_real.read_bytes()).hexdigest() if _real.is_file() else None
+
+    llm = _FakeLLM([{"out": {"items": []}}])
+    _extract_blocks("rtsp", _blocks(), llm=llm)
+
+    _after = hashlib.sha256(_real.read_bytes()).hexdigest() if _real.is_file() else None
+    assert _before == _after                      # 真实缓存未变
+    # 且缓存确实写进了临时目录（证明重定向生效，而不是根本没写）
+    assert list((tmp_path / "prose_cache").glob("*.json"))
