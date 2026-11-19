@@ -1,0 +1,35 @@
+{
+ "status": "completed",
+ "protocol": "smtp",
+ "doc": "rfc3207.txt",
+ "doc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+ "blocks": 6,
+ "calls": 2,
+ "norms": 13,
+ "usage": {
+  "in": 5837,
+  "out": 3632
+ },
+ "norm_validation_success": true,
+ "canonical_validation_success": true,
+ "facts": 13,
+ "fact_ids": [
+  "f2_8e866aad4490c4aa",
+  "f2_3822e745b10f2f41",
+  "f2_b5439bf30cb960d4",
+  "f2_6151e630167a154f",
+  "f2_e8517151a9ca8b12",
+  "f2_c92c117db64d861c",
+  "f2_fe1c0b8fbe493270",
+  "f2_682e193d5cdaa9d7",
+  "f2_aa739ec56650ba78",
+  "f2_064786cc360a3e3d",
+  "f2_41d96886256b5cec",
+  "f2_5d74534a8ee87550",
+  "f2_80aa81f78e7817a5"
+ ],
+ "hub_integration_success": true,
+ "entities": 12,
+ "spent_cny": 0.04073,
+ "billing_status": "billed"
+}

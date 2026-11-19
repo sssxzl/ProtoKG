@@ -1,0 +1,12 @@
+{"entity_id": "smtp:header:both_parties", "protocol": "smtp", "type": "header", "name": "both parties", "canonical_name": "both parties", "aliases": []}
+{"entity_id": "smtp:header:client", "protocol": "smtp", "type": "header", "name": "client", "canonical_name": "client", "aliases": []}
+{"entity_id": "smtp:header:client_and_the_server", "protocol": "smtp", "type": "header", "name": "client and the server", "canonical_name": "client and the server", "aliases": []}
+{"entity_id": "smtp:header:clients_and_servers", "protocol": "smtp", "type": "header", "name": "clients and servers", "canonical_name": "clients and servers", "aliases": []}
+{"entity_id": "smtp:header:implementation", "protocol": "smtp", "type": "header", "name": "implementation", "canonical_name": "implementation", "aliases": []}
+{"entity_id": "smtp:header:sasl_external_mechanism", "protocol": "smtp", "type": "header", "name": "SASL EXTERNAL mechanism", "canonical_name": "SASL EXTERNAL mechanism", "aliases": []}
+{"entity_id": "smtp:header:server", "protocol": "smtp", "type": "header", "name": "server", "canonical_name": "server", "aliases": []}
+{"entity_id": "smtp:header:smtp_client", "protocol": "smtp", "type": "header", "name": "SMTP client", "canonical_name": "SMTP client", "aliases": []}
+{"entity_id": "smtp:header:smtp_server", "protocol": "smtp", "type": "header", "name": "SMTP server", "canonical_name": "SMTP server", "aliases": []}
+{"entity_id": "smtp:header:smtp_service_extensions", "protocol": "smtp", "type": "header", "name": "SMTP service extensions", "canonical_name": "SMTP service extensions", "aliases": []}
+{"entity_id": "smtp:header:starttls", "protocol": "smtp", "type": "header", "name": "STARTTLS", "canonical_name": "STARTTLS", "aliases": []}
+{"entity_id": "smtp:header:tls", "protocol": "smtp", "type": "header", "name": "TLS", "canonical_name": "TLS", "aliases": []}

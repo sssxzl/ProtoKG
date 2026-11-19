@@ -1,0 +1,35 @@
+{
+ "status": "cache_incomplete",
+ "protocol": "smtp",
+ "doc": "rfc3207.txt",
+ "doc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+ "blocks": 6,
+ "calls": 2,
+ "norms": 9,
+ "usage": {
+  "in": 5837,
+  "out": 3008
+ },
+ "norm_validation_success": true,
+ "canonical_validation_success": true,
+ "facts": 9,
+ "fact_ids": [
+  "f2_8e866aad4490c4aa",
+  "f2_3822e745b10f2f41",
+  "f2_9ff8d7217428d383",
+  "f2_1d4f29549ff435be",
+  "f2_e007f8895ea6d942",
+  "f2_a6b07a6d22e1f6b5",
+  "f2_0db04f52c3d0022b",
+  "f2_90208fb39563528a",
+  "f2_80aa81f78e7817a5"
+ ],
+ "reason": {
+  "calls": 2,
+  "expect": 2,
+  "failures": 0,
+  "stopped": true,
+  "cache_complete": true
+ },
+ "billing_status": "partial"
+}

@@ -62,11 +62,21 @@ class Guard:
         _out = int(meta.get("output_tokens") or 0)
         self.used_in += _in
         self.spent += (_in * PRICE_IN_PEAK + _out * PRICE_OUT_PEAK) / 1e6
-        if _in > 0 and _in > 1.5 * (self.log[-1]["est_in"] or 1):
+        if _in > 0 and _in > 1.3 * (self.log[-1]["est_in"] or 1):
             self.stopped = True
 
     def stop(self) -> None:
         self.stopped = True
+
+
+def _est_tokens(system: str, user: str) -> int:
+    """真实 tokenizer 估算（tiktoken），不可用时退化为字符/3。"""
+    try:
+        import tiktoken
+        enc = tiktoken.get_encoding("cl100k_base")
+        return max(1, len(enc.encode(system + user)))
+    except Exception:                        # noqa: BLE001
+        return max(1, (len(system) + len(user)) // 3)
 
 
 class GuardedClient:
@@ -77,7 +87,7 @@ class GuardedClient:
         self.calls = 0
 
     def chat_json(self, *, system, user, temperature, max_tokens):
-        est = max(1, len(user) // 4)
+        est = _est_tokens(system, user)
         params = {"model": AC.MODEL, "thinking": {"type": "disabled"},
                   "response_format": {"type": "json_object"},
                   "temperature": temperature, "max_tokens": max_tokens}
