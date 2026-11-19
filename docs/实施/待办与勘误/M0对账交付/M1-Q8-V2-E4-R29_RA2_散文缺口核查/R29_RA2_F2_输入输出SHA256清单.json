@@ -3,13 +3,25 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 63,
-    "status": "cross_rfc_structural_gap_reproduced"
+    "status": "structural_channel_shape_captured"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
     "R29_RA2_F2_清单自哈希.sha256"
   ],
   "outputs": {
+    "R29_ABNF表格位域逐项解析结果.md": {
+      "sha256": "3b442b08c657eb7c9c0ead65f5ae8e7ab508cedfd9af3b0f3d4055a541537c24",
+      "size": 1132
+    },
+    "R29_Canonical身份及Evidence回归报告.md": {
+      "sha256": "79cd31d37255e01c36e913d4ae02d9aca48e05cba2b638f0dc42fca949d42bda",
+      "size": 734
+    },
+    "R29_D1_ABNF通道历史实现与移出原因审计.md": {
+      "sha256": "5f0c7bf6e10c72e85a26b160d9037a0145b30b275a05e70299bca596e38ce52d",
+      "size": 1242
+    },
     "R29_RA2_14条缓存拒收归因.xlsx": {
       "sha256": "a56ab810c2831aa16d8355feea0a51289bfb78ba961362393d2f6548f7987c53",
       "size": 6483
@@ -121,6 +133,18 @@
     "R29_RA2_输入输出SHA256清单.json": {
       "sha256": "52e15fbc604bc58fc3309d38af0c81c1afb0e548754b4741e976b45bcbc49fd2",
       "size": 1875
+    },
+    "R29_两通道Gold召回与误抽对照.md": {
+      "sha256": "a1cff4b02b51cab3891f99e04f83364532e6bc4fcbb96f3d4f83a9b20eb8d580",
+      "size": 1342
+    },
+    "R29_结构化抽取架构是否正式接入的决策报告.md": {
+      "sha256": "11454387e118418af2f945431cf820bfb6cc3795820a999a944bd357985aa49e",
+      "size": 1394
+    },
+    "R29_结构化知识确定性通道最小恢复方案.md": {
+      "sha256": "9c32965d26ee4bb747c364f0edab4010434306e0f64e3bbe7d55197a0fd81126",
+      "size": 876
     },
     "RFC2131_17批全文完成与输入覆盖核验.md": {
       "sha256": "4721be6391f6ca716f66c1265a9cdb3a3915125e7c141755deee9b22548ec351",
@@ -713,6 +737,10 @@
     "scripts/ra2_probe.py": {
       "sha256": "6b2aa1f0229b6e49ba8876c0038b8f1527b69792d9f61c3498b4912116a28faf",
       "size": 4503
+    },
+    "scripts/structural_extract.py": {
+      "sha256": "eb5e686f09f86993b20bb6828dcfd0d54e9564a3a9b20dd4a360fa03d618a3e4",
+      "size": 2147
     },
     "scripts/t0_preflight.py": {
       "sha256": "bdcf8a48d85233577bfbc8f6628098d246829ad97f24b27bc976a08deaec8e8c",
