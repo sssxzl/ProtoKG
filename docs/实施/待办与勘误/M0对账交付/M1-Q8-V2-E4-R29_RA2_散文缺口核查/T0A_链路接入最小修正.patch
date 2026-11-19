@@ -1,0 +1,72 @@
+--- a/core/fused/extraction/prose_semantics.py
++++ b/core/fused/extraction/prose_semantics.py
+@@ -902,6 +902,7 @@
+     for f in files:
+         try:
+             text = f.read_text(encoding="utf-8", errors="replace")
++            _src_sha = hashlib.sha256(f.read_bytes()).hexdigest()
+         except OSError:
+             continue
+         _bl = _split_blocks(text, _mpd)
+@@ -1035,6 +1036,12 @@
+     _prefix_items: list[dict] = []
+     _doc_ok: dict[str, bool] = {d: True for d in _miss}   # 与运算初值 True
+     _doc_seen: set[str] = set()
++    # 预算/异常提前终止时，文档只处理了部分块 ⇒ 不得标 complete
++    _doc_expect: dict[str, int] = {}
++    _doc_done: dict[str, int] = {}
++    for _b in blocks:
++        _dd = _b.get("doc") or ""
++        _doc_expect[_dd] = _doc_expect.get(_dd, 0) + 1
+     if _dmeta and not _miss:
+         cached = {"items": [it for _d in _hit for it in _hit[_d]]}
+     elif _hit:
+@@ -1115,7 +1122,9 @@
+                 break
+             ok = False
+             _batch_failed = False
+-            for _attempt in (1, 2):
++            # T0-A：显式关闭链路内重试（真实请求数必须可控）
++            _attempts = (1,) if os.environ.get("PROSE_NO_RETRY") == "1" else (1, 2)
++            for _attempt in _attempts:
+                 stats["calls"] += 1
+                 # ★ M1-③：每次调用一条结构化记录（★ 阶段可区分）
+                 _rec = None
+@@ -1193,6 +1202,18 @@
+                         _rec.error_message = f"payload type={type(out).__name__}"
+                         _rec.outcome = "failed"
+                     continue
++                # R29-RA2/T0-A：截断响应不得当作成功（length ⇒ 结果不完整）
++                _fr = (getattr(llm, "last_call_meta", None) or {}).get("finish_reason")
++                if _fr == "length":
++                    stats["failures"] += 1
++                    _batch_failed = True
++                    if _rec is not None:
++                        _rec.error_stage = "truncated"
++                        _rec.error_type = "FinishReasonLength"
++                        _rec.error_message = "finish_reason=length"
++                        _rec.outcome = "failed"
++                    guard.on_failure()
++                    continue
+                 got = 0
+                 for it in (out.get("items") or []):
+                     if not isinstance(it, dict):
+@@ -1213,6 +1234,8 @@
+                     # 跨批次取「与」：任一批失败 ⇒ 该文档不可标成功（不得被后续成功覆盖）
+                     _doc_seen.add(_d)
+                     _doc_ok[_d] = _doc_ok[_d] and bool(ok)
++                    if ok:
++                        _doc_done[_d] = _doc_done.get(_d, 0) + 1
+             if ok:
+                 # ★ 分批增量落缓存（成功的批不重跑）；★ **未跑完 ⇒ complete=False**
+                 # R29-RA2/F2：启用文档级缓存时不写批次级旧缓存（避免覆盖历史记录）
+@@ -1229,6 +1252,9 @@
+                         complete=(not stats.get("failures")))
+         # R29-RA2/F2：合并已命中文档的结果，并按文档落缓存
+         raw_items = _prefix_items + raw_items
++        for _dd in list(_doc_ok):
++            if _doc_done.get(_dd, 0) < _doc_expect.get(_dd, 0):
++                _doc_ok[_dd] = False      # 块未跑全 ⇒ 不得标完成
+         _save_doc_caches(protocol, _dmeta, raw_items, _PV, _doc_ok,
+                          only_docs=_doc_seen)
+ 

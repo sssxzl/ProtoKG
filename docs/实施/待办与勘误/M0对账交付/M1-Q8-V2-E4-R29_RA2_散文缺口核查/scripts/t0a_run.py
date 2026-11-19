@@ -19,26 +19,21 @@ PRICE_IN_PEAK, PRICE_OUT_PEAK = 2.0, 8.0     # CNY / 1M，按高峰取最坏
 CAP_CNY = 0.15
 
 
-def batches():
+def blocks():
     f = ROOT / "kb/smtp/spec/rfc3207.txt"
     text = f.read_text(encoding="utf-8", errors="replace")
-    blocks = PS._split_blocks(text, (len(text) // PS._MAX_BLOCK_CHARS) + 1)
-    out = []
-    for part in (blocks[:5], blocks[5:]):
-        body = "".join(f"\n\n===== [文档 rfc3207.txt]（起始行号 {st}）=====\n{bt}"
-                       for st, bt in part)
-        out.append(AC.build_payload("你是协议规范分析员。只输出 JSON。", PS._PROMPT + body))
-    return out
+    src = __import__("hashlib").sha256(f.read_bytes()).hexdigest()
+    n = (len(text) // PS._MAX_BLOCK_CHARS) + 1
+    return [{"doc": "rfc3207.txt", "start": st, "text": bt, "src_sha256": src}
+            for st, bt in PS._split_blocks(text, n)]
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--execute", action="store_true", help="真正联网（需预算授权）")
     args = ap.parse_args()
-    pays = batches()
-    for p in pays:
-        AC.assert_payload_ok(p, expect_max_tokens=MAX_TOKENS)
-    print(f"plan: {len(pays)} 次请求，block={[len(p['messages'][1]['content']) for p in pays]} chars")
+    bl = blocks()
+    print(f"plan: 6 块，2 批（5+1），单次 max_tokens={MAX_TOKENS}，thinking=disabled")
     if not args.execute:
         print("dry-run only（未联网）。需要 --execute 且 DEEPSEEK_API_KEY + T0A_BUDGET_APPROVED=1")
         return 0
@@ -50,34 +45,17 @@ def main() -> int:
         print("缺少 DEEPSEEK_API_KEY，终止", file=sys.stderr)
         return 2
     cli = AC.T0AClient(key)
-    spent, used_in = 0.0, 0
-    for i, p in enumerate(pays, 1):
-        if i > MAX_CALLS:
-            break
-        est_in = max(1, len(p["messages"][1]["content"]) // 4)
-        if used_in + est_in > MAX_IN:
-            print(f"输入预算不足（{used_in}+{est_in}>{MAX_IN}），停止"); break
-        worst = est_in * PRICE_IN_PEAK / 1e6 + MAX_TOKENS * PRICE_OUT_PEAK / 1e6
-        if spent + worst > CAP_CNY:
-            print(f"费用预算不足（{spent:.4f}+{worst:.4f}>{CAP_CNY}），停止"); break
-        try:
-            out = cli.chat_json(system="你是协议规范分析员。只输出 JSON。",
-                                user=p["messages"][1]["content"],
-                                temperature=0.1, max_tokens=MAX_TOKENS)
-        except Exception as exc:            # noqa: BLE001
-            print(f"第 {i} 次请求失败：{type(exc).__name__}: {exc}；按规则停止，不重试")
-            break
-        meta = getattr(cli, "last_call_meta", {}) or {}
-        used_in += int(meta.get("input_tokens") or est_in)
-        spent += (int(meta.get("input_tokens") or est_in) * PRICE_IN_PEAK
-                  + int(meta.get("output_tokens") or 0) * PRICE_OUT_PEAK) / 1e6
-        if meta.get("finish_reason") == "length":
-            print("finish_reason=length，结果截断，停止"); break
-        print(f"请求 {i} ok：items={len(out.get('items') or [])} "
-              f"in={meta.get('input_tokens')} out={meta.get('output_tokens')} 累计 {spent:.4f} 元")
-        if int(meta.get("input_tokens") or est_in) > est_in * 1.5:
-            print("实际计费量超预期 1.5 倍，停止，不发起下一次请求"); break
-    print(f"结束：累计 {spent:.4f} 元，输入 {used_in} tokens")
+    # 关键：走现有散文抽取入口，下游 Norm/Fact 由既有规则产出
+    PS._MAX_TOKENS = MAX_TOKENS
+    os.environ["PROSE_NO_RETRY"] = "1"
+    os.environ["PROSE_BATCH_BLOCKS"] = "5"
+    norms, stats = PS._extract_blocks("smtp", bl, llm=cli)
+    spent = ((stats.get("input_tokens") or 0) * PRICE_IN_PEAK
+             + (stats.get("output_tokens") or 0) * PRICE_OUT_PEAK) / 1e6
+    print(f"结束：calls={stats.get('calls')} norms={len(norms)} "
+          f"in={stats.get('input_tokens')} out={stats.get('output_tokens')} 约 {spent:.4f} 元")
+    if stats.get("calls", 0) > MAX_CALLS:
+        print("请求数超过上限，需人工核查")
     return 0
 
 

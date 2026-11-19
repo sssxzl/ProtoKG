@@ -20,6 +20,18 @@ class PayloadError(RuntimeError):
     pass
 
 
+class EmptyContent(ValueError):
+    pass
+
+
+class SchemaError(ValueError):
+    pass
+
+
+class FinishReasonError(RuntimeError):
+    pass
+
+
 def build_payload(system: str, user: str, *, model: str = MODEL,
                   max_tokens: int = MAX_TOKENS,
                   temperature: float = TEMPERATURE) -> dict:
@@ -35,20 +47,55 @@ def build_payload(system: str, user: str, *, model: str = MODEL,
     }
 
 
-def assert_payload_ok(payload: dict, *, expect_max_tokens: int = MAX_TOKENS) -> None:
+def assert_payload_ok(payload: dict) -> None:
     """发请求前的硬校验；任一不符即抛 PayloadError（在网络发出前终止）。"""
     if payload.get("model") != MODEL:
         raise PayloadError(f"model 不符：{payload.get('model')}")
     th = payload.get("thinking")
     if not isinstance(th, dict) or th.get("type") != "disabled":
         raise PayloadError(f"thinking 未显式关闭：{th}")
-    if int(payload.get("max_tokens", -1)) != expect_max_tokens:
+    if int(payload.get("max_tokens", -1)) != MAX_TOKENS:
         raise PayloadError(f"max_tokens 不符：{payload.get('max_tokens')}")
     rf = payload.get("response_format")
     if not isinstance(rf, dict) or rf.get("type") != "json_object":
         raise PayloadError(f"response_format 不符：{rf}")
     if abs(float(payload.get("temperature", -1)) - TEMPERATURE) > 1e-9:
         raise PayloadError(f"temperature 不符：{payload.get('temperature')}")
+
+
+ALLOWED_FINISH = {"stop"}
+
+
+def validate_response(content: str, meta: dict) -> dict:
+    """把「响应内容 + finish_reason」合成一次校验；不通过即抛，绝不返回空 dict。
+
+    · 空 / 纯空格 ⇒ EmptyContent
+    · 非法 JSON ⇒ JSONDecodeError
+    · 结构不符 ⇒ SchemaError
+    · finish_reason 非 stop（含 length / 缺失 / 未知）⇒ FinishReasonError
+    """
+    fr = (meta or {}).get("finish_reason")
+    if fr not in ALLOWED_FINISH:
+        raise FinishReasonError(f"finish_reason={fr!r} 不接受（仅允许 stop）")
+    text = (content or "").strip()
+    if not text:
+        raise EmptyContent("响应内容为空或纯空白")
+    try:
+        data = json.loads(text)
+    except ValueError as exc:
+        raise ValueError(f"JSONDecodeError: {exc}") from exc
+    if not isinstance(data, dict):
+        raise SchemaError(f"顶层不是对象：{type(data).__name__}")
+    items = data.get("items")
+    if not isinstance(items, list):
+        raise SchemaError("缺少 items 数组")
+    for it in items:
+        if not isinstance(it, dict):
+            raise SchemaError("items 元素不是对象")
+        for k in ("doc", "entity", "meaning"):
+            if k not in it:
+                raise SchemaError(f"条目缺少字段 {k}")
+    return data
 
 
 class T0AClient:
@@ -62,9 +109,11 @@ class T0AClient:
 
     def chat_json(self, *, system: str, user: str, temperature: float = TEMPERATURE,
                   max_tokens: int = MAX_TOKENS) -> dict:
-        payload = build_payload(system, user, max_tokens=max_tokens,
+        if int(max_tokens) != MAX_TOKENS:
+            raise PayloadError(f"T0-A 固定 max_tokens={MAX_TOKENS}，收到 {max_tokens}")
+        payload = build_payload(system, user, max_tokens=MAX_TOKENS,
                                 temperature=temperature)
-        assert_payload_ok(payload, expect_max_tokens=max_tokens)
+        assert_payload_ok(payload)
         req = urllib.request.Request(
             f"{self.base_url}/v1/chat/completions",
             data=json.dumps(payload).encode("utf-8"),
@@ -81,7 +130,4 @@ class T0AClient:
             "input_tokens": (data.get("usage") or {}).get("prompt_tokens"),
             "output_tokens": (data.get("usage") or {}).get("completion_tokens"),
         }
-        try:
-            return json.loads(content) if content.strip() else {}
-        except ValueError as exc:
-            raise ValueError(f"JSONDecodeError: {exc}") from exc
+        return validate_response(content, self.last_call_meta)

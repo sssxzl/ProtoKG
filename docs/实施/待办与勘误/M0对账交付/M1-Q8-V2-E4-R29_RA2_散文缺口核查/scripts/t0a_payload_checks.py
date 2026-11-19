@@ -49,7 +49,7 @@ def main() -> int:
 
     # 1-6 载荷与分批
     for p in pays:
-        AC.assert_payload_ok(p, expect_max_tokens=MAX_TOKENS)
+        AC.assert_payload_ok(p)
     C.append(("载荷合法：model/thinking/max_tokens/response_format",
               all(p["model"] == "deepseek-flash" and p["thinking"]["type"] == "disabled"
                   and p["max_tokens"] == 4000 and p["response_format"]["type"] == "json_object"
