@@ -4025,6 +4025,39 @@ def extract_transition_norms(protocol: str, llm=None) -> list[dict]:
     return norms
 
 
+def _dedup_one(norm: dict, *, merged_values: dict, merged_anchor: dict,
+               seen_protocol_level: set, norms: list) -> None:
+    """协议级去重的**单条处理**（生产路径）。
+
+    R27C 修复：`field_value` 的合并结果必须写回**首次出现、最终保留**的那条
+    Norm。原实现把合并值写到当前（随后被丢弃的）条目上，保留条永远拿不到
+    其它取值。此处用 `merged_anchor[key]` 记住保留条并写回它。
+    """
+    key = norm["norm_id"]
+    if norm.get("kind") == "field_value":
+        _vals = _parse_value_samples(norm.get("content", ""))
+        _prev = merged_values.get(key)
+        if _prev is None:
+            merged_values[key] = list(_vals)
+            merged_anchor[key] = norm          # R27C：记住保留条
+            seen_protocol_level.add(key)
+            norms.append(norm)
+        else:
+            for _v in _vals:
+                if _v not in _prev:            # 去重：不重复追加已有取值
+                    _prev.append(_v)
+            _anchor = merged_anchor.get(key)
+            if _anchor is not None:
+                # 只改 content；名称、来源、Evidence 一律不动
+                _anchor["content"] = (f"{_anchor['name']} | values: "
+                                      + VALUE_SAMPLE_SEP.join(_prev))
+        return
+    if key in seen_protocol_level:
+        return
+    seen_protocol_level.add(key)
+    norms.append(norm)
+
+
 def extract_rfc_norms(protocol: str, llm=None) -> list[dict]:
     """遍历 kb/<protocol>/spec/*.txt，抽取全部 rfc norm（method/field/outcome）。
 
@@ -4047,6 +4080,7 @@ def extract_rfc_norms(protocol: str, llm=None) -> list[dict]:
     # ★ P0：`field_value`（字段取值样本）**跨文件合并**而不是丢弃 ——
     #   同名字段在多份 RFC 里各有取值（如 SMTP 的 4 份 RFC）⇒ 合并才完整。
     merged_values: dict[str, list[str]] = {}
+    merged_anchor: dict[str, dict] = {}   # R27C：保留条引用
     # ★ 通道 I（LLM 语义切片，2026-11-12）：两个收集器
     #   · ``_known_entities``：已抽出的实体名（method/field/header）
     #     ⇒ LLM 只能在这些主体上产出 ⇒ **防幻觉主体**
@@ -4110,25 +4144,9 @@ def extract_rfc_norms(protocol: str, llm=None) -> list[dict]:
             #   不敏感）⇒ 合并为一条、保留首个；而 `Content-Length` 与
             #   `content_length` 的 norm_id 不同（`content-length` vs
             #   `content_length`）⇒ **不会**被误合并。
-            key = norm["norm_id"]
-            if norm.get("kind") == "field_value":
-                _vals = _parse_value_samples(norm.get("content", ""))
-                _prev = merged_values.get(key)
-                if _prev is None:
-                    merged_values[key] = list(_vals)
-                    seen_protocol_level.add(key)
-                    norms.append(norm)
-                else:
-                    for _v in _vals:
-                        if _v not in _prev:
-                            _prev.append(_v)
-                    norm["content"] = (f"{norm['name']} | values: "
-                                        + VALUE_SAMPLE_SEP.join(_prev))
-                continue
-            if key in seen_protocol_level:
-                continue
-            seen_protocol_level.add(key)
-            norms.append(norm)
+            _dedup_one(norm, merged_values=merged_values,
+                       merged_anchor=merged_anchor,
+                       seen_protocol_level=seen_protocol_level, norms=norms)
     # ---- 通道 I：LLM 语义切片（★ 2026-11-12，E6）------------------------
     #   ★ 只喂「**没有任何结构化形态命中**」的文档 ⇒ 补散文型扩展 RFC 的知识
     #     （实测 DHCPv4：36 个 spec ⇒ 只触及 11 个 ⇒ 26 个散文文档全丢）。
