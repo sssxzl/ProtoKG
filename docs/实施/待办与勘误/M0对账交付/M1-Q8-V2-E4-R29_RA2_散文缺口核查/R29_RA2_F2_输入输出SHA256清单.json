@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 17,
-    "status": "T0_A_two_stage_gold_2of2_verified"
+    "status": "T0_A_evidence_support_review_completed"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -146,9 +146,25 @@
       "sha256": "9ed953d6f8a05532b97834043efc001ec86ffbdba9efbfce6c662422096a174a",
       "size": 1640
     },
+    "T0A_30条Evidence语义支持逐条审查.csv": {
+      "sha256": "f257c59e4b71fee8920566157718c901e2cb7c1103879a06e0f20e4ed97edb58",
+      "size": 11217
+    },
+    "T0A_Claim证据关联与隔离知识状态核验.md": {
+      "sha256": "dc5b020440442a8a4ce0b00f064eb388e89922986750aa44758307ee7bdbe70b",
+      "size": 1400
+    },
     "T0A_Evidence原文与缓存污染负例.md": {
       "sha256": "38dcce75ff992568bb1deef47572c42be0dd2c9e16224a7ea638cd63fb720bb9",
       "size": 1570
+    },
+    "T0A_Evidence最终验收统计与341剩余缺口.md": {
+      "sha256": "1f8086076e6405b3fabf80951cb68414b98dfb4258a3c5f1c4ea717bd7c9f463",
+      "size": 1347
+    },
+    "T0A_Evidence部分支持与不支持案例.md": {
+      "sha256": "f3bf72e0c5d7af590087fb6c7f42f1f7923db50c78b7cbaaa63c294136724c99",
+      "size": 2497
     },
     "T0A_Fact映射最小修正.patch": {
       "sha256": "7d89add86d31e30580c345c91dac368635a1f7223d76fbeb6451d2d93fbcfdf7",
@@ -177,6 +193,10 @@
     "T0A_Hub隔离入口源码核查.md": {
       "sha256": "090770854ec1f6a6c19f8e26357ac6a72dac16b3d410181b7ddc90f707bbaa5f",
       "size": 2121
+    },
+    "T0A_p7多来源与p13不完整引用处理.md": {
+      "sha256": "cd0b215e122a82c3a690349adaeb6a99bc682d7740bdc3dca0515dd1752f3f69",
+      "size": 1645
     },
     "T0A_prompt_v3修正.patch": {
       "sha256": "0d3a765f5377429d032a247bf8a90f0cab2bb38546be69e43b35788de41ad264",
@@ -657,6 +677,10 @@
     "T0A_双阶段_20261119/align_v4_30items.json": {
       "sha256": "8fb039f5a4730407e7ab700fbcf703393c8f05e02cda30d1420e972a47760669",
       "size": 13146
+    },
+    "T0A_双阶段_20261119/evidence_review_sidecar.json": {
+      "sha256": "bfcfa51ebde00678c906d244a141f9bf693d308bec04ce82fcff5e07e8e6978a",
+      "size": 1054
     },
     "T0A_双阶段_20261119/SHA256清单.json": {
       "sha256": "a95775a063db9a9316d3146de746b08312ab9213797fd678cb5632418c633071",

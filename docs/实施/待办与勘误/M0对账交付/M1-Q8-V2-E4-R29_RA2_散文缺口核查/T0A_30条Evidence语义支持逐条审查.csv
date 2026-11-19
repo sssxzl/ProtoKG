@@ -1,0 +1,72 @@
+id,model_span,verified_span,match,status,reason,proposition,quote
+p0,22,"[30, 33]",exact_match,supported,Gold：语义与引用已人工确认,该文档描述了一个 SMTP 服务扩展，允许 SMTP 服务器和客户端使用 TLS 提供私密、经过认证的通信。,"This document describes an extension to the SMTP (Simple Mail
+   Transfer Protocol) service that allows an SMTP server and client to
+   use TLS (Transport Layer"
+p1,25,"[33, 35]",exact_match,supported,Gold：语义与引用已人工确认,TLS 使 SMTP 代理能够保护其部分或全部通信免受窃听者和攻击者的侵害。,"This gives SMTP agents the ability
+   to protect some or all of their communications from eavesdroppers and
+   attackers."
+p2,76,"[80, 80]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,STARTTLS 是此处定义的 SMTP 服务名称。,(1) the name of the SMTP service defined here is STARTTLS;
+p3,78,"[82, 82]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,STARTTLS 是与该扩展关联的 EHLO 关键字值。,(2) the EHLO keyword value associated with the extension is STARTTLS;
+p4,80,"[84, 84]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,STARTTLS 关键字没有参数。,(3) the STARTTLS keyword has no parameters;
+p5,82,"[86, 86]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,定义了一个新的 SMTP 动词 STARTTLS。,"(4) a new SMTP verb, ""STARTTLS"", is defined;"
+p6,88,"[92, 93]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,STARTTLS 关键字用于告知 SMTP 客户端，SMTP 服务器当前能够协商使用 TLS。,"The STARTTLS keyword is used to tell the SMTP client that the SMTP
+   server is currently able to negotiate the use of TLS."
+p7,96,,not_attempted,multi_source_pending,命题含命令格式与无参数两点，现有单条 quote 缺失；需两段证据,STARTTLS 命令的格式为 STARTTLS，且不带参数。,
+p8,100,"[104, 105]",exact_match,partially_supported,原 quote 止于 'reply codes:'，未含 220/501/454；已记录扩展引用 104-109,客户端发出 STARTTLS 命令后，服务器以 220、501 或 454 之一回复。,"After the client gives the STARTTLS command, the server responds with
+   one of the following reply codes:"
+p9,119,"[119, 121]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,客户端收到 454 响应后，必须根据本地策略决定是否继续 SMTP 会话。 客户端收到 454 响应后必须决定是否继续 SMTP 会话,"If the client receives the 454 response, the client must decide
+   whether or not to continue the SMTP session.  Such a decision is
+   based on local policy."
+p10,129,"[129, 130]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,公开引用的 SMTP 服务器不得要求使用 STARTTLS 扩展才能在本地投递邮件。 公开引用的 SMTP 服务器不得要求使用 STARTTLS 扩展才能在本地投递邮件,"A publicly-referenced SMTP server MUST NOT require use of the
+   STARTTLS extension in order to deliver mail locally."
+p11,136,"[138, 139]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,任何 SMTP 服务器都可以基于 TLS 协商期间提供的认证拒绝中继邮件。,"Any SMTP server may refuse to accept messages for relay based on
+   authentication supplied during the TLS negotiation."
+p12,138,"[139, 142]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,非公开引用的 SMTP 服务器可以基于 TLS 协商期间提供的认证拒绝任何中继或本地投递邮件。,"An SMTP server
+   that is not publicly referenced may refuse to accept any messages for
+   relay or local delivery based on authentication supplied during the
+ "
+p13,148,"[150, 150]",exact_match,partially_supported,原 quote 仅 58 字符，缺 530 码与条件；已记录扩展引用 146-150，条件先行词在 143-145,要求客户端先进行 TLS 协商的服务器，对除 NOOP、EHLO、STARTTLS 或 QUIT 之外的每条命令都应返回 530 回复码。 对除 NOOP、EHLO、STARTTLS 或 QUIT 之外的每条命令应返回 530 回复码,"to every command other than NOOP, EHLO, STARTTLS, or QUIT."
+p14,153,"[150, 152]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,如果使用 ENHANCEDSTATUSCODES 扩展，应返回状态码 5.7.0。 应返回状态码 5.7.0,"If the
+   client and server are using the ENHANCEDSTATUSCODES ESMTP extension
+   [RFC2034], the status code to be returned SHOULD be 5.7.0."
+p15,155,"[154, 155]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,收到 STARTTLS 命令的 220 响应后，客户端必须在发出任何其他 SMTP 命令之前开始 TLS 协商。 客户端必须在发出任何其他 SMTP 命令之前开始 TLS 协商,"After receiving a 220 response to a STARTTLS command, the client MUST
+   start the TLS negotiation before giving any other SMTP commands."
+p16,158,"[155, 158]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,如果客户端发出 STARTTLS 后发现某种失败使其无法开始 TLS 握手，则应中止连接。 应中止连接,"If,
+   after having issued the STARTTLS command, the client finds out that
+   some failure prevents it from actually starting a TLS handshake, then
+   it SHOULD"
+p17,162,"[160, 161]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,如果 SMTP 客户端使用流水线，STARTTLS 命令必须是组中的最后一条命令。 STARTTLS 命令必须是组中的最后一条命令,"If the SMTP client is using pipelining as defined in RFC 2920, the
+   STARTTLS command must be the last command in a group."
+p18,172,"[177, 179]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,TLS 握手完成后，双方必须立即根据所获得的认证和隐私决定是否继续。 双方必须立即根据所获得的认证和隐私决定是否继续,"After the TLS handshake has been completed, both parties MUST
+   immediately decide whether or not to continue based on the
+   authentication and privacy achiev"
+p19,181,"[186, 188]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,如果 SMTP 客户端认为认证或隐私级别不够高，应在 TLS 协商完成后立即发出 SMTP QUIT 命令。 应在 TLS 协商完成后立即发出 SMTP QUIT 命令,"If the SMTP client decides that the level of authentication or
+   privacy is not high enough for it to continue, it SHOULD issue an
+   SMTP QUIT command immedia"
+p20,184,"[189, 193]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,如果 SMTP 服务器认为认证或隐私级别不够高，应对客户端的每条 SMTP 命令（QUIT 除外）回复 554。 应对客户端的每条 SMTP 命令（QUIT 除外）回复 554,"If the SMTP server decides that the level of authentication or
+   privacy is not high enough for it to continue, it SHOULD reply to
+   every SMTP command from t"
+p21,205,"[210, 212]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,TLS 握手完成后，SMTP 协议重置为初始状态。,"Upon completion of the TLS handshake, the SMTP protocol is reset to
+   the initial state (the state in SMTP after a server issues a 220
+   service ready greetin"
+p22,208,"[212, 214]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,服务器必须丢弃从客户端获得的、并非来自 TLS 协商本身的任何知识（如 EHLO 参数）。 服务器必须丢弃从客户端获得的、并非来自 TLS 协商本身的任何知识,"The server MUST discard any knowledge
+   obtained from the client, such as the argument to the EHLO command,
+   which was not obtained from the TLS negotiation "
+p23,211,"[214, 217]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,客户端必须丢弃从服务器获得的、并非来自 TLS 协商本身的任何知识（如 SMTP 服务扩展列表）。 客户端必须丢弃从服务器获得的、并非来自 TLS 协商本身的任何知识,"The client
+   MUST discard any knowledge obtained from the server, such as the list
+   of SMTP service extensions, which was not obtained from the TLS
+   negoti"
+p24,214,"[217, 218]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,客户端应在成功 TLS 协商后发送 EHLO 命令作为第一条命令。 应在成功 TLS 协商后发送 EHLO 命令作为第一条命令,"The client SHOULD send an EHLO command as the
+   first command after a successful TLS negotiation."
+p25,217,"[220, 222]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,TLS 握手后 EHLO 返回的 SMTP 服务扩展列表可能与握手前不同。,"The list of SMTP service extensions returned in response to an EHLO
+   command received after the TLS handshake MAY be different than the
+   list returned befor"
+p26,226,"[235, 236]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,客户端和服务器都必须知道是否存在活动的 TLS 会话。 客户端和服务器都必须知道是否存在活动的 TLS 会话,"Both the client and the server MUST know if there is a TLS session
+   active."
+p27,227,"[236, 237]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,如果 TLS 会话已处于活动状态，客户端不得尝试启动 TLS 会话。 客户端不得尝试启动 TLS 会话,"A client MUST NOT attempt to start a TLS session if a TLS
+   session is already active."
+p28,228,"[237, 239]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,TLS 握手完成后，服务器不得在响应 EHLO 命令时返回 STARTTLS 扩展。 服务器不得在响应 EHLO 命令时返回 STARTTLS 扩展,"A server MUST NOT return the STARTTLS
+   extension in response to an EHLO command received after a TLS
+   handshake has completed."
+p29,232,"[243, 244]",exact_match,supported,整句引用，主体/动作/强度与命题一致，未发现缺失条件或新增保证,STARTTLS 在 Submission 端口上是有效的 ESMTP 扩展。,"STARTTLS is a valid ESMTP extension when used on the Submission port,
+   as defined in [RFC2476]."

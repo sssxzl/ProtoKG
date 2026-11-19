@@ -1,0 +1,31 @@
+{
+ "version": "evidence-review-v1",
+ "doc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+ "corrections": {
+  "p13": {
+   "old_quote_len": 58,
+   "corrected_span": [
+    146,
+    150
+   ],
+   "corrected_quote": "   commands.  In this case, the server SHOULD return the reply code:\n\n   530 Must issue a STARTTLS command first\n\n   to every command other than NOOP, EHLO, STARTTLS, or QUIT.  If the",
+   "note": "含 530 回复码与例外列表；条件先行词在 143-145 行，需一并阅读"
+  },
+  "p8": {
+   "corrected_span": [
+    104,
+    109
+   ],
+   "corrected_quote": "   After the client gives the STARTTLS command, the server responds with\n   one of the following reply codes:\n\n   220 Ready to start TLS\n   501 Syntax error (no parameters allowed)\n   454 TLS not available due to temporary reason",
+   "note": "补入 220/501/454 三条回复码"
+  }
+ },
+ "counts": {
+  "total": 30,
+  "supported": 27,
+  "partially_supported": 2,
+  "multi_source_pending": 1,
+  "unsupported": 0,
+  "contradicted": 0
+ }
+}
