@@ -37,6 +37,7 @@ class Guard:
         self.stopped = False
         self.log: list[dict] = []
         self.last_error = ""          # 最近一次调用异常的类名
+        self.billing_status = "none"  # none / billed / unknown / partial
 
     def before(self, est_in: int, params: dict) -> None:
         if self.stopped:
@@ -87,9 +88,16 @@ class GuardedClient:
                                        temperature=temperature, max_tokens=max_tokens)
         except TimeoutError as exc:
             self.guard.last_error = "TimeoutError"
+            self.guard.billing_status = "unknown"    # 可能已被计费
             self.guard.stop(); raise
         except Exception as exc:                   # noqa: BLE001
             self.guard.last_error = type(exc).__name__
+            _meta = getattr(self.inner, "last_call_meta", None) or {}
+            if _meta.get("input_tokens") is not None:
+                self.guard.after(_meta)              # 已收到 usage ⇒ 必须记账
+                self.guard.billing_status = "billed"
+            else:
+                self.guard.billing_status = "unknown"
             self.guard.stop(); raise
         self.last_call_meta = getattr(self.inner, "last_call_meta", None) or {}
         self.guard.after(self.last_call_meta)
@@ -97,6 +105,15 @@ class GuardedClient:
 
 
 PROTECTED = [ROOT / "derived", ROOT / "kb", ROOT / ".git", ROOT / "profiles"]
+
+
+def _allowed_base() -> list[pathlib.Path]:
+    import tempfile
+    bases = [pathlib.Path(tempfile.gettempdir()).resolve()]
+    env = os.environ.get("T0A_WORKSPACE")
+    if env:
+        bases.append(pathlib.Path(env).resolve())
+    return bases
 
 
 def _unsafe_reason(root) -> str:
@@ -115,6 +132,12 @@ def _unsafe_reason(root) -> str:
             break
         cur = cur.parent
     resolved = raw.resolve()
+    if resolved.parent == resolved:
+        return "filesystem_root"
+    if resolved == ROOT.resolve():
+        return "repo_root"
+    if not any(b == resolved or b in resolved.parents for b in _allowed_base()):
+        return "outside_workspace"
     for p in PROTECTED:
         if resolved == p or p in resolved.parents:
             return f"protected:{p.name}"
@@ -186,16 +209,25 @@ def _run_body(protocol: str, doc_name: str, client, root: pathlib.Path,
 
     guard = Guard(root)
     gc = GuardedClient(client, guard)
+    def _dump_guard():
+        _atomic_write(root / "evidence" / "guard.json",
+                      {"calls": guard.calls, "used_in": guard.used_in,
+                       "spent_cny": round(guard.spent, 6),
+                       "billing_status": guard.billing_status, "log": guard.log})
+
     result = {"status": "preflight_failed", "protocol": protocol, "doc": doc_name,
               "doc_sha256": src, "blocks": len(blocks), "calls": 0}
     try:
         norms, stats = PS._extract_blocks(protocol, blocks, llm=gc)
     except TimeoutError as exc:
-        result.update(status="request_timeout", reason=str(exc))
-        _atomic_write(root / "evidence" / "result.json", result); return result
+        result.update(status="request_timeout", reason=str(exc),
+                      calls=guard.calls, billing_status=guard.billing_status)
+        _atomic_write(root / "evidence" / "result.json", result); _dump_guard(); return result
     except Exception as exc:                       # noqa: BLE001
-        result.update(status="request_failed", reason=f"{type(exc).__name__}: {exc}")
-        _atomic_write(root / "evidence" / "result.json", result); return result
+        result.update(status="request_failed", reason=f"{type(exc).__name__}: {exc}",
+                      calls=guard.calls, billing_status=guard.billing_status,
+                      usage={"in": guard.used_in, "out": None})
+        _atomic_write(root / "evidence" / "result.json", result); _dump_guard(); return result
 
     result.update(calls=gc.calls, norms=len(norms),
                   usage={"in": stats.get("input_tokens"), "out": stats.get("output_tokens")})
@@ -206,7 +238,10 @@ def _run_body(protocol: str, doc_name: str, client, root: pathlib.Path,
                             else "request_failed")
         result["reason"] = guard.last_error
         result["partial_norms"] = len(norms)
+        result["calls"] = guard.calls
+        result["billing_status"] = guard.billing_status
         _atomic_write(root / "evidence" / "result.json", result)
+        _dump_guard()
         return result
 
     if not norms:
@@ -234,6 +269,28 @@ def _run_body(protocol: str, doc_name: str, client, root: pathlib.Path,
     result["facts"] = len(facts)
     result["fact_ids"] = [f.fact_id for f in facts]
 
+    # ★ 写盘之前先判完整性：任一批未完成/失败/被停/缓存不完整 ⇒ 不写 Fact、不建 Hub
+    expect_batches = (len(blocks) + 4) // 5
+    cache_file = root / "cache" / f"{protocol}.prose.d" / f"{doc_name}.json"
+    cache_ok = False
+    if cache_file.is_file():
+        try:
+            cache_ok = json.loads(cache_file.read_text(encoding="utf-8")).get("complete") is True
+        except ValueError:
+            cache_ok = False
+    if (guard.calls < expect_batches or stats.get("failures")
+            or guard.stopped or not cache_ok):
+        result["status"] = "cache_incomplete"
+        result["reason"] = {"calls": guard.calls, "expect": expect_batches,
+                            "failures": stats.get("failures"),
+                            "stopped": guard.stopped, "cache_complete": cache_ok}
+        result["billing_status"] = "partial"
+        _atomic_write(root / "evidence" / "result.json", result)
+        _atomic_write(root / "evidence" / "guard.json",
+                      {"calls": guard.calls, "used_in": guard.used_in,
+                       "spent_cny": round(guard.spent, 6), "log": guard.log})
+        return result
+
     try:
         if on_hub:
             on_hub()
@@ -253,29 +310,9 @@ def _run_body(protocol: str, doc_name: str, client, root: pathlib.Path,
         result.update(status="hub_failed", reason=str(exc))
         _atomic_write(root / "evidence" / "result.json", result); return result
 
-    # 完成前置：所有块处理完、无失败、未被门禁中止、缓存 complete
-    expect_batches = (len(blocks) + 4) // 5
-    cache_file = root / "cache" / f"{protocol}.prose.d" / f"{doc_name}.json"
-    cache_ok = False
-    if cache_file.is_file():
-        try:
-            cache_ok = json.loads(cache_file.read_text(encoding="utf-8")).get("complete") is True
-        except ValueError:
-            cache_ok = False
-    if (guard.calls < expect_batches or stats.get("failures")
-            or guard.stopped or not cache_ok):
-        result["status"] = "cache_incomplete"
-        result["reason"] = {"calls": guard.calls, "expect": expect_batches,
-                            "failures": stats.get("failures"),
-                            "stopped": guard.stopped, "cache_complete": cache_ok}
-        _atomic_write(root / "evidence" / "result.json", result)
-        _atomic_write(root / "evidence" / "guard.json",
-                      {"calls": guard.calls, "used_in": guard.used_in,
-                       "spent_cny": round(guard.spent, 6), "log": guard.log})
-        return result
-
     result["status"] = "completed"
     result["spent_cny"] = round(guard.spent, 6)
+    result["billing_status"] = guard.billing_status if guard.billing_status != "none" else "billed"
     _atomic_write(root / "evidence" / "result.json", result)
     _atomic_write(root / "evidence" / "guard.json", {"log": guard.log,
                                                      "calls": guard.calls,

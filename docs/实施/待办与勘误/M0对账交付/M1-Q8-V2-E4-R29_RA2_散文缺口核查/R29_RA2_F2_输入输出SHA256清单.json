@@ -3,11 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 0,
-    "status": "T0_A_live_execution_ready_for_approval",
-    "flags": [
-      "real_llm_output_pending_validation",
-      "production_merge_not_approved"
-    ]
+    "status": "T0_A_live_execution_ready_for_approval"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -178,6 +174,14 @@
       "sha256": "6e6994bc0bff4d1fb026599aafd2efe7b2e7e4118e52f6db01b6fe12c581f0b9",
       "size": 1491
     },
+    "T0A_三阻断修正与放行结论.md": {
+      "sha256": "6be0ec20624e73a1f791db1f20bf691ea88455f7056bbaa83f60d9c662967e98",
+      "size": 2405
+    },
+    "T0A_三阻断最小修正.patch": {
+      "sha256": "3a9264a3df3cbba2dc22ab89e23e0c5d31628c11bfc607925fe77139b9783581",
+      "size": 15974
+    },
     "T0A_全产物隔离路径核验.md": {
       "sha256": "c847d18b67b6130625d39557f74f9d58b1fcb5b3e948689d9d0fe6275377b7be",
       "size": 1651
@@ -323,8 +327,8 @@
       "size": 2738
     },
     "scripts/t0a_executor.py": {
-      "sha256": "22a2a0c1e32ca01434a4bb7b43d94d4855da75623a10008f62849af368ba7bf5",
-      "size": 13432
+      "sha256": "1281d57c75179405dc318d93c480cbc5adc70ad81c35d640f2134535534551ba",
+      "size": 15240
     },
     "scripts/t0a_executor_checks.py": {
       "sha256": "40cbad4c52a1aae700eeafc5ea49527fc8525e40664f4fc117b5ef6bcce0f54d",
@@ -333,6 +337,10 @@
     "scripts/t0a_executor_checks2.py": {
       "sha256": "265a131b816a0e3828c6453eb4b2a0e75a62b19a42cd548486e1f72de8093b6e",
       "size": 6853
+    },
+    "scripts/t0a_executor_checks3.py": {
+      "sha256": "e643b310657e4a6379f878a9d9dc7dab6d8922ea23e06d4d41b21f69a7ed6ac3",
+      "size": 4321
     },
     "scripts/t0a_hub_isolated.py": {
       "sha256": "a39f6ae0fc7fea6340789fe5b7349dd8aa0eeef444334c4cb0891db90a10c0eb",
