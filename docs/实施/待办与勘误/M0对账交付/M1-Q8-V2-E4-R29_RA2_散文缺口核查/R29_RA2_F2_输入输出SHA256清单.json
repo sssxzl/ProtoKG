@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 63,
-    "status": "struct_contract_design_only"
+    "status": "grammar_value_isolated_readback_verified"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -50,6 +50,22 @@
       "sha256": "3ec1421cc9a9db16f73ee4730b658998937c83980877642c2bf913afd43e7e80",
       "size": 432
     },
+    "R29_get_fact_view与Hub导出读回核验.md": {
+      "sha256": "f0511e9b36d5e763a22452364c8123af0a044b910de822dc35427aa36d60dcc3",
+      "size": 629
+    },
+    "R29_Grammar_Value最小契约变更建议.md": {
+      "sha256": "aef30303d626debcc7f091428f6c4ab775b30628496b31c015ff17cf57b06b2d",
+      "size": 1076
+    },
+    "R29_Grammar_Value现有契约审计.md": {
+      "sha256": "46d8dc1a1e12643069fd8dc543ed5d63cff1cc7721b7cc6a3e51d391eb43a032",
+      "size": 1538
+    },
+    "R29_Grammar_Value隔离兼容性测试.md": {
+      "sha256": "b691bcf8efc09e316c9956270ad78033bdac2f0f39b2151f33c3d51f66da033a",
+      "size": 922
+    },
     "R29_H2_request_line_Canonical适配性报告.md": {
       "sha256": "61f54c34e59329af185c967ccd28e54b4c5f6c3191d64a6cfd9b306fb54c0a6d",
       "size": 1032
@@ -57,6 +73,10 @@
     "R29_H2新增definition来源审查.md": {
       "sha256": "ea22cca79d9faee31e08708a999a28fc5fcaa1b6656c036875f33dd6164cc583",
       "size": 1457
+    },
+    "R29_H2无效definition隔离回归.md": {
+      "sha256": "89dcac83b8a0c15926ff1fe360a5bbfa9e489f76e0cbd7e2fa24773ef495f514",
+      "size": 654
     },
     "R29_RA2_14条缓存拒收归因.xlsx": {
       "sha256": "a56ab810c2831aa16d8355feea0a51289bfb78ba961362393d2f6548f7987c53",
@@ -885,6 +905,10 @@
     "scripts/t0a_run.py": {
       "sha256": "6d7f085e3ff7dc743c4458d73ec3be721d0ad4a408c1f3db5cd3e0c6f642e196",
       "size": 2698
+    },
+    "scripts/test_grammar_value.py": {
+      "sha256": "1803ef4e68fb72f9a8c781f94a130e209479e401406fc4e789695e88d44ce175",
+      "size": 3478
     },
     "scripts/test_structural_field.py": {
       "sha256": "d9e18e6a5e11b75243dcedd8d2fd600c32be18ed8228ed8af89e7f142c3b03eb",
