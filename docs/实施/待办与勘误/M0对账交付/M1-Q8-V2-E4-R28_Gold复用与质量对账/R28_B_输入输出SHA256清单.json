@@ -1,0 +1,57 @@
+{
+  "files": {
+    "输入: R19 Gold": {
+      "path": "docs/实施/待办与勘误/M0对账交付/M1-Q3-V2-E4-R19_原子Goldv5冻结与独立验证门禁准备/R19_原子Gold_v5冻结基线.jsonl",
+      "sha256": "6ba3ae961ab564908aa8879d81ac77788931376c256e039027327022ff2b110c",
+      "size": 25570
+    },
+    "输入: B1 Gold": {
+      "path": "docs/实施/待办与勘误/M0对账交付/M1-Q3-V2-E4-B1队列B人工真值验收/B1_人工真值冻结清单.jsonl",
+      "sha256": "b99467a4d806910f78b11ef2278ed0e28eab12ee4906e6fdc137787c6bc2cd23",
+      "size": 308000
+    },
+    "输入: 机器 Norm 索引": {
+      "path": "guard/_out/_release/norms_machine.json",
+      "sha256": "1469d16e80b4daabef66f13817ab95b55e14ebf395d10b4450d1e2a2ca7aa0d4",
+      "size": 61797
+    },
+    "脚本": {
+      "path": "docs/实施/待办与勘误/M0对账交付/M1-Q8-V2-E4-R28_Gold复用与质量对账/scripts/r28b_align.py",
+      "sha256": "7e926b5a7c7cc54496783e264e69d0357578f3525eef8763e794c6b5607ebd90",
+      "size": 15388
+    },
+    "输出: B0": {
+      "path": "docs/实施/待办与勘误/M0对账交付/M1-Q8-V2-E4-R28_Gold复用与质量对账/R28_B0_Gold人工审核与仲裁元数据补核.xlsx",
+      "sha256": "1a78630618cdf7c2ac230d50afa3bbc4304942a5bd2d37aceed10c677d49a88c",
+      "size": 6797
+    },
+    "输出: B1": {
+      "path": "docs/实施/待办与勘误/M0对账交付/M1-Q8-V2-E4-R28_Gold复用与质量对账/R28_B1_两组Gold身份与来源清单.xlsx",
+      "sha256": "57aa54a4ffaa8cf6197a46b0fae72fac68b403785573cadb477621296efde239",
+      "size": 19024
+    },
+    "输出: B2": {
+      "path": "docs/实施/待办与勘误/M0对账交付/M1-Q8-V2-E4-R28_Gold复用与质量对账/R28_B2_Gold到Raw_Norm_Canonical_Evidence逐条对齐.xlsx",
+      "sha256": "6681899f5ca42e6aa5b54f262f51f0387675cf43df126224a5f3bc066070917a",
+      "size": 18507
+    },
+    "输出: B2 csv": {
+      "path": "docs/实施/待办与勘误/M0对账交付/M1-Q8-V2-E4-R28_Gold复用与质量对账/R28_B2_九类匹配状态与理由.csv",
+      "sha256": "85b13ef3e3cb911b842e72d22f4b0da56bed34d74759d7c016c269f29ec605e0",
+      "size": 34139
+    },
+    "输出: B3": {
+      "path": "docs/实施/待办与勘误/M0对账交付/M1-Q8-V2-E4-R28_Gold复用与质量对账/R28_B3_G-B1片段覆盖与漏抽归因.xlsx",
+      "sha256": "e5284c3de0c3139c8049c72570f3b869c2de641c63270ba512f00d5f95bb3f36",
+      "size": 5667
+    }
+  },
+  "missing": [],
+  "baseline": {
+    "main_frozen": "0f99da8445ea093246824e62d1244b88732e009e",
+    "extraction_commit": "f3012f2（worktree 检出；与 main 的差异仅在 ci.yml，不影响抽取）",
+    "python": "3.13.9",
+    "llm_calls": 0,
+    "note": "机器侧 Norm 索引由 R27_REFINE=0 的确定性通道导出，未启用定位精修"
+  }
+}

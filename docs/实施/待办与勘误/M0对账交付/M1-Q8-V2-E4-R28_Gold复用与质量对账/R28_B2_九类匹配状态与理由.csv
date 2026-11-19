@@ -1,0 +1,137 @@
+组,gold_id,协议,文档,跨度,命中的Norm,标签,理由,阻断阶段,Gold命题
+G-R19,RTSP-ATOM-X-rtsp-rfc7826-03-1,RTSP,rfc7826.txt,5392,,outside_current_scope,Gold 引用 rfc7826.txt，不在当前 kb 输入,,A server MUST allow a parameter to be set repeatedly to the same value.
+G-R19,RTSP-ATOM-X-rtsp-rfc7826-05-1,RTSP,rfc7826.txt,,,outside_current_scope,Gold 引用 rfc7826.txt，不在当前 kb 输入,,状态码 458 = Parameter Is Read-Only（参数不允许修改时使用的应答码）
+G-R19,SMTP-ATOM-X-smtp-rfc3461-03-1,SMTP,rfc3461.txt,,,outside_current_scope,Gold 引用 rfc3461.txt，不在当前 kb 输入,,"The NOTIFY parameter MAY be used, but its value MUST be NEVER.（DSN 经 SMTP 传输时）"
+G-R19,SMTP-ATOM-X-smtp-rfc3461-04-a,SMTP,rfc3461.txt,,,outside_current_scope,Gold 引用 rfc3461.txt，不在当前 kb 输入,,The ENVID parameter (with a newly generated envelope-id) MAY be used.（DSN 经 SMTP 传输时）
+G-R19,SMTP-ATOM-X-smtp-rfc6531-01-a,SMTP,rfc6531.txt,,,outside_current_scope,Gold 引用 rfc6531.txt，不在当前 kb 输入,,术语「UTF-8 string」（与「UTF-8 character」同义）指代「可能是也可能不是 ASCII 子集成员的 Unicode 字符」，且以 UTF-8 [RFC3629] 编码
+G-R19,SMTP-ATOM-X-smtp-rfc8098-03-1,SMTP,rfc8098.txt,,,outside_current_scope,Gold 引用 rfc8098.txt，不在当前 kb 输入,,"MDN generators SHOULD use ""*WSP"" for OWS（OWS 的生成形式）；例外：unless an RFC 5322 ""comment"" is required"
+G-B1,GK-B-DHCPv4-rfc1534.txt-100-1,DHCPv4,rfc1534.txt,100-101,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,A DHCP server that supports BOOTP clients MUST interact with BOOTP clients according to the BOOTP pr
+G-B1,GK-B-DHCPv4-rfc1534.txt-100-2,DHCPv4,rfc1534.txt,101-103,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,The server MUST formulate a BOOTP BOOTREPLY message rather than a DHCP DHCPOFFER message
+G-B1,GK-B-DHCPv4-rfc1534.txt-100-3,DHCPv4,rfc1534.txt,103,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,the server MUST NOT include the DHCP message type option
+G-B1,GK-B-DHCPv4-rfc1534.txt-100-4,DHCPv4,rfc1534.txt,103-104,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,and MUST NOT exceed the size limit for BOOTREPLY messages
+G-B1,GK-B-DHCPv4-rfc1534.txt-100-5,DHCPv4,rfc1534.txt,104-107,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,The server marks a binding for a BOOTP client as BOUND after sending the BOOTP BOOTREPLY
+G-B1,GK-B-DHCPv4-rfc1534.txt-139-1,DHCPv4,rfc1534.txt,139-141,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,A DHCP client MAY use a reply from a BOOTP server if the configuration returned from the BOOTP serve
+G-B1,GK-B-DHCPv4-rfc1534.txt-139-2,DHCPv4,rfc1534.txt,141-142,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,A DHCP client MUST assume that an IP address returned in a message from a BOOTP server has an infini
+G-B1,GK-B-DHCPv4-rfc1534.txt-139-3,DHCPv4,rfc1534.txt,142-144,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,A DHCP client SHOULD choose to use a reply from a DHCP server in preference to a reply from a BOOTP 
+G-B1,GK-B-DHCPv4-rfc1534.txt-92-1,DHCPv4,rfc1534.txt,92-94,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,"If a DHCP server returns a automatic address, the BOOTP client will not be aware of the DHCP lease m"
+G-B1,GK-B-DHCPv4-rfc1534.txt-92-2,DHCPv4,rfc1534.txt,94-95,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,Thus the DHCP server must assign an infinite lease duration to for automatic addresses assigned to B
+G-B1,GK-B-DHCPv4-rfc1534.txt-92-3,DHCPv4,rfc1534.txt,95-96,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,Such network addresses cannot be automatically reassigned by the server.
+G-B1,GK-B-DHCPv4-rfc1534.txt-92-4,DHCPv4,rfc1534.txt,97-98,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,The local system administrator may choose to manually release network addresses assigned to BOOTP cl
+G-B1,GK-B-DHCPv4-rfc1542.txt-182-1,DHCPv4,rfc1542.txt,182-186,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"This means that the entity is to discard the message without further processing, and that the entity"
+G-B1,GK-B-DHCPv4-rfc1542.txt-182-2,DHCPv4,rfc1542.txt,186-188,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"However, for diagnosis of problems, the entity SHOULD provide the capability of logging the error, i"
+G-B1,GK-B-DHCPv4-rfc1542.txt-182-3,DHCPv4,rfc1542.txt,188-189,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,and SHOULD record the event in a statistics counter
+G-B1,GK-B-DHCPv4-rfc1542.txt-193-1,DHCPv4,rfc1542.txt,193-198,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The order of transmission of the header and data described in this document is resolved to the octet
+G-B1,GK-B-DHCPv4-rfc1542.txt-200-1,DHCPv4,rfc1542.txt,200-208,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,the octets are transmitted in the order they are numbered
+G-B1,GK-B-DHCPv4-rfc1542.txt-525-1,DHCPv4,rfc1542.txt,525-530,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The original definition of the secs field was vague. It was not clear whether it represented the tim
+G-B1,GK-B-DHCPv4-rfc1542.txt-525-2,DHCPv4,rfc1542.txt,530-536,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,certain client implementations have been known to simply set this field to a constant value or use i
+G-B1,GK-B-DHCPv4-rfc1542.txt-525-3,DHCPv4,rfc1542.txt,536-538,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,These incorrect implementations SHOULD be corrected.
+G-B1,GK-B-DHCPv4-rfc1542.txt-81-1,DHCPv4,rfc1542.txt,81-83,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The Bootstrap Protocol (BOOTP) is a UDP/IP-based protocol which allows a booting host to configure i
+G-B1,GK-B-DHCPv4-rfc1542.txt-81-2,DHCPv4,rfc1542.txt,83-89,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"BOOTP provides a means to notify a host of its assigned IP address, the IP address of a boot server "
+G-B1,GK-B-DHCPv4-rfc1542.txt-91-1,DHCPv4,rfc1542.txt,91-97,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,the original BOOTP specification [1] left some issues of the protocol open to question. The exact be
+G-B1,GK-B-DHCPv4-rfc2131.txt-102-1,DHCPv4,rfc2131.txt,102-103,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,A host should not act as a DHCP server unless explicitly configured to do so by a system administrat
+G-B1,GK-B-DHCPv4-rfc2131.txt-102-2,DHCPv4,rfc2131.txt,103-109,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The diversity of hardware and protocol implementations in the Internet would preclude reliable opera
+G-B1(无目标),GK-B-DHCPv4-rfc2131.txt-74-0,DHCPv4,rfc2131.txt,74-0,,no_target_record,无目标片段且机器同跨度无候选（符合预期）,,Format of the flags field
+G-B1,GK-B-DHCPv4-rfc2131.txt-95-1,DHCPv4,rfc2131.txt,95-97,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"DHCP is built on a client-server model, where designated DHCP server hosts allocate network addresse"
+G-B1,GK-B-DHCPv4-rfc2131.txt-95-2,DHCPv4,rfc2131.txt,97-100,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"Throughout the remainder of this document, the term server refers to a host providing initialization"
+G-B1,GK-B-DHCPv4-rfc2131.txt-95-3,DHCPv4,rfc2131.txt,99-100,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）, refers to a host requesting initialization parameters from a DHCP server
+G-B1,GK-B-DHCPv4-rfc2132.txt-1111-1,DHCPv4,rfc2132.txt,1111-1116,见理由,partial_match,同跨度有 Norm（DHCPv4.option_layout.netbios_over_tcp/ip_datagram_distribution_server，option_layout），但未承载该命题全文,,
+G-B1,GK-B-DHCPv4-rfc2132.txt-189-1,DHCPv4,rfc2132.txt,189-191,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,DHCP options have the same format as the BOOTP vendor extensions defined in RFC 1497 [2]. Options ma
+G-B1,GK-B-DHCPv4-rfc2132.txt-189-2,DHCPv4,rfc2132.txt,191-197,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"All options begin with a tag octet, which uniquely identifies the option. Fixed-length options witho"
+G-B1,GK-B-DHCPv4-rfc2132.txt-189-3,DHCPv4,rfc2132.txt,197-198,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,Options containing NVT ASCII data SHOULD NOT include a trailing NULL
+G-B1,GK-B-DHCPv4-rfc2132.txt-189-4,DHCPv4,rfc2132.txt,198-200,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"however, the receiver of such options MUST be prepared to delete trailing nulls if they exist"
+G-B1,GK-B-DHCPv4-rfc2132.txt-189-5,DHCPv4,rfc2132.txt,200-201,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The receiver MUST NOT require that a trailing null be included in the data.
+G-B1,GK-B-DHCPv4-rfc2132.txt-189-6,DHCPv4,rfc2132.txt,201-202,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,In the case of some variable-length options the length field is a constant but must still be specifi
+G-B1,GK-B-DHCPv4-rfc2132.txt-209-1,DHCPv4,rfc2132.txt,209-212,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"When used with BOOTP, the first four octets of the vendor information field have been assigned to th"
+G-B1,GK-B-DHCPv4-rfc2132.txt-209-2,DHCPv4,rfc2132.txt,212-214,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The value of the magic cookie is the 4 octet dotted decimal 99.130.83.99 (or hexadecimal number 63.8
+G-B1,GK-B-DHCPv4-rfc2132.txt-628-1,DHCPv4,rfc2132.txt,628-635,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,| a1 | a2 | a3 | a4 | m1 | m2 | m3 | m4 |
+G-B1,GK-B-DHCPv4-rfc2132.txt-721-1,DHCPv4,rfc2132.txt,721-724,见理由,partial_match,同跨度有 Norm（DHCPv4.option_layout.interface_mtu，option_layout），但未承载该命题全文,,This option specifies whether or not the client may assume that all subnets of the IP network to whi
+G-B1,GK-B-DHCPv4-rfc2132.txt-721-2,DHCPv4,rfc2132.txt,724-726,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,A value of 1 indicates that all subnets share the same MTU. A value of 0 means that the client shoul
+G-B1,GK-B-DHCPv4-rfc2132.txt-847-1,DHCPv4,rfc2132.txt,847-854,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,Code | Len | Destination 1 / Router 1
+G-B1,GK-B-DHCPv4-rfc2939.txt-125-1,DHCPv4,rfc2939.txt,125-128,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,"In the future, new DHCP option codes will be assigned by IETF consensus. New DHCP options will be do"
+G-B1,GK-B-DHCPv4-rfc2939.txt-125-2,DHCPv4,rfc2939.txt,128-131,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,"Typically, the IESG will seek input on prospective assignments from appropriate sources (e.g., a rel"
+G-B1,GK-B-DHCPv4-rfc2939.txt-125-3,DHCPv4,rfc2939.txt,132-134,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,"Prior to assignment of an option code, it is not appropriate to incorporate new options into product"
+G-B1,GK-B-DHCPv4-rfc2939.txt-268-1,DHCPv4,rfc2939.txt,268-271,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,RFC 2132 and RFC 2489 provided guidance to the IANA on the procedure it should follow when assigning
+G-B1,GK-B-DHCPv4-rfc2939.txt-268-2,DHCPv4,rfc2939.txt,271-274,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,"In particular, IANA is requested to assign DHCP option codes or message type codes only for options "
+G-B1,GK-B-DHCPv4-rfc2939.txt-99-1,DHCPv4,rfc2939.txt,99-100,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,"Since the publication of RFC 2132, the option number space for publicly defined DHCP options (1-127)"
+G-B1,GK-B-DHCPv4-rfc2939.txt-99-2,DHCPv4,rfc2939.txt,101-104,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,Many of the defined option numbers have not been followed up with Internet Drafts submitted to the D
+G-B1,GK-B-DHCPv4-rfc3456.txt-636-1,DHCPv4,rfc3456.txt,636-637,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"This document requires that an htype value be allocated for use with IPsec tunnel mode, as described"
+G-B1,GK-B-DHCPv4-rfc3456.txt-636-2,DHCPv4,rfc3456.txt,637-642,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,Note that DHCP relies on the arp-parameters registry for definition of both the hrd parameter in ARP
+G-B1(无目标),GK-B-DHCPv4-rfc3456.txt-649-0,DHCPv4,rfc3456.txt,649-0,,no_target_record,无目标片段且机器同跨度无候选（符合预期）,,Intellectual Property Statement
+G-B1,GK-B-DHCPv4-rfc3679.txt-312-1,DHCPv4,rfc3679.txt,312-314,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,IANA has returned the DHCP option codes listed in Section 2 to the list of available option codes. T
+G-B1,GK-B-DHCPv4-rfc3679.txt-312-2,DHCPv4,rfc3679.txt,314-317,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,IANA is requested to reassign these option codes after the list of option codes that have never been
+G-B1,GK-B-DHCPv4-rfc3679.txt-312-3,DHCPv4,rfc3679.txt,315-317,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,IANA is requested to reassign these option codes after the list of option codes that have never been
+G-B1(无目标),GK-B-DHCPv4-rfc3679.txt-352-0,DHCPv4,rfc3679.txt,352-0,,no_target_record,无目标片段且机器同跨度无候选（符合预期）,,Intellectual Property Statement
+G-B1,GK-B-DHCPv4-rfc951.txt-64-1,DHCPv4,rfc951.txt,64-68,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,The request can optionally contain the name of the server the client wishes to respond. This is so t
+G-B1,GK-B-DHCPv4-rfc951.txt-64-2,DHCPv4,rfc951.txt,68-69,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,The client does not have to deal with name / domain services; instead this function is pushed off to
+G-B1,GK-B-DHCPv4-rfc951.txt-71-1,DHCPv4,rfc951.txt,71-73,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,The request can optionally contain the generic filename to be booted. For example unix or ethertip.
+G-B1,GK-B-DHCPv4-rfc951.txt-71-2,DHCPv4,rfc951.txt,72-74,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,"When the server sends the bootreply, it replaces this field with the fully qualified path name of th"
+G-B1,GK-B-DHCPv4-rfc951.txt-71-3,DHCPv4,rfc951.txt,74-77,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,"In determining this name, the server may consult his own database correlating the client"
+G-B1,GK-B-DHCPv4-rfc951.txt-71-4,DHCPv4,rfc951.txt,77-79,,missing_extraction,该文档在当前构建中零 Norm,文档零产出（解析/分块/通道未产出）,"If the bootrequest filename is a null string, then the server returns a filename field indicating th"
+G-B1,GK-B-rtsp-rfc2326.txt-1224-1,rtsp,rfc2326.txt,1224-1226,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The Status-Code element is a 3-digit integer result code of the attempt to understand and satisfy th
+G-B1,GK-B-rtsp-rfc2326.txt-1224-2,rtsp,rfc2326.txt,1226-1229,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The Reason-Phrase is intended to give a short textual description of the Status-Code. The Status-Cod
+G-B1,GK-B-rtsp-rfc2326.txt-1224-3,rtsp,rfc2326.txt,1229-1230,见理由,partial_match,同跨度有 Norm（rtsp.field.status-line，field），但未承载该命题全文,,The client is not required to examine or display the Reason-Phrase.
+G-B1,GK-B-rtsp-rfc2326.txt-1243-1,rtsp,rfc2326.txt,1243-1251,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"* 1xx: Informational - Request received, continuing process"
+G-B1,GK-B-rtsp-rfc2326.txt-357-1,rtsp,rfc2326.txt,357-361,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"Continuous media: Data where there is a timing relationship between source and sink; that is, the si"
+G-B1,GK-B-rtsp-rfc2326.txt-357-2,rtsp,rfc2326.txt,361-364,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"Continuous media can be real-time (interactive), where there is a tight timing relationship between "
+G-B1(无目标),GK-B-rtsp-rfc2326.txt-7-0,rtsp,rfc2326.txt,7-0,,no_target_record,无目标片段且机器同跨度无候选（符合预期）,,Network Working Group
+G-B1,GK-B-rtsp-rfc2326.txt-935-1,rtsp,rfc2326.txt,935,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,npt-range = ( npt-time 
+G-B1,GK-B-rtsp-rfc2326.txt-935-2,rtsp,rfc2326.txt,936,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）, | npt-sec | npt-hhmmss
+G-B1,GK-B-rtsp-rfc2326.txt-935-3,rtsp,rfc2326.txt,937,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,npt-sec = 1*DIGIT [ 
+G-B1,GK-B-rtsp-rfc2326.txt-935-4,rtsp,rfc2326.txt,938,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,npt-hhmmss = npt-hh 
+G-B1,GK-B-rtsp-rfc2326.txt-935-5,rtsp,rfc2326.txt,939,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,npt-hh = 1*DIGIT ; any positive number
+G-B1,GK-B-rtsp-rfc2326.txt-935-6,rtsp,rfc2326.txt,940,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,npt-mm = 1*2DIGIT ; 0-59
+G-B1,GK-B-rtsp-rfc2326.txt-935-7,rtsp,rfc2326.txt,941,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,npt-ss = 1*2DIGIT ; 0-59
+G-B1,GK-B-rtsp-rfc2326.txt-999-1,rtsp,rfc2326.txt,999-1000,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"The name may be of any length, but SHOULD be no more than twenty characters long."
+G-B1,GK-B-rtsp-rfc2326.txt-999-2,rtsp,rfc2326.txt,1000-1001,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"The name MUST not contain any spaces, control characters or periods."
+G-B1,GK-B-rtsp-rfc2326.txt-999-3,rtsp,rfc2326.txt,1002-1005,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"Indication of who has change control over the option (for example, IETF, ISO, ITU-T, other internati"
+G-B1,GK-B-sip-rfc3261.txt-1101-1,sip,rfc3261.txt,1101-1103,,outside_current_scope,SIP 不在当前三协议 RFC-only 基线内,,Address-of-Record: An address-of-record (AOR) is a SIP or SIPS URI that points to a domain with a lo
+G-B1,GK-B-sip-rfc3261.txt-1101-2,sip,rfc3261.txt,1103-1106,,outside_current_scope,SIP 不在当前三协议 RFC-only 基线内,,"Typically, the location service is populated through registrations. An AOR is frequently thought of "
+G-B1(无目标),GK-B-sip-rfc3261.txt-119-0,sip,rfc3261.txt,119-0,,outside_current_scope,SIP 不在当前基线,,8.2.6 Generating the Response ...... 49
+G-B1,GK-B-sip-rfc3261.txt-14796-1,sip,rfc3261.txt,14796-14829,,outside_current_scope,SIP 不在当前三协议 RFC-only 基线内,,T1 500ms default Section 17.1.1.1 RTT Estimate
+G-B1,GK-B-sip-rfc3261.txt-1664-1,sip,rfc3261.txt,1664-1665,,outside_current_scope,SIP 不在当前三协议 RFC-only 基线内,,The relative order of header fields with different field names is not significant.
+G-B1,GK-B-sip-rfc3261.txt-1664-2,sip,rfc3261.txt,1665-1668,,outside_current_scope,SIP 不在当前三协议 RFC-only 基线内,,"However, it is RECOMMENDED that header fields which are needed for proxy processing (Via, Route, Rec"
+G-B1,GK-B-sip-rfc3261.txt-1664-3,sip,rfc3261.txt,1668-1669,,outside_current_scope,SIP 不在当前三协议 RFC-only 基线内,,The relative order of header field rows with the same field name is important.
+G-B1,GK-B-sip-rfc3261.txt-1664-4,sip,rfc3261.txt,1670-1673,,outside_current_scope,SIP 不在当前三协议 RFC-only 基线内,,Multiple header field rows with the same field-name MAY be present in a message if and only if the e
+G-B1,GK-B-sip-rfc3261.txt-1664-5,sip,rfc3261.txt,1673-1676,,outside_current_scope,SIP 不在当前三协议 RFC-only 基线内,,"It MUST be possible to combine the multiple header field rows into one field-name: field-value pair,"
+G-B1(无目标),GK-B-sip-rfc3261.txt-231-0,sip,rfc3261.txt,231-0,,outside_current_scope,SIP 不在当前基线,,18.2.2 Sending Responses ...... 146
+G-B1(无目标),GK-B-sip-rfc3261.txt-7-0,sip,rfc3261.txt,7-0,,outside_current_scope,SIP 不在当前基线,,Network Working Group
+G-B1,GK-B-smtp-rfc3207.txt-30-1,smtp,rfc3207.txt,30-33,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,This document describes an extension to the SMTP (Simple Mail Transfer Protocol) service that allows
+G-B1,GK-B-smtp-rfc3207.txt-30-2,smtp,rfc3207.txt,33-35,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,This gives SMTP agents the ability to protect some or all of their communications from eavesdroppers
+G-B1(无目标),GK-B-smtp-rfc3207.txt-404-0,smtp,rfc3207.txt,404-0,,no_target_record,无目标片段且机器同跨度无候选（符合预期）,,- Section 5 and 7: More discussion of the man-in-the-middle attacks
+G-B1,GK-B-smtp-rfc4954.txt-459-1,smtp,rfc4954.txt,459-463,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,Arguments: A <mailbox> (see Section 4.1.2 of [SMTP]) that is associated with the identity that submi
+G-B1,GK-B-smtp-rfc4954.txt-459-2,smtp,rfc4954.txt,463-466,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"To comply with restrictions imposed on ESMTP parameters, the <mailbox> is encoded inside an xtext. T"
+G-B1,GK-B-smtp-rfc4954.txt-704-1,smtp,rfc4954.txt,704-708,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）, xtext ;; Parameter to the MAIL FROM command. ;; This non-terminal complies with ;; syntax defined b
+G-B1,GK-B-smtp-rfc4954.txt-704-2,smtp,rfc4954.txt,709-711,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The decoded form of the xtext MUST be ;; either a <mailbox> or the two ;; characters 
+G-B1(无目标),GK-B-smtp-rfc5321.txt-175-0,smtp,rfc5321.txt,175-0,,no_target_record,无目标片段且机器同跨度无候选（符合预期）,,6.1 Reliable Delivery and Replies by Email ...... 71
+G-B1,GK-B-smtp-rfc5321.txt-754-1,smtp,rfc5321.txt,754-756,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,An SMTP reply is an acknowledgment (positive or negative) sent in lines from receiver to sender via 
+G-B1,GK-B-smtp-rfc5321.txt-754-2,smtp,rfc5321.txt,756-758,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The general form of a reply is a numeric completion code (indicating failure or success) usually fol
+G-B1,GK-B-smtp-rfc5321.txt-754-3,smtp,rfc5321.txt,758-759,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The codes are for use by programs and the text is usually intended for human users.
+G-B1,GK-B-smtp-rfc5321.txt-754-4,smtp,rfc5321.txt,759-761,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"RFC 3463 [25], specifies further structuring of the reply strings, including the use of supplemental"
+G-B1,GK-B-smtp-rfc5321.txt-853-1,smtp,rfc5321.txt,853-855,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,SMTP commands and replies have a rigid syntax. All commands begin with a command verb. All replies b
+G-B1,GK-B-smtp-rfc5321.txt-853-2,smtp,rfc5321.txt,855-859,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"In some commands and replies, arguments are required following the verb or reply code. Some commands"
+G-B1,GK-B-smtp-rfc5321.txt-862-1,smtp,rfc5321.txt,862-865,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"Verbs and argument values (e.g., TO: or to: in the RCPT command and extension name keywords) are not"
+G-B1,GK-B-smtp-rfc5321.txt-862-2,smtp,rfc5321.txt,865-868,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"That is, a command verb, an argument value other than a mailbox local-part, and free form text MAY b"
+G-B1,GK-B-smtp-rfc5321.txt-862-3,smtp,rfc5321.txt,869,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,The local-part of a mailbox MUST BE treated as case sensitive.
+G-B1,GK-B-smtp-rfc5321.txt-862-4,smtp,rfc5321.txt,869-871,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"Therefore, SMTP implementations MUST take care to preserve the case of mailbox local-parts."
+G-B1,GK-B-smtp-rfc5321.txt-862-5,smtp,rfc5321.txt,872-874,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"However, exploiting the case sensitivity of mailbox local-parts impedes interoperability and is disc"
+G-B1,GK-B-smtp-rfc5321.txt-862-6,smtp,rfc5321.txt,874-875,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,Mailbox domains follow normal DNS rules and are hence not case sensitive.
+G-B1,GK-B-smtp-rfc5321.txt-903-1,smtp,rfc5321.txt,903-906,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,An originating SMTP client that has not successfully negotiated an appropriate extension with a part
+G-B1,GK-B-smtp-rfc5321.txt-903-2,smtp,rfc5321.txt,906-908,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"If such messages are transmitted in violation of this rule, receiving SMTP servers MAY clear the hig"
+G-B1,GK-B-smtp-rfc5321.txt-903-3,smtp,rfc5321.txt,908-911,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"In general, a relay SMTP SHOULD assume that the message content it has received is valid and, assumi"
+G-B1,GK-B-smtp-rfc5321.txt-903-4,smtp,rfc5321.txt,914-915,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"Delivery SMTP systems MAY reject such messages, or return them as undeliverable, rather than deliver"
+G-B1,GK-B-smtp-rfc5321.txt-903-5,smtp,rfc5321.txt,915-918,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"In the absence of a server-offered extension explicitly permitting it, a sending SMTP system is not "
+G-B1,GK-B-smtp-rfc5321.txt-903-6,smtp,rfc5321.txt,918-919,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"Receiving systems SHOULD reject such commands, normally using "
+G-B1,GK-B-smtp-rfc5321.txt-921-1,smtp,rfc5321.txt,921-923,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,8-bit message content transmission MAY be requested of the server by a client using extended SMTP fa
+G-B1,GK-B-smtp-rfc5321.txt-921-2,smtp,rfc5321.txt,923-924,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,8BITMIME SHOULD be supported by SMTP servers.
+G-B1,GK-B-smtp-rfc5321.txt-921-3,smtp,rfc5321.txt,924-926,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"However, it MUST NOT be construed as authorization to transmit unrestricted 8-bit material, nor does"
+G-B1,GK-B-smtp-rfc5321.txt-921-4,smtp,rfc5321.txt,926-928,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,8BITMIME MUST NOT be requested by senders for material with the high bit on that is not in MIME form
+G-B1,GK-B-smtp-rfc5321.txt-921-5,smtp,rfc5321.txt,928-929,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,servers MAY reject such messages.
+G-B1,GK-B-smtp-rfc5322.txt-243-1,smtp,rfc5322.txt,243-245,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,This specification uses the Augmented Backus-Naur Form (ABNF) [RFC5234] notation for the formal defi
+G-B1,GK-B-smtp-rfc5322.txt-243-2,smtp,rfc5322.txt,245-248,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"Characters will be specified either by a decimal value (e.g., the value %d65 for uppercase A and %d9"
+G-B1,GK-B-smtp-rfc5322.txt-415-1,smtp,rfc5322.txt,415-418,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,Some field bodies in this specification are defined simply as unstructured (which is specified in se
+G-B1,GK-B-smtp-rfc5322.txt-415-2,smtp,rfc5322.txt,419-421,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,"Semantically, unstructured field bodies are simply to be treated as a single line of characters with"
+G-B1,GK-B-smtp-rfc5322.txt-425-1,smtp,rfc5322.txt,425-429,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,Some field bodies in this specification have a syntax that is more restrictive than the unstructured
+G-B1,GK-B-smtp-rfc5322.txt-425-2,smtp,rfc5322.txt,429-433,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,Many of these tokens are allowed (according to their syntax) to be introduced or end with comments (
+G-B1,GK-B-smtp-rfc5322.txt-425-3,smtp,rfc5322.txt,433-434,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,Semantic analysis of structured field bodies is given along with their syntax.
+G-B1,GK-B-smtp-rfc5322.txt-679-1,smtp,rfc5322.txt,679-689,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,atext = ALPHA / DIGIT / 
+G-B1,GK-B-smtp-rfc5322.txt-697-1,smtp,rfc5322.txt,697-703,,missing_extraction,该跨度内无任何 Norm 候选,抽取后无候选（确定性通道不覆盖散文命题）,Special characters that do not appear in atext
