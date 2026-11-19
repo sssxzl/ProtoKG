@@ -1,0 +1,127 @@
+diff --git a/core/fused/extraction/rfc_extractor.py b/core/fused/extraction/rfc_extractor.py
+index f6aae16..66bf85e 100644
+--- a/core/fused/extraction/rfc_extractor.py
++++ b/core/fused/extraction/rfc_extractor.py
+@@ -1172,6 +1172,84 @@ _RE_ABNF_PROSE = re.compile(
+     r'\bfield name\s+"([A-Za-z][A-Za-z0-9_-]*)"', re.IGNORECASE)
+ 
+ 
++#: ABNF 普通产生式：`name = rhs`（左部小写/连字符，非头字段形态）
++_RE_ABNF_PROD_START = re.compile(r"^[ \t]*([A-Za-z][A-Za-z0-9\-]{0,40})[ \t]*=[ \t]*(.*)$")
++#: 右部必须含 ABNF 特征，避免把正文里的等号误当定义
++_RE_ABNF_RHS_HINT = re.compile(r'%[xdXD]|["/\[\]()*]|;\s')
++#: 反例：右部是英文句子（含这些词且无 ABNF 结构符号）⇒ 不是产生式
++_RE_ABNF_SENTENCE = re.compile(
++    r"\b(is|are|the|this|that|using|defined|specified|means|denotes|given)\b",
++    re.IGNORECASE)
++
++
++def _looks_like_production(name: str, rhs: str) -> bool:
++    """ABNF 产生式判据（名字小写 + 右部结构符号 + 非英文句子）。"""
++    if not re.fullmatch(r"[a-z][a-z0-9\-]{0,40}", name):
++        return False
++    if not _RE_ABNF_RHS_HINT.search(rhs):
++        return False
++    # 代码片段（C 示例）不是 ABNF；先剥掉引号字面量，避免 "{" / "}" 误伤
++    _nq = re.sub(r'"[^"]*"', '""', rhs)
++    if re.search(r"return\s*\(|\+\+|->|\{|\}|printf|malloc|#include", _nq):
++        return False
++    # C 风格标识符（下划线命名）不是 ABNF 规则名
++    if re.search(r"\b[a-z]+_[a-z0-9_]+\b", _nq):
++        return False
++    # 有 ABNF 强特征时放行（%x / 引号字面量 / 方括号 / 星号重复）
++    strong = re.search(r'%[xdXD]|"|\[|\*', rhs)
++    if strong and not _RE_ABNF_SENTENCE.search(rhs):
++        return True
++    if strong and _RE_ABNF_SENTENCE.search(rhs) and "/" in rhs:
++        return True
++    return False
++
++
++def _extract_abnf_productions(content_lines: list[tuple[int, str]]) -> list[dict]:
++    """抽 ABNF **语法产生式**（`npt-range = ...` 这类），保留跨行续写。
++
++    R29-RA1/D1 影子实验：仅产出候选 Norm，不进入正式映射。
++    判据（全部满足）：
++      · 行首为规则名 + `=`，且不是头字段形态（`name = "Header:" ...`）
++      · 右部含 ABNF 特征（%x / 引号 / 斜杠 / 方括号 / 圆括号 / 注释）
++      · 非目录行（无点引导）
++      · 续行以空白开头且本身不是新规则
++    """
++    out: list[dict] = []
++    seen: set[str] = set()
++    i = 0
++    lines = content_lines
++    while i < len(lines):
++        ln, raw = lines[i]
++        i += 1
++        if ".." in raw:
++            continue
++        m = _RE_ABNF_PROD_START.match(raw)
++        if not m:
++            continue
++        name, rhs = m.group(1), m.group(2).strip()
++        if name.lower() in seen:
++            continue
++        cont: list[str] = []
++        j = i
++        while j < len(lines):
++            nxt = lines[j][1]
++            if not nxt.strip() or not nxt[:1].isspace():
++                break
++            if _RE_ABNF_PROD_START.match(nxt.strip()):
++                break
++            # 注释块（;; ...）属于说明，不是 ABNF 续行
++            if nxt.strip().startswith(";;"):
++                break
++            cont.append(nxt.strip())
++            j += 1
++        full = " ".join([rhs] + cont).strip()
++        if not _looks_like_production(name, full):
++            continue
++        seen.add(name.lower())
++        out.append({"name": name, "rhs": full, "line": ln})
++    return out
++
++
+ def _extract_abnf_fields(text: str) -> list[dict]:
+     """从 RFC 正文抽「ABNF 形态的字段定义」。
+ 
+@@ -1750,6 +1828,23 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
+             seen_ids.add(_mn["norm_id"])
+             norms.append(_mn)
+ 
++    # ---- 通道 A0e（R29-RA1/D1 影子）：ABNF 普通产生式 ----
++    #   ★ 只产出 kind=syntax_production 候选 Norm；映射未接线（见兼容报告）。
++    # ★ 行号基准必须与 documents.json / Gold 一致：split("\n") 而非 splitlines()
++    #   （splitlines 把 \f 当换行 ⇒ 含分页符的 RFC 行号整体偏移）
++    _prod_lines = rfc_path.read_text(encoding="utf-8", errors="ignore").split("\n")
++    for _p in _extract_abnf_productions(list(enumerate(_prod_lines, 1))):
++        _lname = _p["name"].lower()
++        if _lname in field_names or _p["name"].upper() in method_names:
++            continue
++        _pn = _norm("syntax_production", _p["name"],
++                    f'{_p["name"]} = {_p["rhs"]}', protocol, src_name,
++                    f'@{_p["line"]}')
++        if _pn["norm_id"] in seen_ids:
++            continue
++        seen_ids.add(_pn["norm_id"])
++        norms.append(_pn)
++
+     # ---- 通道 A0d：**消息清单表**（★ 2026-11-08，批次 3）------------------
+     #   形态：``DHCPOFFER    -  Server to client in response to ...``
+     #   ★ 解决实测缺口：RFC 2131 的 `DHCPOFFER`/`DHCPACK`/`DHCPNAK`
+@@ -1988,6 +2083,13 @@ def _extract_rfc_file(rfc_path: Path, protocol: str,
+             seen_ids.add(_n["norm_id"])
+             norms.append(_n)
+ 
++    # R29-RA1/D1：产生式与既有 kind 同名时丢弃产生式副本，避免重复知识
++    _other_names = {n["name"].lower() for n in norms
++                    if n.get("kind") != "syntax_production"}
++    if _other_names:
++        norms = [n for n in norms
++                 if not (n.get("kind") == "syntax_production"
++                         and n["name"].lower() in _other_names)]
+     return norms
+ 
+ 

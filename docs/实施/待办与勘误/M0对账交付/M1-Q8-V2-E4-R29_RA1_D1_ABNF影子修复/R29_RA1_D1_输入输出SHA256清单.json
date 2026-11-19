@@ -1,0 +1,55 @@
+{
+  "baseline": {
+    "main": "0f99da8445ea093246824e62d1244b88732e009e",
+    "llm_calls": 0,
+    "worktree": "guard/_out/_ra1d1_wt（隔离副本，未提交）"
+  },
+  "outputs": {
+    "R29_RA1_D1_10条Gold逐条核验表.xlsx": {
+      "sha256": "f6cd880336f86a36f5c9bb7f52cc0e22363d8952a142a712380bafaa6d0e33de",
+      "size": 6322
+    },
+    "R29_RA1_D1_ABNF知识类型兼容分析.md": {
+      "sha256": "ad30fc06aea88989bb04e52ef1c0573ce5e7e8592bb27efc9464bf348e697dab",
+      "size": 2820
+    },
+    "R29_RA1_D1_三协议回归与语义差异对账.md": {
+      "sha256": "c4086f6fb9baff693b8c6eea8c92555b69f6c3d6d183edb80f5f57375fec9b8a",
+      "size": 2634
+    },
+    "R29_RA1_D1_来源与身份兼容性报告.md": {
+      "sha256": "707bf14feac1ef92218286f0274fba6d806c1dc1855a113f06296fcc61d1d67b",
+      "size": 2099
+    },
+    "R29_RA1_D1_正向与反向测试报告.md": {
+      "sha256": "099a35c84fc36d7b6a58bdcce9bab718d1cac776c421044563e071cdbe577207",
+      "size": 2439
+    },
+    "R29_RA1_D1_生产修复审批建议.md": {
+      "sha256": "cea3f9258da5db5222f9ac87ca5eb2550b2834b073e67a42d475a09a4b89d82c",
+      "size": 2419
+    },
+    "R29_RA1_D1_真实抽取器影子补丁.patch": {
+      "sha256": "c19a1d1db391c93f3285b7701368b2fd19a02a3dc2163f61f19103586256bcd1",
+      "size": 5577
+    },
+    "scripts/d1_checks.py": {
+      "sha256": "18bc7ada9e64a2f649c12fddc90a26753b6f34280be88167bcd7c1af827e60a2",
+      "size": 2945
+    }
+  },
+  "inputs": {
+    "main 抽取器": {
+      "sha256": "6959d1d42af6c3127fdf4b51ffad5516a5c23a8af34c4e7bdffb8ada8e5f094a"
+    },
+    "norm 映射": {
+      "sha256": "18b4bd5a126cb402e7fa3edf38c8fee99715dad57feca4d30b5f3cd476c5dc3d"
+    },
+    "B1 Gold": {
+      "sha256": "b99467a4d806910f78b11ef2278ed0e28eab12ee4906e6fdc137787c6bc2cd23"
+    },
+    "机器索引": {
+      "sha256": "1469d16e80b4daabef66f13817ab95b55e14ebf395d10b4450d1e2a2ca7aa0d4"
+    }
+  }
+}
