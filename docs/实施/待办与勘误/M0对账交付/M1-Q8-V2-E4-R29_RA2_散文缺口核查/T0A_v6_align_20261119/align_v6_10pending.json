@@ -1,0 +1,124 @@
+{
+ "items": [
+  {
+   "id": "p0",
+   "proposition": "该文档描述对 SMTP 服务的扩展，使 SMTP 服务器与客户端可使用 TLS 提供私密、经认证的通信。",
+   "model_span": 22,
+   "status": "ok",
+   "quote": "This document describes an extension to the SMTP (Simple Mail\n   Transfer Protocol) service that allows an SMTP server and client to\n   use TLS (Transport Layer Security) to provide private, authenticated\n   communication over the Internet.",
+   "verified_span": [
+    30,
+    33
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p1",
+   "proposition": "TLS 使 SMTP 代理能够保护其部分或全部通信免受窃听者和攻击者侵害。",
+   "model_span": 25,
+   "status": "ok",
+   "quote": "This gives SMTP agents the ability\n   to protect some or all of their communications from eavesdroppers and\n   attackers.",
+   "verified_span": [
+    33,
+    35
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p2",
+   "proposition": "STARTTLS 是此处定义的 SMTP 服务名称。",
+   "model_span": 68,
+   "status": "ok",
+   "quote": "(1) the name of the SMTP service defined here is STARTTLS;",
+   "verified_span": [
+    80,
+    80
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p13",
+   "proposition": "若 SMTP 服务器认为认证或隐私级别不足以继续，则应对客户端的每条 SMTP 命令（QUIT 除外）以 554 回复码应答。 If the SMTP server decides that the level of authentication or privacy is not high enough for it to continue, it SHOULD reply to every SMTP command from the client (other than a QUIT command) with the 554 reply code",
+   "model_span": 180,
+   "status": "ok",
+   "quote": "If the SMTP server decides that the level of authentication or\n   privacy is not high enough for it to continue, it SHOULD reply to\n   every SMTP command from the client (other than a QUIT command) with\n   the 554 reply code (with a possible text string such as \"Command\n   refused due to lack of security\").",
+   "verified_span": [
+    189,
+    193
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p14",
+   "proposition": "TLS 握手完成后 SMTP 协议重置为初始状态，服务器必须丢弃从客户端获得的、并非来自 TLS 协商本身的知识（如 EHLO 命令参数）。 The server MUST discard any knowledge obtained from the client, such as the argument to the EHLO command, which was not obtained from the TLS negotiation itself.",
+   "model_span": 207,
+   "status": "ok",
+   "quote": "The server MUST discard any knowledge\n   obtained from the client, such as the argument to the EHLO command,\n   which was not obtained from the TLS negotiation itself.",
+   "verified_span": [
+    212,
+    214
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p19",
+   "proposition": "若 TLS 会话已处于活动状态，客户端不得尝试启动 TLS 会话。 A client MUST NOT attempt to start a TLS session if a TLS session is already active.",
+   "model_span": 228,
+   "status": "ok",
+   "quote": "A client MUST NOT attempt to start a TLS session if a TLS\n   session is already active.",
+   "verified_span": [
+    236,
+    237
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p20",
+   "proposition": "TLS 握手完成后，服务器不得在响应 EHLO 命令时返回 STARTTLS 扩展。 A server MUST NOT return the STARTTLS extension in response to an EHLO command received after a TLS handshake has completed.",
+   "model_span": 229,
+   "status": "ok",
+   "quote": "A server MUST NOT return the STARTTLS\n   extension in response to an EHLO command received after a TLS\n   handshake has completed.",
+   "verified_span": [
+    237,
+    239
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p22",
+   "proposition": "SMTP 客户端与服务器都必须检查 TLS 协商结果，以确认是否达到可接受的认证与隐私程度。 Both the SMTP client and server must check the result of the TLS negotiation to see whether an acceptable degree of authentication and privacy was achieved.",
+   "model_span": 285,
+   "status": "ok",
+   "quote": "Both the SMTP client and server must check the result of the TLS\n   negotiation to see whether an acceptable degree of authentication and\n   privacy was achieved.",
+   "verified_span": [
+    292,
+    294
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p23",
+   "proposition": "为防御中间人攻击，客户端与服务器必须能够被配置为在成功传输邮件前要求对选定主机完成适当密码套件的成功 TLS 协商。 In order to defend against such attacks both clients and servers MUST be able to be configured to require successful TLS negotiation of an appropriate cipher suite for selected hosts before messages can be successfully transferred.",
+   "model_span": 306,
+   "status": "ok",
+   "quote": "In\n   order to defend against such attacks both clients and servers MUST be\n   able to be configured to require successful TLS negotiation of an\n   appropriate cipher suite for selected hosts before messages can be\n   successfully transferred.",
+   "verified_span": [
+    311,
+    315
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p25",
+   "proposition": "实现可以提供记录与某对端通信时使用了 TLS、并在后续会话未使用时产生警告的能力。 An implementation MAY provide the ability to record that TLS was used in communicating with a given peer and generating a warning if it is not used in a later session.",
+   "model_span": 311,
+   "status": "ok",
+   "quote": "An implementation MAY provide the\n   ability to record that TLS was used in communicating with a given\n   peer and generating a warning if it is not used in a later session.",
+   "verified_span": [
+    316,
+    318
+   ],
+   "match": "exact_match"
+  }
+ ]
+}

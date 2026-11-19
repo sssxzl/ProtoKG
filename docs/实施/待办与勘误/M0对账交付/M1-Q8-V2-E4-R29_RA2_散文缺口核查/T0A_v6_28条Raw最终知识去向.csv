@@ -1,0 +1,29 @@
+idx,model_span,entity,verified_span,quote_origin,support
+0,22,SMTP,30;33,stage2,supported
+1,25,TLS,33;35,stage2,supported
+2,68,STARTTLS,80;80,stage2,supported
+3,82,STARTTLS,,,pending_review
+4,89,STARTTLS,,,pending_review
+5,128,SMTP server,,,pending_review
+6,141,SMTP server,,,pending_review
+7,145,server,,,pending_review
+8,152,client,,,pending_review
+9,155,client,,,pending_review
+10,159,STARTTLS,,,pending_review
+11,168,both parties,,reanchor,pending_review
+12,177,SMTP client,,,pending_review
+13,180,SMTP server,189;193,stage2,supported
+14,207,server,212;214,stage2,supported
+15,210,client,,,pending_review
+16,213,client,,,pending_review
+17,217,SMTP service extensions,,,pending_review
+18,226,client and the server,,reanchor,pending_review
+19,228,client,236;237,stage2,supported
+20,229,server,237;239,stage2,supported
+21,234,STARTTLS,,,pending_review
+22,285,SMTP client and server,292;294,stage2,supported
+23,306,clients and servers,311;315,stage2,supported
+24,310,TLS,,,pending_review
+25,311,implementation,316;318,stage2,supported
+26,341,clients and servers,,,pending_review
+27,353,SASL EXTERNAL mechanism,,,pending_review

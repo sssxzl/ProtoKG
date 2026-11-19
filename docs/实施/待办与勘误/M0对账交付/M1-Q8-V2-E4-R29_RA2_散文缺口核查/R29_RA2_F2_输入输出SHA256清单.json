@@ -2,8 +2,8 @@
   "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
-    "llm_calls": 19,
-    "status": "T0_A_v6_raw_loss_attributed"
+    "llm_calls": 20,
+    "status": "T0_A_v6_joint_verified"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -278,6 +278,14 @@
       "sha256": "20a77bbe9fee37879377f07ec6a8bb7dcd56fc223bd63cf772c6c34166e9c236",
       "size": 2137
     },
+    "T0A_v6_28条Raw最终知识去向.csv": {
+      "sha256": "289834fd5cc1cc5c6b7400a7b0088be62de6bad1b808fdda344833ee36d641c3",
+      "size": 1127
+    },
+    "T0A_v6_Gold与341联合验收报告.md": {
+      "sha256": "eff572986f8f0d596221bd2984427ad32855741320979755132d1b74c4aa55c7",
+      "size": 1336
+    },
     "T0A_v6_Gold原始输出与错误锚点复核.md": {
       "sha256": "b20730fddd71e12961f5c3c464eba69f925b50de6b647903bcb178c6022b6017",
       "size": 1279
@@ -289,6 +297,14 @@
     "T0A_v6_离线重放与Evidence保留结果.md": {
       "sha256": "4243f0a8326aa61f728150e49f0593a469e8285a50e9110c7e01a4fe7244d4fb",
       "size": 933
+    },
+    "T0A_v6_第二阶段Evidence对齐真实运行报告.md": {
+      "sha256": "cdb8bfb5cb00151449aff4f83e29e19a56bee430673ffc8370486a04129a516b",
+      "size": 1310
+    },
+    "T0A_v6_隔离Hub重建及读回报告.md": {
+      "sha256": "614eb7e0aa0d8e845ece7c7c131637dbfcdf00f585df81d6c4d16312e503f2dc",
+      "size": 833
     },
     "T0A_三阻断修正与放行结论.md": {
       "sha256": "6be0ec20624e73a1f791db1f20bf691ea88455f7056bbaa83f60d9c662967e98",
@@ -789,6 +805,14 @@
     "T0A_双阶段_20261119/summary.json": {
       "sha256": "8036037e977402d874f6d7788f1815f2e9f3b93c9bffa7368c4367d65688fb67",
       "size": 533
+    },
+    "T0A_v6_align_20261119/align_v6_10pending.json": {
+      "sha256": "2f128c64a7e4555b2e9c4c3ff7aeea021bf45d4c9a6eae31707c86413f8723ad",
+      "size": 5872
+    },
+    "T0A_v6_align_20261119/SHA256清单.json": {
+      "sha256": "2c0d8cc1156b9c3a2cce8936c7c4edb96ccd1a97cc3e56949640cb3c79c3d44b",
+      "size": 99
     }
   }
 }
