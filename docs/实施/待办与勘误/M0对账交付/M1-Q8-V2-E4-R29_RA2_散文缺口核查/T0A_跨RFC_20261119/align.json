@@ -1,0 +1,148 @@
+{
+ "items": [
+  {
+   "id": "p0",
+   "proposition": "DHCP 定义的一个新选项，用于向 DHCP 服务器传递显式的客户端标识符。",
+   "model_span": 488,
+   "status": "ok",
+   "quote": "DHCP defines a new 'client identifier' option that is used to pass an explicit client identifier to a DHCP server.",
+   "verified_span": [
+    489,
+    490
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p1",
+   "proposition": "一个不透明键，服务器不应解释它，可包含硬件地址或 DNS 名等标识符。",
+   "model_span": 494,
+   "status": "ok",
+   "quote": "The 'client identifier' is an opaque key, not to be interpreted by the server; for example, the 'client identifier' may contain a hardware address, identical to the contents of the 'chaddr' field, or it may contain another type of identifier, such as a DNS name.",
+   "verified_span": [
+    493,
+    497
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p2",
+   "proposition": "The 'client identifier' chosen by a DHCP client MUST be unique to that client within the subnet to which the client is attached.",
+   "model_span": 498,
+   "status": "ok",
+   "quote": "The 'client identifier' chosen by a DHCP client MUST be unique to that client within the subnet to which the client is attached.",
+   "verified_span": [
+    497,
+    499
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p3",
+   "proposition": "If the client uses a 'client identifier' in one message, it MUST use that same identifier in all subsequent messages.",
+   "model_span": 499,
+   "status": "ok",
+   "quote": "If the client uses a 'client identifier' in one message, it MUST use that same identifier in all subsequent messages, to ensure that all servers correctly identify the client.",
+   "verified_span": [
+    499,
+    501
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p4",
+   "proposition": "DHCP 将 siaddr 字段解释为客户端引导过程下一步所用服务器的地址。",
+   "model_span": 508,
+   "status": "ok",
+   "quote": "DHCP clarifies the interpretation of the 'siaddr' field as the address of the server to use in the next step of the client's bootstrap process.",
+   "verified_span": [
+    511,
+    513
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p5",
+   "proposition": "若服务器准备提供下一步引导服务，可在 siaddr 字段返回自己的地址。",
+   "model_span": 510,
+   "status": "ok",
+   "quote": "A DHCP server may return its own address in the 'siaddr' field, if the server is prepared to supply the next bootstrap service (e.g., delivery of an operating system executable image).",
+   "verified_span": [
+    513,
+    516
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p6",
+   "proposition": "DHCP 服务器总是在 server identifier 选项中返回自己的地址。",
+   "model_span": 1716,
+   "status": "ok",
+   "quote": "A DHCP server always returns its own address in the 'server identifier' option.",
+   "verified_span": [
+    516,
+    517
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p7",
+   "proposition": "'ciaddr' MUST be zero",
+   "model_span": 1698,
+   "status": "ok",
+   "quote": "Client inserts the address of the selected server in 'server identifier', 'ciaddr' MUST be zero, 'requested IP address' MUST be filled in with the yiaddr value from the chosen DHCPOFFER.",
+   "verified_span": [
+    1696,
+    1698
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p8",
+   "proposition": "'requested IP address' MUST be filled in with the yiaddr value from the chosen DHCPOFFER",
+   "model_span": 1698,
+   "status": "ok",
+   "quote": "Client inserts the address of the selected server in 'server identifier', 'ciaddr' MUST be zero, 'requested IP address' MUST be filled in with the yiaddr value from the chosen DHCPOFFER.",
+   "verified_span": [
+    1696,
+    1698
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p9",
+   "proposition": "servers SHOULD NOT reuse offered addresses",
+   "model_span": 1712,
+   "status": "ok",
+   "quote": "As an implementation detail, servers SHOULD NOT reuse offered addresses and may use an implementation-specific timeout mechanism to decide when to reuse an offered address.",
+   "verified_span": [
+    1709,
+    1712
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p10",
+   "proposition": "'server identifier' MUST NOT be filled in",
+   "model_span": 1718,
+   "status": "ok",
+   "quote": "'server identifier' MUST NOT be filled in, 'requested IP address' option MUST be filled in with client's notion of its previously assigned address.",
+   "verified_span": [
+    1716,
+    1718
+   ],
+   "match": "whitespace_normalized_match"
+  },
+  {
+   "id": "p11",
+   "proposition": "'requested IP address' option MUST be filled in with client's notion of its previously assigned address",
+   "model_span": 1718,
+   "status": "ok",
+   "quote": "'server identifier' MUST NOT be filled in, 'requested IP address' option MUST be filled in with client's notion of its previously assigned address.",
+   "verified_span": [
+    1716,
+    1718
+   ],
+   "match": "whitespace_normalized_match"
+  }
+ ]
+}

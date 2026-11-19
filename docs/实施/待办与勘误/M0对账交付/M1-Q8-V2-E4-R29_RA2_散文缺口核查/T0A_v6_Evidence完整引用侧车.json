@@ -1,0 +1,282 @@
+[
+ {
+  "span": 30,
+  "entity": "SMTP",
+  "kind": "prose_semantics",
+  "model_span": 30,
+  "quote": "This document describes an extension to the SMTP (Simple Mail\n   Transfer Protocol) service that allows an SMTP server and client to\n   use TLS (Transport Layer Security) to provide private, authenticated\n   communication over the Internet.",
+  "match": "exact_match",
+  "quote_origin": "model_or_stage2",
+  "support": "supported"
+ },
+ {
+  "span": 33,
+  "entity": "TLS",
+  "kind": "prose_semantics",
+  "model_span": 33,
+  "quote": "This gives SMTP agents the ability\n   to protect some or all of their communications from eavesdroppers and\n   attackers.",
+  "match": "exact_match",
+  "quote_origin": "model_or_stage2",
+  "support": "supported"
+ },
+ {
+  "span": 80,
+  "entity": "STARTTLS",
+  "kind": "prose_semantics",
+  "model_span": 80,
+  "quote": "(1) the name of the SMTP service defined here is STARTTLS;",
+  "match": "exact_match",
+  "quote_origin": "model_or_stage2",
+  "support": "supported"
+ },
+ {
+  "span": 82,
+  "entity": "STARTTLS",
+  "kind": "prose_semantics",
+  "model_span": null,
+  "quote": "The STARTTLS keyword is used to tell the SMTP client that the SMTP server is currently able to negotiate the use of TLS.",
+  "match": null,
+  "quote_origin": "manual_reanchor",
+  "support": "supported"
+ },
+ {
+  "span": 89,
+  "entity": "STARTTLS",
+  "kind": "prose_semantics",
+  "model_span": null,
+  "quote": "The format for the STARTTLS command is: STARTTLS with no parameters.",
+  "match": null,
+  "quote_origin": "manual_reanchor",
+  "support": "supported"
+ },
+ {
+  "span": 128,
+  "entity": "SMTP server",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "A publicly-referenced SMTP server MUST NOT require use of the STARTTLS extension in order to deliver mail locally.",
+  "match": null,
+  "quote_origin": "manual_reanchor",
+  "support": "supported"
+ },
+ {
+  "span": 141,
+  "entity": "SMTP server",
+  "kind": "prose_semantics",
+  "model_span": null,
+  "quote": "relay or local delivery based on authentication supplied during the",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 145,
+  "entity": "server",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "that the client perform a TLS negotiation before accepting any",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 152,
+  "entity": "client",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "[RFC2034], the status code to be returned SHOULD be 5.7.0.",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 155,
+  "entity": "client",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "start the TLS negotiation before giving any other SMTP commands.  If,",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 159,
+  "entity": "STARTTLS",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "the client finds out that some failure prevents it from actually starting a TLS handshake, then it SHOULD abort the connection.",
+  "match": null,
+  "quote_origin": "manual_reanchor",
+  "support": "supported"
+ },
+ {
+  "span": 177,
+  "entity": "both parties",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "After the TLS handshake has been completed, both parties MUST",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 177,
+  "entity": "SMTP client",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "After the TLS handshake has been completed, both parties MUST",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 189,
+  "entity": "SMTP server",
+  "kind": "prose_constraint",
+  "model_span": 189,
+  "quote": "If the SMTP server decides that the level of authentication or\n   privacy is not high enough for it to continue, it SHOULD reply to\n   every SMTP command from the client (other than a QUIT command) with\n   the 554 reply code (with a possible text string such as \"Command\n   refused due to lack of security\").",
+  "match": "exact_match",
+  "quote_origin": "model_or_stage2",
+  "support": "supported"
+ },
+ {
+  "span": 210,
+  "entity": "client",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "Upon completion of the TLS handshake, the SMTP protocol is reset to",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 212,
+  "entity": "server",
+  "kind": "prose_constraint",
+  "model_span": 212,
+  "quote": "The server MUST discard any knowledge\n   obtained from the client, such as the argument to the EHLO command,\n   which was not obtained from the TLS negotiation itself.",
+  "match": "exact_match",
+  "quote_origin": "model_or_stage2",
+  "support": "supported"
+ },
+ {
+  "span": 213,
+  "entity": "client",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "obtained from the client, such as the argument to the EHLO command,",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 217,
+  "entity": "SMTP service extensions",
+  "kind": "prose_semantics",
+  "model_span": null,
+  "quote": "negotiation itself.  The client SHOULD send an EHLO command as the",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 234,
+  "entity": "STARTTLS",
+  "kind": "prose_semantics",
+  "model_span": null,
+  "quote": "STARTTLS is a valid ESMTP extension when used on the Submission port, as defined in [RFC2476].",
+  "match": null,
+  "quote_origin": "manual_reanchor",
+  "support": "supported"
+ },
+ {
+  "span": 235,
+  "entity": "client and the server",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "Both the client and the server MUST know if there is a TLS session",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 236,
+  "entity": "client",
+  "kind": "prose_constraint",
+  "model_span": 236,
+  "quote": "A client MUST NOT attempt to start a TLS session if a TLS\n   session is already active.",
+  "match": "exact_match",
+  "quote_origin": "model_or_stage2",
+  "support": "supported"
+ },
+ {
+  "span": 237,
+  "entity": "server",
+  "kind": "prose_constraint",
+  "model_span": 237,
+  "quote": "A server MUST NOT return the STARTTLS\n   extension in response to an EHLO command received after a TLS\n   handshake has completed.",
+  "match": "exact_match",
+  "quote_origin": "model_or_stage2",
+  "support": "supported"
+ },
+ {
+  "span": 292,
+  "entity": "SMTP client and server",
+  "kind": "prose_constraint",
+  "model_span": 292,
+  "quote": "Both the SMTP client and server must check the result of the TLS\n   negotiation to see whether an acceptable degree of authentication and\n   privacy was achieved.",
+  "match": "exact_match",
+  "quote_origin": "model_or_stage2",
+  "support": "supported"
+ },
+ {
+  "span": 310,
+  "entity": "TLS",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "to allow the server to announce its STARTTLS capability, but to alter",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ },
+ {
+  "span": 311,
+  "entity": "clients and servers",
+  "kind": "prose_constraint",
+  "model_span": 311,
+  "quote": "In\n   order to defend against such attacks both clients and servers MUST be\n   able to be configured to require successful TLS negotiation of an\n   appropriate cipher suite for selected hosts before messages can be\n   successfully transferred.",
+  "match": "exact_match",
+  "quote_origin": "model_or_stage2",
+  "support": "supported"
+ },
+ {
+  "span": 316,
+  "entity": "implementation",
+  "kind": "prose_constraint",
+  "model_span": 316,
+  "quote": "An implementation MAY provide the\n   ability to record that TLS was used in communicating with a given\n   peer and generating a warning if it is not used in a later session.",
+  "match": "exact_match",
+  "quote_origin": "model_or_stage2",
+  "support": "supported"
+ },
+ {
+  "span": 341,
+  "entity": "clients and servers",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "For this reason, clients and servers MUST discard any knowledge obtained prior to the start of the TLS handshake upon completion of the TLS handshake.",
+  "match": null,
+  "quote_origin": "manual_reanchor",
+  "support": "supported"
+ },
+ {
+  "span": 353,
+  "entity": "SASL EXTERNAL mechanism",
+  "kind": "prose_constraint",
+  "model_span": null,
+  "quote": "simpler and more flexible options to authenticate an SMTP client and",
+  "match": null,
+  "quote_origin": "span_line_text",
+  "support": "supported"
+ }
+]

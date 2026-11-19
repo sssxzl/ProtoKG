@@ -2,8 +2,8 @@
   "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
-    "llm_calls": 20,
-    "status": "T0_A_v6_semantic_support_28_28_verified"
+    "llm_calls": 22,
+    "status": "T0_A_single_rfc_closed_cross_rfc_probe_passed"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -306,6 +306,10 @@
       "sha256": "6e6362f58008ad2eab912b85af2621f1b534d7708c8b4c595586dcb3d9650f0a",
       "size": 816
     },
+    "T0A_v6_Evidence完整引用侧车.json": {
+      "sha256": "2508542f207c022b1b3460837734b83c6e7b41cb4fe4952e4d88a3877e27f549",
+      "size": 8669
+    },
     "T0A_v6_Gold与341完整证据最终核验.md": {
       "sha256": "d297cffc57f7dad9599ad75d3773d5b30e2fabdd3fbb88432e2e6193c3464bc1",
       "size": 1207
@@ -421,6 +425,10 @@
     "T0A_异常退出及证据留存测试.md": {
       "sha256": "1d507622ad45c45d3e5cb0d495bcf115098094745671670d9cca4058a1700dbb",
       "size": 1796
+    },
+    "T0A_归档修正与完整引用侧车.md": {
+      "sha256": "4f681cd83cb7cead5f05834ee2a0979d6f6d2bc7c144bd4632de7c595bcaa7df",
+      "size": 1511
     },
     "T0A_执行器定点安全修正.patch": {
       "sha256": "2931acb1b03f9167cf38a1d606b732f8a9bb13cd20e14d31ef32e6d46ba6c6fb",
@@ -561,6 +569,22 @@
     "T0A_首次真实试验结果.md": {
       "sha256": "5ced27826c6ad2010bc174c6b13dff58337d36281661168ece9cde35505e4125",
       "size": 3089
+    },
+    "v6单RFC与跨RFC小样本差异报告.md": {
+      "sha256": "b85b8555e0b6e401031066bc80424dd7e92447da1f1c6d1182aa534191dca0d2",
+      "size": 1023
+    },
+    "跨RFC_Evidence逐条支持审查.md": {
+      "sha256": "b343cb422e663f1b5383d395d813dd9a9bb457053eae0aa27ce23731601c7741",
+      "size": 817
+    },
+    "跨RFC小样本试验设计与预登记.md": {
+      "sha256": "ff89be98c2dde1584563312658faa672663385adafa0d39f0fb08d0dc4330773",
+      "size": 954
+    },
+    "跨RFC真实模型抽取结果.md": {
+      "sha256": "44fb0c7a474b60bc0b083219de5b0ced171a3857a3a7b88456490a3105d15e9e",
+      "size": 1301
     },
     "scripts/f1_docs.json": {
       "sha256": "52debe4b049b9fb6d6770656d0be318251cf9c36b106eabf82c899840face104",
@@ -861,6 +885,18 @@
     "T0A_v6_align_20261119/SHA256清单.json": {
       "sha256": "2c0d8cc1156b9c3a2cce8936c7c4edb96ccd1a97cc3e56949640cb3c79c3d44b",
       "size": 99
+    },
+    "T0A_跨RFC_20261119/align.json": {
+      "sha256": "2614186cf3a614352cdcf6a654e2ff72b41eed633c3ee8f642527a425816f484",
+      "size": 5367
+    },
+    "T0A_跨RFC_20261119/norms.json": {
+      "sha256": "b7b0a2a00f7e27f2956183fea85d6a886c3c7c103c24699a1c1dba5f874ebe6e",
+      "size": 246337
+    },
+    "T0A_跨RFC_20261119/SHA256清单.json": {
+      "sha256": "0756a00b5482d77dcc21a468d08b87d10dd8dd0244559680bee7e7d9d0d9830e",
+      "size": 169
     }
   }
 }
