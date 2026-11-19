@@ -1,0 +1,217 @@
+{
+ "profile": {
+  "smtp": false,
+  "rtsp": false,
+  "dhcpv4": true
+ },
+ "blocks": [
+  {
+   "doc": "rfc3207.txt",
+   "start": 1,
+   "chars": 3555,
+   "src_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+   "text_sha256": "da8a9aca585c60217f96f5d97710d047c91b73f77fedb7a01b6d609f737399bd",
+   "sig": "9ce4e98185a6c4b2"
+  },
+  {
+   "doc": "rfc3207.txt",
+   "start": 115,
+   "chars": 3520,
+   "src_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+   "text_sha256": "a79cc87ecd38dfe24017eee5534ebf6febb491bcf590f163af5b726641732442",
+   "sig": "27191f4c9e764aeb"
+  },
+  {
+   "doc": "rfc3207.txt",
+   "start": 192,
+   "chars": 3555,
+   "src_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+   "text_sha256": "ee174fdd9f9e00002b6db6680a94052efda0ea0ed2e494f00ed61854feaec1f7",
+   "sig": "16d59ad52cc4f548"
+  },
+  {
+   "doc": "rfc3207.txt",
+   "start": 278,
+   "chars": 3550,
+   "src_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+   "text_sha256": "5c52ce728974c579bfa0a8364279e522e76f16eef40d6b7614422ca777346377",
+   "sig": "43695efcd7f8a8a5"
+  },
+  {
+   "doc": "rfc3207.txt",
+   "start": 348,
+   "chars": 3539,
+   "src_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+   "text_sha256": "281cbfe13f51626aad1424f65b1bfe1f47d3787a6e3e72c45b9d897772321723",
+   "sig": "e522f7644aac9c82"
+  },
+  {
+   "doc": "rfc3207.txt",
+   "start": 468,
+   "chars": 955,
+   "src_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+   "text_sha256": "39c8f88177eb3f144c93b05f039273d61506e3f41a421246eace990afe5ac2fe",
+   "sig": "955d0416b35fd64b"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 1,
+   "chars": 3551,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "461f82df919b1cdeb0a6563eec353161ba4b951110a0b318739be2ee235fc205",
+   "sig": "076b128a163c1366"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 99,
+   "chars": 3499,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "0710fbb5faf4bb27b2124bdd3ef1feeba7081a77f7f8d814e011a1c2bfb9429f",
+   "sig": "3868c02b71a48696"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 189,
+   "chars": 3502,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "e16eae32fd8909b5f9b3139b756e6fdace09b546ffff5f55e356417c88725b30",
+   "sig": "0cb3e9eb927a75b8"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 255,
+   "chars": 3545,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "cb7125bcc1a3db7859817377fc05646f9aaf31879dd32549ac16471afe96b03b",
+   "sig": "acd0143575f76dd1"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 327,
+   "chars": 3502,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "06f02edca292ffb0f3dc070a49ab69876a5ccab31fdc1f010f3feb519c7604fd",
+   "sig": "a24faa0f16b41e6a"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 417,
+   "chars": 3560,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "5e2218b035375b5ce52fc9d3c2b18ef51a80577f807692b580b00a226f1bfcb8",
+   "sig": "632831a0035674d8"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 507,
+   "chars": 3510,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "994be1c5ff158a639f8a038ac89ffd027c67f5e76762346cfda6e2b1ac318271",
+   "sig": "c80ecdd8e07b4c20"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 594,
+   "chars": 3500,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "9ce0c240d86a8ada98bd009081675d0911023cea33c54750078dacffc7ea19fb",
+   "sig": "a5711e58606f9891"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 687,
+   "chars": 3517,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "f4cf31ed5ca70a62023f7d7619e94546113a7afd5a1bed9ba161b76acf8687fb",
+   "sig": "f01199302abfd8cf"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 771,
+   "chars": 3511,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "6157809af2b98c068103dbcec157ea499c7fe8a7b8d4ad29517718d68aff1d96",
+   "sig": "650bef61b929fded"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 865,
+   "chars": 3531,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "5994892ef30f5e05845d188c4e1a115b3e66d95fec45c4e78b08c1ff9a4460c8",
+   "sig": "e1f5cc2da66c2e67"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 955,
+   "chars": 3515,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "d5e12074015b3a7a96906c911454cc5a086e2565ee01ad7270ba3a0ecc9dedc8",
+   "sig": "0d47479c516d7248"
+  },
+  {
+   "doc": "rfc4954.txt",
+   "start": 1091,
+   "chars": 1238,
+   "src_sha256": "6bf118f556749d08d1bfae92cefbdebf6084324ceba262a87af1efbe0e16d50a",
+   "text_sha256": "8312dfc20b73db97ddc622965b43354d127f9917563b7215c3e08b8823159fdc",
+   "sig": "8f0b8d24aacfe237"
+  }
+ ],
+ "gold": [
+  {
+   "gold_id": "GK-B-smtp-rfc3207.txt-404-1",
+   "doc": "rfc3207.txt",
+   "span": "404-404",
+   "line_text": "-  Section 5 and 7: More discussion of the man-in-the-middle attacks",
+   "covered_by_block": true,
+   "block_start": 1
+  },
+  {
+   "gold_id": "GK-B-smtp-rfc3207.txt-405-1",
+   "doc": "rfc3207.txt",
+   "span": "405-405",
+   "line_text": "-  Section 5: Additional discussion of when a server should and",
+   "covered_by_block": true,
+   "block_start": 1
+  },
+  {
+   "gold_id": "GK-B-smtp-rfc4954.txt-704-1",
+   "doc": "rfc4954.txt",
+   "span": "704-708",
+   "line_text": "auth-param      = \"AUTH=\" xtext",
+   "covered_by_block": true,
+   "block_start": 1
+  }
+ ],
+ "cache": {
+  "partial_blocks_not_complete": true
+ },
+ "current_path": {
+  "prose_enabled_smtp": false,
+  "docs_with_deterministic_output": [
+   "rfc3207.txt",
+   "rfc4954.txt",
+   "rfc5321.txt",
+   "rfc5322.txt"
+  ],
+  "would_be_skipped_by_old_trigger": [
+   "rfc3207.txt",
+   "rfc4954.txt"
+  ]
+ },
+ "coverage": {
+  "rfc3207.txt": {
+   "chars": 18679,
+   "block_chars": 18674,
+   "ratio": 1.0,
+   "blocks": 6
+  },
+  "rfc4954.txt": {
+   "chars": 43493,
+   "block_chars": 43481,
+   "ratio": 1.0,
+   "blocks": 13
+  }
+ }
+}
