@@ -1,0 +1,13 @@
+--- a/core/fused/extraction/prose_semantics.py
++++ b/core/fused/extraction/prose_semantics.py
+@@ -719,6 +719,10 @@
+                                     m["src_sha256"], parser_version):
+             miss.add(doc); continue
+         if not isinstance(d.get("items"), list):
++            miss.add(doc); continue
++        # 内部条目归属必须与文件名一致，否则整条缓存拒收（防跨文档污染）
++        if any((it.get("doc") if isinstance(it, dict) else None) != doc
++               for it in d["items"]):
+             miss.add(doc); continue
+         hit[doc] = list(d["items"])
+     return hit, miss

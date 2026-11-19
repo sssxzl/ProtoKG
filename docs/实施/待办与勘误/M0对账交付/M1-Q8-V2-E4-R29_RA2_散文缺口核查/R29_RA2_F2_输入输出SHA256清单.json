@@ -3,9 +3,9 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 0,
-    "status": "T0_A_offline_chain_verified",
+    "status": "T0_A_offline_end_to_end_verified",
     "flags": [
-      "T0_A_runtime_payload_verified",
+      "T0_A_hub_isolation_verified",
       "real_llm_output_pending_validation",
       "production_merge_not_approved"
     ]
@@ -147,9 +147,21 @@
       "sha256": "1627ff02e38c774ac8f4f36b07ffeef232f35e74b0074dd30549cba22c31816f",
       "size": 2391
     },
+    "T0A_Evidence原文与缓存污染负例.md": {
+      "sha256": "38dcce75ff992568bb1deef47572c42be0dd2c9e16224a7ea638cd63fb720bb9",
+      "size": 1570
+    },
     "T0A_Gold原文证据纠偏.md": {
       "sha256": "fed06afc75fa3e30248e9d5a3f4f7c3a2a9e48618dc80de2250ae616fa3b4326",
       "size": 1971
+    },
+    "T0A_Hub最小隔离接口.patch": {
+      "sha256": "1a9d3c3c1625f2c9d2a6ab29c28ffadaf8f1b185d6619630933f3cd538897bc2",
+      "size": 2403
+    },
+    "T0A_Hub隔离入口源码核查.md": {
+      "sha256": "090770854ec1f6a6c19f8e26357ac6a72dac16b3d410181b7ddc90f707bbaa5f",
+      "size": 2121
     },
     "T0A_Raw到Canonical隔离集成报告.md": {
       "sha256": "5dcdc8a5e6c19cb212a75b428bb13d4e3f11d3ae957142048da0bb24703796ed",
@@ -158,6 +170,10 @@
     "T0A_RFC全链路实际调用关系.md": {
       "sha256": "453b3ee22e91ca86f2766bd030c9096bab29f401066b7406ff2b708935fe53e4",
       "size": 2445
+    },
+    "T0A_RFC到Hub完整离线集成报告.md": {
+      "sha256": "6e6994bc0bff4d1fb026599aafd2efe7b2e7e4118e52f6db01b6fe12c581f0b9",
+      "size": 1491
     },
     "T0A_六块完整性与入口核验.md": {
       "sha256": "c68d4b8f724caa291f18a87188b8e1a422e496e0590df4d9163a2af40cbf3b56",
@@ -179,13 +195,29 @@
       "sha256": "6e692532888ac1b220bc2e34a849fbb6a9060c124b7f9351380d5e5d5299643f",
       "size": 1563
     },
+    "T0A_最终链路状态与真实模型剩余门禁.md": {
+      "sha256": "982a7fe105577c480c2f7edff4124777e79a797e4f86b8d7d72805765b41d313",
+      "size": 1635
+    },
     "T0A_模型适配器安全修正.patch": {
       "sha256": "4b5afa0f81c86e5e87c3c73a4b9091c740ba6135a0ae1af1871bd066256028d1",
       "size": 5241
     },
+    "T0A_正式产物保护及回滚验证.md": {
+      "sha256": "5d29484742bb418a512fa1bb002b3224d2c7270b8ffe6e0d9dab090f608a6ed5",
+      "size": 1163
+    },
+    "T0A_确定性与散文去重实证.md": {
+      "sha256": "720b351799d3d8e82cf60b5cca83a94536ba6e17544f3fa412f645caa9eb748c",
+      "size": 1641
+    },
     "T0A_缓存与异常闭环验证.md": {
       "sha256": "f7280a3764c02577a56c34d4915a5ee1d2d161907e610d6d17ccdb61a0c39a77",
       "size": 2268
+    },
+    "T0A_缓存污染拒收最小修正.patch": {
+      "sha256": "84834189511da673071518542ce8c938130f052bc9f1e379e7f2a5d82fdd0c6b",
+      "size": 623
     },
     "T0A_运行时载荷核验.md": {
       "sha256": "46f1b4178c7197d7e001750afed45b19e8765217e23286444d9d2510211b075c",
@@ -223,6 +255,10 @@
       "sha256": "257b1c896e5b45dd6150a1b0b7eaa1c2a6c44baee16f2d90118d9ba4a9615104",
       "size": 1114
     },
+    "scripts/hub_isolated.py": {
+      "sha256": "35aa83ffcf1f29e23e2e908b204fa36c1d63b118681e0fe94f711fd868cec94b",
+      "size": 1961
+    },
     "scripts/ra2_probe.py": {
       "sha256": "6b2aa1f0229b6e49ba8876c0038b8f1527b69792d9f61c3498b4912116a28faf",
       "size": 4503
@@ -246,6 +282,10 @@
     "scripts/t0a_evidence.json": {
       "sha256": "7bd837c8a3897f88e974e18528e07a7b707bb98219345d62919ff66c2c179ded",
       "size": 2738
+    },
+    "scripts/t0a_hub_isolated.py": {
+      "sha256": "a39f6ae0fc7fea6340789fe5b7349dd8aa0eeef444334c4cb0891db90a10c0eb",
+      "size": 5279
     },
     "scripts/t0a_payload_checks.py": {
       "sha256": "e335fdf8692acc546719ab860ab36a61bcb2103660360d10e643eaced9596e8b",

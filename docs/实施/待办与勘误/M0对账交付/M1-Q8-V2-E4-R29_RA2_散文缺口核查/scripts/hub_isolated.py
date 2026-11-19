@@ -1,0 +1,51 @@
+# -*- coding: utf-8 -*-
+"""T0-A 隔离中枢入口：把 core.paths 的读写根临时指向给定目录。
+
+设计取舍：不改 build_hub.py，而是替换三个路径函数——
+  · per_source_aspect_facts_dir  → 读 Fact
+  · hub_index_dir                → 写实体索引
+  · per_source_root              → 清理函数的根（本模块不调用清理，仅兜底）
+安全约束：
+  · out_root 必须是绝对路径、存在、且不含 ".."；
+  · 拒绝符号链接；
+  · 进入/退出用 try/finally，异常也恢复原函数；
+  · 任何校验失败直接抛错，不回落正式目录。
+"""
+from __future__ import annotations
+
+import contextlib
+import pathlib
+
+import core.paths as CP
+
+
+def _check(out_root: pathlib.Path) -> pathlib.Path:
+    p = pathlib.Path(out_root)
+    if not p.is_absolute():
+        raise ValueError(f"隔离根必须是绝对路径：{p}")
+    if ".." in p.parts:
+        raise ValueError(f"隔离根不允许包含 '..'：{p}")
+    if p.is_symlink():
+        raise ValueError(f"隔离根不允许是符号链接：{p}")
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+@contextlib.contextmanager
+def isolated_hub(out_root):
+    """在 with 块内，所有 hub 读写都落在 out_root 下。"""
+    root = _check(pathlib.Path(out_root))
+    facts_dir = root / "per_source" / "facts"
+    hub_dir = root / "hub"
+    facts_dir.mkdir(parents=True, exist_ok=True)
+    hub_dir.mkdir(parents=True, exist_ok=True)
+
+    o1, o2, o3 = (CP.per_source_aspect_facts_dir, CP.hub_index_dir,
+                  CP.per_source_root)
+    CP.per_source_aspect_facts_dir = lambda *a, **k: facts_dir       # type: ignore
+    CP.hub_index_dir = lambda *a, **k: hub_dir                        # type: ignore
+    CP.per_source_root = lambda *a, **k: root / "per_source"          # type: ignore
+    try:
+        yield root
+    finally:
+        CP.per_source_aspect_facts_dir, CP.hub_index_dir, CP.per_source_root = o1, o2, o3
