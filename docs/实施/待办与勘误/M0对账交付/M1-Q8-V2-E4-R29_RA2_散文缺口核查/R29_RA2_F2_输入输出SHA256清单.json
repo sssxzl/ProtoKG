@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 63,
-    "status": "grammar_value_isolated_readback_verified"
+    "status": "value_type_registry_partial"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -189,6 +189,26 @@
     "R29_RA2_输入输出SHA256清单.json": {
       "sha256": "52e15fbc604bc58fc3309d38af0c81c1afb0e548754b4741e976b45bcbc49fd2",
       "size": 1875
+    },
+    "R29_Value注册表Hub兼容与绕行路径.md": {
+      "sha256": "a4cfb1ec1235fff83b02b61e112572430c4c27c31e7f90368520f7b3ac6f40af",
+      "size": 834
+    },
+    "R29_Value注册表下一阶段建议.md": {
+      "sha256": "25d5c0490a19f802cfdfe5968042b385cf032c054b1e7b23180942969ed588dd",
+      "size": 649
+    },
+    "R29_Value类型回归与历史身份保护.md": {
+      "sha256": "88659a43249e0cf826308846f3349ea2db061242fe07fb02c3bfb74550c49447",
+      "size": 656
+    },
+    "R29_Value类型注册表最小补丁与正反例.md": {
+      "sha256": "7f6b5d9d414ff482f14aa2fc71b2d76efaba17ea2fb183b5cd919da01813effc",
+      "size": 834
+    },
+    "R29_Value类型清点审计.md": {
+      "sha256": "07ffdadfdf5e4d745b0b43a0fdbfe35c618cea2a9b0c681d0d0acffca05573b1",
+      "size": 1280
     },
     "R29_下一阶段最小实施审批建议.md": {
       "sha256": "255817cfcae8db75db536a0e8e18c99c819300bd83dcad8762a5201f9728b72f",
@@ -913,6 +933,10 @@
     "scripts/test_structural_field.py": {
       "sha256": "d9e18e6a5e11b75243dcedd8d2fd600c32be18ed8228ed8af89e7f142c3b03eb",
       "size": 3072
+    },
+    "scripts/value_types.py": {
+      "sha256": "f8f59e475ae2c032b2a4be2d3d7a1ed27c43c85c5f45ac867243dfe3e279d54f",
+      "size": 913
     },
     "scripts/verify_manifest.py": {
       "sha256": "f76e70f65260cd36f88ae57130a1da00472c1a22a9b72aa6fabfad617278b2ec",
