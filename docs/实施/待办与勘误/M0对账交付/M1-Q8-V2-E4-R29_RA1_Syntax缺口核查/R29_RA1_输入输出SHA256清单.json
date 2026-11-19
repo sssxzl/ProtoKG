@@ -1,0 +1,43 @@
+{
+  "outputs": {
+    "R29_RA1_32条Syntax原文与Chunk覆盖台账.xlsx": {
+      "sha256": "891f6cf03171066653a16050f0a66231b48c32d6ac79ca29528bb42c4cffc7d0",
+      "size": 11125
+    },
+    "R29_RA1_下一步修复范围与审批建议.md": {
+      "sha256": "2dd52fd104b51abe89783beaf9de39e673ef4d00bd58a5c33e4043eb64f11163",
+      "size": 2553
+    },
+    "R29_RA1_抽取入口与Raw候选对账.xlsx": {
+      "sha256": "3eff0f02b473b796078666ac89ef18333ea780b0b1a4ca7760f2cdd1c1395167",
+      "size": 5559
+    },
+    "R29_RA1_确定性抽取缺陷候选清单.md": {
+      "sha256": "90535b233feb9deaeac6ad062882b0594e70eb93ccf63066578bffb2e40a1ebe",
+      "size": 3313
+    },
+    "R29_RA1_阶段阻断原因统计.md": {
+      "sha256": "31084359b72ad155d3e0a2bc4ef4d5a0548147273301a54486dc0a68bff692a6",
+      "size": 3282
+    },
+    "scripts/ra1_probe.py": {
+      "sha256": "868fb6a7bdf8890699a184ba1dfbdad7802f6e87da591e688c120fe79cbd6995",
+      "size": 8103
+    }
+  },
+  "inputs": {
+    "R28-C 对账表": {
+      "sha256": "4414884d4a2bb39adfbd9e4c04d75fc4e1f7adb1b75a99545668b192a418e32c"
+    },
+    "B1 冻结清单": {
+      "sha256": "b99467a4d806910f78b11ef2278ed0e28eab12ee4906e6fdc137787c6bc2cd23"
+    },
+    "机器 Norm 索引": {
+      "sha256": "1469d16e80b4daabef66f13817ab95b55e14ebf395d10b4450d1e2a2ca7aa0d4"
+    }
+  },
+  "baseline": {
+    "main": "0f99da8445ea093246824e62d1244b88732e009e",
+    "llm_calls": 0
+  }
+}
