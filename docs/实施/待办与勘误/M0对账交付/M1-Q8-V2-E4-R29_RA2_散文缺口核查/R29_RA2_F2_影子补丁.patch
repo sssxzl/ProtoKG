@@ -1,0 +1,144 @@
+diff --git a/core/fused/extraction/prose_semantics.py b/core/fused/extraction/prose_semantics.py
+index 4352685..a642c9c 100644
+--- a/core/fused/extraction/prose_semantics.py
++++ b/core/fused/extraction/prose_semantics.py
+@@ -629,12 +629,88 @@ def _load_cache(protocol: str, block_hash: str) -> Optional[dict]:
+     return d
+ 
+ 
++# ===========================================================================
++# R29-RA2/F2：文档级散文缓存（影子）
++# ===========================================================================
++#   ★ 与批次级旧缓存并存：旧文件（单协议单条目、complete=false）**一律不读**，
++#     76 条历史记录继续隔离；新缓存按 (协议, 文档) 分文件，各自独立完成状态。
++
++_DOC_CACHE_SCHEMA = "prose-cache-doc-v1"
++
++
++def _doc_cache_dir(protocol: str) -> Path:
++    return _cache_path(protocol).parent / f"{protocol}.prose.d"
++
++
++def _doc_cache_file(protocol: str, doc: str) -> Path:
++    safe = "".join(c if (c.isalnum() or c in "._-") else "_" for c in doc)
++    return _doc_cache_dir(protocol) / f"{safe}.json"
++
++
++def _doc_key(protocol: str, doc: str, text: str, parser_version: str) -> str:
++    """文档级缓存键：内容 + 实现版本 + prompt + 模型 + schema。"""
++    from core.fused.extraction.cache_key import cache_key as _ck, model_identity
++    fp = hashlib.sha256(f"{doc}\x00{text}".encode("utf-8")).hexdigest()
++    return _ck(prompt_version=PROSE_SEMANTICS_PROMPT_VERSION,
++               input_fingerprint=f"{doc}\x00{fp}", temperature=0.1,
++               max_tokens=_MAX_TOKENS, prompt_digest=_hash_text(_PROMPT),
++               parser_version=parser_version,
++               schema_version=_DOC_CACHE_SCHEMA)
++
++
++def _load_doc_caches(protocol: str, doc_texts: dict[str, str],
++                     parser_version: str) -> tuple[dict[str, list[dict]], set[str]]:
++    """按文档读缓存 ⇒ (命中文档的 items, 未命中文档集合)。只接受 complete=True。"""
++    hit: dict[str, list[dict]] = {}
++    miss: set[str] = set()
++    for doc, text in doc_texts.items():
++        f = _doc_cache_file(protocol, doc)
++        if not f.is_file():
++            miss.add(doc); continue
++        try:
++            d = json.loads(f.read_text(encoding="utf-8"))
++        except (OSError, ValueError):
++            miss.add(doc); continue
++        if (d.get("schema") != _DOC_CACHE_SCHEMA or d.get("complete") is not True
++                or d.get("key") != _doc_key(protocol, doc, text, parser_version)):
++            miss.add(doc); continue
++        hit[doc] = list(d.get("items") or [])
++    return hit, miss
++
++
++def _save_doc_caches(protocol: str, doc_texts: dict[str, str], items: list[dict],
++                     parser_version: str, complete: bool) -> None:
++    """按文档写缓存；仅当该文档确有结果且本次运行完整时才标 complete。"""
++    by_doc: dict[str, list[dict]] = {d: [] for d in doc_texts}
++    for it in items or []:
++        d = it.get("doc")
++        if d in by_doc:
++            by_doc[d].append(it)
++    out_dir = _doc_cache_dir(protocol)
++    out_dir.mkdir(parents=True, exist_ok=True)
++    for doc, text in doc_texts.items():
++        payload = {"schema": _DOC_CACHE_SCHEMA,
++                   "doc": doc,
++                   "doc_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
++                   "key": _doc_key(protocol, doc, text, parser_version),
++                   "complete": bool(complete),
++                   "status": "success_nonempty" if by_doc[doc] else "success_empty",
++                   "items": by_doc[doc]}
++        f = _doc_cache_file(protocol, doc)
++        tmp = f.with_suffix(".json.tmp")
++        tmp.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
++        tmp.replace(f)
++
++
+ def _save_cache(protocol: str, block_hash: str, items: list[dict],
+                 complete: bool = True, *,
+                 status: Optional[str] = None,
+                 drop_reasons: Optional[dict] = None,
+                 mapped_count: Optional[int] = None,
+                 llm_calls: Optional[int] = None) -> None:
++    # R29-RA2/F2：启用文档级缓存后，旧批次缓存只读不写（防覆盖历史记录）
++    if _doc_cache_dir(protocol).is_dir():
++        return
+     """写缓存（★ M1-①：**显式状态 + 拒收原因 + 诊断计数**）。
+ 
+     ★ ``complete=False`` ⇒ 未跑完 ⇒ **下次会重跑**（★ 失败不固化）
+@@ -896,7 +972,22 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+                             #   ⇒ 否则「改了 prompt 但没改版本号」⇒ 命中旧缓存
+                             #   ⇒ ⇒ **用旧结果冒充新结果**
+                             prompt_digest=_hash_text(_PROMPT))
+-    cached = _load_cache(protocol, block_hash)
++    # R29-RA2/F2：先按文档查缓存；全命中直接返回，部分命中只对未命中文档调用
++    _doc_texts: dict[str, str] = {}
++    for _b in blocks:
++        _d = _b.get("doc") or ""
++        _doc_texts[_d] = _doc_texts.get(_d, "") + str(_b.get("text", ""))
++    _hit, _miss = _load_doc_caches(protocol, _doc_texts,
++                                   PROSE_SEMANTICS_PROMPT_VERSION)
++    _prefix_items: list[dict] = []
++    if _doc_texts and not _miss:
++        cached = {"items": [it for _d in _hit for it in _hit[_d]]}
++    elif _hit:
++        _prefix_items = [it for _d in _hit for it in _hit[_d]]
++        blocks = [b for b in blocks if (b.get("doc") or "") in _miss]
++        cached = None
++    else:
++        cached = _load_cache(protocol, block_hash)
+     if cached is not None:
+         raw_items = list(cached.get("items") or [])
+         stats["cache_hit"] = True
+@@ -1063,15 +1154,23 @@ def _extract_blocks(protocol: str, blocks: list[dict], *,
+                 break
+             if ok:
+                 # ★ 分批增量落缓存（成功的批不重跑）；★ **未跑完 ⇒ complete=False**
+-                _save_cache(protocol, block_hash, raw_items, complete=False)
++                # R29-RA2/F2：启用文档级缓存时不写批次级旧缓存（避免覆盖历史记录）
++                if not _doc_texts:
++                    _save_cache(protocol, block_hash, raw_items, complete=False)
+             elif _batch_failed and _diag is not None:
+                 # ★ 重试后仍失败 ⇒ 标记「放弃」（★ 与「重试恢复」区分）
+                 _last = _diag.records[-1] if _diag.records else None
+                 if _last is not None and _last.outcome == "failed":
+                     _last.outcome = "abandoned"
+         # ★ 全部批次跑完 ⇒ complete=True（★ 失败留下的缓存会被忽略）
+-        _save_cache(protocol, block_hash, raw_items,
+-                    complete=(not stats.get("failures")))
++        if not _doc_texts:
++            _save_cache(protocol, block_hash, raw_items,
++                        complete=(not stats.get("failures")))
++        # R29-RA2/F2：合并已命中文档的结果，并按文档落缓存
++        raw_items = _prefix_items + raw_items
++        _save_doc_caches(protocol, _doc_texts, raw_items,
++                         PROSE_SEMANTICS_PROMPT_VERSION,
++                         complete=(not stats.get("failures")))
+ 
+     stats["raw_items"] = len(raw_items)
+     stats["raw_items_total"] = len(raw_items)   # ★ M1-Q3：★ 与「解析成功调用数」区分
