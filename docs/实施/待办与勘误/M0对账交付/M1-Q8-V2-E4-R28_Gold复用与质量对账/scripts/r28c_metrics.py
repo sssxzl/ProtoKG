@@ -71,12 +71,14 @@ def main() -> int:
                                 if p.is_file() else [])
         return lines_cache[key]
 
+    b1 = [json.loads(l) for l in (ROOT / "docs/实施/待办与勘误/M0对账交付/M1-Q3-V2-E4-B1队列B人工真值验收/B1_人工真值冻结清单.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+    kmap = {x["gold_knowledge_id"]: x.get("knowledge_kind", "") for x in b1}
+
     rows = []
     for g in golds:
         proto = PROTO.get(g["协议"], g["协议"])
         doc, span = g["文档"], g["跨度"]
-        kind = "normative_rule_candidate"
-        # kind 从 B1 原始文件取（B2 CSV 无该列）
+        kind = kmap.get(g["gold_id"], "")
         start = int(span.split("-")[0]) if span.split("-")[0].isdigit() else None
         lines = lines_of(proto, doc)
         kb_path = ROOT / "kb" / proto / "spec" / doc
@@ -114,6 +116,17 @@ def main() -> int:
             "散文缓存complete": str(prose.get("complete")),
             "R28B标签": g["标签"],
             "证据强度": ("已确认" if span_norms else ("候选待判" if cand else "无候选")),
+            # ---- C1.1 十项核查（无日志者一律 unavailable） ----
+            "通道适用": ("确定性" if kind in DET_KINDS else
+                     ("散文" if kind in PROSE_KINDS else "未知")),
+            "通道实际执行": ("是（文档有 Norm）" if doc_norms else "否（零产出）"),
+            "Parser处理": "unavailable（无分块级日志）",
+            "Chunk覆盖": "unavailable（无分块级日志）",
+            "Raw候选": "是" if (span_norms or cand) else "否",
+            "进入门禁": "unavailable（无门禁日志）",
+            "产生Norm": "是" if span_norms else "否",
+            "产生Canonical": "是" if span_norms and span_norms[0].get("facts") else "否",
+            "产生Evidence": "是" if span_norms else "否",
         })
 
     # ---- 覆盖率复核 CSV ----
@@ -123,13 +136,19 @@ def main() -> int:
 
     # ---- C4 归因 ----
     def bucket(r):
+        """按任务书九类归因（1–9）给主类别。"""
+        kind = kmap.get(r["gold_id"], "")
         if r["文档Norm数"] == 0:
-            return "8 文档零产出（阶段未定位）"
+            return "8 文档零产出（阶段未归因）"
         if r["候选数"] and not r["同跨度Norm"]:
-            return "9 文档范围有候选，需人工判语义"
-        if r["R28B标签"] == "partial_match":
-            return "7 同跨度有结构条目但未承载命题"
-        return "1 同跨度无候选（通道覆盖不足）"
+            return "7 有 Raw 候选但未进入 Norm"
+        if kind in DET_KINDS:
+            return "1 确定性通道应覆盖但无候选"
+        if kind in PROSE_KINDS:
+            if r["在散文缓存文档内"] == "是":
+                return "4 有冻结缓存但未被接受"
+            return "3 散文通道配置关闭且无缓存"
+        return "9 证据不足，无法判断"
 
     for r in rows:
         r["C4归因"] = bucket(r)
@@ -143,7 +162,8 @@ def main() -> int:
     ws.append(list(rows[0]))
     for r in rows: ws.append(list(r.values()))
     for c in ws[1]: c.font = Font(bold=True)
-    for i, wd in enumerate([44, 10, 16, 10, 50, 8, 12, 8, 10, 34, 34, 8, 12, 12, 16, 10], 1):
+    for i, wd in enumerate([44, 10, 16, 10, 50, 8, 12, 8, 10, 34, 34, 8, 12, 12, 16, 10,
+                            10, 18, 24, 24, 8, 20, 8, 12, 10], 1):
         ws.column_dimensions[get_column_letter(i)].width = wd
     for row in ws.iter_rows(min_row=2):
         for c in row: c.alignment = Alignment(wrap_text=True, vertical="top")
@@ -153,19 +173,18 @@ def main() -> int:
     miss = [r for r in rows if r["R28B标签"] == "missing_extraction"]
     wb2 = openpyxl.Workbook(); s2 = wb2.active; s2.title = "C4_未匹配归因"
     cols = ["gold_id", "协议", "文档", "跨度", "Gold命题", "文档Norm数", "同跨度Norm",
-            "文档范围候选", "候选数", "在散文缓存文档内", "散文缓存complete", "C4归因"]
+            "文档范围候选", "候选数", "在散文缓存文档内", "散文缓存complete",
+            "通道适用", "通道实际执行", "C4归因"]
     s2.append(cols)
     for r in miss: s2.append([r[c] for c in cols])
     for c in s2[1]: c.font = Font(bold=True)
-    for i, wd in enumerate([44, 10, 16, 10, 50, 10, 20, 30, 8, 14, 14, 36], 1):
+    for i, wd in enumerate([44, 10, 16, 10, 50, 10, 20, 30, 8, 14, 14, 12, 18, 38], 1):
         s2.column_dimensions[get_column_letter(i)].width = wd
     wb2.save(D / "R28-C_110条未匹配记录归因.xlsx")
 
     print("未匹配", len(miss))
     print("C4 分布:", dict(Counter(bucket(r) for r in miss)))
     # 分 kind 需要原始 B1
-    b1 = [json.loads(l) for l in (ROOT / "docs/实施/待办与勘误/M0对账交付/M1-Q3-V2-E4-B1队列B人工真值验收/B1_人工真值冻结清单.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
-    kmap = {x["gold_knowledge_id"]: x.get("knowledge_kind", "") for x in b1}
     by_kind = Counter((kmap.get(r["gold_id"], ""), r["C4归因"]) for r in miss)
     print("未匹配分 kind:", dict(sorted(by_kind.items())))
     return 0
