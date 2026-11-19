@@ -3,7 +3,7 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 17,
-    "status": "T0_A_evidence_support_review_completed"
+    "status": "T0_A_evidence_support_30of30_v4set"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -150,6 +150,10 @@
       "sha256": "f257c59e4b71fee8920566157718c901e2cb7c1103879a06e0f20e4ed97edb58",
       "size": 11217
     },
+    "T0A_341行Raw召回逐层归因.md": {
+      "sha256": "be5d446886a95e0645f52bd9825edc43a0cda2a3ac4d0971facedbf772572278",
+      "size": 2166
+    },
     "T0A_Claim证据关联与隔离知识状态核验.md": {
       "sha256": "dc5b020440442a8a4ce0b00f064eb388e89922986750aa44758307ee7bdbe70b",
       "size": 1400
@@ -157,6 +161,10 @@
     "T0A_Evidence原文与缓存污染负例.md": {
       "sha256": "38dcce75ff992568bb1deef47572c42be0dd2c9e16224a7ea638cd63fb720bb9",
       "size": 1570
+    },
+    "T0A_Evidence审查状态与Hub接入边界.md": {
+      "sha256": "7543f9d3a5ae279f8e4dc097f7ca60726f199aa9d627b0d5359036c06eec2be6",
+      "size": 1331
     },
     "T0A_Evidence最终验收统计与341剩余缺口.md": {
       "sha256": "1f8086076e6405b3fabf80951cb68414b98dfb4258a3c5f1c4ea717bd7c9f463",
@@ -193,6 +201,10 @@
     "T0A_Hub隔离入口源码核查.md": {
       "sha256": "090770854ec1f6a6c19f8e26357ac6a72dac16b3d410181b7ddc90f707bbaa5f",
       "size": 2121
+    },
+    "T0A_p7_p8_p13完整Evidence收口报告.md": {
+      "sha256": "6219fa15b7a095d959065bb6189877a74d82a0cfebd6b69ac36d5a9426ffbdc0",
+      "size": 2048
     },
     "T0A_p7多来源与p13不完整引用处理.md": {
       "sha256": "cd0b215e122a82c3a690349adaeb6a99bc682d7740bdc3dca0515dd1752f3f69",
@@ -681,6 +693,10 @@
     "T0A_双阶段_20261119/evidence_review_sidecar.json": {
       "sha256": "bfcfa51ebde00678c906d244a141f9bf693d308bec04ce82fcff5e07e8e6978a",
       "size": 1054
+    },
+    "T0A_双阶段_20261119/evidence_review_sidecar_v2.json": {
+      "sha256": "f7c7ff3b6976c9e00b75d46c999857583262ee38d246e359a4974087d4a3dc47",
+      "size": 1991
     },
     "T0A_双阶段_20261119/SHA256清单.json": {
       "sha256": "a95775a063db9a9316d3146de746b08312ab9213797fd678cb5632418c633071",

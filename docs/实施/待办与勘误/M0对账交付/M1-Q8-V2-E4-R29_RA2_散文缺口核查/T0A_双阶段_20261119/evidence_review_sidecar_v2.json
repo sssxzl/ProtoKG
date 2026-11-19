@@ -1,0 +1,49 @@
+{
+ "version": "evidence-review-v2",
+ "doc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac",
+ "items": {
+  "p7": {
+   "corrected_span": [
+    98,
+    102
+   ],
+   "match": "exact_match",
+   "corrected_quote": "   The format for the STARTTLS command is:\n\n   STARTTLS\n\n   with no parameters.",
+   "model_quote": "",
+   "model_span": 96,
+   "origin": "人工审查+确定性扩展",
+   "doc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac"
+  },
+  "p8": {
+   "corrected_span": [
+    104,
+    109
+   ],
+   "match": "exact_match",
+   "corrected_quote": "   After the client gives the STARTTLS command, the server responds with\n   one of the following reply codes:\n\n   220 Ready to start TLS\n   501 Syntax error (no parameters allowed)\n   454 TLS not available due to temporary reason",
+   "model_quote": "After the client gives the STARTTLS command, the server responds with\n   one of the following reply codes:",
+   "model_span": 100,
+   "origin": "人工审查+确定性扩展",
+   "doc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac"
+  },
+  "p13": {
+   "corrected_span": [
+    144,
+    150
+   ],
+   "match": "exact_match",
+   "corrected_quote": "   A SMTP server that is not publicly referenced may choose to require\n   that the client perform a TLS negotiation before accepting any\n   commands.  In this case, the server SHOULD return the reply code:\n\n   530 Must issue a STARTTLS command first\n\n   to every command other than NOOP, EHLO, STARTTLS, or QUIT.  If the",
+   "model_quote": "to every command other than NOOP, EHLO, STARTTLS, or QUIT.",
+   "model_span": 148,
+   "origin": "人工审查+确定性扩展",
+   "doc_sha256": "b004a203791a1ca664d39a49d73369f88f5f3870486a6639e3f833df2118e4ac"
+  }
+ },
+ "counts": {
+  "total": 30,
+  "supported": 30,
+  "partially_supported": 0,
+  "multi_source_pending": 0
+ },
+ "note": "p7/p8/p13 经完整连续引用定位后升级；p7 无需拆 Schema"
+}
