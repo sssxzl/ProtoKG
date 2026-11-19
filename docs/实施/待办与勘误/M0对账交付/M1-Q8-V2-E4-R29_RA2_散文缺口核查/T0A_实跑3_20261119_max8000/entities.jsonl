@@ -1,0 +1,14 @@
+{"entity_id": "smtp:actor:both_parties", "protocol": "smtp", "type": "actor", "name": "both parties", "canonical_name": "both parties", "aliases": []}
+{"entity_id": "smtp:actor:both_the_client_and_the_server", "protocol": "smtp", "type": "actor", "name": "Both the client and the server", "canonical_name": "Both the client and the server", "aliases": []}
+{"entity_id": "smtp:actor:client", "protocol": "smtp", "type": "actor", "name": "client", "canonical_name": "client", "aliases": []}
+{"entity_id": "smtp:actor:clients_and_servers", "protocol": "smtp", "type": "actor", "name": "clients and servers", "canonical_name": "clients and servers", "aliases": []}
+{"entity_id": "smtp:actor:implementation", "protocol": "smtp", "type": "actor", "name": "implementation", "canonical_name": "implementation", "aliases": []}
+{"entity_id": "smtp:actor:publicly-referenced_smtp_server", "protocol": "smtp", "type": "actor", "name": "publicly-referenced SMTP server", "canonical_name": "publicly-referenced SMTP server", "aliases": []}
+{"entity_id": "smtp:actor:server", "protocol": "smtp", "type": "actor", "name": "server", "canonical_name": "server", "aliases": []}
+{"entity_id": "smtp:actor:smtp_client", "protocol": "smtp", "type": "actor", "name": "SMTP client", "canonical_name": "SMTP client", "aliases": []}
+{"entity_id": "smtp:actor:smtp_client_and_server", "protocol": "smtp", "type": "actor", "name": "SMTP client and server", "canonical_name": "SMTP client and server", "aliases": []}
+{"entity_id": "smtp:actor:smtp_server", "protocol": "smtp", "type": "actor", "name": "SMTP server", "canonical_name": "SMTP server", "aliases": []}
+{"entity_id": "smtp:protocol:sasl_external", "protocol": "smtp", "type": "protocol", "name": "SASL EXTERNAL", "canonical_name": "SASL EXTERNAL", "aliases": []}
+{"entity_id": "smtp:protocol:smtp", "protocol": "smtp", "type": "protocol", "name": "SMTP", "canonical_name": "SMTP", "aliases": []}
+{"entity_id": "smtp:protocol:starttls", "protocol": "smtp", "type": "protocol", "name": "STARTTLS", "canonical_name": "STARTTLS", "aliases": []}
+{"entity_id": "smtp:protocol:tls", "protocol": "smtp", "type": "protocol", "name": "TLS", "canonical_name": "TLS", "aliases": []}

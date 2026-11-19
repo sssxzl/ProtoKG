@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(HERE))
 from core.fused.extraction import prose_semantics as PS  # noqa: E402
 import t0a_adapter as AC  # noqa: E402
 
-MAX_TOKENS = 4000
+MAX_TOKENS = AC.MAX_TOKENS
 THRESHOLD = 7500
 PRICE = {"in_miss": 1, "out": 4}      # CNY / 1M，空闲时段
 CAP = 0.15
@@ -52,7 +52,7 @@ def main() -> int:
         AC.assert_payload_ok(p)
     C.append(("载荷合法：model/thinking/max_tokens/response_format",
               all(p["model"] == "deepseek-flash" and p["thinking"]["type"] == "disabled"
-                  and p["max_tokens"] == 4000 and p["response_format"]["type"] == "json_object"
+                  and p["max_tokens"] == AC.MAX_TOKENS and p["response_format"]["type"] == "json_object"
                   for p in pays)))
     C.append(("分批为 5+1", [len(parts[0]), len(parts[1])] == [5, 1]))
 

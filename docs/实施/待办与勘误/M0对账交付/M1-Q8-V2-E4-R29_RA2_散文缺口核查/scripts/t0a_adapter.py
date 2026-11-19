@@ -11,7 +11,7 @@ import urllib.request
 BASE_URL = "https://api.deepseek.com"
 MODEL = "deepseek-flash"
 TEMPERATURE = 0.1
-MAX_TOKENS = 4000
+MAX_TOKENS = 8000          # R29-RA2 r2：4000 → 8000（输出容量修正）
 RESPONSE_FORMAT = {"type": "json_object"}
 THINKING = {"type": "disabled"}
 

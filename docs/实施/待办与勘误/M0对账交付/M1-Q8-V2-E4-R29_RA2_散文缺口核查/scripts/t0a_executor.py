@@ -18,7 +18,8 @@ from core.fused.hub import hub_entities as HE             # noqa: E402
 from hub_isolated import isolated_hub                     # noqa: E402
 import t0a_adapter as AC                                  # noqa: E402
 
-MAX_CALLS, MAX_TOKENS, MAX_IN, CAP_CNY = 2, 4000, 7500, 0.15
+MAX_CALLS, MAX_TOKENS, MAX_IN = 2, 8000, 32000
+CAP_CNY = None            # R29-RA2 r2：撤销研发费用硬上限（仍记账）
 PRICE_IN_PEAK, PRICE_OUT_PEAK = 2.0, 8.0
 
 STATUS = ("preflight_failed", "request_failed", "request_timeout",
@@ -46,9 +47,8 @@ class Guard:
             raise RuntimeError("call_limit_exceeded")
         if self.used_in + est_in > MAX_IN:
             raise RuntimeError("input_limit_exceeded")
-        worst = est_in * PRICE_IN_PEAK / 1e6 + MAX_TOKENS * PRICE_OUT_PEAK / 1e6
-        if self.spent + worst > CAP_CNY:
-            raise RuntimeError("cost_limit_exceeded")
+        # 费用仍记账，但不再作为研发停止条件（r2）
+
         AC.assert_payload_ok(params)      # 校验真实即将发送的参数，不做常量替换
         self.calls += 1
         self.log.append({"attempt": self.calls, "est_in": est_in,

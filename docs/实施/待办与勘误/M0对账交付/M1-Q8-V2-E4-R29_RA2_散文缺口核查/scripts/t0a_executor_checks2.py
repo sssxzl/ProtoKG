@@ -57,10 +57,10 @@ def main() -> int:
     try:
         g.before(10, {"model": AC.MODEL, "thinking": {"type": "disabled"},
                       "response_format": {"type": "json_object"},
-                      "temperature": 0.1, "max_tokens": 8000})
+                      "temperature": 0.1, "max_tokens": 9999})
     except Exception:
         bad = True
-    C.append(("max_tokens 非 4000 在调用前拒绝", bad))
+    C.append(("max_tokens 非 8000 在调用前拒绝", bad))
 
     # 3 第二批被门禁拒绝（输入上限）⇒ 不得 completed
     root3 = pathlib.Path(tempfile.mkdtemp(prefix="t0a_b3_"))
