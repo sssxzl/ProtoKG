@@ -3,9 +3,8 @@
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
     "llm_calls": 0,
-    "status": "T0_A_offline_end_to_end_verified",
+    "status": "T0_A_live_runner_engineering_verified",
     "flags": [
-      "T0_A_hub_isolation_verified",
       "real_llm_output_pending_validation",
       "production_merge_not_approved"
     ]
@@ -151,6 +150,10 @@
       "sha256": "38dcce75ff992568bb1deef47572c42be0dd2c9e16224a7ea638cd63fb720bb9",
       "size": 1570
     },
+    "T0A_G1-G4执行器安全修正.patch": {
+      "sha256": "4cbddc91a620496041d01368ae7705b8f476faea24a311aa830953bbc047dc36",
+      "size": 10483
+    },
     "T0A_Gold原文证据纠偏.md": {
       "sha256": "fed06afc75fa3e30248e9d5a3f4f7c3a2a9e48618dc80de2250ae616fa3b4326",
       "size": 1971
@@ -175,6 +178,10 @@
       "sha256": "6e6994bc0bff4d1fb026599aafd2efe7b2e7e4118e52f6db01b6fe12c581f0b9",
       "size": 1491
     },
+    "T0A_全产物隔离路径核验.md": {
+      "sha256": "c847d18b67b6130625d39557f74f9d58b1fcb5b3e948689d9d0fe6275377b7be",
+      "size": 1651
+    },
     "T0A_六块完整性与入口核验.md": {
       "sha256": "c68d4b8f724caa291f18a87188b8e1a422e496e0590df4d9163a2af40cbf3b56",
       "size": 1981
@@ -191,6 +198,10 @@
       "sha256": "0c912e9973c952984a11d5c8e5a807cf8b0e66448f35b2b6e908442e9f26a1ce",
       "size": 3322
     },
+    "T0A_异常退出及证据留存测试.md": {
+      "sha256": "1d507622ad45c45d3e5cb0d495bcf115098094745671670d9cca4058a1700dbb",
+      "size": 1796
+    },
     "T0A_最终审批单.md": {
       "sha256": "6e692532888ac1b220bc2e34a849fbb6a9060c124b7f9351380d5e5d5299643f",
       "size": 1563
@@ -203,9 +214,17 @@
       "sha256": "4b5afa0f81c86e5e87c3c73a4b9091c740ba6135a0ae1af1871bd066256028d1",
       "size": 5241
     },
+    "T0A_正式产物保护与最终状态.md": {
+      "sha256": "e4b59e3fdc0c1469594245d39dbb900fa5a3a4c154c486948f618f635fb85f51",
+      "size": 927
+    },
     "T0A_正式产物保护及回滚验证.md": {
       "sha256": "5d29484742bb418a512fa1bb002b3224d2c7270b8ffe6e0d9dab090f608a6ed5",
       "size": 1163
+    },
+    "T0A_真实运行器完整链路离线报告.md": {
+      "sha256": "e058b7e55245b2708493ef27c4b8804f86403cb1a168075daff1944a403d0ed2",
+      "size": 1200
     },
     "T0A_确定性与散文去重实证.md": {
       "sha256": "720b351799d3d8e82cf60b5cca83a94536ba6e17544f3fa412f645caa9eb748c",
@@ -218,6 +237,10 @@
     "T0A_缓存污染拒收最小修正.patch": {
       "sha256": "84834189511da673071518542ce8c938130f052bc9f1e379e7f2a5d82fdd0c6b",
       "size": 623
+    },
+    "T0A_请求前门禁与无重试验证.md": {
+      "sha256": "4f5269946a3a1218c88a24338ae6ec92c5fda65f5a42c2d8c0be4199ef2d1595",
+      "size": 1548
     },
     "T0A_运行时载荷核验.md": {
       "sha256": "46f1b4178c7197d7e001750afed45b19e8765217e23286444d9d2510211b075c",
@@ -282,6 +305,14 @@
     "scripts/t0a_evidence.json": {
       "sha256": "7bd837c8a3897f88e974e18528e07a7b707bb98219345d62919ff66c2c179ded",
       "size": 2738
+    },
+    "scripts/t0a_executor.py": {
+      "sha256": "4ea0a990fb12d8b07e816ec2191a79be3fac655497105ec1e4c821c4408c13d8",
+      "size": 9868
+    },
+    "scripts/t0a_executor_checks.py": {
+      "sha256": "40cbad4c52a1aae700eeafc5ea49527fc8525e40664f4fc117b5ef6bcce0f54d",
+      "size": 5461
     },
     "scripts/t0a_hub_isolated.py": {
       "sha256": "a39f6ae0fc7fea6340789fe5b7349dd8aa0eeef444334c4cb0891db90a10c0eb",
