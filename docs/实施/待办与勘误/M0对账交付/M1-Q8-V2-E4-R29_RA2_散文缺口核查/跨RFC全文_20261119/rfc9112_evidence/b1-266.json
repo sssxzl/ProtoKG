@@ -1,0 +1,23 @@
+{
+ "protocol": "http",
+ "doc": "rfc9112.txt",
+ "block_range": [
+  1,
+  266
+ ],
+ "batch": 3,
+ "prompt_version": "prose-semantics-v6",
+ "prompt_sha256": "48b99da792ba16bbde47d8da1991ee0529d1055863e12f848b691c3af6572e34",
+ "model": "deepseek-flash",
+ "max_tokens": 8000,
+ "started_at": "2026-11-20T00:31:21",
+ "status": "completed",
+ "norms": 5,
+ "usage": {
+  "in": 3771,
+  "out": 2493
+ },
+ "failures": 0,
+ "finish_reason": "stop",
+ "finished_at": "2026-11-20T00:31:29"
+}
