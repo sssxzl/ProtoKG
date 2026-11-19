@@ -2,8 +2,8 @@
   "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
-    "llm_calls": 11,
-    "status": "T0_A_quote_locator_offline_ok_live_gold_miss"
+    "llm_calls": 17,
+    "status": "T0_A_two_stage_gold_2of2_verified"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -238,9 +238,25 @@
       "sha256": "c68d4b8f724caa291f18a87188b8e1a422e496e0590df4d9163a2af40cbf3b56",
       "size": 1981
     },
+    "T0A_原始v4知识Evidence回填验证.md": {
+      "sha256": "59d0bbe68d21332a749cebbf40205459080d617d68d96b414aeee4449a0eacc3",
+      "size": 1725
+    },
     "T0A_原文Quote确定性定位与负例.md": {
       "sha256": "a7d8fd8bc6804dee6b7ffcd2a944afebeb745af8f672804fecff073e103ec9a0",
       "size": 1717
+    },
+    "T0A_双阶段最小接入修正.patch": {
+      "sha256": "213ac9d765b323ce861c3bc14761b6a67ffaad58dbe4e593486f1b41e6ca964f",
+      "size": 31904
+    },
+    "T0A_双阶段真实验证与Gold验收.md": {
+      "sha256": "eed693ef0a59c583cce4694e6bc9bcd9c9797cab9c053e5f25ad294c53eb36b7",
+      "size": 1904
+    },
+    "T0A_双阶段知识抽取与证据对齐设计.md": {
+      "sha256": "7fdd38cd4777f6b123bacd373127f756bf67981e56d0b7b80901a99a085a17f2",
+      "size": 2020
     },
     "T0A_后续真实模型验证所需证据清单.md": {
       "sha256": "8f3c2c146a8454eb5fa7ebe912bcf815906fe3017e7c0a624bd0c636cd8a0ab8",
@@ -362,6 +378,10 @@
       "sha256": "0c37cd462c3bb6e60c9d3300260ad58e0977815145db2952cf87adcff8ded9fb",
       "size": 1218
     },
+    "T0A_规范义务回归与请求费用对账.md": {
+      "sha256": "23bb2af8162f27f4742e6fc354cd784f8a7dd4ff67bcbf9787b5b456974d2d74",
+      "size": 1568
+    },
     "T0A_请求前门禁与无重试验证.md": {
       "sha256": "4f5269946a3a1218c88a24338ae6ec92c5fda65f5a42c2d8c0be4199ef2d1595",
       "size": 1548
@@ -439,8 +459,8 @@
       "size": 6616
     },
     "scripts/t0a_adapter.py": {
-      "sha256": "2d992360a2be13b5d494a3b8fd3a405648e1c7a5c77c375393a07d498601d8ea",
-      "size": 5045
+      "sha256": "3078de3037730e5c2b1609abd00c6dff4b3dc6a3a93533d755cf01037ed5eda1",
+      "size": 7522
     },
     "scripts/t0a_chain_offline.py": {
       "sha256": "6283dcb6a22af09d17c45c3f4f7f2da0c9ccf0eed54a2cc22b7ace28d017ecbc",
@@ -449,6 +469,10 @@
     "scripts/t0a_evidence.json": {
       "sha256": "7bd837c8a3897f88e974e18528e07a7b707bb98219345d62919ff66c2c179ded",
       "size": 2738
+    },
+    "scripts/t0a_evidence_align.py": {
+      "sha256": "1877cd095bd7d3358665f12501a1469173df0d42c2ea0108089b23ca9f790485",
+      "size": 2985
     },
     "scripts/t0a_executor.py": {
       "sha256": "07f4971657499bd86011b42341fc6478cd956e5c3ff0c0566406ba4bf8c6384d",
@@ -629,6 +653,18 @@
     "T0A_实跑5_20261119_promptv5/SHA256清单.json": {
       "sha256": "356079921b4cb6446e97b1e6e61ed6bbf5ffb0da4fa0fac94a481675e51718f2",
       "size": 808
+    },
+    "T0A_双阶段_20261119/align_v4_30items.json": {
+      "sha256": "8fb039f5a4730407e7ab700fbcf703393c8f05e02cda30d1420e972a47760669",
+      "size": 13146
+    },
+    "T0A_双阶段_20261119/SHA256清单.json": {
+      "sha256": "a95775a063db9a9316d3146de746b08312ab9213797fd678cb5632418c633071",
+      "size": 182
+    },
+    "T0A_双阶段_20261119/summary.json": {
+      "sha256": "8036037e977402d874f6d7788f1815f2e9f3b93c9bffa7368c4367d65688fb67",
+      "size": 533
     }
   }
 }

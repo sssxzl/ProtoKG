@@ -1,0 +1,26 @@
+{
+ "total": 30,
+ "located": 29,
+ "not_found": 0,
+ "multi_source": 1,
+ "gold": [
+  {
+   "id": "p0",
+   "model_span": 22,
+   "verified_span": [
+    30,
+    33
+   ],
+   "quote": "This document describes an extension to the SMTP (Simple Mail\n   Transfer Protocol) service that allows an SMTP server a"
+  },
+  {
+   "id": "p1",
+   "model_span": 25,
+   "verified_span": [
+    33,
+    35
+   ],
+   "quote": "This gives SMTP agents the ability\n   to protect some or all of their communications from eavesdroppers and\n   attackers"
+  }
+ ]
+}

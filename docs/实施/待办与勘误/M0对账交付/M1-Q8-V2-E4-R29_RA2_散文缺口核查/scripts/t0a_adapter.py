@@ -66,6 +66,29 @@ def assert_payload_ok(payload: dict) -> None:
 ALLOWED_FINISH = {"stop"}
 
 
+def validate_items(content: str, meta: dict, required: tuple[str, ...]) -> dict:
+    """通用条目校验：只要求 items 元素含指定字段（用于第二阶段）。"""
+    fr = (meta or {}).get("finish_reason")
+    if fr not in ALLOWED_FINISH:
+        raise FinishReasonError(f"finish_reason={fr!r} 不接受（仅允许 stop）")
+    text = (content or "").strip()
+    if not text:
+        raise EmptyContent("响应内容为空或纯空白")
+    try:
+        data = json.loads(text)
+    except ValueError as exc:
+        raise ValueError(f"JSONDecodeError: {exc}") from exc
+    if not isinstance(data, dict) or not isinstance(data.get("items"), list):
+        raise SchemaError("缺少 items 数组")
+    for it in data["items"]:
+        if not isinstance(it, dict):
+            raise SchemaError("items 元素不是对象")
+        for k in required:
+            if k not in it:
+                raise SchemaError(f"条目缺少字段 {k}")
+    return data
+
+
 def validate_response(content: str, meta: dict) -> dict:
     """把「响应内容 + finish_reason」合成一次校验；不通过即抛，绝不返回空 dict。
 
@@ -106,6 +129,32 @@ class T0AClient:
         self.base_url = base_url.rstrip("/")
         self.model = MODEL
         self.last_error = None
+
+    def chat_json_for(self, *, system: str, user: str,
+                      required: tuple[str, ...] = ("id", "status"),
+                      temperature: float = TEMPERATURE,
+                      max_tokens: int = MAX_TOKENS) -> dict:
+        """第二阶段用：返回通用条目结构，不套用抽取 Schema。"""
+        if int(max_tokens) != MAX_TOKENS:
+            raise PayloadError(f"固定 max_tokens={MAX_TOKENS}，收到 {max_tokens}")
+        payload = build_payload(system, user, max_tokens=MAX_TOKENS,
+                                temperature=temperature)
+        assert_payload_ok(payload)
+        req = urllib.request.Request(
+            f"{self.base_url}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json",
+                     "Authorization": f"Bearer {self.api_key}"},
+            method="POST")
+        with urllib.request.urlopen(req, timeout=180) as r:  # noqa: S310
+            raw = r.read().decode("utf-8")
+        data = json.loads(raw)
+        ch = (data.get("choices") or [{}])[0]
+        content = (ch.get("message") or {}).get("content") or ""
+        self.last_call_meta = {"finish_reason": ch.get("finish_reason"),
+                               "input_tokens": (data.get("usage") or {}).get("prompt_tokens"),
+                               "output_tokens": (data.get("usage") or {}).get("completion_tokens")}
+        return validate_items(content, self.last_call_meta, required)
 
     def chat_json(self, *, system: str, user: str, temperature: float = TEMPERATURE,
                   max_tokens: int = MAX_TOKENS) -> dict:

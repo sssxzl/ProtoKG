@@ -1,0 +1,361 @@
+{
+ "items": [
+  {
+   "id": "p0",
+   "proposition": "该文档描述了一个 SMTP 服务扩展，允许 SMTP 服务器和客户端使用 TLS 提供私密、经过认证的通信。",
+   "model_span": 22,
+   "status": "ok",
+   "quote": "This document describes an extension to the SMTP (Simple Mail\n   Transfer Protocol) service that allows an SMTP server and client to\n   use TLS (Transport Layer Security) to provide private, authenticated\n   communication over the Internet.",
+   "verified_span": [
+    30,
+    33
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p1",
+   "proposition": "TLS 使 SMTP 代理能够保护其部分或全部通信免受窃听者和攻击者的侵害。",
+   "model_span": 25,
+   "status": "ok",
+   "quote": "This gives SMTP agents the ability\n   to protect some or all of their communications from eavesdroppers and\n   attackers.",
+   "verified_span": [
+    33,
+    35
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p2",
+   "proposition": "STARTTLS 是此处定义的 SMTP 服务名称。",
+   "model_span": 76,
+   "status": "ok",
+   "quote": "(1) the name of the SMTP service defined here is STARTTLS;",
+   "verified_span": [
+    80,
+    80
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p3",
+   "proposition": "STARTTLS 是与该扩展关联的 EHLO 关键字值。",
+   "model_span": 78,
+   "status": "ok",
+   "quote": "(2) the EHLO keyword value associated with the extension is STARTTLS;",
+   "verified_span": [
+    82,
+    82
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p4",
+   "proposition": "STARTTLS 关键字没有参数。",
+   "model_span": 80,
+   "status": "ok",
+   "quote": "(3) the STARTTLS keyword has no parameters;",
+   "verified_span": [
+    84,
+    84
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p5",
+   "proposition": "定义了一个新的 SMTP 动词 STARTTLS。",
+   "model_span": 82,
+   "status": "ok",
+   "quote": "(4) a new SMTP verb, \"STARTTLS\", is defined;",
+   "verified_span": [
+    86,
+    86
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p6",
+   "proposition": "STARTTLS 关键字用于告知 SMTP 客户端，SMTP 服务器当前能够协商使用 TLS。",
+   "model_span": 88,
+   "status": "ok",
+   "quote": "The STARTTLS keyword is used to tell the SMTP client that the SMTP\n   server is currently able to negotiate the use of TLS.",
+   "verified_span": [
+    92,
+    93
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p7",
+   "proposition": "STARTTLS 命令的格式为 STARTTLS，且不带参数。",
+   "model_span": 96,
+   "status": "multi_source",
+   "quote": "",
+   "verified_span": null,
+   "match": "not_attempted"
+  },
+  {
+   "id": "p8",
+   "proposition": "客户端发出 STARTTLS 命令后，服务器以 220、501 或 454 之一回复。",
+   "model_span": 100,
+   "status": "ok",
+   "quote": "After the client gives the STARTTLS command, the server responds with\n   one of the following reply codes:",
+   "verified_span": [
+    104,
+    105
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p9",
+   "proposition": "客户端收到 454 响应后，必须根据本地策略决定是否继续 SMTP 会话。 客户端收到 454 响应后必须决定是否继续 SMTP 会话",
+   "model_span": 119,
+   "status": "ok",
+   "quote": "If the client receives the 454 response, the client must decide\n   whether or not to continue the SMTP session.  Such a decision is\n   based on local policy.",
+   "verified_span": [
+    119,
+    121
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p10",
+   "proposition": "公开引用的 SMTP 服务器不得要求使用 STARTTLS 扩展才能在本地投递邮件。 公开引用的 SMTP 服务器不得要求使用 STARTTLS 扩展才能在本地投递邮件",
+   "model_span": 129,
+   "status": "ok",
+   "quote": "A publicly-referenced SMTP server MUST NOT require use of the\n   STARTTLS extension in order to deliver mail locally.",
+   "verified_span": [
+    129,
+    130
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p11",
+   "proposition": "任何 SMTP 服务器都可以基于 TLS 协商期间提供的认证拒绝中继邮件。",
+   "model_span": 136,
+   "status": "ok",
+   "quote": "Any SMTP server may refuse to accept messages for relay based on\n   authentication supplied during the TLS negotiation.",
+   "verified_span": [
+    138,
+    139
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p12",
+   "proposition": "非公开引用的 SMTP 服务器可以基于 TLS 协商期间提供的认证拒绝任何中继或本地投递邮件。",
+   "model_span": 138,
+   "status": "ok",
+   "quote": "An SMTP server\n   that is not publicly referenced may refuse to accept any messages for\n   relay or local delivery based on authentication supplied during the\n   TLS negotiation.",
+   "verified_span": [
+    139,
+    142
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p13",
+   "proposition": "要求客户端先进行 TLS 协商的服务器，对除 NOOP、EHLO、STARTTLS 或 QUIT 之外的每条命令都应返回 530 回复码。 对除 NOOP、EHLO、STARTTLS 或 QUIT 之外的每条命令应返回 530 回复码",
+   "model_span": 148,
+   "status": "ok",
+   "quote": "to every command other than NOOP, EHLO, STARTTLS, or QUIT.",
+   "verified_span": [
+    150,
+    150
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p14",
+   "proposition": "如果使用 ENHANCEDSTATUSCODES 扩展，应返回状态码 5.7.0。 应返回状态码 5.7.0",
+   "model_span": 153,
+   "status": "ok",
+   "quote": "If the\n   client and server are using the ENHANCEDSTATUSCODES ESMTP extension\n   [RFC2034], the status code to be returned SHOULD be 5.7.0.",
+   "verified_span": [
+    150,
+    152
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p15",
+   "proposition": "收到 STARTTLS 命令的 220 响应后，客户端必须在发出任何其他 SMTP 命令之前开始 TLS 协商。 客户端必须在发出任何其他 SMTP 命令之前开始 TLS 协商",
+   "model_span": 155,
+   "status": "ok",
+   "quote": "After receiving a 220 response to a STARTTLS command, the client MUST\n   start the TLS negotiation before giving any other SMTP commands.",
+   "verified_span": [
+    154,
+    155
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p16",
+   "proposition": "如果客户端发出 STARTTLS 后发现某种失败使其无法开始 TLS 握手，则应中止连接。 应中止连接",
+   "model_span": 158,
+   "status": "ok",
+   "quote": "If,\n   after having issued the STARTTLS command, the client finds out that\n   some failure prevents it from actually starting a TLS handshake, then\n   it SHOULD abort the connection.",
+   "verified_span": [
+    155,
+    158
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p17",
+   "proposition": "如果 SMTP 客户端使用流水线，STARTTLS 命令必须是组中的最后一条命令。 STARTTLS 命令必须是组中的最后一条命令",
+   "model_span": 162,
+   "status": "ok",
+   "quote": "If the SMTP client is using pipelining as defined in RFC 2920, the\n   STARTTLS command must be the last command in a group.",
+   "verified_span": [
+    160,
+    161
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p18",
+   "proposition": "TLS 握手完成后，双方必须立即根据所获得的认证和隐私决定是否继续。 双方必须立即根据所获得的认证和隐私决定是否继续",
+   "model_span": 172,
+   "status": "ok",
+   "quote": "After the TLS handshake has been completed, both parties MUST\n   immediately decide whether or not to continue based on the\n   authentication and privacy achieved.",
+   "verified_span": [
+    177,
+    179
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p19",
+   "proposition": "如果 SMTP 客户端认为认证或隐私级别不够高，应在 TLS 协商完成后立即发出 SMTP QUIT 命令。 应在 TLS 协商完成后立即发出 SMTP QUIT 命令",
+   "model_span": 181,
+   "status": "ok",
+   "quote": "If the SMTP client decides that the level of authentication or\n   privacy is not high enough for it to continue, it SHOULD issue an\n   SMTP QUIT command immediately after the TLS negotiation is complete.",
+   "verified_span": [
+    186,
+    188
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p20",
+   "proposition": "如果 SMTP 服务器认为认证或隐私级别不够高，应对客户端的每条 SMTP 命令（QUIT 除外）回复 554。 应对客户端的每条 SMTP 命令（QUIT 除外）回复 554",
+   "model_span": 184,
+   "status": "ok",
+   "quote": "If the SMTP server decides that the level of authentication or\n   privacy is not high enough for it to continue, it SHOULD reply to\n   every SMTP command from the client (other than a QUIT command) with\n   the 554 reply code (with a possible text string such as \"Command\n   refused due to lack of security\").",
+   "verified_span": [
+    189,
+    193
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p21",
+   "proposition": "TLS 握手完成后，SMTP 协议重置为初始状态。",
+   "model_span": 205,
+   "status": "ok",
+   "quote": "Upon completion of the TLS handshake, the SMTP protocol is reset to\n   the initial state (the state in SMTP after a server issues a 220\n   service ready greeting).",
+   "verified_span": [
+    210,
+    212
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p22",
+   "proposition": "服务器必须丢弃从客户端获得的、并非来自 TLS 协商本身的任何知识（如 EHLO 参数）。 服务器必须丢弃从客户端获得的、并非来自 TLS 协商本身的任何知识",
+   "model_span": 208,
+   "status": "ok",
+   "quote": "The server MUST discard any knowledge\n   obtained from the client, such as the argument to the EHLO command,\n   which was not obtained from the TLS negotiation itself.",
+   "verified_span": [
+    212,
+    214
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p23",
+   "proposition": "客户端必须丢弃从服务器获得的、并非来自 TLS 协商本身的任何知识（如 SMTP 服务扩展列表）。 客户端必须丢弃从服务器获得的、并非来自 TLS 协商本身的任何知识",
+   "model_span": 211,
+   "status": "ok",
+   "quote": "The client\n   MUST discard any knowledge obtained from the server, such as the list\n   of SMTP service extensions, which was not obtained from the TLS\n   negotiation itself.",
+   "verified_span": [
+    214,
+    217
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p24",
+   "proposition": "客户端应在成功 TLS 协商后发送 EHLO 命令作为第一条命令。 应在成功 TLS 协商后发送 EHLO 命令作为第一条命令",
+   "model_span": 214,
+   "status": "ok",
+   "quote": "The client SHOULD send an EHLO command as the\n   first command after a successful TLS negotiation.",
+   "verified_span": [
+    217,
+    218
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p25",
+   "proposition": "TLS 握手后 EHLO 返回的 SMTP 服务扩展列表可能与握手前不同。",
+   "model_span": 217,
+   "status": "ok",
+   "quote": "The list of SMTP service extensions returned in response to an EHLO\n   command received after the TLS handshake MAY be different than the\n   list returned before the TLS handshake.",
+   "verified_span": [
+    220,
+    222
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p26",
+   "proposition": "客户端和服务器都必须知道是否存在活动的 TLS 会话。 客户端和服务器都必须知道是否存在活动的 TLS 会话",
+   "model_span": 226,
+   "status": "ok",
+   "quote": "Both the client and the server MUST know if there is a TLS session\n   active.",
+   "verified_span": [
+    235,
+    236
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p27",
+   "proposition": "如果 TLS 会话已处于活动状态，客户端不得尝试启动 TLS 会话。 客户端不得尝试启动 TLS 会话",
+   "model_span": 227,
+   "status": "ok",
+   "quote": "A client MUST NOT attempt to start a TLS session if a TLS\n   session is already active.",
+   "verified_span": [
+    236,
+    237
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p28",
+   "proposition": "TLS 握手完成后，服务器不得在响应 EHLO 命令时返回 STARTTLS 扩展。 服务器不得在响应 EHLO 命令时返回 STARTTLS 扩展",
+   "model_span": 228,
+   "status": "ok",
+   "quote": "A server MUST NOT return the STARTTLS\n   extension in response to an EHLO command received after a TLS\n   handshake has completed.",
+   "verified_span": [
+    237,
+    239
+   ],
+   "match": "exact_match"
+  },
+  {
+   "id": "p29",
+   "proposition": "STARTTLS 在 Submission 端口上是有效的 ESMTP 扩展。",
+   "model_span": 232,
+   "status": "ok",
+   "quote": "STARTTLS is a valid ESMTP extension when used on the Submission port,\n   as defined in [RFC2476].",
+   "verified_span": [
+    243,
+    244
+   ],
+   "match": "exact_match"
+  }
+ ]
+}
