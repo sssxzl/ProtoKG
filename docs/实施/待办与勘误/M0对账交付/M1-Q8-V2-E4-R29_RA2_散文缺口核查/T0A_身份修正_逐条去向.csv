@@ -1,0 +1,23 @@
+span,entity,norm_id,subject_status,action,fact_ids,aspects
+76,STARTTLS,prose_semantics_starttls.154c947d2933,unresolved,,f2_35eb41cad94db68b,definition
+88,STARTTLS,prose_semantics_starttls.74a534b601a9,unresolved,,f2_35eb41cad94db68b,definition
+94,STARTTLS,prose_semantics_starttls.15f1a7296176,unresolved,,f2_35eb41cad94db68b,definition
+127,SMTP server,prose_semantics_smtp server.00b696b26864,unresolved,require use of the STARTTLS extension in order to deliver mail locally,f2_6ebb9b8192ed2599,definition
+146,SMTP server,prose_semantics_smtp server.6266a5d4a050,unresolved,return the reply code 530,f2_6ebb9b8192ed2599,definition
+155,client,prose_constraint_client.f9b4eb8e1ab6,resolved,start the TLS negotiation,f2_99ddfc240d13636b,legal_boundary
+158,client,prose_constraint_client.ecc6b5f33262,resolved,abort the connection,f2_229b0561df6fa8f1,legal_boundary
+172,both parties,prose_constraint_both parties.3ae35f560cf9,resolved,decide whether or not to continue based on the authentication and privacy achieved,f2_18e8fd078e5f1e66,legal_boundary
+183,SMTP client,prose_constraint_smtp client.bd49e6e9b590,resolved,issue an SMTP QUIT command,f2_91fca91bb18b9fd5,legal_boundary
+186,SMTP server,prose_constraint_smtp server.c9b89403a506,resolved,reply with the 554 reply code,f2_480f83d2c79aa364,legal_boundary
+211,server,prose_constraint_server.d0f95335477b,resolved,discard any knowledge obtained from the client,f2_3705bd3f258827c6,legal_boundary
+214,client,prose_constraint_client.0d3a9ce61909,resolved,discard any knowledge obtained from the server,f2_eca455ac327f8a60,legal_boundary
+217,client,prose_constraint_client.687e3a5992d9,resolved,send an EHLO command,f2_90b3bf39fd2fed5b,legal_boundary
+220,SMTP service extensions,prose_semantics_smtp service extensions.6def11116f55,unresolved,,f2_578406cdd9396069,definition
+230,client and the server,prose_constraint_client and the server.1a19735fbc10,resolved,know if there is a TLS session active,f2_e31bc370e16b354f,legal_boundary
+231,client,prose_constraint_client.91de7d4fc372,resolved,attempt to start a TLS session,f2_25e6bb77774a11e3,legal_boundary
+232,server,prose_constraint_server.ee6aeb58d39b,resolved,return the STARTTLS extension in response to an EHLO command,f2_21cba02832e4df83,legal_boundary
+309,clients and servers,prose_constraint_clients and servers.b184b9053e9d,resolved,be able to be configured to require successful TLS negotiation of an appropriate cipher suite for selected hosts,f2_e3a190a88e3e3926,legal_boundary
+313,TLS,prose_semantics_tls.38617b46e18d,unresolved,provide the additional option of using TLS when possible,f2_2f31c8ce36b4c2e6,definition
+315,implementation,prose_constraint_implementation.e8715a7ca0e1,resolved,provide the ability to record that TLS was used ... and generating a warning if it is not used in a later session,f2_3d3c69a2b840a300,legal_boundary
+341,clients and servers,prose_constraint_clients and servers.76cda9e841c3,resolved,discard any knowledge obtained prior to the start of the TLS handshake,f2_aba5ee1ed2622032,legal_boundary
+352,SASL EXTERNAL mechanism,prose_semantics_sasl external mechanism.dd8ac5887331,unresolved,be used in conjunction with the STARTTLS command to provide an authorization identity,f2_2de7b1b6dccb2bb7,definition
