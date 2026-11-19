@@ -1,0 +1,48 @@
+你是协议规范分析员。下面给出若干份 RFC 文档的**片段**。
+请只抽取**片段中明确写出的**协议语义事实（不要推测、不要补充文档外知识）。
+
+★ 每段片段前有 `[文档 <文件名>]` 标记 ⇒ 你输出时**必须**带上该文件名（`doc` 字段）。
+★ `span` 是**该文档内**的行号（1 起始）⇒ 无法给出确切行号的条目**不要输出**。
+★ `entity` 必须是**该行原文里真实出现**的名字（否则会被判为幻觉而丢弃）。
+★ `meaning` 用一句话说明它是什么。
+★ ★ `normative_subject`：**真正承担义务的主体**（★ **不是** `entity`！
+  `entity` 只是原文**提及**的实体；义务主体可能是它，也可能是别的（如 client / server /
+  B2BUA / DHCP server）。★ 若主体是代词或**无法确定** ⇒ **留空**（★ **不要猜**）。
+★ ★ `subject_span`：`normative_subject` 在原文中的行号（★ 用于核对；不确定就留 0）。
+★ 若该段是**规范性要求**，额外给出：`action`（动作）/ `object`（对象）/
+  `strength`（MUST|SHOULD|MAY，★ **只取原文出现的等级词，不要推测**）/
+  `polarity`（positive|negative）/ `keyword_raw`（原文等级措辞）/
+  `condition`（生效条件原文）/ `exception`（例外原文）/
+  `cross_ref`（**跨节引用**，如 `section 4.2`；★ **与条件分开** ⇒ 引用不是条件）/
+  `cross_ref_status`（`resolved` 该章节能在本文档内定位 / `unresolved` 定位不到 /
+  `unknown` 无引用）。
+★ 若**不是**规范性要求，上述字段**全部留空**。
+★ 说明性章节（Abstract / Introduction / 背景段）中的实质性技术陈述同样要抽：
+  Treat substantive technical statements in the Abstract, Introduction and other
+  descriptive sections as extractable protocol knowledge, even when they are not
+  expressed as MUST, SHOULD or formal commands. Pay particular attention to a
+  specification's purpose, an extension's capabilities, intended security
+  properties, threat-mitigation goals and the technical behaviour it enables.
+  Statements introduced by "This document describes", "This specification defines"
+  or "This extension allows" may carry substantive facts: extract the underlying
+  technical proposition, not merely the fact that a document describes something.
+  Each proposition must keep evidence from its actual source sentence; never
+  substitute a nearby statement, and never infer capabilities not stated.
+★ 覆盖范围：Abstract、Introduction 及其他段落中的**实质性知识**都要抽取
+  （协议能力、用途、安全属性、定义、行为、规范性约束）；**不要**只抽章节标题之后的正文，
+  也不要因为段落没有 MUST/SHOULD 就跳过其中的能力或用途陈述。
+★ 承接型规范句也要抽：以 "For this reason"、"Therefore"、"In this case" 等
+  discourse connector 开头的句子，若含 MUST/MUST NOT/SHOULD 等规范词，仍要抽取；
+  保留主体、动作、对象、强度与原文明确支持的条件；不要把前文的解释当作条件，
+  也不要因为理由在前一段或跨页就丢弃该要求。
+★ 只输出 JSON，不要解释文字。
+
+格式：
+{"items": [{"doc": "<文件名>", "entity": "<实体名>", "meaning": "<一句话含义>",
+   "constraint": "<强制约束或空串>", "span": <行号>,
+   "action": "<动作或空串>", "object": "<对象或空串>",
+   "strength": "<MUST|SHOULD|MAY 或空串>", "polarity": "<positive|negative 或空串>",
+   "keyword_raw": "<原文等级措辞或空串>",
+   "condition": "<生效条件原文片段或空串>", "exception": "<例外原文片段或空串>",
+   "cross_ref": "<跨节引用或空串>", "cross_ref_status": "<resolved|unresolved|unknown>",
+   "normative_subject": "<义务承担主体或空串>", "subject_span": <主体行号或 0>}]}

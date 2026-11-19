@@ -2,8 +2,8 @@
   "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
-    "llm_calls": 17,
-    "status": "T0_A_evidence_support_30of30_v4set"
+    "llm_calls": 19,
+    "status": "T0_A_evidence_applied_341_recalled_v6_regressed"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -146,6 +146,10 @@
       "sha256": "9ed953d6f8a05532b97834043efc001ec86ffbdba9efbfce6c662422096a174a",
       "size": 1640
     },
+    "T0A_30条Claim与Evidence关联核验.md": {
+      "sha256": "b1eb02808b9b4180b6e822193665726cb772f75ff45ea6df8e2c9f8b0e1cae40",
+      "size": 584
+    },
     "T0A_30条Evidence语义支持逐条审查.csv": {
       "sha256": "f257c59e4b71fee8920566157718c901e2cb7c1103879a06e0f20e4ed97edb58",
       "size": 11217
@@ -153,6 +157,14 @@
     "T0A_341行Raw召回逐层归因.md": {
       "sha256": "be5d446886a95e0645f52bd9825edc43a0cda2a3ac4d0971facedbf772572278",
       "size": 2166
+    },
+    "T0A_341行最小Prompt修正及输入上下文核验.md": {
+      "sha256": "19782649ac6a04343c0d2de5e44e365cf816ebe1ee354add6ea465dd9ae1963e",
+      "size": 932
+    },
+    "T0A_341行真实召回与v4回归对照.md": {
+      "sha256": "46028730a58bf7015a9e6884288e547d598c724cba9e5d95bb188a8666ec998f",
+      "size": 1308
     },
     "T0A_Claim证据关联与隔离知识状态核验.md": {
       "sha256": "dc5b020440442a8a4ce0b00f064eb388e89922986750aa44758307ee7bdbe70b",
@@ -165,6 +177,10 @@
     "T0A_Evidence审查状态与Hub接入边界.md": {
       "sha256": "7543f9d3a5ae279f8e4dc097f7ca60726f199aa9d627b0d5359036c06eec2be6",
       "size": 1331
+    },
+    "T0A_Evidence已验证状态隔离接入与读回报告.md": {
+      "sha256": "e5bc1510895009abd5bbd6d96c9b10380173e79584c7c0fede505ee4aaf175d8",
+      "size": 1115
     },
     "T0A_Evidence最终验收统计与341剩余缺口.md": {
       "sha256": "1f8086076e6405b3fabf80951cb68414b98dfb4258a3c5f1c4ea717bd7c9f463",
@@ -329,6 +345,10 @@
     "T0A_散文Norm身份冲突修正结果.md": {
       "sha256": "9c6630515d84a8969a08f772399e577f7367db7fa6e7da224adde1907c0fd0bc",
       "size": 4393
+    },
+    "T0A_最终T0A知识质量与剩余问题清单.md": {
+      "sha256": "f9f709d79823c63ac92176b6303e2a50a9a89ed383aaf4f9525eaaa64de77cb9",
+      "size": 1594
     },
     "T0A_最终审批单.md": {
       "sha256": "6e692532888ac1b220bc2e34a849fbb6a9060c124b7f9351380d5e5d5299643f",
@@ -505,6 +525,10 @@
     "scripts/t0a_evidence_align.py": {
       "sha256": "1877cd095bd7d3358665f12501a1469173df0d42c2ea0108089b23ca9f790485",
       "size": 2985
+    },
+    "scripts/t0a_evidence_apply.py": {
+      "sha256": "37a77d05a6eaa60f0b1e4cc3553c66efd1e3bceb31b55bfda560229a3ef6e3c9",
+      "size": 4620
     },
     "scripts/t0a_executor.py": {
       "sha256": "07f4971657499bd86011b42341fc6478cd956e5c3ff0c0566406ba4bf8c6384d",
@@ -685,6 +709,42 @@
     "T0A_实跑5_20261119_promptv5/SHA256清单.json": {
       "sha256": "356079921b4cb6446e97b1e6e61ed6bbf5ffb0da4fa0fac94a481675e51718f2",
       "size": 808
+    },
+    "T0A_实跑6_20261119_promptv6/cache.json": {
+      "sha256": "b1fe3b55bd37c6025e97f6ba29d01592c444374260fac100db79fcc4db5c8ab2",
+      "size": 17739
+    },
+    "T0A_实跑6_20261119_promptv6/definition.jsonl": {
+      "sha256": "9609220d86fc5b4cdcbef94fc290eb94cb4669624da0e00a918ca19cc0e9f0a8",
+      "size": 3079
+    },
+    "T0A_实跑6_20261119_promptv6/entities.jsonl": {
+      "sha256": "8a4716792e5a7cfa7fa58718bb2ccb2dc9c05aff39bd613b4d992a2647678420",
+      "size": 1597
+    },
+    "T0A_实跑6_20261119_promptv6/guard.json": {
+      "sha256": "3623ea2759b75c24ef962308be497962177fd94da52814017e9670dd9a39ee3f",
+      "size": 213
+    },
+    "T0A_实跑6_20261119_promptv6/legal_boundary.jsonl": {
+      "sha256": "8f0e2b191eddfc71baa6f6584f5fad92aa7e431a8d9efbeb1d76dd8a39298602",
+      "size": 11051
+    },
+    "T0A_实跑6_20261119_promptv6/prompt_v6.txt": {
+      "sha256": "48b99da792ba16bbde47d8da1991ee0529d1055863e12f848b691c3af6572e34",
+      "size": 3912
+    },
+    "T0A_实跑6_20261119_promptv6/prompt_v6_meta.json": {
+      "sha256": "cd1291fd93db1fd9f442abfa48060582dc093b027616d61dcc9794b804d82d95",
+      "size": 218
+    },
+    "T0A_实跑6_20261119_promptv6/result.json": {
+      "sha256": "7a5a3babba0b647c9a05dcb12506879c7b55309416ca713c6ce5c7046828a2fa",
+      "size": 884
+    },
+    "T0A_实跑6_20261119_promptv6/SHA256清单.json": {
+      "sha256": "4733670f695f87f9af1f2d498e7903ebcedaef8f439cee9851ebe0502cb4e5f4",
+      "size": 700
     },
     "T0A_双阶段_20261119/align_v4_30items.json": {
       "sha256": "8fb039f5a4730407e7ab700fbcf703393c8f05e02cda30d1420e972a47760669",
