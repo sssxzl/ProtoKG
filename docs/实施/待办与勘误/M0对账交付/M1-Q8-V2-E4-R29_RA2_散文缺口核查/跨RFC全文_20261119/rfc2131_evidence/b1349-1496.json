@@ -1,0 +1,23 @@
+{
+ "protocol": "DHCPv4",
+ "doc": "rfc2131.txt",
+ "block_range": [
+  1349,
+  1496
+ ],
+ "batch": 2,
+ "prompt_version": "prose-semantics-v6",
+ "prompt_sha256": "48b99da792ba16bbde47d8da1991ee0529d1055863e12f848b691c3af6572e34",
+ "model": "deepseek-flash",
+ "max_tokens": 8000,
+ "started_at": "2026-11-20T00:11:44",
+ "status": "completed",
+ "norms": 5,
+ "usage": {
+  "in": 2591,
+  "out": 2980
+ },
+ "failures": 0,
+ "finish_reason": "stop",
+ "finished_at": "2026-11-20T00:11:54"
+}

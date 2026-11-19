@@ -2,8 +2,8 @@
   "note": "清单与侧车均不进入 outputs",
   "baseline": {
     "main": "0f99da8445ea093246824e62d1244b88732e009e",
-    "llm_calls": 23,
-    "status": "cross_rfc_fulltext_blocked"
+    "llm_calls": 35,
+    "status": "cross_rfc_partial"
   },
   "excluded": [
     "R29_RA2_F2_输入输出SHA256清单.json",
@@ -122,9 +122,17 @@
       "sha256": "52e15fbc604bc58fc3309d38af0c81c1afb0e548754b4741e976b45bcbc49fd2",
       "size": 1875
     },
+    "RFC2131_batch2容量验证报告.md": {
+      "sha256": "bf170273bd66e2de8f511afe9f990713cf1258b9b6cc16848dadeb51267d8fb6",
+      "size": 410
+    },
     "RFC2131全文抽取与Evidence验收.md": {
       "sha256": "90a77ac487ee71462a44037313fcd62a2735483ae6050b489f72fcf9ad0f639e",
       "size": 820
+    },
+    "RFC2131全文抽取及Evidence运行报告.md": {
+      "sha256": "84516c24e6ddcbaad8a7be750c5e4f5feeb4e35a82262a2a978155a9c195f43e",
+      "size": 954
     },
     "T0_Gold原文跨度核查.md": {
       "sha256": "91f0c9f60644e725cac75bed40cfdca70acbdd90f6e799ea0b3c6a44e44db35f",
@@ -594,6 +602,10 @@
       "sha256": "eb4dba944e144c82d0acaa20c80d24ae4c9205aaf07154285b47a864814d756f",
       "size": 531
     },
+    "跨RFC官方原文入库与SHA256冻结报告.md": {
+      "sha256": "d0fc2a2687e7e0950a173ceabcb81d63062baa699f2378758f3f74b401355da4",
+      "size": 1018
+    },
     "跨RFC小样本试验设计与预登记.md": {
       "sha256": "ff89be98c2dde1584563312658faa672663385adafa0d39f0fb08d0dc4330773",
       "size": 954
@@ -605,6 +617,10 @@
     "跨RFC真实模型抽取结果.md": {
       "sha256": "44fb0c7a474b60bc0b083219de5b0ced171a3857a3a7b88456490a3105d15e9e",
       "size": 1301
+    },
+    "跨RFC阻断解除与泛化质量对照.md": {
+      "sha256": "9bcfd6d03bed9efa28ccbf012f3b3b6479a0e1344da7be54ddf0343158d07138",
+      "size": 1194
     },
     "scripts/f1_docs.json": {
       "sha256": "52debe4b049b9fb6d6770656d0be318251cf9c36b106eabf82c899840face104",
@@ -645,6 +661,10 @@
     "scripts/t0a_adapter.py": {
       "sha256": "3078de3037730e5c2b1609abd00c6dff4b3dc6a3a93533d755cf01037ed5eda1",
       "size": 7522
+    },
+    "scripts/t0a_batch_run.py": {
+      "sha256": "0bfc372210b292f1ce09991219ecfb117777b69150a24da8e30b7c2b53df8f8a",
+      "size": 3349
     },
     "scripts/t0a_chain_offline.py": {
       "sha256": "6283dcb6a22af09d17c45c3f4f7f2da0c9ccf0eed54a2cc22b7ace28d017ecbc",
@@ -917,6 +937,50 @@
     "T0A_跨RFC_20261119/SHA256清单.json": {
       "sha256": "0756a00b5482d77dcc21a468d08b87d10dd8dd0244559680bee7e7d9d0d9830e",
       "size": 169
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b1-138.json": {
+      "sha256": "404bbfd772381b74df8f7e1b1351dbf927fa73ccd671d2c45b0d94490e3f7761",
+      "size": 492
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b1073-1215.json": {
+      "sha256": "2f9d602cae5d47f7820dcc03a5c147f5c8d4c76398b391284ece29a9076febde",
+      "size": 496
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b1216-1348.json": {
+      "sha256": "aa1aa8dc51db6fe3935b28bb7b3acb48f2ee8e3e45caabcc5fa60050ea06753e",
+      "size": 496
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b1349-1496.json": {
+      "sha256": "1b7b884721417ac688694e4c394257727a745b5b25db62d564d87918d5b2ddc8",
+      "size": 496
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b139-311.json": {
+      "sha256": "8e09b773f86b7720e8810bfeaa8bca293fb7d26131dbd2906a7175ad70f87f69",
+      "size": 494
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b1497-1645.json": {
+      "sha256": "4d4298805907e55f7142084d7bd1fa749541cbdd8712273f251ce6447386e560",
+      "size": 496
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b312-484.json": {
+      "sha256": "9450950e6763e3798760bf2f97c0b200118523d189cdc506b33f6e13e6030dfc",
+      "size": 494
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b485-630.json": {
+      "sha256": "4343cd87da187cc82286b058b0cdc8fc4bcfeb05496bb56d349e699da6d92cec",
+      "size": 494
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b631-786.json": {
+      "sha256": "483e5f60b50606985695077c227719639b7f3b0624dc18546111d0ff4111bcfa",
+      "size": 494
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b787-924.json": {
+      "sha256": "feb52c0426b720f14ad43a20fa188c0b7bb3a36f34584b6e479e16e743b1e783",
+      "size": 494
+    },
+    "跨RFC全文_20261119/rfc2131_evidence/b925-1072.json": {
+      "sha256": "31779dd7233771260bb1cdd21e2e252c026cb6c6327a1bc407ff2262e3ebb4a1",
+      "size": 495
     }
   }
 }
